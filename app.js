@@ -1872,6 +1872,29 @@ function isWelcomeOpen() {
   return Boolean(welcome && !welcome.classList.contains("hidden"));
 }
 
+function setWelcomeGateActive(active) {
+  document.body.classList.toggle("welcome-open", active);
+  document.body.classList.toggle("modal-open", active);
+
+  const app = document.querySelector(".app");
+  if (!app) return;
+
+  if (active) {
+    app.setAttribute("inert", "");
+    app.setAttribute("aria-hidden", "true");
+  } else {
+    app.removeAttribute("inert");
+    app.removeAttribute("aria-hidden");
+  }
+}
+
+function blockWelcomeBypass(event) {
+  if (!isWelcomeOpen()) return;
+  if (event.target.closest(".welcome-card")) return;
+  event.preventDefault();
+  event.stopPropagation();
+}
+
 function isOnProgressTab() {
   const statsPanel = document.getElementById("stats-panel");
   return Boolean(statsPanel?.classList.contains("active") && !statsPanel.hidden);
@@ -4145,6 +4168,8 @@ function submitAnswer(options = {}) {
 }
 
 function switchTab(tabName) {
+  if (isWelcomeOpen()) return;
+
   document.querySelectorAll(".tab").forEach((tab) => {
     const isActive = tab.dataset.tab === tabName;
     tab.classList.toggle("active", isActive);
@@ -4331,6 +4356,9 @@ function initEventListeners() {
 
   document.getElementById("welcome-start-btn")?.addEventListener("click", () => closeWelcomeModal());
 
+  document.addEventListener("click", blockWelcomeBypass, true);
+  document.addEventListener("touchend", blockWelcomeBypass, true);
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       const welcome = document.getElementById("welcome-modal");
@@ -4507,15 +4535,16 @@ function showWelcomeModal() {
   if (!modal) return;
   renderCategoryPicker();
   modal.classList.remove("hidden");
-  document.body.classList.add("modal-open");
+  setWelcomeGateActive(true);
   updateCategoryPickerAvailability();
+  document.getElementById("welcome-start-btn")?.focus({ preventScroll: true });
 }
 
 function closeWelcomeModal(markSeen = true) {
   const modal = document.getElementById("welcome-modal");
   if (!modal) return;
   modal.classList.add("hidden");
-  document.body.classList.remove("modal-open");
+  setWelcomeGateActive(false);
   updateCategoryPickerAvailability();
   if (markSeen) {
     try {
