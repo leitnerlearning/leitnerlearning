@@ -1,0 +1,8 @@
+# Local dev / tunnel (not needed in repo)
+cloudflared
+cloudflared.tgz
+dev-cert.pem
+dev-key.pem
+
+# macOS
+.DS_Store

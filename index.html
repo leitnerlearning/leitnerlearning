@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Leitner Learning — 1,000 frequency-ranked Norwegian words. The first 500 cover 80% of words in our stories. Complete the deck and read with confidence. No account."
+    />
+    <meta property="og:title" content="Leitner Learning · Norwegian" />
+    <meta
+      property="og:description"
+      content="1,000 frequency-ranked Norwegian words, tap-to-translate stories, and Leitner spaced repetition. Free in your browser."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="brand/logo-on-blue-panel.png" />
+    <meta
+      property="og:image:alt"
+      content="Leitner Learning — Norwegian vocabulary and stories"
+    />
+    <meta name="theme-color" content="#365fcf" />
+    <title>Leitner Learning · Norwegian</title>
+    <link rel="icon" href="brand/logo-icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" sizes="180x180" href="brand/logo-icon.png" />
+    <link rel="apple-touch-icon" sizes="360x360" href="brand/logo-icon-180@2x.png" />
+    <link rel="stylesheet" href="styles.css?v=86" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="ambient-brand" aria-hidden="true">
+      <div class="ambient-glow ambient-glow--primary"></div>
+      <div class="ambient-glow ambient-glow--secondary"></div>
+    </div>
+
+    <div class="app">
+      <header class="header">
+        <div class="brand">
+          <img
+            class="brand-logo"
+            src="brand/logo-primary.svg"
+            alt="Leitner Learning"
+            width="320"
+            height="210"
+          />
+        </div>
+        <nav class="tabs" role="tablist" aria-label="Main navigation">
+          <button class="tab active" data-tab="practice" role="tab" aria-selected="true">
+            Review
+          </button>
+          <button class="tab" data-tab="read" role="tab" aria-selected="false">Read</button>
+          <button class="tab" data-tab="cards" role="tab" aria-selected="false">Library</button>
+          <button class="tab" data-tab="stats" role="tab" aria-selected="false">Progress</button>
+        </nav>
+      </header>
+
+      <main>
+        <section id="practice-panel" class="panel active" role="tabpanel">
+          <p class="panel-lead" id="panel-lead">1,000 frequency-ranked words for Norwegian Bokmål
+The first 500 cover 80% of words in our stories
+Complete all 1,000 to read every story with confidence</p>
+
+          <div class="practice-meta hidden" id="practice-meta">
+            <div class="meta-chip hidden" id="daily-goal-chip">0/0</div>
+          </div>
+          <div
+            class="daily-progress hidden"
+            id="daily-progress"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuenow="0"
+            aria-valuemax="0"
+            aria-label="Today's review progress"
+          >
+            <div class="daily-progress-fill" id="daily-progress-fill"></div>
+          </div>
+
+          <div id="practice-empty" class="empty-state hidden">
+            <div class="empty-icon empty-icon--idle" id="empty-icon" aria-hidden="true"></div>
+            <h2 id="empty-title">You're all caught up</h2>
+            <p id="empty-message">
+              No cards are due right now. Browse the library or come back when it's time to review.
+            </p>
+            <div id="empty-preview" class="word-preview" hidden aria-label="Starter words"></div>
+            <div class="empty-actions" id="empty-actions">
+              <div class="empty-power hidden" id="empty-power">
+                <button
+                  type="button"
+                  class="power-on-btn"
+                  id="start-practice-btn"
+                  aria-label="Continue review"
+                >
+                  <span class="power-on-btn__glow" aria-hidden="true"></span>
+                  <img
+                    class="power-on-btn__icon power-on-btn__icon--off"
+                    src="brand/logo-icon-black.svg"
+                    alt=""
+                    width="52"
+                    height="70"
+                    decoding="async"
+                  />
+                  <img
+                    class="power-on-btn__icon power-on-btn__icon--on"
+                    src="brand/logo-icon.svg"
+                    alt=""
+                    width="52"
+                    height="70"
+                    decoding="async"
+                  />
+                  <img
+                    class="power-on-btn__icon power-on-btn__icon--complete"
+                    src="brand/logo-icon-white.svg"
+                    alt=""
+                    width="52"
+                    height="70"
+                    decoding="async"
+                  />
+                </button>
+                <p class="power-on-hint hidden" id="power-on-hint" aria-live="polite"></p>
+                <p class="power-on-teaser hidden" id="power-on-teaser" aria-live="polite"></p>
+              </div>
+              <div class="empty-home-status" id="empty-home-status" aria-live="polite"></div>
+              <button
+                type="button"
+                class="read-bridge-btn hidden"
+                id="read-bridge-btn"
+                data-tab-jump="read"
+                aria-label="Go to Read for comprehension"
+              >
+                <span class="read-bridge-btn__label">Read for comprehension</span>
+                <span class="read-bridge-btn__meta">See today's words in context</span>
+              </button>
+              <button id="keep-practicing-btn" class="btn secondary hidden" type="button">
+                Keep reviewing
+              </button>
+              <button type="button" class="btn secondary hidden" id="empty-library-btn" data-tab-jump="cards">
+                Library
+              </button>
+            </div>
+          </div>
+
+          <div id="practice-active" class="practice-card hidden">
+            <div class="practice-card-top">
+              <button
+                type="button"
+                class="direction-toggle card-label"
+                id="prompt-direction"
+                aria-pressed="false"
+                title="Tap to reverse review direction"
+              >
+                Norwegian → English
+              </button>
+              <span class="category-chip" id="prompt-category"></span>
+            </div>
+            <div class="prompt norwegian" id="prompt-text" lang="nb">—</div>
+            <p class="prompt-hint hidden" id="prompt-hint"></p>
+
+            <form id="answer-form" class="answer-form">
+              <input
+                type="text"
+                id="answer-input"
+                autocomplete="off"
+                spellcheck="false"
+                enterkeyhint="go"
+                lang="en"
+              />
+              <div class="feedback-slot" aria-live="polite">
+                <div id="feedback" class="feedback is-empty" role="status"></div>
+              </div>
+              <div class="answer-actions">
+                <button type="button" id="hear-btn" class="btn ghost" title="Hear the Norwegian word">
+                  Hear
+                </button>
+                <button
+                  type="button"
+                  id="speak-btn"
+                  class="btn ghost"
+                  aria-pressed="false"
+                  title="Speak your answer in English"
+                >
+                  Speak
+                </button>
+                <button type="button" id="reveal-btn" class="btn ghost" title="Show the answer">Show</button>
+              </div>
+            </form>
+
+            <div class="level-indicator hidden" aria-hidden="true">
+              <span id="level-label">Level 1 · New</span>
+              <div class="levels" id="box-dots">
+                <span class="level-dot"></span>
+                <span class="level-dot"></span>
+                <span class="level-dot"></span>
+                <span class="level-dot"></span>
+                <span class="level-dot"></span>
+                <span class="level-dot"></span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="read-panel" class="panel" role="tabpanel" hidden>
+          <div class="read-shell">
+            <header class="read-header">
+              <div class="read-title-row">
+                <button
+                  type="button"
+                  class="read-trail-btn"
+                  id="read-trail-btn"
+                  aria-label="Choose difficulty"
+                  aria-expanded="false"
+                  title="Choose difficulty"
+                ></button>
+                <button
+                  type="button"
+                  class="read-story-select"
+                  id="read-story-select"
+                  aria-expanded="false"
+                  aria-haspopup="listbox"
+                >
+                  <span class="read-story-select-title" id="read-story-title">—</span>
+                  <span class="read-story-select-meta">
+                    <span class="read-story-select-chevron" aria-hidden="true"></span>
+                  </span>
+                </button>
+              </div>
+              <div
+                class="read-progress-bar"
+                id="read-progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+              >
+                <div class="read-progress-fill" id="read-progress-fill"></div>
+              </div>
+              <p class="read-story-source" id="read-story-source" hidden></p>
+              <div class="read-menu hidden" id="read-menu" role="listbox" aria-label="Stories"></div>
+            </header>
+
+            <div class="read-context read-context--before" id="read-context-before" aria-hidden="true"></div>
+
+            <article class="read-focus" aria-live="polite">
+              <div class="read-focus-nb" id="read-focus-nb" lang="nb"></div>
+              <div class="read-gloss-slot" id="read-gloss-slot">
+                <div id="read-gloss" class="read-gloss is-collapsed" role="status" hidden>
+                  <p class="read-gloss-meaning" id="read-gloss-meaning" lang="en"></p>
+                </div>
+              </div>
+              <div class="read-focus-en-slot is-collapsed" id="read-focus-en-slot">
+                <p class="read-focus-en" id="read-focus-en" lang="en"></p>
+              </div>
+            </article>
+
+            <div class="read-footer">
+              <div class="read-controls">
+                <button type="button" class="btn ghost read-nav-btn" id="read-prev-btn" aria-label="Previous sentence">
+                  ←
+                </button>
+                <span class="read-progress" id="read-progress">1 / 1</span>
+                <button type="button" class="btn ghost read-nav-btn" id="read-next-btn" aria-label="Next sentence">
+                  →
+                </button>
+              </div>
+
+              <div class="read-options">
+                <div class="read-story-status hidden" id="read-story-status">
+                  <span class="read-story-status-label" id="read-story-status-label"></span>
+                  <button
+                    type="button"
+                    class="read-reset-btn"
+                    id="read-reset-btn"
+                    aria-label="Read again from the start"
+                    title="Read again from the start"
+                  >
+                    ↺
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="btn ghost small read-toggle-en"
+                  id="read-toggle-en"
+                  aria-pressed="false"
+                >
+                  Show English
+                </button>
+                <button type="button" class="btn ghost small" id="read-hear-sentence" title="Hear this sentence">
+                  Hear sentence
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <section id="cards-panel" class="panel" role="tabpanel" hidden>
+          <div class="library-header">
+            <h2 class="panel-title">
+              Library <span id="deck-count" class="count-badge">0</span>
+            </h2>
+            <button id="reset-deck-btn" class="btn ghost small" type="button">Reset deck</button>
+          </div>
+
+          <form id="add-card-form" class="add-card-form">
+            <div class="add-card-form-head">
+              <span id="add-card-mode-label" class="add-card-mode-label hidden">Editing card</span>
+              <button type="button" id="add-card-cancel-edit" class="btn ghost small hidden">Cancel</button>
+            </div>
+            <div class="form-row">
+              <div class="add-card-field">
+                <label class="add-card-label" for="new-native" id="new-native-label">English</label>
+                <input
+                  type="text"
+                  id="new-native"
+                  lang="en"
+                  autocomplete="off"
+                  spellcheck="false"
+                  required
+                />
+                <div id="native-suggestions" class="library-suggest hidden" role="list" aria-label="Suggestions"></div>
+              </div>
+              <div class="add-card-field">
+                <label class="add-card-label" for="new-foreign" id="new-foreign-label">Norwegian</label>
+                <input
+                  type="text"
+                  id="new-foreign"
+                  lang="nb"
+                  autocomplete="off"
+                  spellcheck="false"
+                  required
+                />
+                <div id="foreign-suggestions" class="library-suggest hidden" role="list" aria-label="Suggestions"></div>
+              </div>
+            </div>
+            <button type="submit" class="btn primary" id="add-card-submit">Add</button>
+          </form>
+
+          <div id="add-card-review" class="add-card-review hidden" role="dialog" aria-label="Review card">
+            <div class="add-card-review-pair">
+              <div class="add-card-review-side">
+                <span class="add-card-review-label" id="add-card-review-native-label">English</span>
+                <p class="add-card-review-value" id="review-native" lang="en"></p>
+              </div>
+              <div class="add-card-review-side">
+                <span class="add-card-review-label" id="add-card-review-foreign-label">Norwegian</span>
+                <p class="add-card-review-value" id="review-foreign" lang="nb"></p>
+              </div>
+            </div>
+            <div id="add-card-review-context" class="add-card-review-context" role="status"></div>
+            <div class="add-card-review-actions">
+              <button type="button" class="btn ghost hidden" id="add-card-edit-existing">Edit existing card</button>
+              <button type="button" class="btn ghost" id="add-card-edit-review">Edit</button>
+              <button type="button" class="btn primary" id="add-card-confirm">Add to library</button>
+            </div>
+          </div>
+
+          <div class="library-controls">
+            <input
+              type="search"
+              id="library-search"
+              class="library-search"
+              placeholder="Search"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <div class="filter-chips" role="group" aria-label="Filter library">
+              <button class="filter-chip active" data-band="all" type="button" title="Every card in your library">All</button>
+              <button class="filter-chip" data-band="words" type="button" title="Single words from the starter deck">Words</button>
+              <button class="filter-chip" data-band="phrase" type="button" title="Ready-made expressions">Phrases</button>
+              <button class="filter-chip" data-band="yours" type="button" title="Cards you added yourself">Yours</button>
+            </div>
+          </div>
+
+          <div id="card-list" class="card-list"></div>
+        </section>
+
+        <section id="stats-panel" class="panel" role="tabpanel" hidden>
+          <div class="stats-summary" id="stats-summary"></div>
+          <div class="progress-language">
+            <div class="category-picker category-picker--progress">
+              <button
+                type="button"
+                class="category-picker-btn"
+                aria-haspopup="listbox"
+                aria-expanded="false"
+                aria-controls="progress-category-picker-menu"
+              >
+                <span data-category-picker-label>Norwegian · Bokmål</span>
+                <span class="category-picker-chevron" aria-hidden="true"></span>
+              </button>
+              <div
+                class="category-picker-menu hidden"
+                id="progress-category-picker-menu"
+                role="listbox"
+                aria-label="Choose what to learn"
+              ></div>
+            </div>
+          </div>
+          <section class="progress-section" aria-labelledby="progress-levels-title">
+            <h3 class="progress-section-title" id="progress-levels-title">Leitner levels</h3>
+            <div class="box-stats" id="box-stats"></div>
+          </section>
+          <section class="progress-section hidden" id="progress-read-section" aria-labelledby="progress-read-title">
+            <div class="progress-section-head">
+              <h3 class="progress-section-title" id="progress-read-title">Reading</h3>
+              <button
+                type="button"
+                class="progress-read-reset-all hidden"
+                id="reset-all-stories-btn"
+              >
+                Reset all
+              </button>
+            </div>
+            <div class="read-progress-stats" id="read-progress-stats"></div>
+          </section>
+        </section>
+      </main>
+
+    </div>
+
+    <div
+      class="welcome-modal hidden"
+      id="welcome-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="welcome-title"
+      data-welcome-dismiss
+    >
+      <div class="welcome-card">
+        <h2 class="welcome-title" id="welcome-title">Velkommen til Leitner Learning</h2>
+        <p class="welcome-lead welcome-lead--verse">Learn Norwegian the way you'll actually use it.
+
+1,000 frequency-ranked words for Norwegian Bokmål
+The first 500 cover 80% of words in our stories
+Complete all 1,000 to read every story with confidence
+
+Spaced repetition that sticks. No account needed.</p>
+        <ul class="welcome-features">
+          <li><strong>Review</strong> — 20 cards a day, Leitner boxes that adapt to you</li>
+          <li><strong>Read</strong> — parallel Norwegian &amp; English, tap any word for help</li>
+          <li><strong>Library</strong> — add your own words from lectures and daily life</li>
+          <li><strong>Progress</strong> — track mastery and reading completion</li>
+        </ul>
+        <p class="welcome-note">
+          Built for international students in Norway — starting with Nord University, Bodø.
+          Everything stays on your device; no account needed.
+        </p>
+        <div class="category-picker category-picker--welcome">
+          <button
+            type="button"
+            class="category-picker-btn"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="welcome-category-picker-menu"
+          >
+            <span data-category-picker-label>Norwegian · Bokmål</span>
+            <span class="category-picker-chevron" aria-hidden="true"></span>
+          </button>
+          <div
+            class="category-picker-menu hidden"
+            id="welcome-category-picker-menu"
+            role="listbox"
+            aria-label="Choose what to learn"
+          ></div>
+        </div>
+        <div class="welcome-actions">
+          <button type="button" class="btn primary" id="welcome-start-btn">Start learning</button>
+          <button type="button" class="btn ghost" id="welcome-close-btn">Skip intro</button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="confirm-modal hidden"
+      id="confirm-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-message"
+    >
+      <div class="confirm-card">
+        <p class="confirm-message" id="confirm-message"></p>
+        <div class="confirm-actions">
+          <button type="button" class="btn ghost" id="confirm-cancel-btn">Cancel</button>
+          <button type="button" class="btn primary" id="confirm-ok-btn">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="norwegian-frequency-deck.js?v=22"></script>
+    <script src="norwegian-reading-vocab.js?v=3"></script>
+    <script src="learning-categories.js?v=35"></script>
+    <script src="read-stories.js?v=8"></script>
+    <script src="app.js?v=130"></script>
+  </body>
+</html>
