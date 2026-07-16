@@ -90,6 +90,8 @@ let speakAttemptTimer = null;
 let cardAdvanceTimer = null;
 let libraryFilter = "all";
 let librarySearch = "";
+let libraryRenderToken = 0;
+const LIBRARY_BATCH_SIZE = 35;
 let categoryMenuOpen = false;
 let readStoryId = null;
 let readSentenceIndex = 0;
@@ -2743,48 +2745,31 @@ function renderCardItem(card) {
       </article>`;
 }
 
-function renderCardList() {
-  const list = document.getElementById("card-list");
-  document.getElementById("deck-count").textContent = deck.length;
+function isCardsPanelActive() {
+  const panel = document.getElementById("cards-panel");
+  return Boolean(panel?.classList.contains("active"));
+}
 
-  const searching = Boolean(librarySearch.trim());
-  let filtered = sortCards(deck).filter(matchesLibraryFilter);
-  if (searching) filtered = dedupeLibraryCards(filtered);
+function updateDeckCount() {
+  const deckCount = document.getElementById("deck-count");
+  if (deckCount) deckCount.textContent = deck.length;
+}
 
-  if (!filtered.length) {
-    list.innerHTML = `<div class="library-empty">No matches</div>`;
-    return;
+function getLibraryBandGroups() {
+  if (libraryFilter === "all") {
+    return ["A", "B", "C", "D", "E", "F", "G", "phrase", null];
   }
-
-  if (searching || libraryFilter === "phrase" || libraryFilter === "yours") {
-    list.innerHTML = `<div class="card-group-list">${filtered.map(renderCardItem).join("")}</div>`;
-  } else {
-    const groups =
-      libraryFilter === "all"
-        ? ["A", "B", "C", "D", "E", "F", "G", "phrase", null]
-        : libraryFilter === "words"
-          ? ["A", "B", "C", "D", "E", "F", "G"]
-          : libraryFilter === "yours"
-            ? [null]
-            : [libraryFilter];
-    const sections = [];
-
-    for (const band of groups) {
-      const cards = filtered.filter((card) =>
-        band === null ? !card.band : card.band === band
-      );
-      if (!cards.length) continue;
-
-      const label = band ? BAND_LABELS[band] : "Yours";
-      sections.push(`
-      <section class="card-group">
-        <h3 class="card-group-title">${escapeHtml(label)}</h3>
-        <div class="card-group-list">${cards.map(renderCardItem).join("")}</div>
-      </section>`);
-    }
-
-    list.innerHTML = sections.join("");
+  if (libraryFilter === "words") {
+    return ["A", "B", "C", "D", "E", "F", "G"];
   }
+  if (libraryFilter === "yours") {
+    return [null];
+  }
+  return [libraryFilter];
+}
+
+function bindCardListListeners(list) {
+  if (!list) return;
 
   list.querySelectorAll(".edit-card-btn").forEach((btn) => {
     btn.addEventListener("click", () => startEditCard(btn.dataset.id));
@@ -2811,6 +2796,102 @@ function renderCardList() {
   list.querySelectorAll(".hear-card-btn").forEach((btn) => {
     btn.addEventListener("click", () => speakForeign(btn.dataset.foreign));
   });
+}
+
+function renderCardsInBatches(cards, container, token, onComplete) {
+  if (!container || !cards.length) {
+    onComplete?.();
+    return;
+  }
+
+  let index = 0;
+
+  function step() {
+    if (token !== libraryRenderToken) return;
+
+    const batch = cards.slice(index, index + LIBRARY_BATCH_SIZE);
+    if (!batch.length) {
+      onComplete?.();
+      return;
+    }
+
+    container.insertAdjacentHTML("beforeend", batch.map(renderCardItem).join(""));
+    index += LIBRARY_BATCH_SIZE;
+    requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+}
+
+function renderCardListSections(sections, list, token) {
+  list.innerHTML = "";
+  let sectionIndex = 0;
+
+  function renderNextSection() {
+    if (token !== libraryRenderToken) return;
+    if (sectionIndex >= sections.length) {
+      bindCardListListeners(list);
+      return;
+    }
+
+    const { label, cards } = sections[sectionIndex];
+    const sectionEl = document.createElement("section");
+    sectionEl.className = "card-group";
+    sectionEl.innerHTML = `
+      <h3 class="card-group-title">${escapeHtml(label)}</h3>
+      <div class="card-group-list"></div>`;
+    list.appendChild(sectionEl);
+
+    sectionIndex += 1;
+    renderCardsInBatches(cards, sectionEl.querySelector(".card-group-list"), token, renderNextSection);
+  }
+
+  renderNextSection();
+}
+
+function renderCardList() {
+  const list = document.getElementById("card-list");
+  updateDeckCount();
+  if (!list || !isCardsPanelActive()) return;
+
+  libraryRenderToken += 1;
+  const token = libraryRenderToken;
+
+  const searching = Boolean(librarySearch.trim());
+  let filtered = sortCards(deck).filter(matchesLibraryFilter);
+  if (searching) filtered = dedupeLibraryCards(filtered);
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="library-empty">No matches</div>`;
+    return;
+  }
+
+  if (searching || libraryFilter === "phrase" || libraryFilter === "yours") {
+    list.innerHTML = `<div class="card-group-list"></div>`;
+    renderCardsInBatches(filtered, list.querySelector(".card-group-list"), token, () => {
+      if (token === libraryRenderToken) bindCardListListeners(list);
+    });
+    return;
+  }
+
+  const sections = [];
+  for (const band of getLibraryBandGroups()) {
+    const cards = filtered.filter((card) =>
+      band === null ? !card.band : card.band === band
+    );
+    if (!cards.length) continue;
+    sections.push({
+      label: band ? BAND_LABELS[band] : "Yours",
+      cards,
+    });
+  }
+
+  if (!sections.length) {
+    list.innerHTML = `<div class="library-empty">No matches</div>`;
+    return;
+  }
+
+  renderCardListSections(sections, list, token);
 }
 
 function getReadProgressKey(categoryId = activeCategoryId) {
@@ -4075,7 +4156,10 @@ function renderAll() {
   if (document.getElementById("read-panel")?.classList.contains("active")) {
     renderReadPanel();
   }
-  renderCardList();
+  updateDeckCount();
+  if (isCardsPanelActive()) {
+    renderCardList();
+  }
   renderStatsSummary();
 }
 
@@ -4201,6 +4285,7 @@ function switchTab(tabName) {
     saveReadProgress();
   }
   if (tabName === "stats") renderStatsSummary();
+  if (tabName === "cards") renderCardList();
   updateCategoryPickerAvailability();
 }
 
