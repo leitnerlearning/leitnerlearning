@@ -4330,17 +4330,11 @@ function initEventListeners() {
   });
 
   document.getElementById("welcome-start-btn")?.addEventListener("click", () => closeWelcomeModal());
-  document.getElementById("welcome-modal")?.addEventListener("click", (e) => {
-    if (e.target?.dataset?.welcomeDismiss != null) closeWelcomeModal();
-  });
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       const welcome = document.getElementById("welcome-modal");
-      if (welcome && !welcome.classList.contains("hidden")) {
-        closeWelcomeModal();
-        return;
-      }
+      if (welcome && !welcome.classList.contains("hidden")) return;
       closeCategoryMenu();
       closeReadGloss();
       closeReadMenu();
