@@ -442,20 +442,6 @@ html {
     touch-action: manipulation;
   }
 
-  .stats-summary {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.4rem;
-  }
-
-  .stat-card {
-    padding: 0.95rem 0.3rem;
-  }
-
-  #stats-panel .stat-label {
-    font-size: 0.62rem;
-    letter-spacing: 0.03em;
-  }
-
   .box-stat-row,
   .band-stat-row,
   .read-stat-row {
@@ -509,11 +495,6 @@ html {
     width: 100%;
   }
 
-  .empty-home-status {
-    width: 100%;
-    max-width: 16rem;
-  }
-
   .welcome-modal,
   .confirm-modal {
     padding:
@@ -541,19 +522,6 @@ html {
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-  }
-
-  .stats-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
-  }
-
-  .stat-card {
-    padding: 1.05rem 0.45rem;
-  }
-
-  .stat-value {
-    font-size: clamp(1.45rem, 5.5vw, 1.85rem);
   }
 
   .library-header {
@@ -2639,6 +2607,79 @@ body.welcome-open .app {
   text-transform: uppercase;
   color: var(--text-tertiary);
   line-height: 1.3;
+}
+
+@media (max-width: 720px) {
+  .stats-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .stat-card {
+    min-width: 0;
+    padding: 1rem 0.35rem;
+    box-sizing: border-box;
+  }
+
+  .stat-value {
+    font-size: clamp(1.35rem, 5vw, 1.75rem);
+  }
+
+  .stat-label {
+    margin-top: 0.35rem;
+    font-size: clamp(0.56rem, 2.35vw, 0.66rem);
+    letter-spacing: 0.015em;
+    line-height: 1.15;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+  }
+
+  .empty-home-status {
+    width: 100%;
+    max-width: 100%;
+    gap: 0.5rem;
+  }
+
+  .home-stat {
+    min-width: 0;
+    padding: 0.6rem 0.35rem 0.55rem;
+    box-sizing: border-box;
+  }
+
+  .home-stat__value {
+    font-size: clamp(1.1rem, 4.5vw, 1.35rem);
+  }
+
+  .home-stat__label {
+    font-size: clamp(0.56rem, 2.4vw, 0.66rem);
+    letter-spacing: 0.02em;
+    line-height: 1.15;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+  }
+
+  .meta-chip {
+    font-size: 0.74rem;
+    padding: 0.4rem 0.7rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .filter-chip {
+    font-size: 0.74rem;
+    padding: 0.4rem 0.65rem;
+  }
+
+  .count-badge {
+    font-size: 0.68rem;
+    padding: 0.2rem 0.45rem;
+  }
 }
 
 .box-stats,
