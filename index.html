@@ -26,7 +26,7 @@
     <link rel="icon" href="brand/logo-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="brand/logo-icon.png" />
     <link rel="apple-touch-icon" sizes="360x360" href="brand/logo-icon-180@2x.png" />
-    <link rel="stylesheet" href="styles.css?v=86" />
+    <link rel="stylesheet" href="styles.css?v=87" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -429,28 +429,19 @@ Complete all 1,000 to read every story with confidence</p>
       id="welcome-modal"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="welcome-title"
+      aria-label="Leitner Learning"
       data-welcome-dismiss
     >
       <div class="welcome-card">
-        <h2 class="welcome-title" id="welcome-title">Velkommen til Leitner Learning</h2>
-        <p class="welcome-lead welcome-lead--verse">Learn Norwegian the way you'll actually use it.
-
-1,000 frequency-ranked words for Norwegian Bokmål
-The first 500 cover 80% of words in our stories
-Complete all 1,000 to read every story with confidence
-
-Spaced repetition that sticks. No account needed.</p>
-        <ul class="welcome-features">
-          <li><strong>Review</strong> — 20 cards a day, Leitner boxes that adapt to you</li>
-          <li><strong>Read</strong> — parallel Norwegian &amp; English, tap any word for help</li>
-          <li><strong>Library</strong> — add your own words from lectures and daily life</li>
-          <li><strong>Progress</strong> — track mastery and reading completion</li>
-        </ul>
-        <p class="welcome-note">
-          Built for international students in Norway — starting with Nord University, Bodø.
-          Everything stays on your device; no account needed.
-        </p>
+        <img
+          class="welcome-logo"
+          src="brand/logo-primary.svg"
+          alt="Leitner Learning"
+          width="280"
+          height="184"
+          decoding="async"
+        />
+        <p class="welcome-lead">1,000 words · spaced repetition · read in context</p>
         <div class="category-picker category-picker--welcome">
           <button
             type="button"
@@ -466,12 +457,11 @@ Spaced repetition that sticks. No account needed.</p>
             class="category-picker-menu hidden"
             id="welcome-category-picker-menu"
             role="listbox"
-            aria-label="Choose what to learn"
+            aria-label="Choose language"
           ></div>
         </div>
         <div class="welcome-actions">
-          <button type="button" class="btn primary" id="welcome-start-btn">Start learning</button>
-          <button type="button" class="btn ghost" id="welcome-close-btn">Skip intro</button>
+          <button type="button" class="btn primary" id="welcome-start-btn">Start</button>
         </div>
       </div>
     </div>
@@ -496,6 +486,6 @@ Spaced repetition that sticks. No account needed.</p>
     <script src="norwegian-reading-vocab.js?v=3"></script>
     <script src="learning-categories.js?v=35"></script>
     <script src="read-stories.js?v=8"></script>
-    <script src="app.js?v=130"></script>
+    <script src="app.js?v=131"></script>
   </body>
 </html>

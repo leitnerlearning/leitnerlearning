@@ -4329,7 +4329,6 @@ function initEventListeners() {
     closeCategoryMenu();
   });
 
-  document.getElementById("welcome-close-btn")?.addEventListener("click", () => closeWelcomeModal());
   document.getElementById("welcome-start-btn")?.addEventListener("click", () => closeWelcomeModal());
   document.getElementById("welcome-modal")?.addEventListener("click", (e) => {
     if (e.target?.dataset?.welcomeDismiss != null) closeWelcomeModal();
@@ -4512,6 +4511,7 @@ function initConfirmModal() {
 function showWelcomeModal() {
   const modal = document.getElementById("welcome-modal");
   if (!modal) return;
+  renderCategoryPicker();
   modal.classList.remove("hidden");
   document.body.classList.add("modal-open");
   updateCategoryPickerAvailability();
