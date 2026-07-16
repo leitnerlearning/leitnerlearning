@@ -446,6 +446,9 @@ function sortCardIdsByPracticePriority(cardIds, completed = new Set()) {
 }
 
 function buildDailyQueue(dueCards, goal) {
+  if (window.SrsCore) {
+    return SrsCore.buildDailyQueue(dueCards, goal, deck);
+  }
   if (!goal) return [];
 
   return dueCards
@@ -533,10 +536,10 @@ function refreshDailyPracticeQueue(state) {
     const slotsOpen = Math.max(0, state.goal - pendingInQueue - state.reviewed);
     if (slotsOpen > 0) {
       const inQueue = new Set(state.dailyQueue);
-      const additions = buildDailyQueue(
-        due.filter((card) => !completed.has(card.id) && !inQueue.has(card.id)),
-        slotsOpen
-      );
+      const pool = due.filter((card) => !completed.has(card.id) && !inQueue.has(card.id));
+      const additions = window.SrsCore
+        ? SrsCore.buildDailyQueue(pool, slotsOpen, deck, { excludedIds: inQueue })
+        : buildDailyQueue(pool, slotsOpen);
       state.dailyQueue.push(...additions);
     }
   }

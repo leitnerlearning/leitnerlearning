@@ -1,0 +1,8 @@
+{
+  "name": "leitnerlearning",
+  "private": true,
+  "description": "Leitner Learning — Norwegian SRS app",
+  "scripts": {
+    "test": "node tests/srs-simulation.js"
+  }
+}
