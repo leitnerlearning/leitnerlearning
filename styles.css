@@ -61,6 +61,11 @@ body {
   line-height: 1.47059;
   letter-spacing: -0.022em;
   position: relative;
+  overflow-x: hidden;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 /* Ambient brand — soft glow */
@@ -485,6 +490,111 @@ body {
 
   .add-card-form {
     margin-bottom: 0.85rem;
+  }
+
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  main,
+  .panel.active {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #practice-panel .panel-lead {
+    display: none;
+  }
+
+  .empty-state {
+    padding: 2rem 1rem 1.65rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .empty-state--actions {
+    padding: 1.5rem 1rem 1.35rem;
+  }
+
+  .empty-actions {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .empty-home-status {
+    width: 100%;
+    max-width: 16rem;
+  }
+
+  .welcome-modal,
+  .confirm-modal {
+    padding:
+      max(1rem, env(safe-area-inset-top, 0px))
+      max(1rem, env(safe-area-inset-right, 0px))
+      max(1rem, env(safe-area-inset-bottom, 0px))
+      max(1rem, env(safe-area-inset-left, 0px));
+  }
+
+  .welcome-card {
+    width: min(100%, 20rem);
+    padding: 1.5rem 1.15rem 1.25rem;
+  }
+
+  .category-picker--welcome,
+  .category-picker--progress {
+    width: 100%;
+    max-width: 16rem;
+  }
+
+  .category-picker-menu {
+    left: 0;
+    right: 0;
+    transform: none;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .tab {
+    padding-inline: 0.35rem;
+    font-size: 0.78rem;
+  }
+
+  .stats-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .stat-card {
+    padding: 1.05rem 0.45rem;
+  }
+
+  .stat-value {
+    font-size: clamp(1.45rem, 5.5vw, 1.85rem);
+  }
+
+  .library-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .library-header .panel-title {
+    justify-content: center;
+  }
+
+  .library-header .btn {
+    width: 100%;
+    max-width: 12rem;
+  }
+
+  .progress-language {
+    display: flex;
+    justify-content: center;
+    width: 100%;
   }
 }
 
