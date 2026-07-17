@@ -125,6 +125,50 @@ html {
   text-align: center;
 }
 
+/* Site footer — quiet Contact for classmates */
+.site-footer {
+  margin-top: auto;
+  padding-top: 2.25rem;
+  display: flex;
+  justify-content: center;
+}
+
+.site-contact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.4rem 1rem;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--text-tertiary);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  transition:
+    color 0.2s var(--ease),
+    background 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+}
+
+.site-contact:hover,
+.site-contact:focus-visible {
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-color: var(--brand-ring);
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+
+.site-contact:active {
+  transform: scale(0.98);
+}
+
 .brand {
   display: flex;
   flex-direction: column;
@@ -310,6 +354,10 @@ html {
 
   .header {
     margin-bottom: 1rem;
+  }
+
+  .site-footer {
+    padding-top: 1.75rem;
   }
 
   .brand {
