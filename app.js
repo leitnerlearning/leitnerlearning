@@ -2871,6 +2871,8 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     const foreignOk = glossPartsMatch(localPair.foreign, foreign);
     const nativeOk = glossPartsMatch(localPair.native, native);
 
+    // Only green-light when BOTH sides match the curated pair.
+    // (English-only match after the user wrecks Norwegian used to say "looks good".)
     if (foreignOk && nativeOk) {
       return {
         matches: true,
@@ -2925,6 +2927,8 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     };
   }
 
+  // Green light only when BOTH directions agree. One-sided matches are unreliable:
+  // MT often ignores gibberish tails ("Jeg liker å kgnk…") and still returns a clean English.
   if (foreignOk && nativeOk) {
     return {
       matches: true,
@@ -2935,34 +2939,42 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     };
   }
 
-  // Only one side disagrees: fix that side, not the good one
-  if (foreignOk && suggestedNative && !nativeOk) {
+  // One side checks out, the other doesn't: offer a fix when we have one
+  if (foreignOk && !nativeOk) {
+    if (suggestedNative) {
+      return {
+        matches: false,
+        targetField: "native",
+        suggestedValue: suggestedNative,
+        title: "English might not match",
+        copy: `For “${foreign}”, a common English is “${suggestedNative}”. You typed “${native}”.`,
+      };
+    }
     return {
       matches: false,
-      targetField: "native",
-      suggestedValue: suggestedNative,
-      title: "English might not match",
-      copy: `For “${foreign}”, a common English is “${suggestedNative}”. You typed “${native}”.`,
-    };
-  }
-
-  if (nativeOk && suggestedForeign && !foreignOk) {
-    return {
-      matches: false,
-      targetField: "foreign",
-      suggestedValue: suggestedForeign,
-      title: `${learningName} might not match`,
-      copy: `For “${native}”, a common ${learningName} is “${suggestedForeign}”. You typed “${foreign}”.`,
-    };
-  }
-
-  if (foreignOk || nativeOk) {
-    return {
-      matches: true,
       targetField: null,
       suggestedValue: null,
-      title: "Looks good",
-      copy: "This looks fine to add.",
+      title: "English looks off",
+      copy: `The ${learningName} side looks familiar, but the English doesn’t line up with a common translation. Double-check before adding.`,
+    };
+  }
+
+  if (nativeOk && !foreignOk) {
+    if (suggestedForeign) {
+      return {
+        matches: false,
+        targetField: "foreign",
+        suggestedValue: suggestedForeign,
+        title: `${learningName} might not match`,
+        copy: `For “${native}”, a common ${learningName} is “${suggestedForeign}”. You typed “${foreign}”.`,
+      };
+    }
+    return {
+      matches: false,
+      targetField: null,
+      suggestedValue: null,
+      title: `${learningName} looks off`,
+      copy: `The English side looks familiar, but the ${learningName} doesn’t line up with a common translation. Double-check before adding.`,
     };
   }
 
@@ -3005,7 +3017,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
 
   if (isPhrase) {
     return {
-      matches: true,
+      matches: false,
       targetField: null,
       suggestedValue: null,
       title: "Couldn't double-check",
@@ -3014,6 +3026,20 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
   }
 
   return null;
+}
+
+/** Drop a stale review if the form was edited after the check ran. */
+function invalidateAddCardReviewIfStale() {
+  if (!addCardReviewOpen || !addCardReviewState) return;
+  const foreign = document.getElementById("new-foreign")?.value.trim() || "";
+  const native = document.getElementById("new-native")?.value.trim() || "";
+  if (
+    foreign === (addCardReviewState.foreign || "").trim() &&
+    native === (addCardReviewState.native || "").trim()
+  ) {
+    return;
+  }
+  closeAddCardReview();
 }
 
 function getAddCardConfirmLabel(translation) {
@@ -5086,11 +5112,19 @@ function initEventListeners() {
   });
 
   document.getElementById("add-card-confirm")?.addEventListener("click", () => {
-    // Prefer the reviewed pair so edits in the review step actually save
-    const foreign =
-      addCardReviewState?.foreign || document.getElementById("new-foreign")?.value || "";
-    const native =
-      addCardReviewState?.native || document.getElementById("new-native")?.value || "";
+    const formForeign = document.getElementById("new-foreign")?.value.trim() || "";
+    const formNative = document.getElementById("new-native")?.value.trim() || "";
+    // If the form was edited after review, re-check instead of saving a stale "looks good"
+    if (
+      addCardReviewState &&
+      (formForeign !== (addCardReviewState.foreign || "").trim() ||
+        formNative !== (addCardReviewState.native || "").trim())
+    ) {
+      openAddCardReview();
+      return;
+    }
+    const foreign = addCardReviewState?.foreign || formForeign;
+    const native = addCardReviewState?.native || formNative;
     const duplicate = findDeckCardByForeign(foreign, editingCardId);
     if (duplicate) {
       renderAddCardReviewContext({
@@ -5115,6 +5149,7 @@ function initEventListeners() {
   document.getElementById("new-foreign")?.addEventListener("input", () => {
     suppressAddCardSuggestions = false;
     activeSuggestField = "foreign";
+    invalidateAddCardReviewIfStale();
     queueForeignSuggestions();
   });
 
@@ -5126,6 +5161,7 @@ function initEventListeners() {
   document.getElementById("new-native")?.addEventListener("input", () => {
     suppressAddCardSuggestions = false;
     activeSuggestField = "native";
+    invalidateAddCardReviewIfStale();
     queueNativeSuggestions();
   });
 
