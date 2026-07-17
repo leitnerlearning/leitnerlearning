@@ -484,6 +484,27 @@ html {
     touch-action: manipulation;
   }
 
+  .library-jump {
+    top: 0.35rem;
+    border-radius: var(--radius-sm);
+    padding: 0.35rem;
+  }
+
+  .library-jump-chip {
+    min-height: 40px;
+    padding: 0.35rem 0.62rem;
+    font-size: 0.72rem;
+  }
+
+  .card-group {
+    scroll-margin-top: 3.75rem;
+  }
+
+  .library-scroll-top {
+    right: max(0.85rem, env(safe-area-inset-right, 0px));
+    bottom: max(0.95rem, env(safe-area-inset-bottom, 0px));
+  }
+
   .library-header .btn {
     min-height: 44px;
   }
