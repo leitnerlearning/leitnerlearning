@@ -2395,44 +2395,149 @@ function findDeckCardByForeign(foreign, excludeId = null) {
   );
 }
 
-function getStarterSuggestions(query, limit = 5) {
-  if (activeCategoryId !== "nb-bokmal" || typeof NORWEGIAN_FREQUENCY_DECK === "undefined") {
-    return [];
-  }
-  const q = normalizeAnswer(query);
-  if (!q) return [];
+/** Slash glosses: "dog / hound" matches "dog". */
+function glossPartsMatch(a, b) {
+  if (!a || !b) return false;
+  if (normalizeAnswer(a) === normalizeAnswer(b)) return true;
+  if (norwegianTypingMatches(a, b)) return true;
 
-  return NORWEGIAN_FREQUENCY_DECK.filter((entry) => {
-    const foreign = normalizeAnswer(entry.foreign);
-    const native = normalizeAnswer(entry.native);
-    return foreign.includes(q) || native.includes(q);
-  })
-    .slice(0, limit)
+  const partsA = String(a)
+    .split("/")
+    .map((part) => normalizeAnswer(part))
+    .filter(Boolean);
+  const partsB = String(b)
+    .split("/")
+    .map((part) => normalizeAnswer(part))
+    .filter(Boolean);
+
+  for (const left of partsA) {
+    for (const right of partsB) {
+      if (left === right || norwegianTypingMatches(left, right)) return true;
+    }
+  }
+  return false;
+}
+
+function suggestionMatchScore(query, foreign, native) {
+  const q = normalizeAnswer(query);
+  if (!q) return 0;
+
+  const scoreSide = (sideRaw) => {
+    const side = normalizeAnswer(sideRaw);
+    if (!side) return 0;
+    if (side === q) return 100;
+    if (side.startsWith(q)) return 80;
+    const words = side.split(" ");
+    if (words.some((word) => word === q)) return 70;
+    if (words.some((word) => word.startsWith(q))) return 55;
+    // Avoid flooding on 1–2 letter mid-word hits (en, er, to…)
+    if (q.length >= 3 && side.includes(q)) return 30;
+    if (q.length === 2 && (side.startsWith(q) || words.some((word) => word.startsWith(q)))) return 20;
+    return 0;
+  };
+
+  let score = Math.max(scoreSide(foreign), scoreSide(native));
+  if (q.includes(" ") && score >= 30) score += 8;
+  return score;
+}
+
+function rankSuggestionEntries(entries, query, limit) {
+  return entries
     .map((entry) => ({
-      foreign: entry.foreign,
-      native: entry.native,
-      meta: "In starter deck",
-      selectable: false,
-    }));
+      ...entry,
+      _score: suggestionMatchScore(query, entry.foreign, entry.native),
+    }))
+    .filter((entry) => entry._score > 0)
+    .sort((a, b) => b._score - a._score || (a.rank || 9999) - (b.rank || 9999))
+    .slice(0, limit)
+    .map(({ _score, ...entry }) => entry);
+}
+
+function getStarterSuggestions(query, limit = 5) {
+  const q = normalizeAnswer(query);
+  if (!q || q.length < 2) return [];
+
+  const entries = getStarterDeckEntries().map((entry) => ({
+    foreign: entry.foreign,
+    native: entry.native,
+    rank: entry.rank,
+    meta: "In starter deck",
+    selectable: true,
+  }));
+
+  return rankSuggestionEntries(entries, query, limit);
 }
 
 function getLibrarySuggestions(query, limit = 5) {
   const q = normalizeAnswer(query);
-  if (!q) return [];
+  if (!q || q.length < 2) return [];
 
-  return sortCards(deck)
-    .filter((card) => {
-      const foreign = normalizeAnswer(card.foreign);
-      const native = normalizeAnswer(card.native);
-      return foreign.includes(q) || native.includes(q);
-    })
-    .slice(0, limit)
+  const entries = sortCards(deck)
+    .filter((card) => card.id !== editingCardId)
     .map((card) => ({
       foreign: card.foreign,
       native: card.native,
+      rank: card.rank,
       meta: "In your library",
-      selectable: false,
+      selectable: true,
     }));
+
+  return rankSuggestionEntries(entries, query, limit);
+}
+
+/** Prefer curated deck pairs over machine translation for review. */
+function findLocalDeckPair(foreign, native) {
+  const candidates = [];
+
+  getStarterDeckEntries().forEach((entry) => {
+    candidates.push({
+      foreign: entry.foreign,
+      native: entry.native,
+      meta: "In starter deck",
+      source: "starter",
+    });
+  });
+
+  deck.forEach((card) => {
+    if (card.id === editingCardId) return;
+    candidates.push({
+      foreign: card.foreign,
+      native: card.native,
+      meta: "In your library",
+      source: "library",
+    });
+  });
+
+  const hasForeign = Boolean(foreign?.trim());
+  const hasNative = Boolean(native?.trim());
+
+  // Full pair match first (avoids hijacking a shared English gloss).
+  if (hasForeign && hasNative) {
+    const exactPair = candidates.find(
+      (entry) =>
+        (normalizeAnswer(entry.foreign) === normalizeAnswer(foreign) ||
+          norwegianTypingMatches(entry.foreign, foreign)) &&
+        glossPartsMatch(entry.native, native)
+    );
+    if (exactPair) return exactPair;
+  }
+
+  if (hasForeign) {
+    const exactForeign = candidates.find(
+      (entry) => normalizeAnswer(entry.foreign) === normalizeAnswer(foreign)
+    );
+    if (exactForeign) return exactForeign;
+
+    const foldForeign = candidates.find((entry) => norwegianTypingMatches(entry.foreign, foreign));
+    if (foldForeign) return foldForeign;
+  }
+
+  if (hasNative) {
+    const exactNative = candidates.find((entry) => glossPartsMatch(entry.native, native));
+    if (exactNative) return exactNative;
+  }
+
+  return null;
 }
 
 function cleanTranslationCandidate(text) {
@@ -2460,6 +2565,7 @@ function isGarbageTranslation(text) {
 
 function pickBestTranslationSuggestion(data, sourceText) {
   const source = sourceText.trim();
+  const wordCount = source.split(/\s+/).filter(Boolean).length;
   const candidates = [];
 
   const primary = data.responseData?.translatedText;
@@ -2486,12 +2592,15 @@ function pickBestTranslationSuggestion(data, sourceText) {
     });
   }
 
-  const isShortPhrase = source.split(/\s+/).length <= 2;
+  const isShortPhrase = wordCount <= 2;
+  // Idioms / long slang: demand higher confidence or skip the suggestion
+  const minMatch = wordCount >= 3 ? 0.72 : wordCount === 2 ? 0.55 : 0.45;
 
   const ranked = candidates
     .map((entry) => ({ ...entry, text: cleanTranslationCandidate(entry.text) }))
     .filter((entry) => entry.text && !isGarbageTranslation(entry.text))
     .filter((entry) => normalizeAnswer(entry.text) !== normalizeAnswer(source))
+    .filter((entry) => entry.match >= minMatch || (!entry.fromMachine && entry.match >= 0.35))
     .sort((a, b) => {
       if (isShortPhrase && a.fromMachine !== b.fromMachine) {
         return a.fromMachine ? -1 : 1;
@@ -2749,32 +2858,158 @@ function getRelatedEntriesForReview(foreign, native, limit = 5) {
   return results.slice(0, limit);
 }
 
-function getTranslationReviewSummary(foreign, native, suggestedNative, suggestedForeign) {
+function getTranslationReviewSummary(foreign, native, suggestedNative, suggestedForeign, localPair = null) {
   const learningName = getActiveCategory().learningLanguageName || "Norwegian";
+  const foreignWords = foreign.trim().split(/\s+/).filter(Boolean).length;
+  const nativeWords = native.trim().split(/\s+/).filter(Boolean).length;
+  // 2+ words is already idiom/phrase territory for MT
+  const isPhrase = foreignWords >= 2 || nativeWords >= 2;
+  const where = localPair?.source === "library" ? "your library" : "the starter deck";
 
-  if (suggestedForeign) {
-    const matches = normalizeAnswer(suggestedForeign) === normalizeAnswer(foreign);
+  // Curated local data beats machine translation (idioms, multi-sense words, etc.)
+  if (localPair) {
+    const foreignOk = glossPartsMatch(localPair.foreign, foreign);
+    const nativeOk = glossPartsMatch(localPair.native, native);
+
+    if (foreignOk && nativeOk) {
+      return {
+        matches: true,
+        targetField: null,
+        suggestedValue: null,
+        title: "Looks good",
+        copy: `That pair is already in ${where}.`,
+      };
+    }
+
+    if (foreignOk && !nativeOk) {
+      return {
+        matches: false,
+        targetField: "native",
+        suggestedValue: localPair.native,
+        title: "Same Norwegian in your deck",
+        copy: `In ${where}, “${localPair.foreign}” is “${localPair.native}”. You typed “${native}”.`,
+      };
+    }
+
+    if (nativeOk && !foreignOk) {
+      return {
+        matches: false,
+        targetField: "foreign",
+        suggestedValue: localPair.foreign,
+        title: "Same English in your deck",
+        copy: `In ${where}, “${localPair.native}” is “${localPair.foreign}”. You typed “${foreign}”.`,
+      };
+    }
+  }
+
+  const foreignOk = suggestedForeign ? glossPartsMatch(suggestedForeign, foreign) : false;
+  const nativeOk = suggestedNative ? glossPartsMatch(suggestedNative, native) : false;
+
+  // Fields look swapped (English in Norwegian box and vice versa)
+  if (
+    suggestedForeign &&
+    suggestedNative &&
+    !foreignOk &&
+    !nativeOk &&
+    glossPartsMatch(suggestedForeign, native) &&
+    glossPartsMatch(suggestedNative, foreign)
+  ) {
     return {
-      matches,
+      matches: false,
+      targetField: "swap",
+      suggestedValue: null,
+      suggestedForeign,
+      suggestedNative,
+      title: "Sides look swapped",
+      copy: `This reads like English and ${learningName} are in the wrong boxes. Tap to swap to “${suggestedNative}” / “${suggestedForeign}”.`,
+    };
+  }
+
+  if (foreignOk && nativeOk) {
+    return {
+      matches: true,
+      targetField: null,
+      suggestedValue: null,
+      title: "Looks good",
+      copy: "This matches a common translation.",
+    };
+  }
+
+  // Only one side disagrees: fix that side, not the good one
+  if (foreignOk && suggestedNative && !nativeOk) {
+    return {
+      matches: false,
+      targetField: "native",
+      suggestedValue: suggestedNative,
+      title: "English might not match",
+      copy: `For “${foreign}”, a common English is “${suggestedNative}”. You typed “${native}”.`,
+    };
+  }
+
+  if (nativeOk && suggestedForeign && !foreignOk) {
+    return {
+      matches: false,
       targetField: "foreign",
       suggestedValue: suggestedForeign,
-      title: matches ? "Looks good" : "Different translation found",
-      copy: matches
-        ? `“${native}” is usually “${suggestedForeign}” in ${learningName}. That matches what you typed.`
-        : `“${native}” is usually “${suggestedForeign}” in ${learningName}. You typed “${foreign}”.`,
+      title: `${learningName} might not match`,
+      copy: `For “${native}”, a common ${learningName} is “${suggestedForeign}”. You typed “${foreign}”.`,
+    };
+  }
+
+  if (foreignOk || nativeOk) {
+    return {
+      matches: true,
+      targetField: null,
+      suggestedValue: null,
+      title: "Looks good",
+      copy: "This looks fine to add.",
+    };
+  }
+
+  // Both sides disagree, or multi-word: MT is unreliable for idioms/slang/dialect.
+  // Soft-warn only. Never force a rewrite of what might be correct local language.
+  if (isPhrase || (suggestedForeign && suggestedNative)) {
+    const toolBits = [];
+    if (suggestedForeign) toolBits.push(`${learningName}: “${suggestedForeign}”`);
+    if (suggestedNative) toolBits.push(`English: “${suggestedNative}”`);
+    const toolNote = toolBits.length ? ` Tool guessed ${toolBits.join(", ")}.` : "";
+    return {
+      matches: false,
+      targetField: null,
+      suggestedValue: null,
+      title: "Hard to check online",
+      copy: `Idioms, slang, and dialect often confuse translation tools. If your pair looks right to you, add it.${toolNote}`,
+    };
+  }
+
+  // Single-word, only one direction returned: safe enough to offer a fix
+  if (suggestedForeign) {
+    return {
+      matches: false,
+      targetField: "foreign",
+      suggestedValue: suggestedForeign,
+      title: "Different translation found",
+      copy: `For “${native}”, a common ${learningName} is “${suggestedForeign}”. You typed “${foreign}”.`,
     };
   }
 
   if (suggestedNative) {
-    const matches = normalizeAnswer(suggestedNative) === normalizeAnswer(native);
     return {
-      matches,
+      matches: false,
       targetField: "native",
       suggestedValue: suggestedNative,
-      title: matches ? "Looks good" : "Different translation found",
-      copy: matches
-        ? `“${native}” is usually “${foreign}” in ${learningName}. That matches what you typed.`
-        : `“${suggestedNative}” is usually “${foreign}” in ${learningName}. You typed “${native}”.`,
+      title: "Different translation found",
+      copy: `For “${foreign}”, a common English is “${suggestedNative}”. You typed “${native}”.`,
+    };
+  }
+
+  if (isPhrase) {
+    return {
+      matches: true,
+      targetField: null,
+      suggestedValue: null,
+      title: "Couldn't double-check",
+      copy: "No strong online match. That's normal for rare phrases. Add it if it looks right.",
     };
   }
 
@@ -2789,6 +3024,10 @@ function getAddCardConfirmLabel(translation) {
     return editing ? "Save changes" : "Add to library";
   }
 
+  if (!translation.targetField) {
+    return editing ? "Save anyway" : "Add anyway";
+  }
+
   return editing ? "Save anyway" : "Add to library anyway";
 }
 
@@ -2799,6 +3038,7 @@ function renderAddCardReviewContext({
   suggestedNative,
   suggestedForeign,
   related,
+  localPair = null,
 }) {
   const container = document.getElementById("add-card-review-context");
   if (!container) return;
@@ -2808,7 +3048,8 @@ function renderAddCardReviewContext({
     foreign,
     native,
     suggestedNative,
-    suggestedForeign
+    suggestedForeign,
+    localPair
   );
 
   if (duplicate) {
@@ -2818,15 +3059,25 @@ function renderAddCardReviewContext({
         <p class="review-context-copy">“${escapeHtml(duplicate.foreign)}” is already listed as “${escapeHtml(duplicate.native)}”.</p>
       </section>`);
   } else if (translation) {
-    const actionable = !translation.matches;
+    const canApplyOne =
+      !translation.matches &&
+      Boolean(translation.targetField && translation.suggestedValue) &&
+      translation.targetField !== "swap";
+    const canSwap =
+      !translation.matches &&
+      translation.targetField === "swap" &&
+      Boolean(translation.suggestedForeign && translation.suggestedNative);
+    const actionable = canApplyOne || canSwap;
+    const actionLabel = canSwap ? "Swap fields to suggested pair" : "Use suggested translation";
+    const actionHint = canSwap ? "Tap to swap the two sides" : "Tap to use the suggested translation";
     blocks.push(`
       <section
         class="review-context-block ${translation.matches ? "is-match" : "is-differs"}${actionable ? " is-actionable" : ""}"
-        ${actionable ? 'data-action="apply-suggestion" role="button" tabindex="0" aria-label="Use suggested translation"' : ""}
+        ${actionable ? `data-action="apply-suggestion" role="button" tabindex="0" aria-label="${escapeHtml(actionLabel)}"` : ""}
       >
         <h4 class="review-context-title">${escapeHtml(translation.title)}</h4>
         <p class="review-context-copy">${escapeHtml(translation.copy)}</p>
-        ${actionable ? '<p class="review-context-hint">Tap to use the suggested translation</p>' : ""}
+        ${actionable ? `<p class="review-context-hint">${escapeHtml(actionHint)}</p>` : ""}
       </section>`);
   }
 
@@ -2853,8 +3104,25 @@ function renderAddCardReviewContext({
   }
 
   const confirmBtn = document.getElementById("add-card-confirm");
-  if (confirmBtn && !duplicate) {
-    confirmBtn.textContent = getAddCardConfirmLabel(translation);
+  const editExistingBtn = document.getElementById("add-card-edit-existing");
+  if (duplicate) {
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = editingCardId ? "Save changes" : "Add to library";
+    }
+    if (editExistingBtn) {
+      editExistingBtn.classList.remove("hidden");
+      editExistingBtn.dataset.cardId = duplicate.id;
+    }
+  } else {
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = getAddCardConfirmLabel(translation);
+    }
+    if (editExistingBtn) {
+      editExistingBtn.classList.add("hidden");
+      editExistingBtn.dataset.cardId = "";
+    }
   }
 
   if (!blocks.length) {
@@ -2873,6 +3141,7 @@ function renderAddCardReviewContext({
     suggestedNative,
     suggestedForeign,
     related,
+    localPair,
     translation,
   };
 }
@@ -2881,15 +3150,24 @@ function applyReviewSuggestion() {
   const state = addCardReviewState;
   if (!state?.translation || state.translation.matches) return;
 
-  const { targetField, suggestedValue } = state.translation;
-  if (!suggestedValue || !targetField) return;
+  const { targetField, suggestedValue, suggestedForeign, suggestedNative } = state.translation;
+  if (!targetField) return;
+  if (targetField !== "swap" && !suggestedValue) return;
+  if (targetField === "swap" && !(suggestedForeign && suggestedNative)) return;
 
   const foreignInput = document.getElementById("new-foreign");
   const nativeInput = document.getElementById("new-native");
   const reviewForeign = document.getElementById("review-foreign");
   const reviewNative = document.getElementById("review-native");
 
-  if (targetField === "foreign") {
+  if (targetField === "swap") {
+    if (foreignInput) foreignInput.value = suggestedForeign;
+    if (nativeInput) nativeInput.value = suggestedNative;
+    if (reviewForeign) reviewForeign.textContent = suggestedForeign;
+    if (reviewNative) reviewNative.textContent = suggestedNative;
+    state.foreign = suggestedForeign;
+    state.native = suggestedNative;
+  } else if (targetField === "foreign") {
     if (foreignInput) foreignInput.value = suggestedValue;
     if (reviewForeign) reviewForeign.textContent = suggestedValue;
     state.foreign = suggestedValue;
@@ -2899,13 +3177,17 @@ function applyReviewSuggestion() {
     state.native = suggestedValue;
   }
 
+  const duplicate = findDeckCardByForeign(state.foreign, editingCardId);
+  const localPair = findLocalDeckPair(state.foreign, state.native);
+
   renderAddCardReviewContext({
     foreign: state.foreign,
     native: state.native,
-    duplicate: state.duplicate,
+    duplicate,
     suggestedNative: state.suggestedNative,
     suggestedForeign: state.suggestedForeign,
     related: state.related,
+    localPair,
   });
 }
 
@@ -2958,6 +3240,7 @@ async function openAddCardReview() {
   review.scrollIntoView({ block: "nearest", behavior: "smooth" });
 
   const related = getRelatedEntriesForReview(foreign, native);
+  const localPair = findLocalDeckPair(foreign, native);
   const { foreignCode, nativeCode } = getCategoryLanguageCodes();
   const [suggestedNative, suggestedForeign] = await Promise.all([
     fetchTranslationSuggestion(foreign, foreignCode, nativeCode),
@@ -2973,6 +3256,7 @@ async function openAddCardReview() {
     suggestedNative,
     suggestedForeign,
     related,
+    localPair,
   });
 }
 
@@ -4802,10 +5086,24 @@ function initEventListeners() {
   });
 
   document.getElementById("add-card-confirm")?.addEventListener("click", () => {
-    const foreign = document.getElementById("new-foreign")?.value || "";
-    const native = document.getElementById("new-native")?.value || "";
+    // Prefer the reviewed pair so edits in the review step actually save
+    const foreign =
+      addCardReviewState?.foreign || document.getElementById("new-foreign")?.value || "";
+    const native =
+      addCardReviewState?.native || document.getElementById("new-native")?.value || "";
     const duplicate = findDeckCardByForeign(foreign, editingCardId);
-    if (duplicate) return;
+    if (duplicate) {
+      renderAddCardReviewContext({
+        foreign,
+        native,
+        duplicate,
+        suggestedNative: addCardReviewState?.suggestedNative || null,
+        suggestedForeign: addCardReviewState?.suggestedForeign || null,
+        related: addCardReviewState?.related || [],
+        localPair: addCardReviewState?.localPair || findLocalDeckPair(foreign, native),
+      });
+      return;
+    }
     if (!saveLibraryCard(foreign, native)) return;
   });
 
