@@ -799,6 +799,36 @@ function normalizeAnswer(text) {
     .replace(/\s+/g, " ");
 }
 
+/**
+ * Norwegian without a special keyboard:
+ *   å → aa   æ → ae   ø → oe
+ * Also maps the special letters themselves into those digraphs.
+ */
+function foldNorwegianDigraphs(text) {
+  return normalizeAnswer(text)
+    .replace(/æ/g, "ae")
+    .replace(/ø/g, "oe")
+    .replace(/å/g, "aa");
+}
+
+/**
+ * Even looser ASCII: allow a/o for å/ø and a for æ when typing fast.
+ *   går ≈ gaar ≈ gar   bøker ≈ boeker ≈ boker   bær ≈ baer ≈ bar
+ */
+function foldNorwegianLoose(text) {
+  return foldNorwegianDigraphs(text)
+    .replace(/aa/g, "a")
+    .replace(/ae/g, "a")
+    .replace(/oe/g, "o");
+}
+
+function norwegianTypingMatches(user, expected) {
+  if (!user || !expected) return false;
+  if (foldNorwegianDigraphs(user) === foldNorwegianDigraphs(expected)) return true;
+  if (foldNorwegianLoose(user) === foldNorwegianLoose(expected)) return true;
+  return false;
+}
+
 function getAcceptedAnswers(native) {
   return native.split("/").map((part) => normalizeAnswer(part));
 }
@@ -993,6 +1023,7 @@ function speechCode(word, lang) {
 function speechTokensMatch(userToken, expectedToken, lang) {
   if (!userToken || !expectedToken) return false;
   if (userToken === expectedToken) return true;
+  if (norwegianTypingMatches(userToken, expectedToken)) return true;
   if (sameSpeechHomophoneGroup(userToken, expectedToken, lang)) return true;
 
   const userCode = speechCode(userToken, lang);
@@ -1057,9 +1088,14 @@ function maxEditDistance(text) {
 
 function answersAreClose(user, expected) {
   if (user === expected) return true;
+  // Type æ ø å as ae/oe/aa (or plain a/o) — works for Norwegian answers
+  if (norwegianTypingMatches(user, expected)) return true;
   if (user.includes(expected) || expected.includes(user)) return true;
 
-  const distance = levenshtein(user, expected);
+  const distance = Math.min(
+    levenshtein(user, expected),
+    levenshtein(foldNorwegianLoose(user), foldNorwegianLoose(expected))
+  );
   return distance <= maxEditDistance(expected);
 }
 
