@@ -2563,10 +2563,62 @@ function isGarbageTranslation(text) {
   return false;
 }
 
-function pickBestTranslationSuggestion(data, sourceText) {
+/**
+ * MyMemory's memory is thinner for `nb` than for `no` (same written Bokmål for our purposes).
+ * Using `nb` is why NO→EN suggestions are worse than EN→NO more often.
+ */
+function toMyMemoryLangCode(code) {
+  const base = String(code || "")
+    .split("-")[0]
+    .toLowerCase();
+  if (base === "nb" || base === "nn") return "no";
+  return base || code;
+}
+
+/**
+ * Rank translation memory hits. Not spell-correcting Norwegian — picking among API candidates.
+ * Near-ties like "fucke" (0.99) vs "fuck" (0.98) should prefer real English.
+ */
+function scoreTranslationCandidate(entry, peers, toLang, sourceWordCount) {
+  let score = Number(entry.match) || 0;
+  const text = normalizeAnswer(entry.text);
+  const toEnglish = toLang === "en";
+  const words = text.split(" ").filter(Boolean);
+
+  // Prefer US English TM rows when the app's answer language is English
+  if (toEnglish && /^en-us$/i.test(entry.target || "")) score += 0.03;
+  if (toEnglish && /^en-gb$/i.test(entry.target || "")) score -= 0.01;
+
+  // Crowd TMs sometimes paste Scandinavian infinitive -e onto English ("fucke")
+  if (toEnglish && sourceWordCount === 1 && words.length === 1) {
+    for (const peer of peers) {
+      const peerText = normalizeAnswer(peer.text);
+      if (!peerText || peerText === text) continue;
+      if (text.startsWith(peerText) && text.length - peerText.length <= 2) {
+        const extra = text.slice(peerText.length);
+        // "fuck"+"e", "run"+"s", "dog"+"s" when both are candidates
+        if (/^[es]$/i.test(extra)) score -= 0.08;
+      }
+    }
+  }
+
+  // Single-word sources: prefer a single-word gloss over a long dictionary definition
+  if (sourceWordCount === 1 && toEnglish) {
+    if (words.length === 1) score += 0.02;
+    if (words.length >= 3) score -= 0.04;
+  }
+
+  // For short sources, lightly prefer neural MT over dusty TM junk — but only as a tie-break
+  if (sourceWordCount <= 2 && entry.fromMachine) score += 0.01;
+
+  return score;
+}
+
+function pickBestTranslationSuggestion(data, sourceText, toLang = "en") {
   const source = sourceText.trim();
   const wordCount = source.split(/\s+/).filter(Boolean).length;
   const candidates = [];
+  const targetLang = toMyMemoryLangCode(toLang);
 
   const primary = data.responseData?.translatedText;
   if (primary) {
@@ -2574,6 +2626,7 @@ function pickBestTranslationSuggestion(data, sourceText) {
       text: primary,
       match: Number(data.responseData?.match) || 0,
       fromMachine: false,
+      target: "",
     });
   }
 
@@ -2588,25 +2641,35 @@ function pickBestTranslationSuggestion(data, sourceText) {
         text: entry.translation,
         match: Number(entry.match) || 0,
         fromMachine,
+        target: entry.target || "",
       });
     });
   }
 
-  const isShortPhrase = wordCount <= 2;
   // Idioms / long slang: demand higher confidence or skip the suggestion
   const minMatch = wordCount >= 3 ? 0.72 : wordCount === 2 ? 0.55 : 0.45;
 
-  const ranked = candidates
+  const cleaned = candidates
     .map((entry) => ({ ...entry, text: cleanTranslationCandidate(entry.text) }))
     .filter((entry) => entry.text && !isGarbageTranslation(entry.text))
     .filter((entry) => normalizeAnswer(entry.text) !== normalizeAnswer(source))
-    .filter((entry) => entry.match >= minMatch || (!entry.fromMachine && entry.match >= 0.35))
-    .sort((a, b) => {
-      if (isShortPhrase && a.fromMachine !== b.fromMachine) {
-        return a.fromMachine ? -1 : 1;
-      }
-      return b.match - a.match;
-    });
+    .filter((entry) => entry.match >= minMatch || (!entry.fromMachine && entry.match >= 0.35));
+
+  // Dedupe by normalized text, keep the best raw match per form
+  const byText = new Map();
+  cleaned.forEach((entry) => {
+    const key = normalizeAnswer(entry.text);
+    const prev = byText.get(key);
+    if (!prev || entry.match > prev.match) byText.set(key, entry);
+  });
+  const unique = [...byText.values()];
+
+  const ranked = unique
+    .map((entry) => ({
+      ...entry,
+      _rank: scoreTranslationCandidate(entry, unique, targetLang, wordCount),
+    }))
+    .sort((a, b) => b._rank - a._rank || b.match - a.match);
 
   return ranked[0]?.text || null;
 }
@@ -2615,13 +2678,15 @@ async function fetchTranslationSuggestion(text, fromLang, toLang) {
   const trimmed = text.trim();
   if (!trimmed) return null;
 
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(trimmed)}&langpair=${encodeURIComponent(`${fromLang}|${toLang}`)}`;
+  const from = toMyMemoryLangCode(fromLang);
+  const to = toMyMemoryLangCode(toLang);
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(trimmed)}&langpair=${encodeURIComponent(`${from}|${to}`)}`;
   try {
     const response = await fetch(url);
     if (!response.ok) return null;
     const data = await response.json();
     if (data.responseStatus !== 200) return null;
-    return pickBestTranslationSuggestion(data, trimmed);
+    return pickBestTranslationSuggestion(data, trimmed, to);
   } catch {
     return null;
   }
