@@ -125,7 +125,7 @@ html {
   text-align: center;
 }
 
-/* Site footer — quiet Contact for classmates */
+/* Site footer — Contact with visible email + copy fallback */
 .site-footer {
   margin-top: auto;
   padding-top: 2.25rem;
@@ -133,22 +133,62 @@ html {
   justify-content: center;
 }
 
-.site-contact {
-  display: inline-flex;
+.site-contact-card {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 0.4rem 1rem;
-  font-family: inherit;
-  font-size: 0.72rem;
+  gap: 0.35rem 0.65rem;
+  max-width: 100%;
+  padding: 0.55rem 0.75rem 0.55rem 0.95rem;
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+}
+
+.site-contact-label {
+  font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  text-decoration: none;
   color: var(--text-tertiary);
-  border: 1px solid transparent;
+}
+
+.site-contact-email {
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--brand-deep);
+  text-decoration: none;
+  word-break: break-all;
+  transition: color 0.2s var(--ease);
+}
+
+.site-contact-email:hover,
+.site-contact-email:focus-visible {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  outline: none;
+}
+
+.site-contact-copy {
+  min-height: 34px;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--border-strong);
   border-radius: 999px;
-  background: transparent;
+  background: var(--surface-glass-strong);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
   transition:
     color 0.2s var(--ease),
     background 0.2s var(--ease),
@@ -156,8 +196,8 @@ html {
     box-shadow 0.2s var(--ease);
 }
 
-.site-contact:hover,
-.site-contact:focus-visible {
+.site-contact-copy:hover,
+.site-contact-copy:focus-visible {
   color: var(--brand-deep);
   background: var(--brand-soft);
   border-color: var(--brand-ring);
@@ -165,8 +205,14 @@ html {
   outline: none;
 }
 
-.site-contact:active {
-  transform: scale(0.98);
+.site-contact-copy:active {
+  transform: scale(0.97);
+}
+
+.site-contact-copy.is-copied {
+  color: #1f6b45;
+  background: linear-gradient(135deg, rgba(72, 187, 120, 0.16), rgba(56, 161, 105, 0.08));
+  border-color: rgba(56, 161, 105, 0.35);
 }
 
 .brand {
@@ -358,6 +404,25 @@ html {
 
   .site-footer {
     padding-top: 1.75rem;
+  }
+
+  .site-contact-card {
+    width: 100%;
+    max-width: 22rem;
+    border-radius: var(--radius-sm);
+    padding: 0.7rem 0.85rem;
+    gap: 0.45rem 0.55rem;
+  }
+
+  .site-contact-email {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.78rem;
+  }
+
+  .site-contact-copy {
+    min-height: 40px;
+    flex-shrink: 0;
   }
 
   .brand {
