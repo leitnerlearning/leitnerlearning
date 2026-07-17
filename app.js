@@ -4540,57 +4540,6 @@ function initEventListeners() {
     if (readStoryId) resetStoryReadProgress(readStoryId);
   });
 
-  initContactCopy();
-}
-
-const CONTACT_EMAIL = "leitnerlearning@gmail.com";
-
-async function copyContactEmail() {
-  const btn = document.getElementById("site-contact-copy");
-  if (!btn) return false;
-
-  let ok = false;
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(CONTACT_EMAIL);
-      ok = true;
-    }
-  } catch {
-    ok = false;
-  }
-
-  if (!ok) {
-    try {
-      const field = document.createElement("textarea");
-      field.value = CONTACT_EMAIL;
-      field.setAttribute("readonly", "");
-      field.style.position = "fixed";
-      field.style.opacity = "0";
-      document.body.appendChild(field);
-      field.select();
-      ok = document.execCommand("copy");
-      field.remove();
-    } catch {
-      ok = false;
-    }
-  }
-
-  if (!ok) return false;
-
-  const previous = btn.textContent;
-  btn.textContent = "Copied";
-  btn.classList.add("is-copied");
-  window.setTimeout(() => {
-    btn.textContent = previous;
-    btn.classList.remove("is-copied");
-  }, 1600);
-  return true;
-}
-
-function initContactCopy() {
-  document.getElementById("site-contact-copy")?.addEventListener("click", () => {
-    copyContactEmail();
-  });
 }
 
 function formatConfirmFallback(content) {
