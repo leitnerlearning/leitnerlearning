@@ -26,7 +26,7 @@
     <link rel="icon" href="brand/logo-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="brand/logo-icon.png" />
     <link rel="apple-touch-icon" sizes="360x360" href="brand/logo-icon-180@2x.png" />
-    <link rel="stylesheet" href="styles.css?v=95" />
+    <link rel="stylesheet" href="styles.css?v=96" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -377,7 +377,16 @@ Complete all 1,000 to read every story with confidence</p>
             </div>
           </div>
 
+          <nav id="library-jump" class="library-jump hidden" aria-label="Jump to library section"></nav>
+
           <div id="card-list" class="card-list"></div>
+
+          <button
+            type="button"
+            id="library-scroll-top"
+            class="library-scroll-top hidden"
+            aria-label="Back to top of library"
+          >Top</button>
         </section>
 
         <section id="stats-panel" class="panel" role="tabpanel" hidden>
@@ -494,6 +503,6 @@ Complete all 1,000 to read every story with confidence</p>
     <script src="learning-categories.js?v=35"></script>
     <script src="read-stories.js?v=8"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=137"></script>
+    <script src="app.js?v=138"></script>
   </body>
 </html>

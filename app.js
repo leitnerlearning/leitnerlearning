@@ -91,7 +91,20 @@ let cardAdvanceTimer = null;
 let libraryFilter = "all";
 let librarySearch = "";
 let libraryRenderToken = 0;
+let libraryJumpObserver = null;
 const LIBRARY_BATCH_SIZE = 35;
+const LIBRARY_SCROLL_TOP_THRESHOLD = 360;
+const LIBRARY_JUMP_SHORT = {
+  A: "1–50",
+  B: "51–100",
+  C: "101–160",
+  D: "161–300",
+  E: "301–500",
+  F: "501–750",
+  G: "751–1k",
+  phrase: "Phrases",
+  yours: "Yours",
+};
 let categoryMenuOpen = false;
 let readStoryId = null;
 let readSentenceIndex = 0;
@@ -2768,6 +2781,99 @@ function getLibraryBandGroups() {
   return [libraryFilter];
 }
 
+function librarySectionKey(band) {
+  if (band == null || band === "yours") return "yours";
+  return String(band);
+}
+
+function clearLibraryJumpNav() {
+  libraryJumpObserver?.disconnect();
+  libraryJumpObserver = null;
+
+  const nav = document.getElementById("library-jump");
+  if (!nav) return;
+  nav.innerHTML = "";
+  nav.classList.add("hidden");
+}
+
+function setActiveLibraryJump(key) {
+  document.querySelectorAll(".library-jump-chip").forEach((chip) => {
+    chip.classList.toggle("is-active", chip.dataset.jumpSection === key);
+  });
+}
+
+function scrollToLibrarySection(key) {
+  const target = document.getElementById(`library-section-${key}`);
+  if (!target) return;
+  setActiveLibraryJump(key);
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function scrollLibraryToTop() {
+  const anchor =
+    document.querySelector(".library-controls") || document.getElementById("cards-panel");
+  anchor?.scrollIntoView({ behavior: "smooth", block: "start" });
+  setActiveLibraryJump(null);
+}
+
+function updateLibraryScrollTopVisibility() {
+  const btn = document.getElementById("library-scroll-top");
+  if (!btn) return;
+  const show = isCardsPanelActive() && window.scrollY > LIBRARY_SCROLL_TOP_THRESHOLD;
+  btn.classList.toggle("hidden", !show);
+}
+
+function observeLibraryJumpSections(sections) {
+  libraryJumpObserver?.disconnect();
+  libraryJumpObserver = null;
+
+  if (!sections.length || typeof IntersectionObserver === "undefined") return;
+
+  const targets = sections
+    .map(({ band }) => document.getElementById(`library-section-${librarySectionKey(band)}`))
+    .filter(Boolean);
+  if (!targets.length) return;
+
+  libraryJumpObserver = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+      if (!visible.length) return;
+      const key = visible[0].target.dataset.librarySection;
+      if (key) setActiveLibraryJump(key);
+    },
+    {
+      root: null,
+      rootMargin: "-20% 0px -55% 0px",
+      threshold: [0.08, 0.2, 0.4],
+    }
+  );
+
+  targets.forEach((el) => libraryJumpObserver.observe(el));
+}
+
+function renderLibraryJumpNav(sections) {
+  const nav = document.getElementById("library-jump");
+  if (!nav) return;
+
+  if (sections.length < 2) {
+    clearLibraryJumpNav();
+    return;
+  }
+
+  nav.classList.remove("hidden");
+  nav.innerHTML = sections
+    .map(({ band, label }) => {
+      const key = librarySectionKey(band);
+      const short = LIBRARY_JUMP_SHORT[key] || label;
+      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}" title="${escapeAttr(label)}">${escapeHtml(short)}</button>`;
+    })
+    .join("");
+
+  observeLibraryJumpSections(sections);
+}
+
 function bindCardListListeners(list) {
   if (!list) return;
 
@@ -2825,25 +2931,37 @@ function renderCardsInBatches(cards, container, token, onComplete) {
 
 function renderCardListSections(sections, list, token) {
   list.innerHTML = "";
-  let sectionIndex = 0;
 
-  function renderNextSection() {
-    if (token !== libraryRenderToken) return;
-    if (sectionIndex >= sections.length) {
-      bindCardListListeners(list);
-      return;
-    }
-
-    const { label, cards } = sections[sectionIndex];
+  const pending = sections.map(({ band, label, cards }) => {
+    const key = librarySectionKey(band);
     const sectionEl = document.createElement("section");
     sectionEl.className = "card-group";
+    sectionEl.id = `library-section-${key}`;
+    sectionEl.dataset.librarySection = key;
     sectionEl.innerHTML = `
       <h3 class="card-group-title">${escapeHtml(label)}</h3>
       <div class="card-group-list"></div>`;
     list.appendChild(sectionEl);
+    return {
+      cards,
+      container: sectionEl.querySelector(".card-group-list"),
+    };
+  });
 
+  renderLibraryJumpNav(sections);
+
+  let sectionIndex = 0;
+
+  function renderNextSection() {
+    if (token !== libraryRenderToken) return;
+    if (sectionIndex >= pending.length) {
+      bindCardListListeners(list);
+      return;
+    }
+
+    const { cards, container } = pending[sectionIndex];
     sectionIndex += 1;
-    renderCardsInBatches(cards, sectionEl.querySelector(".card-group-list"), token, renderNextSection);
+    renderCardsInBatches(cards, container, token, renderNextSection);
   }
 
   renderNextSection();
@@ -2862,15 +2980,19 @@ function renderCardList() {
   if (searching) filtered = dedupeLibraryCards(filtered);
 
   if (!filtered.length) {
+    clearLibraryJumpNav();
     list.innerHTML = `<div class="library-empty">No matches</div>`;
+    updateLibraryScrollTopVisibility();
     return;
   }
 
   if (searching || libraryFilter === "phrase" || libraryFilter === "yours") {
+    clearLibraryJumpNav();
     list.innerHTML = `<div class="card-group-list"></div>`;
     renderCardsInBatches(filtered, list.querySelector(".card-group-list"), token, () => {
       if (token === libraryRenderToken) bindCardListListeners(list);
     });
+    updateLibraryScrollTopVisibility();
     return;
   }
 
@@ -2881,17 +3003,21 @@ function renderCardList() {
     );
     if (!cards.length) continue;
     sections.push({
+      band,
       label: band ? BAND_LABELS[band] : "Yours",
       cards,
     });
   }
 
   if (!sections.length) {
+    clearLibraryJumpNav();
     list.innerHTML = `<div class="library-empty">No matches</div>`;
+    updateLibraryScrollTopVisibility();
     return;
   }
 
   renderCardListSections(sections, list, token);
+  updateLibraryScrollTopVisibility();
 }
 
 function getReadProgressKey(categoryId = activeCategoryId) {
@@ -4286,6 +4412,11 @@ function switchTab(tabName) {
   }
   if (tabName === "stats") renderStatsSummary();
   if (tabName === "cards") renderCardList();
+  if (tabName !== "cards") {
+    document.getElementById("library-scroll-top")?.classList.add("hidden");
+  } else {
+    updateLibraryScrollTopVisibility();
+  }
   updateCategoryPickerAvailability();
 }
 
@@ -4428,6 +4559,18 @@ function initEventListeners() {
       renderCardList();
     });
   });
+
+  document.getElementById("library-jump")?.addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-jump-section]");
+    if (!chip) return;
+    scrollToLibrarySection(chip.dataset.jumpSection);
+  });
+
+  document.getElementById("library-scroll-top")?.addEventListener("click", () => {
+    scrollLibraryToTop();
+  });
+
+  window.addEventListener("scroll", updateLibraryScrollTopVisibility, { passive: true });
 
   document.querySelectorAll(".category-picker-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {

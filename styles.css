@@ -2379,10 +2379,123 @@ body.welcome-open .app {
   transition: background 0.35s var(--ease), color 0.35s var(--ease);
 }
 
+/* Library section jump — sticky index for long decks */
+.library-jump {
+  position: sticky;
+  top: 0.45rem;
+  z-index: 6;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  margin: 0 0 1rem;
+  padding: 0.4rem 0.35rem;
+  background: var(--surface-glass-strong);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  box-shadow: var(--shadow-sm);
+}
+
+.library-jump.hidden {
+  display: none;
+}
+
+.library-jump::-webkit-scrollbar {
+  display: none;
+}
+
+.library-jump-chip {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 0.32rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    color 0.2s var(--ease),
+    background 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    box-shadow 0.2s var(--ease);
+}
+
+.library-jump-chip:hover,
+.library-jump-chip:focus-visible {
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-color: var(--brand-ring);
+  outline: none;
+}
+
+.library-jump-chip.is-active {
+  color: #fff;
+  background: var(--brand-gradient);
+  border-color: transparent;
+  box-shadow: var(--shadow-brand);
+}
+
+.library-scroll-top {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  bottom: max(1.15rem, env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-glass-strong);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--brand-deep);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    opacity 0.2s var(--ease),
+    transform 0.2s var(--ease),
+    background 0.2s var(--ease);
+}
+
+.library-scroll-top.hidden {
+  display: none;
+}
+
+.library-scroll-top:hover,
+.library-scroll-top:focus-visible {
+  background: var(--brand-soft);
+  border-color: var(--brand-ring);
+  outline: none;
+}
+
+.library-scroll-top:active {
+  transform: scale(0.97);
+}
+
 .card-list {
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
+}
+
+.card-group {
+  scroll-margin-top: 4.25rem;
 }
 
 .card-group-title {
