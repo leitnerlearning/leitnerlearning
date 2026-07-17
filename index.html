@@ -26,7 +26,7 @@
     <link rel="icon" href="brand/logo-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="brand/logo-icon.png" />
     <link rel="apple-touch-icon" sizes="360x360" href="brand/logo-icon-180@2x.png" />
-    <link rel="stylesheet" href="styles.css?v=97" />
+    <link rel="stylesheet" href="styles.css?v=98" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -432,8 +432,16 @@ Complete all 1,000 to read every story with confidence</p>
       </main>
 
       <footer class="site-footer">
+        <div class="site-footer-links">
+          <button type="button" class="site-footer-link" id="about-open-btn">About</button>
+          <span class="site-footer-dot" aria-hidden="true">·</span>
+          <a
+            class="site-footer-link"
+            href="mailto:leitnerlearning@gmail.com?subject=Leitner%20Learning"
+          >Contact</a>
+        </div>
         <div class="site-contact-card">
-          <span class="site-contact-label">Contact</span>
+          <span class="site-contact-label">Email</span>
           <a
             class="site-contact-email"
             href="mailto:leitnerlearning@gmail.com?subject=Leitner%20Learning"
@@ -498,11 +506,101 @@ Complete all 1,000 to read every story with confidence</p>
       </div>
     </div>
 
+    <div
+      class="about-modal hidden"
+      id="about-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="about-title"
+    >
+      <div class="about-card">
+        <div class="about-card-head">
+          <h2 class="about-title" id="about-title">About Leitner Learning</h2>
+          <button type="button" class="btn ghost small" id="about-close-btn">Close</button>
+        </div>
+        <div class="about-body">
+          <p class="about-lead">
+            Free Norwegian practice with spaced repetition — built for international students
+            at Nord University, Bodø, and anyone learning Bokmål.
+          </p>
+
+          <section class="about-section" aria-labelledby="about-method-title">
+            <h3 class="about-section-title" id="about-method-title">The Leitner idea</h3>
+            <p>
+              You answer from memory first. Cards you know move to later levels and return less often.
+              Cards you miss come back sooner. That simple promote / demote pattern is the
+              <strong>Leitner system</strong> — a classic way to practice with flashcards.
+            </p>
+            <p>
+              It was popularized by German science writer
+              <strong>Sebastian Leitner</strong> in his 1972 book
+              <em>So lernt man lernen</em> (“How to learn to learn”). This app is a digital take on
+              that idea: six levels, a daily review goal, and Norwegian content made for real study life.
+            </p>
+          </section>
+
+          <section class="about-section" aria-labelledby="about-here-title">
+            <h3 class="about-section-title" id="about-here-title">What you’ll find here</h3>
+            <ul class="about-list">
+              <li>1,000 frequency-ranked Bokmål words and phrases</li>
+              <li>Stories with tap-to-translate reading practice</li>
+              <li>Review, Library, and Progress — no account required</li>
+              <li>Progress stays on your device</li>
+            </ul>
+          </section>
+
+          <section class="about-section" aria-labelledby="about-notes-title">
+            <h3 class="about-section-title" id="about-notes-title">Important notes</h3>
+            <p class="about-note">
+              Leitner Learning is an independent project inspired by the public Leitner method.
+              It is <strong>not affiliated</strong> with Sebastian Leitner’s estate, his publishers,
+              or Nord University — and it is not an official university product or course requirement.
+            </p>
+          </section>
+
+          <section class="about-section" aria-labelledby="about-read-title">
+            <h3 class="about-section-title" id="about-read-title">Further reading</h3>
+            <ul class="about-links">
+              <li>
+                <a
+                  href="https://en.wikipedia.org/wiki/Leitner_system"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >Leitner system</a>
+                <span class="about-link-meta">Wikipedia overview</span>
+              </li>
+              <li>
+                <a
+                  href="https://en.wikipedia.org/wiki/Sebastian_Leitner"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >Sebastian Leitner</a>
+                <span class="about-link-meta">Who developed the method</span>
+              </li>
+              <li>
+                <a
+                  href="https://en.wikipedia.org/wiki/Spaced_repetition"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >Spaced repetition</a>
+                <span class="about-link-meta">The broader learning idea</span>
+              </li>
+            </ul>
+          </section>
+
+          <p class="about-contact-line">
+            Questions or feedback?
+            <a href="mailto:leitnerlearning@gmail.com?subject=Leitner%20Learning">leitnerlearning@gmail.com</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
     <script src="norwegian-frequency-deck.js?v=22"></script>
     <script src="norwegian-reading-vocab.js?v=3"></script>
     <script src="learning-categories.js?v=35"></script>
     <script src="read-stories.js?v=8"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=138"></script>
+    <script src="app.js?v=139"></script>
   </body>
 </html>

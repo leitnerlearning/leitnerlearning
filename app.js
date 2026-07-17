@@ -4590,10 +4590,21 @@ function initEventListeners() {
   document.addEventListener("click", blockWelcomeBypass, true);
   document.addEventListener("touchend", blockWelcomeBypass, true);
 
+  document.getElementById("about-open-btn")?.addEventListener("click", () => openAboutModal());
+  document.getElementById("about-close-btn")?.addEventListener("click", () => closeAboutModal());
+  document.getElementById("about-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "about-modal") closeAboutModal();
+  });
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       const welcome = document.getElementById("welcome-modal");
       if (welcome && !welcome.classList.contains("hidden")) return;
+      const about = document.getElementById("about-modal");
+      if (about && !about.classList.contains("hidden")) {
+        closeAboutModal();
+        return;
+      }
       closeCategoryMenu();
       closeReadGloss();
       closeReadMenu();
@@ -4759,6 +4770,31 @@ function initConfirmModal() {
     const modal = document.getElementById("confirm-modal");
     if (modal && !modal.classList.contains("hidden")) closeConfirm(false);
   });
+}
+
+function isAboutOpen() {
+  const modal = document.getElementById("about-modal");
+  return Boolean(modal && !modal.classList.contains("hidden"));
+}
+
+function openAboutModal() {
+  if (isWelcomeOpen()) return;
+  const modal = document.getElementById("about-modal");
+  if (!modal) return;
+  modal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+  document.getElementById("about-close-btn")?.focus({ preventScroll: true });
+}
+
+function closeAboutModal() {
+  const modal = document.getElementById("about-modal");
+  if (!modal) return;
+  modal.classList.add("hidden");
+  if (!isWelcomeOpen()) {
+    const confirmOpen = !document.getElementById("confirm-modal")?.classList.contains("hidden");
+    if (!confirmOpen) document.body.classList.remove("modal-open");
+  }
+  document.getElementById("about-open-btn")?.focus({ preventScroll: true });
 }
 
 function showWelcomeModal() {
