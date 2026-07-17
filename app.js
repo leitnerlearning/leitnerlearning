@@ -795,12 +795,237 @@ function normalizeAnswer(text) {
   return text
     .toLowerCase()
     .trim()
-    .replace(/[.,!?;:'"]/g, "")
+    .replace(/[.,!?;:'"“”‘’]/g, "")
     .replace(/\s+/g, " ");
 }
 
 function getAcceptedAnswers(native) {
   return native.split("/").map((part) => normalizeAnswer(part));
+}
+
+/** Spoken forms that should count as the same answer (ASR often picks the wrong spelling). */
+const SPEECH_HOMOPHONE_GROUPS = {
+  en: [
+    ["to", "too", "two", "2"],
+    ["for", "four", "fore", "4"],
+    ["one", "won", "1"],
+    ["two", "to", "too", "2"],
+    ["four", "for", "fore", "4"],
+    ["eight", "ate", "8"],
+    ["there", "their", "they're"],
+    ["your", "you're"],
+    ["its", "it's"],
+    ["who", "who"],
+    ["which", "witch"],
+    ["where", "wear", "ware"],
+    ["here", "hear"],
+    ["right", "write", "rite"],
+    ["know", "no"],
+    ["new", "knew"],
+    ["see", "sea"],
+    ["be", "bee"],
+    ["by", "bye", "buy"],
+    ["our", "hour"],
+    ["sun", "son"],
+    ["some", "sum"],
+    ["so", "sew", "sow"],
+    ["wait", "weight"],
+    ["way", "weigh"],
+    ["week", "weak"],
+    ["peace", "piece"],
+    ["plain", "plane"],
+    ["pair", "pear", "pare"],
+    ["bare", "bear"],
+    ["break", "brake"],
+    ["flower", "flour"],
+    ["mail", "male"],
+    ["meet", "meat"],
+    ["night", "knight"],
+    ["not", "knot"],
+    ["or", "ore", "oar"],
+    ["red", "read"],
+    ["sail", "sale"],
+    ["scene", "seen"],
+    ["steal", "steel"],
+    ["tail", "tale"],
+    ["threw", "through"],
+    ["weather", "whether"],
+    ["wood", "would"],
+    ["hole", "whole"],
+    ["hi", "high"],
+    ["i", "eye", "aye"],
+    ["oh", "owe", "o"],
+    ["you", "u", "ewe"],
+  ],
+  nb: [
+    // Spelling / ASR variants that sound the same (not different grammar forms)
+    ["en", "enn"],
+    ["et", "ett"],
+    ["jeg", "je", "jæi"],
+    ["meg", "mæ"],
+    ["deg", "dæ"],
+    ["seg", "sæ"],
+    ["å", "aa", "a"],
+    ["æ", "ae"],
+    ["ø", "oe", "o"],
+    ["nå", "naa"],
+    ["så", "saa"],
+    ["også", "ogsaa"],
+    ["blå", "blaa"],
+    ["gå", "gaa"],
+    ["få", "faa"],
+    ["hvor", "vor"],
+    ["hvem", "vem"],
+    ["hva", "va", "ka"],
+    ["hvordan", "vordan"],
+    ["hvorfor", "vorfor"],
+    ["ikke", "ikkje"],
+    ["mye", "mykje"],
+    ["noe", "noko"],
+    ["noen", "nokon"],
+    ["mellom", "mellom"],
+    ["kjøre", "kjore", "kjoere"],
+    ["gjøre", "gjore", "gjoere"],
+    ["skjønne", "skjonne", "skjoenne"],
+  ],
+};
+
+const SPEECH_HOMOPHONE_LOOKUP = (() => {
+  const out = { en: new Map(), nb: new Map() };
+  for (const [lang, groups] of Object.entries(SPEECH_HOMOPHONE_GROUPS)) {
+    groups.forEach((group, index) => {
+      const key = `${lang}:${index}`;
+      for (const word of group) {
+        const normalized = normalizeAnswer(String(word));
+        if (!normalized) continue;
+        if (!out[lang].has(normalized)) out[lang].set(normalized, new Set());
+        out[lang].get(normalized).add(key);
+      }
+    });
+  }
+  return out;
+})();
+
+function getAnswerSpeechLang() {
+  const lang = getDirectionLabels().answerLang || "en-US";
+  if (String(lang).toLowerCase().startsWith("nb") || String(lang).toLowerCase().startsWith("no")) {
+    return "nb";
+  }
+  return "en";
+}
+
+function sameSpeechHomophoneGroup(a, b, lang) {
+  if (!a || !b || a === b) return a === b;
+  const table = SPEECH_HOMOPHONE_LOOKUP[lang] || SPEECH_HOMOPHONE_LOOKUP.en;
+  const groupsA = table.get(a);
+  const groupsB = table.get(b);
+  if (!groupsA || !groupsB) return false;
+  for (const key of groupsA) {
+    if (groupsB.has(key)) return true;
+  }
+  return false;
+}
+
+/**
+ * Lightweight English metaphone-style code for speech matching.
+ * Good enough for common ASR spelling swaps (to/two, write/right).
+ */
+function englishSpeechCode(word) {
+  let w = normalizeAnswer(word).replace(/[^a-z]/g, "");
+  if (!w) return "";
+  if (w.length === 1) return w;
+
+  w = w
+    .replace(/^kn|^gn|^pn|^ae|^wr/g, (m) => m.slice(-1))
+    .replace(/mb$/g, "m")
+    .replace(/sch/g, "sk")
+    .replace(/x/g, "ks")
+    .replace(/cia|tch/g, "x")
+    .replace(/[dt]ion/g, "xn")
+    .replace(/[dt]ia/g, "x")
+    .replace(/[aeiouy]/g, (ch, i) => (i === 0 ? ch : ""))
+    .replace(/ph/g, "f")
+    .replace(/th/g, "0")
+    .replace(/gh/g, "")
+    .replace(/ck/g, "k")
+    .replace(/q/g, "k")
+    .replace(/z/g, "s")
+    .replace(/v/g, "f")
+    .replace(/dg/g, "j")
+    .replace(/c(?=[eiy])/g, "s")
+    .replace(/c/g, "k")
+    .replace(/d(?=g)/g, "j")
+    .replace(/g(?=[eiy])/g, "j")
+    .replace(/g/g, "k")
+    .replace(/h(?![aeiou])/g, "")
+    .replace(/w(?![aeiou])/g, "")
+    .replace(/y(?![aeiou])/g, "")
+    .replace(/(.)\1+/g, "$1");
+
+  return w.slice(0, 8);
+}
+
+function norwegianSpeechCode(word) {
+  let w = normalizeAnswer(word)
+    .replace(/æ/g, "ae")
+    .replace(/ø/g, "o")
+    .replace(/å/g, "aa")
+    .replace(/[^a-z]/g, "");
+  if (!w) return "";
+
+  w = w
+    .replace(/hj|gj|lj/g, "j")
+    .replace(/kj|tj|ski|sky|sky/g, "sh")
+    .replace(/skj|sj|rs/g, "sh")
+    .replace(/dt$/g, "t")
+    .replace(/nd$/g, "n")
+    .replace(/ld$/g, "l")
+    .replace(/[aeiouy]/g, (ch, i) => (i === 0 ? ch : ""))
+    .replace(/(.)\1+/g, "$1");
+
+  return w.slice(0, 8);
+}
+
+function speechCode(word, lang) {
+  return lang === "nb" ? norwegianSpeechCode(word) : englishSpeechCode(word);
+}
+
+function speechTokensMatch(userToken, expectedToken, lang) {
+  if (!userToken || !expectedToken) return false;
+  if (userToken === expectedToken) return true;
+  if (sameSpeechHomophoneGroup(userToken, expectedToken, lang)) return true;
+
+  const userCode = speechCode(userToken, lang);
+  const expectedCode = speechCode(expectedToken, lang);
+  if (userCode && expectedCode && userCode === expectedCode) return true;
+
+  // Short ASR swaps (e.g. final letter) when both words are still short-ish
+  const distance = levenshtein(userToken, expectedToken);
+  const minLen = Math.min(userToken.length, expectedToken.length);
+  if (minLen >= 2 && minLen <= 5 && distance === 1) return true;
+  if (minLen >= 6 && distance <= 2) return true;
+
+  return false;
+}
+
+function answersSoundAlike(user, expected, lang = "en") {
+  if (!user || !expected) return false;
+  if (user === expected) return true;
+  if (sameSpeechHomophoneGroup(user, expected, lang)) return true;
+
+  const userWords = user.split(" ").filter(Boolean);
+  const expectedWords = expected.split(" ").filter(Boolean);
+
+  if (userWords.length === expectedWords.length) {
+    return userWords.every((word, index) => speechTokensMatch(word, expectedWords[index], lang));
+  }
+
+  // Single-token vs multi-token is usually wrong; allow full-phrase homophone only.
+  if (userWords.length === 1 && expectedWords.length === 1) {
+    return speechTokensMatch(userWords[0], expectedWords[0], lang);
+  }
+
+  return false;
 }
 
 function levenshtein(a, b) {
@@ -907,7 +1132,9 @@ function isSubstringNearMiss(user, expected) {
   return expected.includes(user) || user.includes(expected);
 }
 
-function evaluateAnswer(userAnswer, card) {
+function evaluateAnswer(userAnswer, card, options = {}) {
+  const fromSpeech = Boolean(options.fromSpeech);
+  const speechLang = getAnswerSpeechLang();
   const normalized = normalizeAnswer(userAnswer);
   if (!normalized) return { correct: false, near: false, far: true, close: false };
 
@@ -915,6 +1142,7 @@ function evaluateAnswer(userAnswer, card) {
   let nearest = accepted[0] || "";
   let minDistance = Infinity;
   let substringNear = false;
+  let speechNear = false;
 
   for (const ans of accepted) {
     if (answersAreClose(normalized, ans)) {
@@ -923,6 +1151,18 @@ function evaluateAnswer(userAnswer, card) {
         near: false,
         far: false,
         close: normalized !== ans,
+        matched: ans,
+      };
+    }
+
+    if (fromSpeech && answersSoundAlike(normalized, ans, speechLang)) {
+      return {
+        correct: true,
+        near: false,
+        far: false,
+        close: true,
+        matched: ans,
+        speechMatch: true,
       };
     }
 
@@ -937,7 +1177,17 @@ function evaluateAnswer(userAnswer, card) {
     }
   }
 
+  // Speech near-miss: same sound shape, but not close enough to auto-accept
+  if (fromSpeech && !substringNear) {
+    speechNear = accepted.some((ans) => {
+      const userCode = speechCode(normalized.replace(/\s+/g, ""), speechLang);
+      const ansCode = speechCode(ans.replace(/\s+/g, ""), speechLang);
+      return Boolean(userCode && ansCode && userCode === ansCode && normalized !== ans);
+    });
+  }
+
   const near =
+    speechNear ||
     substringNear ||
     (Number.isFinite(minDistance) &&
       minDistance > 0 &&
@@ -4331,7 +4581,8 @@ function beginPracticeSession() {
 }
 
 function submitAnswer(options = {}) {
-  const answer = document.getElementById("answer-input").value;
+  const answerInput = document.getElementById("answer-input");
+  const answer = answerInput?.value || "";
   if (!currentCard) return;
 
   if (!answer.trim()) {
@@ -4344,12 +4595,16 @@ function submitAnswer(options = {}) {
   }
 
   ensureCardAttemptState();
-  const result = evaluateAnswer(answer, currentCard);
+  const result = evaluateAnswer(answer, currentCard, { fromSpeech: options.fromSpeech });
 
   if (result.correct) {
     resetCardAttempts();
     setAnswerFieldHighlight(false);
     setAnswerReceivedState(true);
+    // Prefer the card's spelling when speech picked a homophone (two → to).
+    if (result.matched && answerInput && normalizeAnswer(answer) !== result.matched) {
+      answerInput.value = result.matched;
+    }
     handleCorrect();
     showFeedback(getAnswerTargetText(currentCard), "correct");
     finishCardAndContinue(getAdvanceDelay(true, options.fromSpeech));
