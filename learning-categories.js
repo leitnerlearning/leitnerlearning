@@ -14,10 +14,10 @@ const LEARNING_CATEGORIES = [
     promptLabel: "Norwegian → English",
     reversePromptLabel: "English → Norwegian",
     panelLead:
-      "1,000 frequency-ranked words for Norwegian Bokmål\nThe first 500 cover 80% of words in our stories\nComplete all 1,000 to read every story with confidence",
+      "1,000 common Norwegian words\nThe first 500 cover most of what shows up in our stories\nLearn them all and the stories get much easier",
     deckTitle: "Norwegian essentials",
-    deckBlurb: "from the most common words in everyday Bokmål — curated from",
-    starterPreviewLead: "The fifty words Norwegians say most often.",
+    deckBlurb: "from everyday Bokmål, based on",
+    starterPreviewLead: "The fifty words you hear most often.",
     foreignFieldLabel: "Norwegian word or phrase",
     nativeFieldLabel: "English meaning",
     answerLanguageName: "English",
@@ -32,7 +32,7 @@ const LEARNING_CATEGORIES = [
     resetConfirm: {
       verb: "Reset",
       storyTitle: "Deck",
-      note: "All progress and any added words will be lost.",
+      note: "Your progress and any words you added will be cleared.",
     },
     bandExamples: {
       A: "jeg, det, er, du, ikke…",

@@ -26,7 +26,7 @@
     <link rel="icon" href="brand/logo-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="brand/logo-icon.png" />
     <link rel="apple-touch-icon" sizes="360x360" href="brand/logo-icon-180@2x.png" />
-    <link rel="stylesheet" href="styles.css?v=100" />
+    <link rel="stylesheet" href="styles.css?v=101" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -63,9 +63,9 @@
 
       <main>
         <section id="practice-panel" class="panel active" role="tabpanel">
-          <p class="panel-lead" id="panel-lead">1,000 frequency-ranked words for Norwegian Bokmål
-The first 500 cover 80% of words in our stories
-Complete all 1,000 to read every story with confidence</p>
+          <p class="panel-lead" id="panel-lead">1,000 common Norwegian words
+The first 500 cover most of what shows up in our stories
+Learn them all and the stories get much easier</p>
 
           <div class="practice-meta hidden" id="practice-meta">
             <div class="meta-chip hidden" id="daily-goal-chip">0/0</div>
@@ -86,7 +86,7 @@ Complete all 1,000 to read every story with confidence</p>
             <div class="empty-icon empty-icon--idle" id="empty-icon" aria-hidden="true"></div>
             <h2 id="empty-title">You're all caught up</h2>
             <p id="empty-message">
-              No cards are due right now. Browse the library or come back when it's time to review.
+              Nothing to review right now. Open Library, or come back later.
             </p>
             <div id="empty-preview" class="word-preview" hidden aria-label="Starter words"></div>
             <div class="empty-actions" id="empty-actions">
@@ -132,10 +132,10 @@ Complete all 1,000 to read every story with confidence</p>
                 class="read-bridge-btn hidden"
                 id="read-bridge-btn"
                 data-tab-jump="read"
-                aria-label="Go to Read for comprehension"
+                aria-label="Go to Read"
               >
-                <span class="read-bridge-btn__label">Read for comprehension</span>
-                <span class="read-bridge-btn__meta">See today's words in context</span>
+                <span class="read-bridge-btn__label">Read a story</span>
+                <span class="read-bridge-btn__meta">See the words in real sentences</span>
               </button>
               <button id="keep-practicing-btn" class="btn secondary hidden" type="button">
                 Keep reviewing
@@ -456,6 +456,10 @@ Complete all 1,000 to read every story with confidence</p>
           height="184"
           decoding="async"
         />
+        <p class="welcome-blurb">
+          A few Norwegian words a day.<br />
+          Short reviews. No account needed.
+        </p>
         <div class="category-picker category-picker--welcome">
           <button
             type="button"
@@ -587,9 +591,9 @@ Complete all 1,000 to read every story with confidence</p>
 
     <script src="norwegian-frequency-deck.js?v=22"></script>
     <script src="norwegian-reading-vocab.js?v=3"></script>
-    <script src="learning-categories.js?v=35"></script>
+    <script src="learning-categories.js?v=36"></script>
     <script src="read-stories.js?v=8"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=141"></script>
+    <script src="app.js?v=142"></script>
   </body>
 </html>

@@ -9,12 +9,12 @@ const BOX_INTERVALS_DAYS = [0, 1, 3, 7, 14, 30];
 const DAILY_PRACTICE_CAP = 20;
 
 const LEARNING_LEVELS = [
-  { short: "New", interval: "Waiting to learn", celebration: "Keep going — you're building the foundation." },
-  { short: "Learning", interval: "Next day", celebration: "Nice progress." },
-  { short: "Familiar", interval: "Every 3 days", celebration: "This is starting to stick." },
+  { short: "New", interval: "Waiting to learn", celebration: "Nice start. Keep going." },
+  { short: "Learning", interval: "Next day", celebration: "Good one." },
+  { short: "Familiar", interval: "Every 3 days", celebration: "This one is sticking." },
   { short: "Known", interval: "Weekly", celebration: "Well done." },
   { short: "Confident", interval: "Every 2 weeks", celebration: "Almost there." },
-  { short: "Mastered", interval: "Monthly", celebration: "Beautiful — this one is yours." },
+  { short: "Mastered", interval: "Monthly", celebration: "You know this one." },
 ];
 
 const BAND_LABELS = {
@@ -419,7 +419,7 @@ function getHomeStreakStat(categoryId = activeCategoryId) {
     value: streak,
     label: atRisk ? "Keep streak" : "Day streak",
     ariaLabel: atRisk
-      ? `${streak}-day streak — complete today's review to keep it`
+      ? `${streak}-day streak. Finish today's review to keep it.`
       : streak > 0
         ? `${streak}-day streak`
         : "No streak yet",
@@ -1405,7 +1405,7 @@ async function resetToStarter() {
     category.resetConfirm || {
       verb: "Reset",
       storyTitle: "Deck",
-      note: "All progress and any added words will be lost.",
+      note: "Your progress and any words you added will be cleared.",
     },
     { confirmLabel: "Reset deck", cancelLabel: "Cancel", compact: true }
   );
@@ -1512,12 +1512,12 @@ function speechRecognitionAvailable() {
 
 function getSpeechUnavailableMessage() {
   if (!window.isSecureContext) {
-    return "Speech needs a secure connection (HTTPS). Open the app from a trusted link, or use your keyboard's microphone to dictate your answer.";
+    return "Speaking needs a secure link (https). You can type instead.";
   }
   if (!speechRecognitionAvailable()) {
-    return "Speech recognition isn't available in this browser. Type your answer instead.";
+    return "Speaking is not available in this browser. Type instead.";
   }
-  return "Could not start speech recognition. Type your answer instead.";
+  return "Could not start the mic. Type instead.";
 }
 
 function initSpeech() {
@@ -1578,7 +1578,7 @@ function updateSpeakButtonUI() {
 
   const labels = getDirectionLabels();
   btn.title = speakModeActive
-    ? "Speak mode on — tap to turn off"
+    ? "Speak mode on. Tap to turn off"
     : labels.speakTitle;
 }
 
@@ -1731,7 +1731,7 @@ function beginSpeakAttempt() {
 
     if (event.error === "not-allowed") {
       showFeedback(
-        "Microphone access denied. Allow the mic for this site in Settings → Safari → Microphone.",
+        "Mic is blocked. Allow it for this site in Settings, or just type.",
         "revealed"
       );
       setSpeakMode(false);
@@ -1751,7 +1751,7 @@ function beginSpeakAttempt() {
       return;
     }
 
-    showFeedback("Could not hear you — try again or type your answer.", "revealed");
+    showFeedback("Didn't catch that. Try again, or type it.", "revealed");
   };
 
   recognition.onend = () => {
@@ -2094,7 +2094,7 @@ function renderEmptyState() {
     if (daily.goalMet && !daily.extraMode) {
       showGoalCompletePower({
         celebrate: true,
-        message: `${correct} this round. Spaced reviews across days stick best — you're set for today.`,
+        message: `${correct} this round. Nice work. You're done for today.`,
       });
     } else if (remainingToday > 0) {
       setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
@@ -2148,12 +2148,12 @@ function renderEmptyState() {
     if (extraDue > 0) {
       goalMessage = `${extraDue} more ${
         extraDue === 1 ? "card is" : "cards are"
-      } waiting — they'll roll into tomorrow's reviews, or keep going now if you like.`;
+      } ready if you want extra practice. Or stop here and come back tomorrow.`;
     } else if (due.length > 0) {
       goalMessage =
-        "Any cards still due can wait — spacing reviews across days helps long-term memory.";
+        "You hit today's goal. Extra cards can wait until tomorrow.";
     } else {
-      goalMessage = "You're all caught up. New reviews unlock as your schedule comes due.";
+      goalMessage = "You're all caught up. More reviews show up when they're due.";
     }
     showGoalCompletePower({
       message: fullyCaughtUp ? "" : goalMessage,
@@ -2758,10 +2758,10 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       matches,
       targetField: "foreign",
       suggestedValue: suggestedForeign,
-      title: matches ? "Translation checks out" : "Different translation suggested",
+      title: matches ? "Looks good" : "Different translation found",
       copy: matches
-        ? `“${native}” is usually “${suggestedForeign}” in ${learningName} — that matches what you entered.`
-        : `“${native}” is usually “${suggestedForeign}” in ${learningName} — you entered “${foreign}”.`,
+        ? `“${native}” is usually “${suggestedForeign}” in ${learningName}. That matches what you typed.`
+        : `“${native}” is usually “${suggestedForeign}” in ${learningName}. You typed “${foreign}”.`,
     };
   }
 
@@ -2771,10 +2771,10 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       matches,
       targetField: "native",
       suggestedValue: suggestedNative,
-      title: matches ? "Translation checks out" : "Different translation suggested",
+      title: matches ? "Looks good" : "Different translation found",
       copy: matches
-        ? `“${native}” is usually “${foreign}” in ${learningName} — that matches what you entered.`
-        : `“${suggestedNative}” is usually “${foreign}” in ${learningName} — you entered “${native}”.`,
+        ? `“${native}” is usually “${foreign}” in ${learningName}. That matches what you typed.`
+        : `“${suggestedNative}” is usually “${foreign}” in ${learningName}. You typed “${native}”.`,
     };
   }
 
@@ -4414,7 +4414,7 @@ function applyPracticeDirectionUI() {
   }
 
   if (speakBtn) {
-    speakBtn.title = speakModeActive ? "Speak mode on — tap to turn off" : labels.speakTitle;
+    speakBtn.title = speakModeActive ? "Speak mode on. Tap to turn off" : labels.speakTitle;
     speakBtn.setAttribute("aria-pressed", String(speakModeActive));
   }
 }
@@ -4626,7 +4626,7 @@ function submitAnswer(options = {}) {
       scheduleSpeakForCurrentCard();
       return;
     }
-    showFeedback("Type or speak your answer first.", "revealed");
+    showFeedback("Type or say your answer first.", "revealed");
     return;
   }
 

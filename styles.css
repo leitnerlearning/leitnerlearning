@@ -1736,9 +1736,18 @@ body.welcome-open .app {
   display: block;
   width: min(220px, 68vw);
   height: auto;
-  margin: 0 auto 1.15rem;
+  margin: 0 auto 0.85rem;
   object-fit: contain;
   filter: drop-shadow(0 8px 24px rgba(54, 95, 207, 0.1));
+}
+
+.welcome-blurb {
+  margin: 0 0 1.15rem;
+  max-width: 16rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text-secondary);
 }
 
 .category-picker--welcome {
