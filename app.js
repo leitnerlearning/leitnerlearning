@@ -5265,11 +5265,16 @@ function renderLibraryJumpNav(sections) {
 
   nav.classList.remove("hidden");
   nav.innerHTML = sections
-    .map(({ band, label }) => {
+    .map(({ band, label, cards }) => {
       const key = librarySectionKey(band);
       const range = LIBRARY_JUMP_RANGE[key];
-      // Chip shows the name; hover only adds the range (no name repeat).
-      const titleAttr = range ? ` title="${escapeAttr(range)}"` : "";
+      const yoursCount = key === "yours" ? cards.length : 0;
+      // Chip shows the name; hover adds range or Yours count (no name repeat).
+      let tip = range || "";
+      if (key === "yours" && yoursCount > 0) {
+        tip = yoursCount === 1 ? "1 card" : `${yoursCount} cards`;
+      }
+      const titleAttr = tip ? ` title="${escapeAttr(tip)}"` : "";
       return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}"${titleAttr}>${escapeHtml(label)}</button>`;
     })
     .join("");
@@ -5338,15 +5343,20 @@ function renderCardListSections(sections, list, token) {
   const pending = sections.map(({ band, label, cards }) => {
     const key = librarySectionKey(band);
     const range = LIBRARY_JUMP_RANGE[key];
-    const rangeHtml = range
-      ? ` <span class="card-group-range">${escapeHtml(range)}</span>`
+    // Curated bands: rank range. Yours: count once the user has added cards.
+    let meta = range || "";
+    if (key === "yours" && cards.length > 0) {
+      meta = String(cards.length);
+    }
+    const metaHtml = meta
+      ? ` <span class="card-group-range">${escapeHtml(meta)}</span>`
       : "";
     const sectionEl = document.createElement("section");
     sectionEl.className = "card-group";
     sectionEl.id = `library-section-${key}`;
     sectionEl.dataset.librarySection = key;
     sectionEl.innerHTML = `
-      <h3 class="card-group-title">${escapeHtml(label)}${rangeHtml}</h3>
+      <h3 class="card-group-title">${escapeHtml(label)}${metaHtml}</h3>
       <div class="card-group-list"></div>`;
     list.appendChild(sectionEl);
     return {
