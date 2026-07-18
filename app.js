@@ -3377,14 +3377,13 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       }
     }
 
+    // Title only: "common translation" overclaims obscure words the tool still accepts.
     return {
       matches: true,
       targetField: null,
       suggestedValue: null,
       title: "Looks good",
-      copy: both
-        ? "This matches a common translation. Fine to add."
-        : "This looks like a solid pair. Everyday language often has several good options — add the one you want to learn.",
+      copy: "",
     };
   }
 
@@ -3531,7 +3530,11 @@ function renderAddCardReviewContext({
         ${actionable ? `data-action="apply-suggestion" role="button" tabindex="0" aria-label="${escapeHtml(actionLabel)}"` : ""}
       >
         <h4 class="review-context-title">${escapeHtml(translation.title)}</h4>
-        <p class="review-context-copy">${escapeHtml(translation.copy)}</p>
+        ${
+          translation.copy
+            ? `<p class="review-context-copy">${escapeHtml(translation.copy)}</p>`
+            : ""
+        }
         ${actionable ? `<p class="review-context-hint">${escapeHtml(actionHint)}</p>` : ""}
       </section>`);
   }
