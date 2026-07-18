@@ -2236,11 +2236,7 @@ function setAnswerReceivedState(received) {
 }
 
 function scheduleSpeakForCurrentCard(delayMs = SPEAK_CARD_DELAY_MS) {
-  // Do not bump speakAttemptId / kill the mic session — only re-arm for the next card.
-  if (speakCardDelayTimer) {
-    window.clearTimeout(speakCardDelayTimer);
-    speakCardDelayTimer = null;
-  }
+  clearSpeakScheduling();
   if (!speakModeActive || !currentCard) return;
 
   clearCardAdvanceTimer();
@@ -2253,11 +2249,7 @@ function scheduleSpeakForCurrentCard(delayMs = SPEAK_CARD_DELAY_MS) {
 function handleSpeakAttemptTimeout() {
   if (!speakModeActive || !currentCard) return;
 
-  // Disarm this card only — keep the long-lived mic session so Chrome does not re-toast.
-  speakCardArmed = false;
-  speakCardSettled = true;
-  clearSpeakInterimTimer();
-  clearSpeakAttemptTimer();
+  stopActiveRecognition();
   setListeningUI(false);
 
   const answerText = getAnswerTargetText(currentCard);
@@ -2290,139 +2282,10 @@ function bestTranscriptFromSpeechEvent(event) {
   return finalText || interimText;
 }
 
-function ensureSpeakSession() {
-  if (speakSessionRec) return speakSessionRec;
-  if (!window.isSecureContext || !speechRecognitionAvailable()) return null;
-
-  const rec = initSpeechSession();
-  if (!rec) return null;
-
-  const sessionId = ++speakSessionId;
-  speakSessionRec = rec;
-  recognition = rec;
-
-  rec.onstart = () => {
-    if (sessionId !== speakSessionId) return;
-    if (speakCardArmed) setListeningUI(true);
-  };
-
-  rec.onresult = (event) => {
-    if (sessionId !== speakSessionId) return;
-    if (!speakModeActive || !speakCardArmed || speakCardSettled) return;
-
-    const transcript = bestTranscriptFromSpeechEvent(event);
-    if (!transcript) return;
-
-    speakLastHeard = transcript;
-    const answerInput = document.getElementById("answer-input");
-    if (answerInput) answerInput.value = transcript;
-
-    const last = event.results?.[event.results.length - 1];
-    if (last?.isFinal) {
-      clearSpeakInterimTimer();
-      acceptSpeakTranscript(transcript);
-      return;
-    }
-
-    // Quiet speakers: accept after interim text stays stable briefly.
-    clearSpeakInterimTimer();
-    speakInterimStableTimer = window.setTimeout(() => {
-      speakInterimStableTimer = null;
-      if (
-        speakModeActive &&
-        speakCardArmed &&
-        !speakCardSettled &&
-        speakLastHeard
-      ) {
-        acceptSpeakTranscript(speakLastHeard);
-      }
-    }, SPEAK_INTERIM_STABLE_MS);
-  };
-
-  rec.onerror = (event) => {
-    if (sessionId !== speakSessionId) return;
-    if (event.error === "aborted" || event.error === "no-speech") {
-      // Continuous sessions emit no-speech between phrases — keep the session.
-      return;
-    }
-
-    if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-      setSpeakMode(false);
-      return;
-    }
-
-    if (event.error === "network") {
-      if (speakLastHeard && speakCardArmed && !speakCardSettled) {
-        acceptSpeakTranscript(speakLastHeard);
-        return;
-      }
-      if (speakSoftRetries < SPEAK_SOFT_RETRY_MAX) {
-        speakSoftRetries += 1;
-        // Restart session once or twice only (will toast again — unavoidable if session dies).
-        stopSpeakSession();
-        if (speakModeActive && currentCard) {
-          scheduleSpeakForCurrentCard(400);
-        }
-        return;
-      }
-      speakSoftRetries = 0;
-      setSpeakMode(false);
-    }
-  };
-
-  rec.onend = () => {
-    if (sessionId !== speakSessionId) return;
-    if (!speakModeActive) return;
-
-    // Unexpected end — restart quietly if still in Speak mode (desktop mainly).
-    // On mobile this may toast once; better than dead Speak.
-    window.setTimeout(() => {
-      if (!speakModeActive || sessionId !== speakSessionId) return;
-      if (speakSessionRec !== rec) return;
-      try {
-        rec.start();
-      } catch {
-        speakSessionRec = null;
-        recognition = null;
-        if (speakModeActive && currentCard) {
-          scheduleSpeakForCurrentCard(300);
-        }
-      }
-    }, 120);
-  };
-
-  try {
-    rec.start();
-  } catch {
-    speakSessionRec = null;
-    recognition = null;
-    return null;
-  }
-
-  return rec;
-}
-
-function acceptSpeakTranscript(raw) {
-  if (!speakModeActive || !speakCardArmed || speakCardSettled) return;
-  const transcript = String(raw || "").trim();
-  if (!transcript) return;
-
-  speakCardSettled = true;
-  speakCardArmed = false;
-  speakSoftRetries = 0;
-  clearSpeakInterimTimer();
-  clearSpeakAttemptTimer();
-  setListeningUI(false);
-
-  // Keep mic session open — do not stopSpeakSession() (Chrome toast fix).
-  const answerInput = document.getElementById("answer-input");
-  if (answerInput) answerInput.value = transcript;
-  submitAnswer({ fromSpeech: true });
-}
-
 /**
- * Arm listening for the current card. Reuses one SpeechRecognition session
- * so Chrome does not show "Microphone Access Allowed" on every word.
+ * One-shot listen for the current card.
+ * Priority: actually hear speech. Chrome mobile may toast on each start() —
+ * continuous mode there still re-toasted and stopped capturing audio.
  */
 function beginSpeakAttempt() {
   if (!speakModeActive || !currentCard) return;
@@ -2432,35 +2295,153 @@ function beginSpeakAttempt() {
   }
 
   unlockAudioPipeline();
+  stopActiveRecognition();
   clearSpeakAttemptTimer();
   clearSpeakInterimTimer();
 
-  speakCardAttemptId += 1;
-  const cardAttempt = speakCardAttemptId;
-  speakCardArmed = true;
-  speakCardSettled = false;
-  speakLastHeard = "";
-  speakSoftRetries = 0;
-
-  hideFeedback();
-  setListeningUI(true);
-
-  const rec = ensureSpeakSession();
+  const attemptId = ++speakAttemptId;
+  const rec = getSpeakRecognition();
   if (!rec) {
     setSpeakMode(false);
     return;
   }
+  recognition = rec;
 
-  // Per-card timeout (does not kill the shared mic session).
+  setListeningUI(true);
+  hideFeedback();
+
+  let settled = false;
+  let lastHeard = "";
+
+  const acceptTranscript = (raw) => {
+    if (settled || attemptId !== speakAttemptId) return;
+    const transcript = String(raw || "").trim();
+    if (!transcript) return;
+    settled = true;
+    speakSoftRetries = 0;
+    clearSpeakInterimTimer();
+    clearSpeakAttemptTimer();
+    stopActiveRecognition();
+    setListeningUI(false);
+    const answerInput = document.getElementById("answer-input");
+    if (answerInput) answerInput.value = transcript;
+    submitAnswer({ fromSpeech: true });
+  };
+
+  rec.onstart = () => {
+    if (attemptId !== speakAttemptId) return;
+    setListeningUI(true);
+  };
+
+  rec.onresult = (event) => {
+    if (attemptId !== speakAttemptId || settled) return;
+    const transcript = bestTranscriptFromSpeechEvent(event);
+    if (!transcript) return;
+
+    lastHeard = transcript;
+    const answerInput = document.getElementById("answer-input");
+    if (answerInput) answerInput.value = transcript;
+
+    const last = event.results?.[event.results.length - 1];
+    if (last?.isFinal) {
+      clearSpeakInterimTimer();
+      acceptTranscript(transcript);
+      return;
+    }
+
+    clearSpeakInterimTimer();
+    speakInterimStableTimer = window.setTimeout(() => {
+      speakInterimStableTimer = null;
+      if (!settled && attemptId === speakAttemptId && lastHeard) {
+        acceptTranscript(lastHeard);
+      }
+    }, SPEAK_INTERIM_STABLE_MS);
+  };
+
+  rec.onerror = (event) => {
+    if (attemptId !== speakAttemptId || settled) return;
+    clearSpeakInterimTimer();
+    clearSpeakAttemptTimer();
+    stopActiveRecognition();
+    setListeningUI(false);
+
+    if (event.error === "aborted") return;
+
+    if (lastHeard) {
+      acceptTranscript(lastHeard);
+      return;
+    }
+
+    if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+      setSpeakMode(false);
+      return;
+    }
+
+    if (event.error === "network" || event.error === "no-speech") {
+      if (speakModeActive && currentCard && speakSoftRetries < SPEAK_SOFT_RETRY_MAX) {
+        speakSoftRetries += 1;
+        scheduleSpeakForCurrentCard(400);
+        return;
+      }
+      speakSoftRetries = 0;
+      if (event.error === "network") {
+        setSpeakMode(false);
+      }
+      return;
+    }
+
+    if (speakModeActive) {
+      handleSpeakAttemptTimeout();
+    }
+  };
+
+  rec.onend = () => {
+    if (attemptId !== speakAttemptId || settled) return;
+
+    if (lastHeard) {
+      acceptTranscript(lastHeard);
+      return;
+    }
+
+    // Desktop: one more listen window. Mobile: do not auto-restart (toast + flaky).
+    if (!isCoarsePointerDevice() && speakModeActive && currentCard) {
+      try {
+        rec.start();
+        setListeningUI(true);
+      } catch {
+        /* ignore */
+      }
+    }
+  };
+
   speakAttemptTimer = window.setTimeout(() => {
-    if (cardAttempt !== speakCardAttemptId) return;
-    if (!speakModeActive || speakCardSettled) return;
-    if (speakLastHeard) {
-      acceptSpeakTranscript(speakLastHeard);
+    if (attemptId !== speakAttemptId || settled) return;
+    clearSpeakInterimTimer();
+    if (lastHeard) {
+      acceptTranscript(lastHeard);
       return;
     }
     handleSpeakAttemptTimeout();
   }, SPEAK_ATTEMPT_MS);
+
+  try {
+    rec.start();
+  } catch {
+    try {
+      rec.stop();
+    } catch {
+      /* ignore */
+    }
+    window.setTimeout(() => {
+      if (attemptId !== speakAttemptId || !speakModeActive) return;
+      try {
+        rec.start();
+      } catch {
+        setListeningUI(false);
+        setSpeakMode(false);
+      }
+    }, 100);
+  }
 }
 
 function getAdvanceDelay(correct, fromSpeech = false) {
@@ -2471,21 +2452,10 @@ function getAdvanceDelay(correct, fromSpeech = false) {
 }
 
 function finishCardAndContinue(delayMs) {
-  // Disarm card listen; keep shared Speak session alive (no per-card mic toast).
-  speakCardArmed = false;
-  speakCardSettled = true;
-  clearSpeakInterimTimer();
-  clearSpeakAttemptTimer();
-  if (speakCardDelayTimer) {
-    window.clearTimeout(speakCardDelayTimer);
-    speakCardDelayTimer = null;
-  }
+  clearSpeakScheduling();
+  stopActiveRecognition();
   setListeningUI(false);
   clearCardAdvanceTimer();
-
-  if (!speakModeActive) {
-    stopSpeakSession();
-  }
 
   cardAdvanceTimer = window.setTimeout(() => {
     cardAdvanceTimer = null;
