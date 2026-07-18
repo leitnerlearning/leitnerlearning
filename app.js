@@ -2842,7 +2842,7 @@ function getStarterSuggestions(query, limit = 5) {
     foreign: entry.foreign,
     native: entry.native,
     rank: entry.rank,
-    meta: "In starter deck",
+    meta: "In your deck",
     selectable: true,
   }));
 
@@ -2859,7 +2859,7 @@ function getLibrarySuggestions(query, limit = 5) {
       foreign: card.foreign,
       native: card.native,
       rank: card.rank,
-      meta: "In your library",
+      meta: "In your deck",
       selectable: true,
     }));
 
@@ -2874,7 +2874,7 @@ function findLocalDeckPair(foreign, native) {
     candidates.push({
       foreign: entry.foreign,
       native: entry.native,
-      meta: "In starter deck",
+      meta: "In your deck",
       source: "starter",
     });
   });
@@ -2884,7 +2884,7 @@ function findLocalDeckPair(foreign, native) {
     candidates.push({
       foreign: card.foreign,
       native: card.native,
-      meta: "In your library",
+      meta: "In your deck",
       source: "library",
     });
   });
@@ -3524,7 +3524,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
   const nativeWords = native.trim().split(/\s+/).filter(Boolean).length;
   // 2+ words is already idiom/phrase territory for MT
   const isPhrase = foreignWords >= 2 || nativeWords >= 2;
-  const where = localPair?.source === "library" ? "your library" : "the starter deck";
+  const where = "your deck";
 
   const foreignGibberish = looksLikeGibberish(foreign);
   const nativeGibberish = looksLikeGibberish(native);
@@ -3827,7 +3827,7 @@ function renderAddCardReviewContext({
   }
 
   if (related.length) {
-    // Section title already says where these are from — don't repeat "In starter deck" on every chip
+    // Section title already says where these are from — chips show only the pair
     const items = related
       .map(
         (item) => `
@@ -6218,11 +6218,11 @@ function maybeShowWelcome() {
 function bootApp() {
   try {
     if (typeof NORWEGIAN_FREQUENCY_DECK === "undefined") {
-      throw new Error("Starter deck script did not load. Check your network connection and refresh.");
+      throw new Error("Deck data did not load. Check your network connection and refresh.");
     }
     const starterEntries = getStarterDeckEntries();
     if (!starterEntries.length) {
-      throw new Error("Starter deck is empty.");
+      throw new Error("The deck is empty.");
     }
 
     deck = loadDeck();
