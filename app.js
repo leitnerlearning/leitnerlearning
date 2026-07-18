@@ -193,6 +193,24 @@ function storageSet(key, value) {
   }
 }
 
+/** Warn once per session if the browser will not save progress (private mode / full storage). */
+let storageWarningShown = false;
+
+function warnIfStorageFailed(ok) {
+  if (ok || storageWarningShown) return;
+  storageWarningShown = true;
+  // Prefer practice feedback when visible; otherwise console is enough for boot.
+  try {
+    showFeedback(
+      "Progress may not save in this browser (private mode or full storage). Type is fine — just know results may not stick.",
+      "revealed",
+      { autoHideMs: 10000 }
+    );
+  } catch {
+    /* showFeedback may run before DOM is ready */
+  }
+}
+
 function isFinePointerDevice() {
   return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 }
@@ -563,7 +581,9 @@ function loadDailyPractice(categoryId = activeCategoryId) {
 }
 
 function saveDailyPractice(state, categoryId = activeCategoryId) {
-  storageSet(getDailyPracticeStorageKey(categoryId), JSON.stringify(state));
+  warnIfStorageFailed(
+    storageSet(getDailyPracticeStorageKey(categoryId), JSON.stringify(state))
+  );
 }
 
 function resetDailyPractice(categoryId = activeCategoryId) {
@@ -760,7 +780,9 @@ function loadStreakState(categoryId = activeCategoryId) {
 }
 
 function saveStreakState(state, categoryId = activeCategoryId) {
-  storageSet(getStreakStorageKey(categoryId), JSON.stringify(state));
+  warnIfStorageFailed(
+    storageSet(getStreakStorageKey(categoryId), JSON.stringify(state))
+  );
 }
 
 function getYesterdayDayKey() {
@@ -1832,7 +1854,7 @@ function loadDeck(categoryId = activeCategoryId) {
 }
 
 function saveDeck() {
-  storageSet(getDeckStorageKey(), JSON.stringify(deck));
+  warnIfStorageFailed(storageSet(getDeckStorageKey(), JSON.stringify(deck)));
 }
 
 async function resetToStarter() {
@@ -2048,6 +2070,9 @@ const SPEAK_ADVANCE_WRONG_MS = 5000;
 const TYPING_ADVANCE_CORRECT_MS = 4500;
 const TYPING_ADVANCE_WRONG_MS = 5500;
 const MAX_CLOSE_RETRIES = 2;
+/** Cap quiet re-listens so Chrome "network" errors cannot loop forever. */
+const SPEAK_SOFT_RETRY_MAX = 2;
+let speakSoftRetries = 0;
 
 function clearSpeakAttemptTimer() {
   if (speakAttemptTimer) {
@@ -2120,8 +2145,10 @@ function setSpeakMode(active) {
     clearSpeakScheduling();
     stopActiveRecognition();
     setListeningUI(false);
+    speakSoftRetries = 0;
   } else {
     hideFeedback();
+    speakSoftRetries = 0;
   }
   updateSpeakButtonUI();
   updateAnswerInputPlaceholder();
@@ -2148,7 +2175,8 @@ async function toggleSpeakMode() {
     return;
   }
 
-  // Ask now so Chrome can show Allow/Block (only works when state is still "prompt").
+  // Ask only when still promptable so Chrome can show Allow/Block.
+  // Skip when already granted — keep the path short for listening start.
   if (prior === "prompt" || prior === "unknown") {
     const access = await requestMicAccess();
     if (access === "denied") {
@@ -2251,6 +2279,7 @@ function beginSpeakAttempt() {
   recognition.onresult = (event) => {
     if (attemptId !== speakAttemptId) return;
     clearSpeakAttemptTimer();
+    speakSoftRetries = 0;
 
     const transcript = event.results?.[0]?.[0]?.transcript?.trim();
     stopActiveRecognition();
@@ -2261,7 +2290,8 @@ function beginSpeakAttempt() {
       return;
     }
 
-    document.getElementById("answer-input").value = transcript;
+    const answerInput = document.getElementById("answer-input");
+    if (answerInput) answerInput.value = transcript;
     submitAnswer({ fromSpeech: true });
   };
 
@@ -2280,11 +2310,24 @@ function beginSpeakAttempt() {
     }
 
     // Chrome often fires "network" for a speech-backend blip even when online.
-    // Quietly listen again — same as the original robust path (no scary offline message).
+    // Retry a couple of times only — never loop forever.
     if (event.error === "network" || event.error === "no-speech") {
-      if (speakModeActive && currentCard) {
+      if (speakModeActive && currentCard && speakSoftRetries < SPEAK_SOFT_RETRY_MAX) {
+        speakSoftRetries += 1;
         scheduleSpeakForCurrentCard(400);
+        return;
       }
+      speakSoftRetries = 0;
+      if (event.error === "network") {
+        showFeedback("Speech is unavailable right now. Type instead.", "revealed", {
+          autoHideMs: 6000,
+        });
+        setSpeakMode(false);
+        return;
+      }
+      showFeedback("Didn't hear anything. Tap Speak and try again, or type.", "revealed", {
+        autoHideMs: 5000,
+      });
       return;
     }
 
@@ -2300,9 +2343,10 @@ function beginSpeakAttempt() {
 
   recognition.onend = () => {
     if (attemptId !== speakAttemptId) return;
-    // Safari ends the session after silence; keep listening until timeout or result.
+    // Safari ends after silence — re-open once on desktop. On phones this is unstable.
+    if (isCoarsePointerDevice()) return;
     try {
-      recognition.start();
+      recognition?.start();
     } catch {
       // Already running or the attempt was cancelled — ignore.
     }
@@ -3175,7 +3219,8 @@ function renderEmptyState() {
     setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
     messageEl.classList.toggle("hidden", !message);
     if (message) messageEl.textContent = message;
-    document.getElementById("empty-preview").hidden = true;
+    const emptyPreview = document.getElementById("empty-preview");
+    if (emptyPreview) emptyPreview.hidden = true;
     const canKeepGoing = extraDue > 0;
     setEmptyStatePowerAction(powerEl, powerHintEl, {
       show: true,
@@ -3205,7 +3250,8 @@ function renderEmptyState() {
       });
     } else if (remainingToday > 0) {
       setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
-      document.getElementById("empty-preview").hidden = true;
+      const emptyPreview = document.getElementById("empty-preview");
+    if (emptyPreview) emptyPreview.hidden = true;
       setEmptyStatePowerAction(powerEl, powerHintEl, {
         show: true,
         mode: "continue",
@@ -3213,7 +3259,8 @@ function renderEmptyState() {
       });
     } else {
       setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
-      document.getElementById("empty-preview").hidden = true;
+      const emptyPreview = document.getElementById("empty-preview");
+    if (emptyPreview) emptyPreview.hidden = true;
       setEmptyStatePowerAction(powerEl, powerHintEl, {
         show: true,
         mode: extraDue > 0 ? "continue" : "complete",
@@ -3237,7 +3284,8 @@ function renderEmptyState() {
   if (hasDailyGoalRemaining(daily)) {
     const continuing = daily.reviewed > 0;
     setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
-    document.getElementById("empty-preview").hidden = true;
+    const emptyPreview = document.getElementById("empty-preview");
+    if (emptyPreview) emptyPreview.hidden = true;
     if (keepBtn) keepBtn.classList.add("hidden");
     setEmptyStatePowerAction(powerEl, powerHintEl, {
       show: true,
@@ -3272,7 +3320,8 @@ function renderEmptyState() {
   emptyEl.classList.remove("goal-met");
 
   if (keepBtn) keepBtn.classList.add("hidden");
-  document.getElementById("empty-preview").hidden = true;
+  const emptyPreview = document.getElementById("empty-preview");
+  if (emptyPreview) emptyPreview.hidden = true;
   showGoalCompletePower({
     message: "",
   });
@@ -5333,14 +5382,16 @@ function saveReadProgress() {
     furthest: Math.max(existing.furthest, readSentenceIndex),
   };
 
-  storageSet(
-    getReadProgressKey(),
-    JSON.stringify({
-      storyId: readStoryId,
-      sentenceIndex: readSentenceIndex,
-      showEnglish: readShowEnglish,
-      positions,
-    })
+  warnIfStorageFailed(
+    storageSet(
+      getReadProgressKey(),
+      JSON.stringify({
+        storyId: readStoryId,
+        sentenceIndex: readSentenceIndex,
+        showEnglish: readShowEnglish,
+        positions,
+      })
+    )
   );
 
   const statsPanel = document.getElementById("stats-panel");
@@ -5412,7 +5463,7 @@ function applyStoryReadProgressReset(storyId) {
     closeReadGloss();
   }
 
-  storageSet(getReadProgressKey(), JSON.stringify(payload));
+  warnIfStorageFailed(storageSet(getReadProgressKey(), JSON.stringify(payload)));
 
   if (readStoryId === storyId) {
     renderReadPanel();
