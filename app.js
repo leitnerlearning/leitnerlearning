@@ -835,6 +835,280 @@ function getAcceptedAnswers(native) {
   return native.split("/").map((part) => normalizeAnswer(part));
 }
 
+/**
+ * British ↔ American spelling for answer matching.
+ * Cards stay American; learners taught BE spelling still count as correct.
+ * Fold both sides to American-ish form, then compare.
+ */
+const EN_SPELLING_WORD_MAP = {
+  colour: "color",
+  colours: "colors",
+  coloured: "colored",
+  colouring: "coloring",
+  colourful: "colorful",
+  colourless: "colorless",
+  favour: "favor",
+  favours: "favors",
+  favoured: "favored",
+  favouring: "favoring",
+  favourite: "favorite",
+  favourites: "favorites",
+  favourable: "favorable",
+  favourably: "favorably",
+  honour: "honor",
+  honours: "honors",
+  honoured: "honored",
+  honouring: "honoring",
+  honourable: "honorable",
+  honourably: "honorably",
+  humour: "humor",
+  humours: "humors",
+  labour: "labor",
+  labours: "labors",
+  laboured: "labored",
+  labouring: "laboring",
+  neighbour: "neighbor",
+  neighbours: "neighbors",
+  neighbourhood: "neighborhood",
+  neighbouring: "neighboring",
+  behaviour: "behavior",
+  behaviours: "behaviors",
+  harbour: "harbor",
+  harbours: "harbors",
+  harboured: "harbored",
+  harbouring: "harboring",
+  flavour: "flavor",
+  flavours: "flavors",
+  flavoured: "flavored",
+  flavouring: "flavoring",
+  rumour: "rumor",
+  rumours: "rumors",
+  vapour: "vapor",
+  vapours: "vapors",
+  endeavour: "endeavor",
+  endeavours: "endeavors",
+  endeavoured: "endeavored",
+  centre: "center",
+  centres: "centers",
+  centred: "centered",
+  centring: "centering",
+  theatre: "theater",
+  theatres: "theaters",
+  metre: "meter",
+  metres: "meters",
+  litre: "liter",
+  litres: "liters",
+  fibre: "fiber",
+  fibres: "fibers",
+  calibre: "caliber",
+  calibres: "calibers",
+  grey: "gray",
+  greys: "grays",
+  defence: "defense",
+  defences: "defenses",
+  offence: "offense",
+  offences: "offenses",
+  licence: "license",
+  licences: "licenses",
+  practise: "practice",
+  practised: "practiced",
+  practising: "practicing",
+  catalogue: "catalog",
+  catalogues: "catalogs",
+  dialogue: "dialog",
+  dialogues: "dialogs",
+  programme: "program",
+  programmes: "programs",
+  traveller: "traveler",
+  travellers: "travelers",
+  travelling: "traveling",
+  travelled: "traveled",
+  cancelled: "canceled",
+  cancelling: "canceling",
+  jewellery: "jewelry",
+  aeroplane: "airplane",
+  aeroplanes: "airplanes",
+  aluminium: "aluminum",
+  maths: "math",
+  cheque: "check",
+  cheques: "checks",
+  lorry: "truck",
+  lorries: "trucks",
+  tyre: "tire",
+  tyres: "tires",
+  kerb: "curb",
+  kerbs: "curbs",
+};
+
+/** Words that keep -ise / -yse in American English (do not fold to -ize). */
+const EN_ISE_KEEP = new Set([
+  "advertise",
+  "advertises",
+  "advertised",
+  "advertising",
+  "advise",
+  "advises",
+  "advised",
+  "advising",
+  "arise",
+  "arises",
+  "arisen",
+  "arising",
+  "chastise",
+  "chastises",
+  "chastised",
+  "chastising",
+  "circumcise",
+  "circumcises",
+  "circumcised",
+  "circumcising",
+  "comprise",
+  "comprises",
+  "comprised",
+  "comprising",
+  "compromise",
+  "compromises",
+  "compromised",
+  "compromising",
+  "concise",
+  "concisely",
+  "demise",
+  "despise",
+  "despises",
+  "despised",
+  "despising",
+  "devise",
+  "devises",
+  "devised",
+  "devising",
+  "disguise",
+  "disguises",
+  "disguised",
+  "disguising",
+  "enterprise",
+  "enterprises",
+  "excise",
+  "exercise",
+  "exercises",
+  "exercised",
+  "exercising",
+  "expertise",
+  "franchise",
+  "franchises",
+  "franchised",
+  "franchising",
+  "guise",
+  "improvise",
+  "improvises",
+  "improvised",
+  "improvising",
+  "merchandise",
+  "noise",
+  "noises",
+  "otherwise",
+  "paradise",
+  "poise",
+  "poised",
+  "precise",
+  "precisely",
+  "premise",
+  "premises",
+  "promise",
+  "promises",
+  "promised",
+  "promising",
+  "raise",
+  "raises",
+  "raised",
+  "raising",
+  "praise",
+  "praises",
+  "praised",
+  "praising",
+  "bruise",
+  "bruises",
+  "bruised",
+  "bruising",
+  "cruise",
+  "cruises",
+  "cruised",
+  "cruising",
+  "revise",
+  "revises",
+  "revised",
+  "revising",
+  "rise",
+  "rises",
+  "risen",
+  "rising",
+  "supervise",
+  "supervises",
+  "supervised",
+  "supervising",
+  "supervisor",
+  "supervisors",
+  "surmise",
+  "surmises",
+  "surmised",
+  "surmising",
+  "surprise",
+  "surprises",
+  "surprised",
+  "surprising",
+  "televise",
+  "televises",
+  "televised",
+  "televising",
+  "treatise",
+  "treatises",
+  "wise",
+  "wisely",
+  "likewise",
+  "clockwise",
+  "counterclockwise",
+]);
+
+function foldEnglishDialectWord(word) {
+  if (!word) return word;
+  if (EN_SPELLING_WORD_MAP[word]) return EN_SPELLING_WORD_MAP[word];
+
+  let w = word;
+  if (!EN_ISE_KEEP.has(w)) {
+    w = w
+      .replace(/isation(s?)$/g, "ization$1")
+      .replace(/ising$/g, "izing")
+      .replace(/ised$/g, "ized")
+      .replace(/ises$/g, "izes")
+      .replace(/ise$/g, "ize")
+      .replace(/ysation(s?)$/g, "yzation$1")
+      .replace(/ysing$/g, "yzing")
+      .replace(/ysed$/g, "yzed")
+      .replace(/yses$/g, "yzes")
+      .replace(/yse$/g, "yze");
+  }
+  return w;
+}
+
+/** Fold a phrase word-by-word (city centre → city center). */
+function foldEnglishDialectSpelling(text) {
+  const normalized = normalizeAnswer(text);
+  if (!normalized) return "";
+  return normalized
+    .split(/\s+/)
+    .map((word) => foldEnglishDialectWord(word))
+    .join(" ");
+}
+
+/** colour ≈ color, organise ≈ organize, city centre ≈ city center */
+function englishDialectSpellingMatches(a, b) {
+  if (!a || !b) return false;
+  const x = normalizeAnswer(a);
+  const y = normalizeAnswer(b);
+  if (!x || !y) return false;
+  if (x === y) return true;
+  return foldEnglishDialectSpelling(x) === foldEnglishDialectSpelling(y);
+}
+
 /** Spoken forms that should count as the same answer (ASR often picks the wrong spelling). */
 const SPEECH_HOMOPHONE_GROUPS = {
   en: [
@@ -1026,6 +1300,7 @@ function speechTokensMatch(userToken, expectedToken, lang) {
   if (!userToken || !expectedToken) return false;
   if (userToken === expectedToken) return true;
   if (norwegianTypingMatches(userToken, expectedToken)) return true;
+  if (lang === "en" && englishDialectSpellingMatches(userToken, expectedToken)) return true;
   if (sameSpeechHomophoneGroup(userToken, expectedToken, lang)) return true;
 
   const userCode = speechCode(userToken, lang);
@@ -1092,11 +1367,14 @@ function answersAreClose(user, expected) {
   if (user === expected) return true;
   // Type æ ø å as ae/oe/aa (or plain a/o) — works for Norwegian answers
   if (norwegianTypingMatches(user, expected)) return true;
+  // British spelling taught in Europe counts for American deck glosses
+  if (englishDialectSpellingMatches(user, expected)) return true;
   if (user.includes(expected) || expected.includes(user)) return true;
 
   const distance = Math.min(
     levenshtein(user, expected),
-    levenshtein(foldNorwegianLoose(user), foldNorwegianLoose(expected))
+    levenshtein(foldNorwegianLoose(user), foldNorwegianLoose(expected)),
+    levenshtein(foldEnglishDialectSpelling(user), foldEnglishDialectSpelling(expected))
   );
   return distance <= maxEditDistance(expected);
 }
@@ -2402,6 +2680,7 @@ function glossPartsMatch(a, b) {
   if (!a || !b) return false;
   if (normalizeAnswer(a) === normalizeAnswer(b)) return true;
   if (norwegianTypingMatches(a, b)) return true;
+  if (englishDialectSpellingMatches(a, b)) return true;
 
   const partsA = String(a)
     .split("/")
@@ -2414,7 +2693,13 @@ function glossPartsMatch(a, b) {
 
   for (const left of partsA) {
     for (const right of partsB) {
-      if (left === right || norwegianTypingMatches(left, right)) return true;
+      if (
+        left === right ||
+        norwegianTypingMatches(left, right) ||
+        englishDialectSpellingMatches(left, right)
+      ) {
+        return true;
+      }
     }
   }
   return false;
@@ -2422,8 +2707,9 @@ function glossPartsMatch(a, b) {
 
 /** resume ≈ resumes, box ≈ boxes (simple English inflection, not full stemming). */
 function englishInflectionMatch(a, b) {
-  const x = normalizeAnswer(a);
-  const y = normalizeAnswer(b);
+  // Fold BE/AE first so organises ≈ organizes
+  const x = foldEnglishDialectSpelling(a);
+  const y = foldEnglishDialectSpelling(b);
   if (!x || !y || x.includes(" ") || y.includes(" ")) return false;
   if (x === y) return true;
   if (x + "s" === y || y + "s" === x) return true;
@@ -2490,6 +2776,7 @@ function softGlossMatch(a, b) {
   for (const left of partsA) {
     for (const right of partsB) {
       if (englishInflectionMatch(left, right)) return true;
+      if (englishDialectSpellingMatches(left, right)) return true;
       if (withinOneEdit(left, right)) return true;
       if (norwegianTypingMatches(left, right)) return true;
     }
