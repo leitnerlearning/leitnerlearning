@@ -2495,7 +2495,8 @@ let ttsSpeakDelayTimer = null;
 /** Minimum score to treat an OS Norwegian voice as "premium neural". */
 const NB_PREMIUM_VOICE_SCORE = 45;
 
-const VOICE_PREVIEW_PHRASE = "Hei, hvordan har du det?";
+/** Short preview so a stuck sample cannot dominate Hear. */
+const VOICE_PREVIEW_PHRASE = "Hei";
 
 function loadVoiceGender() {
   const saved = storageGet(VOICE_GENDER_KEY);
@@ -2797,8 +2798,9 @@ function genderUtteranceProfile(gender) {
 }
 
 /**
- * Play Google TTS with a plain <audio> element (no Web Audio graph).
- * Re-checks token after load so a cancelled gender-preview cannot start late.
+ * Google TTS via HTMLAudio only.
+ * Wait for canplay before playbackRate (Chrome garbles if rate set too early).
+ * Token re-check before play so cancelled previews never start.
  */
 function playGoogleTtsSimple(text, lang, gender, token) {
   return new Promise((resolve, reject) => {
@@ -2806,100 +2808,93 @@ function playGoogleTtsSimple(text, lang, gender, token) {
       resolve();
       return;
     }
-    const url = googleTtsUrl(text, lang);
+
+    const onlyText = String(text || "").trim();
+    if (!onlyText) {
+      resolve();
+      return;
+    }
+
+    const url = googleTtsUrl(onlyText, lang);
     const audio = new Audio();
     ttsActiveAudios.add(audio);
     ttsAudioEl = audio;
     audio.preload = "auto";
     audio.volume = 1;
-    const rate = gender === "male" ? 0.86 : 1.05;
+    const targetRate = gender === "male" ? 0.88 : 1.0;
 
-    const abandonIfStale = () => {
-      if (token !== ttsPlayToken) {
-        killTtsAudioElement(audio);
-        if (ttsAudioEl === audio) ttsAudioEl = null;
-        resolve();
-        return true;
-      }
-      return false;
+    const cleanup = () => {
+      ttsActiveAudios.delete(audio);
+      if (ttsAudioEl === audio) ttsAudioEl = null;
     };
 
-    const apply = () => {
-      if (abandonIfStale()) return;
+    const fail = (err) => {
+      cleanup();
+      killTtsAudioElement(audio);
+      reject(err || new Error("tts failed"));
+    };
+
+    const startPlayback = () => {
+      if (token !== ttsPlayToken) {
+        cleanup();
+        killTtsAudioElement(audio);
+        resolve();
+        return;
+      }
       try {
-        audio.playbackRate = rate;
+        audio.playbackRate = targetRate;
         audio.volume = 1;
       } catch {
         /* ignore */
       }
+      const p = audio.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => {
+          if (token !== ttsPlayToken) killTtsAudioElement(audio);
+        }).catch((err) => fail(err));
+      }
     };
 
-    audio.addEventListener("loadedmetadata", apply);
-    audio.addEventListener("canplay", apply);
     audio.onended = () => {
-      ttsActiveAudios.delete(audio);
-      if (ttsAudioEl === audio) ttsAudioEl = null;
+      cleanup();
       resolve();
     };
-    audio.onerror = () => {
-      ttsActiveAudios.delete(audio);
-      if (ttsAudioEl === audio) ttsAudioEl = null;
-      reject(new Error("tts audio error"));
-    };
+    audio.onerror = () => fail(new Error("tts audio error"));
+
+    audio.addEventListener("canplay", startPlayback, { once: true });
     audio.src = url;
-    apply();
-
-    if (abandonIfStale()) return;
-
-    const p = audio.play();
-    if (p && typeof p.then === "function") {
-      p.then(() => {
-        // If Hear started while we were waiting on play(), die immediately.
-        if (token !== ttsPlayToken) killTtsAudioElement(audio);
-      }).catch((err) => {
-        ttsActiveAudios.delete(audio);
-        if (ttsAudioEl === audio) ttsAudioEl = null;
-        reject(err || new Error("tts play blocked"));
-      });
+    try {
+      audio.load();
+    } catch {
+      /* ignore */
     }
   });
 }
 
-/** Gender toggle sample only — always Google, always killed by the next stopAllSpeech. */
+/** Gender toggle sample — short "Hei", Google only, no speechSynthesis. */
 function playVoiceGenderPreview() {
   stopAllSpeech();
   const token = ttsPlayToken;
   const lang = getActiveCategory().speechLang || "nb-NO";
   const gender = preferredVoiceGender;
-  // Short delay so cancel settles; still bound to this token only.
   ttsSpeakDelayTimer = window.setTimeout(() => {
     ttsSpeakDelayTimer = null;
     if (token !== ttsPlayToken) return;
-    playGoogleTtsSimple(VOICE_PREVIEW_PHRASE, lang, gender, token).catch(() => {
-      if (token !== ttsPlayToken) return;
-      const profile = genderUtteranceProfile(gender);
-      speakWithSystemVoice(
-        VOICE_PREVIEW_PHRASE,
-        lang,
-        null,
-        profile.rate,
-        profile.pitch,
-        token
-      );
-    });
-  }, 70);
+    playGoogleTtsSimple(VOICE_PREVIEW_PHRASE, lang, gender, token).catch(() => {});
+  }, 50);
 }
 
 /**
- * System speechSynthesis. Must NOT call cancel() here — speakText already stopped
- * speech. Chrome drops speak() if it follows cancel() in the same turn; we delay.
+ * speechSynthesis for Safari/iOS (and English). Not used for Chrome Norwegian Hear.
  */
 function speakWithSystemVoice(text, lang, forcedVoice, rate, pitch, token) {
   if (!window.speechSynthesis) return false;
   if (token != null && token !== ttsPlayToken) return false;
 
   ensureSpeechVoicesListener();
-  const utterance = new SpeechSynthesisUtterance(text);
+  const utterance = new SpeechSynthesisUtterance(String(text || "").trim());
+  if (!utterance.text) return false;
+
   const wantedLang = lang || "en-US";
   const voice =
     forcedVoice ||
@@ -2931,17 +2926,12 @@ function speakWithSystemVoice(text, lang, forcedVoice, rate, pitch, token) {
 }
 
 /**
- * Hear word/sentence only. Gender sample uses playVoiceGenderPreview() instead
- * so the sample phrase never shares timers/queue with Hear.
+ * Hear word/sentence. Chrome Norwegian = Google audio ONLY, immediate (user gesture).
+ * Gender sample is playVoiceGenderPreview() only.
  */
 function speakText(text, lang) {
   const trimmed = String(text || "").trim();
   if (!trimmed) return;
-
-  // Guard: never play the gender sample through Hear (stray callers / bad data)
-  if (normalizeAnswer(trimmed) === normalizeAnswer(VOICE_PREVIEW_PHRASE)) {
-    return;
-  }
 
   unlockAudioPipeline();
   stopAllSpeech();
@@ -2950,68 +2940,84 @@ function speakText(text, lang) {
   const gender = preferredVoiceGender;
   const profile = genderUtteranceProfile(gender);
   const nb = isNorwegianLangTag(wantedLang);
+  const speakPayload = trimmed;
 
   ensureSpeechVoicesListener();
   if (window.speechSynthesis) window.speechSynthesis.getVoices();
 
-  ttsSpeakDelayTimer = window.setTimeout(() => {
-    ttsSpeakDelayTimer = null;
+  const run = () => {
     if (token !== ttsPlayToken) return;
 
-    // Safari / iOS female → Nora only (best quality)
+    // Safari female → Nora only
     if (nb && prefersAppleSystemTts() && gender === "female") {
       const nora =
         findPremiumNorwegianVoice("female") || pickAnyNorwegianSystemVoice();
       if (nora) {
-        speakWithSystemVoice(trimmed, wantedLang, nora, 1, 1, token);
+        speakWithSystemVoice(speakPayload, wantedLang, nora, 1, 1, token);
         return;
       }
     }
 
-    // Safari male with real OS male voice
+    // Safari male with OS male
     if (nb && prefersAppleSystemTts() && gender === "male") {
       const maleOs = findPremiumNorwegianVoice("male");
       if (maleOs) {
-        speakWithSystemVoice(trimmed, wantedLang, maleOs, 1, 1, token);
+        speakWithSystemVoice(speakPayload, wantedLang, maleOs, 1, 1, token);
         return;
       }
     }
 
-    // Chrome / Android / Safari male: Google only (one shot — no synth+google race)
+    // Chrome / Android / Safari male fallback: Google ONLY — no speechSynthesis
     if (nb) {
-      playGoogleTtsSimple(trimmed, wantedLang, gender, token).catch(() => {
+      playGoogleTtsSimple(speakPayload, wantedLang, gender, token).catch(() => {
         if (token !== ttsPlayToken) return;
-        const osVoice =
-          findPremiumNorwegianVoice(gender) ||
-          pickAnyNorwegianSystemVoice() ||
-          pickBestVoice(wantedLang, gender);
-        speakWithSystemVoice(
-          trimmed,
-          wantedLang,
-          osVoice,
-          profile.rate,
-          profile.pitch,
-          token
-        );
+        // Google blocked: delayed system only (never both at once)
+        window.setTimeout(() => {
+          if (token !== ttsPlayToken) return;
+          const osVoice =
+            findPremiumNorwegianVoice(gender) ||
+            pickAnyNorwegianSystemVoice() ||
+            pickBestVoice(wantedLang, gender);
+          speakWithSystemVoice(
+            speakPayload,
+            wantedLang,
+            osVoice,
+            profile.rate,
+            profile.pitch,
+            token
+          );
+        }, 80);
       });
       return;
     }
 
     const enVoice = pickBestVoice(wantedLang, gender);
     speakWithSystemVoice(
-      trimmed,
+      speakPayload,
       wantedLang,
       enVoice,
       profile.rate,
       profile.pitch,
       token
     );
+  };
+
+  // Chrome Google: run immediately (preserves click gesture for audio.play).
+  if (nb && !prefersAppleSystemTts()) {
+    run();
+    return;
+  }
+
+  ttsSpeakDelayTimer = window.setTimeout(() => {
+    ttsSpeakDelayTimer = null;
+    run();
   }, 70);
 }
 
 function speakForeign(text) {
   speakText(text, getActiveCategory().speechLang || "nb-NO");
 }
+
 
 let goalAudioContext = null;
 
