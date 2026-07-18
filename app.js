@@ -3821,7 +3821,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       targetField: "native",
       suggestedValue: safeSuggestedNative,
       title: "Different translation found",
-      copy: `For “${foreign}”, a common English is “${safeSuggestedNative}”. You typed “${native}”.`,
+      copy: `A common English for “${preferDisplayForm(foreign)}” is “${safeSuggestedNative}”. You typed “${native}”.`,
     };
   }
 
@@ -3892,7 +3892,7 @@ function renderAddCardReviewContext({
     blocks.push(`
       <section class="review-context-block is-warning">
         <h4 class="review-context-title">Already in your library</h4>
-        <p class="review-context-copy">“${escapeHtml(duplicate.foreign)}” is already listed as “${escapeHtml(duplicate.native)}”.</p>
+        <p class="review-context-copy">Already listed as “${escapeHtml(duplicate.native)}” / “${escapeHtml(preferDisplayForm(duplicate.foreign))}”.</p>
       </section>`);
   } else if (translation) {
     const canApplyOne =
@@ -3939,9 +3939,9 @@ function renderAddCardReviewContext({
         (item) => `
         <li class="review-context-item">
           <span class="review-context-item-pair">
-            <span lang="${getActiveCategory().foreignLang || "nb"}">${escapeHtml(item.foreign)}</span>
+            <span class="review-context-en">${escapeHtml(item.native)}</span>
             <span aria-hidden="true">·</span>
-            <span>${escapeHtml(item.native)}</span>
+            <span class="review-context-nb" lang="${getActiveCategory().foreignLang || "nb"}">${escapeHtml(item.foreign)}</span>
           </span>
         </li>`
       )

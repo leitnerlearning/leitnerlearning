@@ -2428,7 +2428,7 @@ body.welcome-open .app {
   color: var(--ink);
 }
 
-.review-context-item-pair span:first-child {
+.review-context-item-pair .review-context-nb {
   font-weight: 600;
   color: var(--brand-deep);
 }
