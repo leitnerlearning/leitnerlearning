@@ -1,9 +1,7 @@
 /**
  * Parallel reading texts for the Read tab.
- * Vocabulary aligns with the 1,000-card deck where possible.
  * Trail marks follow ski-run difficulty (green → double black).
- *
- * Mix: survival scenes, campus life in Bodø, and public-domain folk tales.
+ * Subtitles: short English labels only — no meta, no attribution fluff.
  */
 const READ_TRAIL_ORDER = [
   "green-circle",
@@ -72,7 +70,7 @@ const READ_STORIES = [
     id: "cafe-in-town",
     categoryId: "nb-bokmal",
     title: "Kaffe i byen",
-    subtitle: "Ordering coffee · everyday Norwegian",
+    subtitle: "Ordering coffee",
     trail: "green-circle",
     sentences: [
       { nb: "Hei! En kaffe, takk.", en: "Hi! One coffee, please." },
@@ -100,7 +98,7 @@ const READ_STORIES = [
     id: "on-the-train",
     categoryId: "nb-bokmal",
     title: "På toget",
-    subtitle: "Buying a ticket · travel dialogue",
+    subtitle: "Buying a ticket",
     trail: "green-circle",
     sentences: [
       { nb: "Unnskyld, går dette toget til Bodø?", en: "Excuse me, does this train go to Bodø?" },
@@ -129,7 +127,7 @@ const READ_STORIES = [
     id: "first-day-campus",
     categoryId: "nb-bokmal",
     title: "Første dag på campus",
-    subtitle: "First day on campus · Bodø",
+    subtitle: "First day on campus",
     trail: "green-circle",
     sentences: [
       { nb: "God morgen! I dag er min første dag på universitetet.", en: "Good morning! Today is my first day at the university." },
@@ -182,9 +180,8 @@ const READ_STORIES = [
     id: "askeladden",
     categoryId: "nb-bokmal",
     title: "Askeladden",
-    subtitle: "Norwegian folk tale · public domain",
+    subtitle: "The Ash Lad",
     trail: "green-circle",
-    source: "Asbjørnsen & Moe · Norske folkeeventyr",
     sentences: [
       { nb: "Det var en gang en bonde som hadde tre sønner.", en: "Once there was a farmer who had three sons." },
       { nb: "De to eldste var sterke og stolte.", en: "The two oldest were strong and proud." },
@@ -216,9 +213,8 @@ const READ_STORIES = [
     id: "tre-bukkene-bruse",
     categoryId: "nb-bokmal",
     title: "De tre bukkene Bruse",
-    subtitle: "The three billy goats · public domain",
+    subtitle: "The three billy goats",
     trail: "green-circle",
-    source: "Norwegian folk tale",
     sentences: [
       { nb: "Tre bukker skulle gå over broen.", en: "Three goats were going to cross the bridge." },
       { nb: "Under broen bodde et stort troll.", en: "Under the bridge lived a big troll." },
@@ -250,7 +246,7 @@ const READ_STORIES = [
     id: "at-the-doctor",
     categoryId: "nb-bokmal",
     title: "Hos legen",
-    subtitle: "At the doctor's · health dialogue",
+    subtitle: "At the doctor's",
     trail: "blue-square",
     sentences: [
       { nb: "God dag. Hva kan jeg hjelpe deg med?", en: "Good day. What can I help you with?" },
@@ -341,9 +337,8 @@ const READ_STORIES = [
     id: "prinsessen-pa-erten",
     categoryId: "nb-bokmal",
     title: "Prinsessen på erten",
-    subtitle: "H. C. Andersen · public domain",
+    subtitle: "The princess and the pea",
     trail: "blue-square",
-    source: "H. C. Andersen · 1835",
     sentences: [
       { nb: "En prins ville finne en ekte prinsesse.", en: "A prince wanted to find a real princess." },
       { nb: "Han reiste langt og langt, men det var vanskelig.", en: "He traveled far and wide, but it was difficult." },
@@ -373,7 +368,7 @@ const READ_STORIES = [
     id: "nord-university",
     categoryId: "nb-bokmal",
     title: "På Nord universitet",
-    subtitle: "Life at Nord University · Bodø",
+    subtitle: "Life at Nord University",
     trail: "blue-square",
     sentences: [
       { nb: "Jeg studerer på Nord universitet i Bodø.", en: "I study at Nord University in Bodø." },
@@ -429,7 +424,7 @@ const READ_STORIES = [
     id: "cabin-weekend",
     categoryId: "nb-bokmal",
     title: "Helg på hytta",
-    subtitle: "A cabin weekend · Norwegian tradition",
+    subtitle: "A cabin weekend",
     trail: "blue-square",
     sentences: [
       { nb: "I helgen drar vi til hytta i skogen.", en: "This weekend we are going to the cabin in the forest." },
@@ -461,7 +456,7 @@ const READ_STORIES = [
     id: "on-the-ferry",
     categoryId: "nb-bokmal",
     title: "På ferga",
-    subtitle: "Ferry across the fjord",
+    subtitle: "On the ferry",
     trail: "black-diamond",
     sentences: [
       { nb: "Vi tar ferga over fjorden tidlig om morgenen.", en: "We take the ferry across the fjord early in the morning." },
@@ -489,9 +484,8 @@ const READ_STORIES = [
     id: "rodhette",
     categoryId: "nb-bokmal",
     title: "Rødhette",
-    subtitle: "Little Red Riding Hood · public domain",
+    subtitle: "Little Red Riding Hood",
     trail: "black-diamond",
-    source: "European folk tale",
     sentences: [
       { nb: "En gang sendte en mor datteren sin til bestemor.", en: "Once a mother sent her daughter to grandmother." },
       { nb: "Hun fikk en rød kappe og ble kalt Rødhette.", en: "She got a red cape and was called Little Red Riding Hood." },
@@ -525,7 +519,7 @@ const READ_STORIES = [
     id: "fieldwork-sea",
     categoryId: "nb-bokmal",
     title: "Feltarbeid ved sjøen",
-    subtitle: "Marine fieldwork · Bodø coast",
+    subtitle: "Marine fieldwork",
     trail: "black-diamond",
     sentences: [
       { nb: "I dag skal vi gjøre feltarbeid ved kysten utenfor Bodø.", en: "Today we are going to do fieldwork on the coast outside Bodø." },
@@ -556,9 +550,8 @@ const READ_STORIES = [
     id: "cat-and-mice",
     categoryId: "nb-bokmal",
     title: "Katten og musene",
-    subtitle: "Folk tale · public domain",
+    subtitle: "The cat and the mice",
     trail: "black-diamond",
-    source: "European folk tale",
     sentences: [
       { nb: "En bonde hadde mange mus i huset sitt.", en: "A farmer had many mice in his house." },
       { nb: "Musene spiste maten og ødela ting.", en: "The mice ate the food and ruined things." },
@@ -588,7 +581,7 @@ const READ_STORIES = [
     id: "northern-lights-night",
     categoryId: "nb-bokmal",
     title: "Under nordlyset",
-    subtitle: "A night under the northern lights",
+    subtitle: "Under the northern lights",
     trail: "double-black-diamond",
     sentences: [
       { nb: "Det er midnatt, og byen ligger stille under mørket.", en: "It is midnight, and the town lies quiet under the dark." },
@@ -618,9 +611,8 @@ const READ_STORIES = [
     id: "soria-moria-slott",
     categoryId: "nb-bokmal",
     title: "Soria Moria slott",
-    subtitle: "Asbjørnsen & Moe · public domain",
+    subtitle: "Soria Moria castle",
     trail: "double-black-diamond",
-    source: "Peter Christen Asbjørnsen & Jørgen Moe · 1843",
     sentences: [
       { nb: "Det var en gang en far som hadde tre sønner.", en: "Once there was a father who had three sons." },
       { nb: "Han eide en gård, men tørken hadde tatt alt vannet.", en: "He owned a farm, but the drought had taken all the water." },
@@ -653,7 +645,7 @@ const READ_STORIES = [
     id: "master-thesis",
     categoryId: "nb-bokmal",
     title: "Masteroppgaven",
-    subtitle: "Writing a master's thesis",
+    subtitle: "The master's thesis",
     trail: "double-black-diamond",
     sentences: [
       { nb: "Siste semester skriver jeg masteroppgaven min om marin økologi.", en: "In my final semester I am writing my master's thesis on marine ecology." },
@@ -685,9 +677,8 @@ const READ_STORIES = [
     id: "east-of-sun",
     categoryId: "nb-bokmal",
     title: "Østenfor sol og vestenfor måne",
-    subtitle: "Asbjørnsen & Moe · public domain",
+    subtitle: "East of the sun and west of the moon",
     trail: "double-black-diamond",
-    source: "Peter Christen Asbjørnsen & Jørgen Moe · 1841",
     sentences: [
       { nb: "Det var en gang en prins som ville finne jenta med gullhår.", en: "Once there was a prince who wanted to find the girl with golden hair." },
       { nb: "Han reiste østenfor sol og vestenfor måne.", en: "He traveled east of the sun and west of the moon." },
@@ -716,9 +707,8 @@ const READ_STORIES = [
     id: "kvitebjorn-kong-valemon",
     categoryId: "nb-bokmal",
     title: "Kvitebjørn kong Valemon",
-    subtitle: "Asbjørnsen & Moe · public domain",
+    subtitle: "The white bear king",
     trail: "double-black-diamond",
-    source: "Peter Christen Asbjørnsen & Jørgen Moe",
     sentences: [
       { nb: "Det var en gang en konge som hadde tre døtre.", en: "Once there was a king who had three daughters." },
       { nb: "En dag kom en stor, hvit bjørn til slottet.", en: "One day a great white bear came to the palace." },
