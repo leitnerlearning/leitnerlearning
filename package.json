@@ -3,6 +3,6 @@
   "private": true,
   "description": "Leitner Learning — Norwegian SRS app",
   "scripts": {
-    "test": "node tests/srs-simulation.js"
+    "test": "node tests/srs-simulation.js && node tests/tts-routing.js"
   }
 }

@@ -2474,13 +2474,14 @@ function resumeSpeakModeIfNeeded() {
 }
 
 /**
- * Speech synthesis
- * ---------------
- * Norwegian hybrid plan:
- *  1) Prefer premium OS neural voices when gender matches (Nora, Pernille, Finn, …)
- *  2) Never pitch-shift a voice to fake the other gender (sounds weird)
- *  3) Missing gender → Google Translate TTS (mild rate cue only)
- * English uses system voices with gender preference.
+ * Speech synthesis (Hear)
+ * -----------------------
+ * Simple, testable routing — prefer reliability over clever hacks:
+ *  - Safari/iOS female → Apple Nora (natural)
+ *  - Safari/iOS male → Google TTS male profile when no OS male (clear difference)
+ *  - Chrome → Google TTS first (works when system voices are empty/broken), then system
+ *  - Never use createMediaElementSource (silences Chrome cross-origin / CORS audio)
+ *  - No speechSynthesis warm-up cancel (degrades Safari quality)
  */
 let speechVoicesCache = [];
 let speechVoicesListening = false;
@@ -2713,21 +2714,21 @@ function googleTtsUrl(text, langTag) {
 }
 
 /**
- * Gender profiles for the single Google Norwegian voice.
- * Keep volume max on every platform; only rate differs slightly for gender cue.
+ * Google TTS has one Norwegian speaker. Rate is the only reliable gender cue.
+ * Keep differences audible (male slower, female slightly quicker).
  */
 function neuralPlaybackProfile(gender) {
   if (gender === "male") {
-    return { playbackRate: 0.96, volume: 1, gainBoost: 1.45 };
+    return { playbackRate: 0.84, volume: 1 };
   }
-  return { playbackRate: 1.0, volume: 1, gainBoost: 1.45 };
+  return { playbackRate: 1.06, volume: 1 };
 }
 
 /**
- * Play TTS audio at full volume. Prefer Web Audio gain boost when available
- * (Google streams can sound quiet on desktop Chrome / some phones).
+ * Plain HTMLAudio playback. Do NOT use createMediaElementSource — on Chrome it
+ * often yields silence for Google TTS (CORS / media element graph issues).
  */
-function playAudioUrl(url, { playbackRate = 1, volume = 1, token, gainBoost = 1.4 } = {}) {
+function playAudioUrl(url, { playbackRate = 1, volume = 1, token } = {}) {
   return new Promise((resolve, reject) => {
     if (token !== ttsPlayToken) {
       resolve();
@@ -2737,83 +2738,49 @@ function playAudioUrl(url, { playbackRate = 1, volume = 1, token, gainBoost = 1.
     const audio = new Audio();
     ttsAudioEl = audio;
     audio.preload = "auto";
-    audio.volume = Math.min(1, Math.max(0, volume));
+    audio.volume = 1;
 
     const applyRate = () => {
       try {
         audio.playbackRate = playbackRate;
+        audio.volume = Math.min(1, Math.max(0, volume));
       } catch {
         /* ignore */
       }
     };
-    audio.addEventListener("loadedmetadata", applyRate);
-    audio.addEventListener("canplay", applyRate);
-    audio.src = url;
-    applyRate();
 
-    let cleaned = false;
-    const cleanup = () => {
-      if (cleaned) return;
-      cleaned = true;
+    let settled = false;
+    const finish = (err) => {
+      if (settled) return;
+      settled = true;
       audio.onended = null;
       audio.onerror = null;
       audio.removeEventListener("loadedmetadata", applyRate);
       audio.removeEventListener("canplay", applyRate);
       if (ttsAudioEl === audio) ttsAudioEl = null;
+      if (err) reject(err);
+      else resolve();
     };
 
-    const finishOk = () => {
-      cleanup();
-      resolve();
-    };
-    const finishErr = (err) => {
-      cleanup();
-      reject(err || new Error("Audio failed"));
-    };
-
-    // Web Audio path: audible gain without clipping too hard
-    const tryWebAudioBoost = () => {
-      try {
-        const ctx = getGoalAudioContext();
-        if (!ctx || gainBoost <= 1.01) return false;
-        if (ctx.state === "suspended") {
-          ctx.resume().catch(() => {});
-        }
-        const source = ctx.createMediaElementSource(audio);
-        const gain = ctx.createGain();
-        gain.gain.value = Math.min(2.2, gainBoost);
-        source.connect(gain);
-        gain.connect(ctx.destination);
-        return true;
-      } catch {
-        return false;
-      }
-    };
-
-    audio.onended = finishOk;
-    audio.onerror = () => finishErr(new Error("Audio failed to load"));
-
-    const boosted = tryWebAudioBoost();
-    if (!boosted) {
-      audio.volume = 1;
-    }
+    audio.addEventListener("loadedmetadata", applyRate);
+    audio.addEventListener("canplay", applyRate);
+    audio.onended = () => finish(null);
+    audio.onerror = () => finish(new Error("Audio failed to load"));
+    audio.src = url;
+    applyRate();
 
     const playPromise = audio.play();
     if (playPromise && typeof playPromise.then === "function") {
-      playPromise.catch((err) => finishErr(err));
+      playPromise.catch((err) => finish(err || new Error("Audio play blocked")));
     }
   });
 }
 
-/**
- * Fetch TTS as a blob so mobile Chrome can play it (cross-origin URL + play()
- * often fails after an async gap; blob: URLs are more reliable).
- */
 async function playGoogleTtsBlob(text, lang, profile) {
   const token = profile.token;
   if (token !== ttsPlayToken) return;
   const url = googleTtsUrl(text, lang);
-  const response = await fetch(url, { mode: "cors", credentials: "omit", cache: "force-cache" });
+  const response = await fetch(url, { mode: "cors", credentials: "omit", cache: "no-store" });
   if (!response.ok) throw new Error("TTS fetch failed");
   const blob = await response.blob();
   if (!blob || blob.size < 32) throw new Error("TTS empty");
@@ -2839,11 +2806,19 @@ async function speakWithNeuralAudio(text, lang, gender, token) {
 
   for (const chunk of chunks) {
     if (token !== ttsPlayToken) return;
-    try {
-      await playGoogleTtsBlob(chunk, lang, profile);
-    } catch {
-      const url = googleTtsUrl(chunk, lang);
-      await playAudioUrl(url, profile);
+    // Desktop Chrome: direct URL often works; blob second. Mobile: blob first.
+    if (isCoarsePointerDevice()) {
+      try {
+        await playGoogleTtsBlob(chunk, lang, profile);
+      } catch {
+        await playAudioUrl(googleTtsUrl(chunk, lang), profile);
+      }
+    } else {
+      try {
+        await playAudioUrl(googleTtsUrl(chunk, lang), profile);
+      } catch {
+        await playGoogleTtsBlob(chunk, lang, profile);
+      }
     }
   }
 }
@@ -2914,46 +2889,41 @@ function pickAnyNorwegianSystemVoice() {
 }
 
 /**
- * Decide how to speak Norwegian for the selected gender.
- * Safari/iOS: always prefer system nb (Nora) at natural rate — never Google if any OS nb exists.
+ * Route Norwegian Hear by platform + gender.
+ * Returns a plain object (easy to unit-test).
+ *
+ * Safari female → Nora (best quality).
+ * Safari male → Google male rate (so Voice toggle is audible; no Nora pitch-fake).
+ * Chrome → Google first (system nb often missing), system fallback.
  */
 function resolveNorwegianVoicePlan(gender = preferredVoiceGender) {
   const want = gender === "male" ? "male" : "female";
   ensureSpeechVoicesListener();
 
-  // Apple first: natural Nora (or whatever nb voice the OS has).
   if (prefersAppleSystemTts()) {
-    const appleVoice =
-      (want === "female"
-        ? findPremiumNorwegianVoice("female") || pickAnyNorwegianSystemVoice()
-        : findPremiumNorwegianVoice("male")) ||
-      (want === "female" ? pickAnyNorwegianSystemVoice() : null);
-    if (appleVoice) {
-      return {
-        source: "system",
-        voice: appleVoice,
-        rate: 1,
-        pitch: 1,
-        mode: "apple-natural",
-      };
+    if (want === "female") {
+      const nora =
+        findPremiumNorwegianVoice("female") || pickAnyNorwegianSystemVoice();
+      if (nora) {
+        return { source: "system", voice: nora, rate: 1, pitch: 1, mode: "apple-female" };
+      }
+    } else {
+      const maleOs = findPremiumNorwegianVoice("male");
+      if (maleOs) {
+        return { source: "system", voice: maleOs, rate: 1, pitch: 1, mode: "apple-male" };
+      }
+      // Clear male path: Google with slower rate (not pitched Nora)
+      return { source: "google", gender: "male", mode: "apple-male-google" };
     }
-    // Male on Apple with only Nora: fall through to Google (no pitch-fake).
   }
 
   const matched = findPremiumNorwegianVoice(want);
   if (matched) {
-    return { source: "system", voice: matched, rate: 1, pitch: 1, mode: "natural" };
+    return { source: "system", voice: matched, rate: 1, pitch: 1, mode: "os-matched" };
   }
 
-  // Phones: any OS nb before Google
-  if (isCoarsePointerDevice()) {
-    const anyNb = pickAnyNorwegianSystemVoice();
-    if (anyNb) {
-      return { source: "system", voice: anyNb, rate: 1, pitch: 1, mode: "mobile-system" };
-    }
-  }
-
-  return { source: "google", gender: want };
+  // Chrome desktop/Android: Google gives consistent Hear + gender cue
+  return { source: "google", gender: want, mode: "google-default" };
 }
 
 function speakWithSystemVoice(text, lang, forcedVoice = null, options = {}) {
@@ -2961,11 +2931,7 @@ function speakWithSystemVoice(text, lang, forcedVoice = null, options = {}) {
 
   unlockAudioPipeline();
   ensureSpeechVoicesListener();
-  const {
-    rate: rateOpt = null,
-    pitch: pitchOpt = null,
-    evenDuration = false,
-  } = options;
+  const { rate: rateOpt = null, pitch: pitchOpt = null } = options;
 
   const run = () => {
     if (!text) return;
@@ -2978,10 +2944,7 @@ function speakWithSystemVoice(text, lang, forcedVoice = null, options = {}) {
     const utterance = new SpeechSynthesisUtterance(text);
     const wantedLang = lang || "en-US";
     const voice =
-      forcedVoice ||
-      (evenDuration && isNorwegianLangTag(wantedLang)
-        ? pickAnyNorwegianSystemVoice()
-        : pickBestVoice(wantedLang, preferredVoiceGender));
+      forcedVoice || pickBestVoice(wantedLang, preferredVoiceGender);
 
     if (voice) {
       utterance.voice = voice;
@@ -2990,42 +2953,24 @@ function speakWithSystemVoice(text, lang, forcedVoice = null, options = {}) {
       utterance.lang = wantedLang;
     }
 
-    // Natural rate/pitch on Apple; full volume everywhere.
-    if (rateOpt != null && pitchOpt != null) {
-      utterance.rate = rateOpt;
-      utterance.pitch = pitchOpt;
-    } else {
-      utterance.rate = prefersAppleSystemTts() ? 1 : 0.98;
-      utterance.pitch = 1;
-    }
+    utterance.rate = rateOpt != null ? rateOpt : 1;
+    utterance.pitch = pitchOpt != null ? pitchOpt : 1;
     utterance.volume = 1;
 
     try {
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-      }
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
       window.speechSynthesis.speak(utterance);
-      if (window.speechSynthesis.paused) {
-        window.speechSynthesis.resume();
-      }
-      if (prefersAppleSystemTts()) {
-        window.setTimeout(() => {
-          try {
-            if (window.speechSynthesis.paused) window.speechSynthesis.resume();
-          } catch {
-            /* ignore */
-          }
-        }, 40);
-      }
+      if (window.speechSynthesis.paused) window.speechSynthesis.resume();
     } catch {
       /* ignore */
     }
   };
 
-  // Immediate speak when possible (user gesture). Short wait only if voice list empty.
   if (!getSpeechVoices().length && window.speechSynthesis) {
     window.speechSynthesis.getVoices();
-    window.setTimeout(run, prefersAppleSystemTts() ? 20 : 50);
+    // Speak immediately with lang only, then again when voices arrive (Chrome desktop).
+    run();
+    window.setTimeout(run, 120);
     return;
   }
   run();
@@ -3043,16 +2988,20 @@ function speakNorwegianWithPlan(text, lang, token) {
     return;
   }
 
-  // Google audio (boosted), then any system voice fallback.
-  speakWithNeuralAudio(text, lang, preferredVoiceGender, token).catch(() => {
+  // Google path (Chrome Hear + Safari male). Fall back to any system voice if blocked.
+  speakWithNeuralAudio(text, lang, plan.gender || preferredVoiceGender, token).catch(() => {
     if (token !== ttsPlayToken) return;
-    speakWithSystemVoice(text, lang, null, { evenDuration: true });
+    const fallback = pickAnyNorwegianSystemVoice() || pickBestVoice(lang, preferredVoiceGender);
+    if (fallback) {
+      speakWithSystemVoice(text, lang, fallback, { rate: 1, pitch: 1 });
+    } else {
+      speakWithSystemVoice(text, lang, null, { rate: 1, pitch: 1 });
+    }
   });
 }
 
 /**
- * Norwegian: hybrid OS premium / platform system voices + Google fallback.
- * English: system voices. Always unlock audio first for iOS / locked Chrome.
+ * Public Hear entry. Always unlock + cancel previous, then route by language.
  */
 function speakText(text, lang) {
   const trimmed = String(text || "").trim();
@@ -3065,10 +3014,16 @@ function speakText(text, lang) {
 
   if (isNorwegianLangTag(wantedLang)) {
     ensureSpeechVoicesListener();
+    // Chrome: voices list often empty until voiceschanged — still try Google immediately
+    // so Hear works without waiting on speechSynthesis.
+    const plan = resolveNorwegianVoicePlan(preferredVoiceGender);
+    if (plan.source === "google") {
+      speakNorwegianWithPlan(trimmed, wantedLang, token);
+      return;
+    }
     if (!getSpeechVoices().length && window.speechSynthesis) {
       window.speechSynthesis.getVoices();
-      const waitMs = isCoarsePointerDevice() ? 30 : 80;
-      window.setTimeout(() => speakNorwegianWithPlan(trimmed, wantedLang, token), waitMs);
+      window.setTimeout(() => speakNorwegianWithPlan(trimmed, wantedLang, token), 80);
       return;
     }
     speakNorwegianWithPlan(trimmed, wantedLang, token);
