@@ -5397,7 +5397,13 @@ function lookupReadWord(token, deckMap, story) {
 
 function getReadWordClasses(lookup) {
   if (!lookup) return "read-word";
-  return "read-word read-word--tappable";
+  const classes = ["read-word", "read-word--tappable"];
+  if (lookup.source === "deck" || lookup.card) {
+    classes.push("read-word--deck");
+  } else {
+    classes.push("read-word--extra");
+  }
+  return classes.join(" ");
 }
 
 const READ_CLOSING_PUNCT = /^[.,!?;:»'")\u201d\u2019\u2026\u2014\u2013-]+$/;
@@ -5484,6 +5490,7 @@ function closeReadGloss() {
   const glossEl = document.getElementById("read-gloss");
   if (glossEl) {
     glossEl.classList.add("is-collapsed");
+    glossEl.classList.remove("read-gloss--deck", "read-gloss--extra");
     glossEl.hidden = true;
   }
   document.querySelectorAll(".read-word--active").forEach((el) => el.classList.remove("read-word--active"));
@@ -5512,10 +5519,13 @@ function openReadGloss(button) {
   const meaningEl = document.getElementById("read-gloss-meaning");
   if (!glossEl || !meaningEl) return;
 
+  const inDeck = payload.source === "deck" || payload.cardId != null;
+  const sourceLabel = inDeck ? "In your deck" : "Story word";
   const lemma = payload.matchedLemma;
-  meaningEl.textContent = lemma
-    ? `${payload.native} (from ${lemma})`
-    : payload.native;
+  const core = lemma ? `${payload.native} (from ${lemma})` : payload.native;
+  meaningEl.textContent = `${core} · ${sourceLabel}`;
+  glossEl.classList.toggle("read-gloss--deck", inDeck);
+  glossEl.classList.toggle("read-gloss--extra", !inDeck);
   glossEl.classList.remove("is-collapsed");
   glossEl.hidden = false;
 }

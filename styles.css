@@ -4129,14 +4129,58 @@ body.welcome-open .app {
 
 .read-word--tappable {
   cursor: pointer;
-  text-decoration: underline;
-  text-decoration-color: rgba(54, 95, 207, 0.32);
   text-underline-offset: 0.18em;
+}
+
+/* Deck words: solid brand underline + light wash (ties Read to Review) */
+.read-word--deck {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: rgba(54, 95, 207, 0.48);
+  background: color-mix(in srgb, var(--brand) 9%, transparent);
+  border-radius: 0.28rem;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.read-word--deck:hover,
+.read-word--deck:focus-visible {
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  text-decoration-color: var(--brand);
+  outline: none;
+}
+
+/* Story-only words: dotted underline, no wash */
+.read-word--extra {
+  text-decoration: underline dotted;
+  text-decoration-thickness: 1.25px;
+  text-decoration-color: color-mix(in srgb, var(--text-secondary) 55%, transparent);
+}
+
+.read-word--extra:hover,
+.read-word--extra:focus-visible {
+  background: color-mix(in srgb, var(--text-secondary) 8%, transparent);
+  text-decoration-color: var(--text-secondary);
+  outline: none;
 }
 
 .read-word--active {
   text-decoration-thickness: 2px;
   text-decoration-color: var(--brand);
+}
+
+.read-word--deck.read-word--active {
+  background: color-mix(in srgb, var(--brand) 20%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 24%, transparent);
+}
+
+.read-word--extra.read-word--active {
+  background: color-mix(in srgb, var(--text-secondary) 12%, transparent);
+  text-decoration-style: solid;
+}
+
+.read-gloss--extra .read-gloss-meaning {
+  color: var(--text-secondary);
 }
 
 .read-footer {
