@@ -2250,9 +2250,10 @@ function resumeSpeakModeIfNeeded() {
 /**
  * Speech synthesis
  * ---------------
- * Browser speechSynthesis is often robotic for Norwegian (one compact voice, or
- * English fallback). Norwegian uses Google Translate’s neural TTS audio instead,
- * with distinct male/female playback profiles. English still uses system voices.
+ * Norwegian always uses Google Translate neural TTS (same audio engine for both
+ * genders; a small rate shift marks male/female). System voices are last resort
+ * only, with matched duration — Safari’s Nora made Female samples much longer.
+ * English still uses system voices.
  */
 let speechVoicesCache = [];
 let speechVoicesListening = false;
@@ -2483,14 +2484,14 @@ function googleTtsUrl(text, langTag) {
 
 /**
  * Gender profiles for the single Google Norwegian voice.
- * (The API has no separate male/female Norwegian voice; rate/pitch simulate two speakers.)
+ * Keep rates close so male/female samples stay similar length; pitch is not
+ * available on HTMLAudioElement, so a small rate shift is the cue.
  */
 function neuralPlaybackProfile(gender) {
-  // Google exposes one Norwegian voice; rate shifts create two clear speaker profiles.
   if (gender === "male") {
-    return { playbackRate: 0.82, volume: 1 };
+    return { playbackRate: 0.94, volume: 1 };
   }
-  return { playbackRate: 1.08, volume: 1 };
+  return { playbackRate: 1.02, volume: 1 };
 }
 
 function playAudioUrl(url, { playbackRate = 1, volume = 1, token } = {}) {
@@ -2503,13 +2504,25 @@ function playAudioUrl(url, { playbackRate = 1, volume = 1, token } = {}) {
     const audio = new Audio();
     ttsAudioEl = audio;
     audio.preload = "auto";
-    audio.playbackRate = playbackRate;
     audio.volume = volume;
+    // Safari often ignores playbackRate set before the media is ready.
+    const applyRate = () => {
+      try {
+        audio.playbackRate = playbackRate;
+      } catch {
+        /* ignore */
+      }
+    };
+    audio.addEventListener("loadedmetadata", applyRate);
+    audio.addEventListener("canplay", applyRate);
     audio.src = url;
+    applyRate();
 
     const cleanup = () => {
       audio.onended = null;
       audio.onerror = null;
+      audio.removeEventListener("loadedmetadata", applyRate);
+      audio.removeEventListener("canplay", applyRate);
       if (ttsAudioEl === audio) ttsAudioEl = null;
     };
 
@@ -2544,57 +2557,42 @@ async function speakWithNeuralAudio(text, lang, gender, token) {
   }
 }
 
-/**
- * True male/female neural voices when the OS/browser exposes them
- * (e.g. Microsoft Pernille / Finn in Edge). Only used when gender matches.
- */
-function findGenderMatchedNeuralSystemVoice(gender) {
-  const preferred = gender === "male" ? "male" : "female";
+/** Best Norwegian system voice, ignoring gender (used only as last-resort fallback). */
+function pickAnyNorwegianSystemVoice() {
+  const voices = getSpeechVoices().filter((voice) => isNorwegianLangTag(voice.lang));
+  if (!voices.length) return null;
+
   let best = null;
   let bestScore = -Infinity;
-
-  for (const voice of getSpeechVoices()) {
-    if (!isNorwegianLangTag(voice.lang)) continue;
+  for (const voice of voices) {
     const hay = `${voice.name || ""} ${voice.voiceURI || ""}`.toLowerCase();
     if (/\b(compact|eloquence|espeak|festival)\b/.test(hay)) continue;
-
-    const g = detectVoiceGender(voice);
-    if (g !== preferred) continue;
-
     let score = voiceQualityBonus(voice);
-    if (/\b(natural|neural|online|premium|enhanced)\b/.test(hay)) score += 50;
-    if (/\b(pernille|finn|nora|hulda|iselin)\b/.test(hay)) score += 40;
-    if (/\bmicrosoft\b/.test(hay)) score += 15;
-
+    const lang = String(voice.lang || "").toLowerCase();
+    if (lang.startsWith("nb")) score += 10;
     if (score > bestScore) {
       bestScore = score;
       best = voice;
     }
   }
-
-  // Require a clearly high-quality gender-matched voice (not generic compact TTS)
-  return bestScore >= 40 ? best : null;
+  return best || voices[0] || null;
 }
 
-/**
- * Use OS Norwegian voices only when BOTH genders are available.
- * Safari often has Nora (female) but no male pair — female then used system TTS
- * while male used Google, so the gender sample sounded longer/different on Female.
- * Chrome usually has no gendered nb pair, so both used Google (short sample).
- */
-function pickPairedNorwegianSystemVoice(gender) {
-  const female = findGenderMatchedNeuralSystemVoice("female");
-  const male = findGenderMatchedNeuralSystemVoice("male");
-  if (!female || !male) return null;
-  return gender === "male" ? male : female;
-}
-
-function speakWithSystemVoice(text, lang, forcedVoice = null) {
+function speakWithSystemVoice(text, lang, forcedVoice = null, options = {}) {
   if (!window.speechSynthesis) return;
 
   ensureSpeechVoicesListener();
+  const {
+    // Same rate for male/female so samples match length; pitch carries gender.
+    evenDuration = false,
+  } = options;
 
   const run = () => {
+    try {
+      window.speechSynthesis.cancel();
+    } catch {
+      /* ignore */
+    }
     try {
       window.speechSynthesis.cancel();
     } catch {
@@ -2605,7 +2603,11 @@ function speakWithSystemVoice(text, lang, forcedVoice = null) {
       if (!text) return;
       const utterance = new SpeechSynthesisUtterance(text);
       const wantedLang = lang || "en-US";
-      const voice = forcedVoice || pickBestVoice(wantedLang, preferredVoiceGender);
+      const voice =
+        forcedVoice ||
+        (evenDuration && isNorwegianLangTag(wantedLang)
+          ? pickAnyNorwegianSystemVoice()
+          : pickBestVoice(wantedLang, preferredVoiceGender));
 
       if (voice) {
         utterance.voice = voice;
@@ -2614,8 +2616,11 @@ function speakWithSystemVoice(text, lang, forcedVoice = null) {
         utterance.lang = wantedLang;
       }
 
-      // Natural pace when we already have a real neural speaker; otherwise pitch-split
-      if (forcedVoice) {
+      if (evenDuration) {
+        // Shared pace; only pitch shifts (Safari Nora was much slower as "female").
+        utterance.rate = 1;
+        utterance.pitch = preferredVoiceGender === "male" ? 0.75 : 1.15;
+      } else if (forcedVoice) {
         utterance.rate = 0.92;
         utterance.pitch = 1;
       } else if (preferredVoiceGender === "male") {
@@ -2627,7 +2632,7 @@ function speakWithSystemVoice(text, lang, forcedVoice = null) {
       }
       utterance.volume = 1;
       window.speechSynthesis.speak(utterance);
-    }, 30);
+    }, 40);
   };
 
   if (!getSpeechVoices().length) {
@@ -2639,7 +2644,9 @@ function speakWithSystemVoice(text, lang, forcedVoice = null) {
 }
 
 /**
- * Norwegian: real OS neural voices only when male+female both exist; else Google neural audio.
+ * Norwegian: always Google neural audio (same engine for male/female).
+ * System TTS is last resort only, with even duration so Safari Nora is not
+ * reserved for Female while Male uses a different path.
  * English: system voices with gender preference.
  */
 function speakText(text, lang) {
@@ -2652,15 +2659,9 @@ function speakText(text, lang) {
 
   if (isNorwegianLangTag(wantedLang)) {
     ensureSpeechVoicesListener();
-    const matched = pickPairedNorwegianSystemVoice(preferredVoiceGender);
-    if (matched) {
-      speakWithSystemVoice(trimmed, wantedLang, matched);
-      return;
-    }
-
     speakWithNeuralAudio(trimmed, wantedLang, preferredVoiceGender, token).catch(() => {
       if (token !== ttsPlayToken) return;
-      speakWithSystemVoice(trimmed, wantedLang);
+      speakWithSystemVoice(trimmed, wantedLang, null, { evenDuration: true });
     });
     return;
   }
