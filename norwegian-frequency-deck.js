@@ -8,11 +8,11 @@ const DECK_META = {
   name: "Norwegian Essentials",
   language: "nb",
   targetLanguage: "en",
-  version: 5,
+  version: 6,
   cardCount: 1000,
   source:
     "Wiktionary Bokmål frequency (opensubtitles.org) + learner curation",
-  note: "Ranks 1–500: essentials & campus. 501–1000: reading & story vocabulary (see norwegian-reading-vocab.js).",
+  note: "Ranks 1–500: essentials & campus. 501–1000: reading, dialogue & story forms (see norwegian-reading-vocab.js). Quality pass 2026-07.",
 };
 
 const NORWEGIAN_FREQUENCY_DECK = [
@@ -307,7 +307,7 @@ const NORWEGIAN_FREQUENCY_DECK = [
   { foreign: "lære", native: "learn / teach", rank: 282, category: "verb", band: "D" },
   { foreign: "huske", native: "remember", rank: 283, category: "verb", band: "D" },
   { foreign: "glemme", native: "forget", rank: 284, category: "verb", band: "D" },
-  { foreign: "like", native: "like", rank: 285, category: "verb", band: "D" },
+  { foreign: "like", native: "alike / just as", rank: 285, category: "adverb", band: "D" },
   { foreign: "løpe", native: "run", rank: 286, category: "verb", band: "D" },
   { foreign: "rope", native: "shout / call", rank: 287, category: "verb", band: "D" },
   { foreign: "le", native: "laugh", rank: 288, category: "verb", band: "D" },
@@ -390,7 +390,7 @@ const NORWEGIAN_FREQUENCY_DECK = [
   { foreign: "korall", native: "coral", rank: 364, category: "noun", band: "E" },
   { foreign: "havbunn", native: "seabed", rank: 365, category: "noun", band: "E" },
   { foreign: "dyp", native: "deep / depth", rank: 366, category: "noun", band: "E" },
-  { foreign: "strøm", native: "current", rank: 367, category: "noun", band: "E" },
+  { foreign: "strøm", native: "electricity / current", rank: 367, category: "noun", band: "E" },
   { foreign: "tidevann", native: "tide", rank: 368, category: "noun", band: "E" },
   { foreign: "salt", native: "salt", rank: 369, category: "noun", band: "E" },
   { foreign: "ferskvann", native: "freshwater", rank: 370, category: "noun", band: "E" },

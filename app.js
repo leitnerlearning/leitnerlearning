@@ -1724,11 +1724,27 @@ function mergeStarterIntoDeck(existing, category = getActiveCategory()) {
     byForeign.set(normalizeAnswer(card.foreign), card);
   });
 
-  let added = false;
+  let changed = false;
   const merged = [...existing];
   for (const entry of starter) {
     const key = normalizeAnswer(entry.foreign);
-    if (byForeign.has(key)) continue;
+    const current = byForeign.get(key);
+    if (current) {
+      // Refresh gloss and metadata from the curated starter (keeps SRS progress).
+      if (
+        current.native !== entry.native ||
+        current.rank !== entry.rank ||
+        current.category !== entry.category ||
+        current.band !== entry.band
+      ) {
+        current.native = entry.native;
+        current.rank = entry.rank ?? current.rank;
+        current.category = entry.category ?? current.category;
+        current.band = entry.band ?? current.band;
+        changed = true;
+      }
+      continue;
+    }
     const newCard = createCard(entry.foreign, entry.native, {
       rank: entry.rank,
       category: entry.category,
@@ -1736,10 +1752,10 @@ function mergeStarterIntoDeck(existing, category = getActiveCategory()) {
     });
     merged.push(newCard);
     byForeign.set(key, newCard);
-    added = true;
+    changed = true;
   }
 
-  if (!added) return existing;
+  if (!changed) return existing;
   return merged.sort((a, b) => (a.rank ?? 99999) - (b.rank ?? 99999));
 }
 
@@ -1796,7 +1812,8 @@ function loadDeck(categoryId = activeCategoryId) {
         }
         let usable = ensureDeckIsUsable(parsed);
         const merged = mergeStarterIntoDeck(usable, getCategoryById(categoryId));
-        if (merged.length !== usable.length) {
+        // Reassign when cards were added or gloss/metadata refreshed.
+        if (merged !== usable) {
           usable = ensureDeckIsUsable(merged);
         }
         if (usable.length) {
