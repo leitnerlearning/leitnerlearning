@@ -26,9 +26,9 @@ const BAND_LABELS = {
   B: "Core",
   C: "Daily",
   D: "Expanded",
-  E: "Campus & life",
+  E: "Campus & Life",
   F: "Reading",
-  G: "Wider reading",
+  G: "Wider Reading",
   phrase: "Phrases",
 };
 
