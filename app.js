@@ -203,8 +203,8 @@ function createCard(foreign, native, meta = {}) {
   const now = Date.now();
   return {
     id: createId(),
-    foreign: foreign.trim(),
-    native: native.trim(),
+    foreign: stripFlashcardPunctuation(foreign),
+    native: stripFlashcardPunctuation(native),
     box: 1,
     nextReviewAt: now,
     lastReviewedAt: null,
@@ -802,6 +802,23 @@ function normalizeAnswer(text) {
     .trim()
     .replace(/[.,!?;:'"“”‘’]/g, "")
     .replace(/\s+/g, " ");
+}
+
+/**
+ * Flashcards are lemmas and short phrases — not full sentences.
+ * Strip wrapping quotes and trailing . ! … that MT likes to add
+ * (those also glitch review copy: … “spise”. Tap…).
+ * Keep ? so questions still read as questions.
+ */
+function stripFlashcardPunctuation(text) {
+  if (text == null) return "";
+  return String(text)
+    .trim()
+    .replace(/^["'“”‘’«»]+|["'“”‘’«»]+$/g, "")
+    .replace(/[\s.!…。．,;:]+$/u, "")
+    .replace(/^[\s.!…。．,;:]+/u, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
@@ -1626,8 +1643,8 @@ function sanitizeDeck(cards) {
       const nextReviewAt = Number(card.nextReviewAt);
       return {
         id: card.id || createId(),
-        foreign: String(card.foreign).trim(),
-        native: String(card.native).trim(),
+        foreign: stripFlashcardPunctuation(card.foreign),
+        native: stripFlashcardPunctuation(card.native),
         box,
         nextReviewAt: Number.isFinite(nextReviewAt) ? nextReviewAt : now,
         lastReviewedAt: card.lastReviewedAt ? Number(card.lastReviewedAt) : null,
@@ -2856,7 +2873,7 @@ function softGlossMatch(a, b) {
  * Only promote true consonant-only acronyms: cv → CV, pdf → PDF.
  */
 function preferDisplayForm(text) {
-  const cleaned = cleanTranslationCandidate(text);
+  const cleaned = stripFlashcardPunctuation(cleanTranslationCandidate(text));
   if (!cleaned) return cleaned;
   if (/^[a-z]{2,4}$/.test(cleaned) && !/[aeiouyæøåäöü]/i.test(cleaned)) {
     return cleaned.toUpperCase();
@@ -3010,11 +3027,7 @@ function findLocalDeckPair(foreign, native) {
 
 function cleanTranslationCandidate(text) {
   if (!text) return "";
-  return text
-    .trim()
-    .replace(/^["']+|["']+$/g, "")
-    .replace(/,+\s*$/, "")
-    .trim();
+  return stripFlashcardPunctuation(text);
 }
 
 /**
@@ -3619,9 +3632,11 @@ function nonsenseReviewSummary(learningName, foreignGibberish, nativeGibberish, 
   return null;
 }
 
-/** English then Norwegian — same order as the review panel. */
+/** English then Norwegian — same order as the review panel. No trailing periods inside. */
 function formatReviewPair(foreign, native) {
-  return `“${native}” / “${preferDisplayForm(foreign)}”`;
+  const en = stripFlashcardPunctuation(native);
+  const nb = preferDisplayForm(foreign);
+  return `“${en}” / “${nb}”`;
 }
 
 function getTranslationReviewSummary(foreign, native, suggestedNative, suggestedForeign, localPair = null) {
@@ -3680,7 +3695,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     if (foreignStrong && nativeStrong && !foreignGibberish && !nativeGibberish && !displayMatches) {
       return makePairFix(
         "Close — use the deck spelling?",
-        `In ${where} this is ${formatReviewPair(localPair.foreign, localPair.native)}. Tap to fill both sides that way.`,
+        `Tap to fill both sides with ${formatReviewPair(localPair.foreign, localPair.native)}, the spelling in ${where}.`,
         localPair.foreign,
         localPair.native
       );
@@ -3690,7 +3705,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     if (foreignStrong && !nativeStrong && !foreignGibberish) {
       return makePairFix(
         "Same Norwegian in your deck",
-        `In ${where}: ${formatReviewPair(localPair.foreign, localPair.native)}. You typed “${native}”. Tap to use the deck pair.`,
+        `Deck has ${formatReviewPair(localPair.foreign, localPair.native)} (you typed “${stripFlashcardPunctuation(native)}”). Tap to use the deck pair.`,
         localPair.foreign,
         localPair.native
       );
@@ -3700,7 +3715,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     if (nativeStrong && !foreignStrong && !nativeGibberish) {
       return makePairFix(
         "Same English in your deck",
-        `In ${where}: ${formatReviewPair(localPair.foreign, localPair.native)}. You typed “${foreign}”. Tap to use the deck pair.`,
+        `Deck has ${formatReviewPair(localPair.foreign, localPair.native)} (you typed “${stripFlashcardPunctuation(foreign)}”). Tap to use the deck pair.`,
         localPair.foreign,
         localPair.native
       );
@@ -3741,7 +3756,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       suggestedForeign: preferDisplayForm(safeSuggestedForeign),
       suggestedNative: safeSuggestedNative,
       title: "Sides look swapped",
-      copy: `This reads like English and ${learningName} are in the wrong boxes. Tap to swap to ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)}.`,
+      copy: `English and ${learningName} look swapped. Tap to use ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)} instead.`,
     };
   }
 
@@ -3763,7 +3778,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       ) {
         return makePairFix(
           "Tiny spelling tweak?",
-          `Usual written form is ${formatReviewPair(canonForeign, canonNative)}. Tap to use that, or keep yours.`,
+          `Tap to use the usual form ${formatReviewPair(canonForeign, canonNative)}, or keep yours.`,
           safeSuggestedForeign,
           safeSuggestedNative
         );
@@ -3786,7 +3801,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     if (safeSuggestedForeign && safeSuggestedNative && !isPhrase) {
       return makePairFix(
         "Suggested pair",
-        `A common pair is ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)}. Tap to use it, or keep yours if you prefer.`,
+        `Tap to use ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)}, or keep yours if you prefer.`,
         safeSuggestedForeign,
         safeSuggestedNative
       );
@@ -3892,7 +3907,7 @@ function renderAddCardReviewContext({
     blocks.push(`
       <section class="review-context-block is-warning">
         <h4 class="review-context-title">Already in your library</h4>
-        <p class="review-context-copy">Already listed as “${escapeHtml(duplicate.native)}” / “${escapeHtml(preferDisplayForm(duplicate.foreign))}”.</p>
+        <p class="review-context-copy">Already in your library: “${escapeHtml(stripFlashcardPunctuation(duplicate.native))}” / “${escapeHtml(preferDisplayForm(duplicate.foreign))}”</p>
       </section>`);
   } else if (translation) {
     const canApplyOne =
@@ -4175,8 +4190,8 @@ function startEditCard(cardId) {
 }
 
 function saveLibraryCard(foreign, native) {
-  const trimmedForeign = foreign.trim();
-  const trimmedNative = native.trim();
+  const trimmedForeign = stripFlashcardPunctuation(foreign);
+  const trimmedNative = stripFlashcardPunctuation(native);
   if (!trimmedForeign || !trimmedNative) return false;
 
   const duplicate = findDeckCardByForeign(trimmedForeign, editingCardId);
