@@ -726,6 +726,12 @@ main {
   display: block;
 }
 
+/* Beat any panel-specific display rules when the tab is not active */
+.panel[hidden],
+.panel:not(.active) {
+  display: none !important;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -1395,7 +1401,8 @@ main {
 
 /* Wide screens: balance empty Review with space, not instructional copy */
 @media (min-width: 721px) {
-  #practice-panel:has(#practice-empty:not(.hidden)) {
+  /* Only while Review is the active tab — otherwise display:flex leaks over other tabs */
+  #practice-panel.active:has(#practice-empty:not(.hidden)) {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1404,17 +1411,17 @@ main {
     padding-block: 0.5rem 1.25rem;
   }
 
-  #practice-panel:has(#practice-empty:not(.hidden)) .practice-meta,
-  #practice-panel:has(#practice-empty:not(.hidden)) .daily-progress {
+  #practice-panel.active:has(#practice-empty:not(.hidden)) .practice-meta,
+  #practice-panel.active:has(#practice-empty:not(.hidden)) .daily-progress {
     width: min(100%, 26rem);
   }
 
-  #practice-empty:not(.hidden) {
+  #practice-panel.active #practice-empty:not(.hidden) {
     width: min(100%, 26rem);
     margin-inline: auto;
   }
 
-  #practice-panel:has(#practice-active:not(.hidden)) .practice-card {
+  #practice-panel.active:has(#practice-active:not(.hidden)) .practice-card {
     width: min(100%, 32rem);
     margin-inline: auto;
   }
@@ -4369,13 +4376,13 @@ body.welcome-open .app {
   }
 
   /* Cancel wide-screen empty Review vertical centering (eats height) */
-  #practice-panel:has(#practice-empty:not(.hidden)) {
+  #practice-panel.active:has(#practice-empty:not(.hidden)) {
     min-height: 0;
     justify-content: flex-start;
     padding-block: 0;
   }
 
-  #practice-empty:not(.hidden) {
+  #practice-panel.active #practice-empty:not(.hidden) {
     width: min(100%, 22rem);
   }
 
