@@ -3827,11 +3827,11 @@ function renderAddCardReviewContext({
   }
 
   if (related.length) {
+    // Section title already says where these are from — don't repeat "In starter deck" on every chip
     const items = related
       .map(
         (item) => `
         <li class="review-context-item">
-          <span class="review-context-item-meta">${escapeHtml(item.meta)}</span>
           <span class="review-context-item-pair">
             <span lang="${getActiveCategory().foreignLang || "nb"}">${escapeHtml(item.foreign)}</span>
             <span aria-hidden="true">·</span>
