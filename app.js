@@ -2435,13 +2435,17 @@ function englishInflectionMatch(a, b) {
   return false;
 }
 
-/** One substitution/insert/delete — only for longer single tokens (avoids "to"≈"too" chaos). */
+/**
+ * One substitution/insert/delete for longer single tokens.
+ * Requires the same first letter so flott ≉ slott (which was hijacking great/flott → castle).
+ */
 function withinOneEdit(a, b) {
   const s = normalizeAnswer(a);
   const t = normalizeAnswer(b);
   if (!s || !t || s === t) return s === t;
   if (s.includes(" ") || t.includes(" ")) return false;
-  if (s.length < 4 || t.length < 4) return false;
+  if (s.length < 5 || t.length < 5) return false;
+  if (s[0] !== t[0]) return false;
   if (Math.abs(s.length - t.length) > 1) return false;
 
   let i = 0;
@@ -2601,10 +2605,12 @@ function findLocalDeckPair(foreign, native) {
   const hasForeign = Boolean(foreign?.trim());
   const hasNative = Boolean(native?.trim());
 
-  // Full pair match first (avoids hijacking a shared English gloss).
+  // Full pair only when BOTH sides clearly match (never flott+great → slott+castle).
   if (hasForeign && hasNative) {
     const exactPair = candidates.find(
-      (entry) => softGlossMatch(entry.foreign, foreign) && softGlossMatch(entry.native, native)
+      (entry) =>
+        (glossPartsMatch(entry.foreign, foreign) || norwegianTypingMatches(entry.foreign, foreign)) &&
+        (glossPartsMatch(entry.native, native) || englishInflectionMatch(entry.native, native))
     );
     if (exactPair) return exactPair;
   }
@@ -2613,15 +2619,18 @@ function findLocalDeckPair(foreign, native) {
     const exactForeign = candidates.find((entry) => glossPartsMatch(entry.foreign, foreign));
     if (exactForeign) return exactForeign;
 
-    const softForeign = candidates.find((entry) => softGlossMatch(entry.foreign, foreign));
-    if (softForeign) return softForeign;
+    const foldForeign = candidates.find((entry) => norwegianTypingMatches(entry.foreign, foreign));
+    if (foldForeign) return foldForeign;
   }
 
   if (hasNative) {
     const exactNative = candidates.find((entry) => glossPartsMatch(entry.native, native));
     if (exactNative) return exactNative;
 
-    const softNative = candidates.find((entry) => softGlossMatch(entry.native, native));
+    const softNative = candidates.find(
+      (entry) =>
+        englishInflectionMatch(entry.native, native) || glossPartsMatch(entry.native, native)
+    );
     if (softNative) return softNative;
   }
 
@@ -3250,11 +3259,16 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
   });
 
   // Curated local data first (can still rescue mash on one side with a real deck pair).
+  // One-letter "typos" alone are not enough to claim the same card (flott ≉ slott/castle).
   if (localPair) {
-    const foreignOk = softGlossMatch(localPair.foreign, foreign);
-    const nativeOk = softGlossMatch(localPair.native, native);
     const foreignExact = glossPartsMatch(localPair.foreign, foreign);
     const nativeExact = glossPartsMatch(localPair.native, native);
+    const foreignStrong =
+      foreignExact || norwegianTypingMatches(localPair.foreign, foreign);
+    const nativeStrong =
+      nativeExact ||
+      englishInflectionMatch(localPair.native, native) ||
+      glossPartsMatch(localPair.native, native);
     const displayMatches =
       foreign === localPair.foreign && native === localPair.native;
 
@@ -3269,8 +3283,8 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       };
     }
 
-    // Meaning matches deck, but spelling/caps/plural is off — offer the deck form for both sides
-    if (foreignOk && nativeOk && !foreignGibberish && !nativeGibberish && !displayMatches) {
+    // Both sides clearly the same card, minor spelling/caps difference
+    if (foreignStrong && nativeStrong && !foreignGibberish && !nativeGibberish && !displayMatches) {
       return makePairFix(
         "Close — use the deck spelling?",
         `In ${where} this is “${localPair.foreign}” / “${localPair.native}”. Tap to fill both sides that way.`,
@@ -3279,7 +3293,8 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       );
     }
 
-    if (foreignOk && !nativeOk && !foreignGibberish) {
+    // Same Norwegian headword, different English — only if Norwegian match is strong
+    if (foreignStrong && !nativeStrong && !foreignGibberish) {
       return makePairFix(
         "Same Norwegian in your deck",
         `In ${where}, “${localPair.foreign}” is “${localPair.native}”. You typed “${native}”. Tap to use the deck pair.`,
@@ -3288,7 +3303,8 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       );
     }
 
-    if (nativeOk && !foreignOk && !nativeGibberish) {
+    // Same English gloss, different Norwegian — only if English match is strong
+    if (nativeStrong && !foreignStrong && !nativeGibberish) {
       return makePairFix(
         "Same English in your deck",
         `In ${where}, “${localPair.native}” is “${localPair.foreign}”. You typed “${foreign}”. Tap to use the deck pair.`,
