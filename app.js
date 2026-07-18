@@ -2008,15 +2008,20 @@ async function ensureMicPermission() {
         /* ignore */
       }
     });
+    hideFeedback();
     return true;
   } catch (err) {
     const name = String(err?.name || "");
     if (name === "NotAllowedError" || name === "PermissionDeniedError") {
-      showFeedback(getSpeechErrorMessage("not-allowed"), "revealed");
+      showFeedback(getSpeechErrorMessage("not-allowed"), "revealed", {
+        autoHideMs: 6000,
+      });
       return false;
     }
     if (name === "NotFoundError" || name === "DevicesNotFoundError") {
-      showFeedback(getSpeechErrorMessage("audio-capture"), "revealed");
+      showFeedback(getSpeechErrorMessage("audio-capture"), "revealed", {
+        autoHideMs: 6000,
+      });
       return false;
     }
     // Some browsers have recognition without getUserMedia — continue and try start().
@@ -2104,6 +2109,9 @@ function setSpeakMode(active) {
     clearSpeakScheduling();
     stopActiveRecognition();
     setListeningUI(false);
+  } else {
+    // Clear sticky "mic blocked" (etc.) when Speak turns on successfully.
+    hideFeedback();
   }
   updateSpeakButtonUI();
   updateAnswerInputPlaceholder();
@@ -2112,11 +2120,15 @@ function setSpeakMode(active) {
 async function toggleSpeakMode() {
   if (speakModeActive) {
     setSpeakMode(false);
+    hideFeedback();
     return;
   }
 
+  // Clear any previous blocked message so a fresh allow can succeed cleanly.
+  hideFeedback();
+
   if (!window.isSecureContext || !speechRecognitionAvailable()) {
-    showFeedback(getSpeechUnavailableMessage(), "revealed");
+    showFeedback(getSpeechUnavailableMessage(), "revealed", { autoHideMs: 6000 });
     return;
   }
 
@@ -2204,6 +2216,7 @@ function beginSpeakAttempt() {
   }
 
   setListeningUI(true);
+  hideFeedback();
 
   recognition.onresult = (event) => {
     if (attemptId !== speakAttemptId) return;
@@ -2236,7 +2249,9 @@ function beginSpeakAttempt() {
       event.error === "audio-capture" ||
       event.error === "network"
     ) {
-      showFeedback(getSpeechErrorMessage(event.error), "revealed");
+      showFeedback(getSpeechErrorMessage(event.error), "revealed", {
+        autoHideMs: 6000,
+      });
       setSpeakMode(false);
       return;
     }
@@ -2254,7 +2269,9 @@ function beginSpeakAttempt() {
       return;
     }
 
-    showFeedback("Didn't catch that. Try again, or type it.", "revealed");
+    showFeedback("Didn't catch that. Try again, or type it.", "revealed", {
+      autoHideMs: 4000,
+    });
   };
 
   recognition.onend = () => {
@@ -2928,14 +2945,34 @@ function speakPromptForCard(card) {
   speakText(getPromptDisplayText(card), labels.promptSpeechLang);
 }
 
-function showFeedback(message, type) {
+let feedbackHideTimer = null;
+
+function showFeedback(message, type, options = {}) {
   const el = document.getElementById("feedback");
+  if (!el) return;
+  if (feedbackHideTimer) {
+    window.clearTimeout(feedbackHideTimer);
+    feedbackHideTimer = null;
+  }
   el.textContent = message;
   el.className = `feedback ${type}`;
+  const autoHideMs = Number(options.autoHideMs) || 0;
+  if (autoHideMs > 0) {
+    feedbackHideTimer = window.setTimeout(() => {
+      feedbackHideTimer = null;
+      // Only clear if this message is still showing (don't wipe a newer result).
+      if (el.textContent === message) hideFeedback();
+    }, autoHideMs);
+  }
 }
 
 function hideFeedback() {
+  if (feedbackHideTimer) {
+    window.clearTimeout(feedbackHideTimer);
+    feedbackHideTimer = null;
+  }
   const el = document.getElementById("feedback");
+  if (!el) return;
   el.textContent = "";
   el.className = "feedback is-empty";
 }
