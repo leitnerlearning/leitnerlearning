@@ -3553,8 +3553,8 @@ function renderAddCardReviewContext({
 
     blocks.push(`
       <section class="review-context-block is-info">
-        <h4 class="review-context-title">Related cards you already have</h4>
-        <p class="review-context-copy">Nearby words — not a problem. Add this one too if you want it in your everyday set.</p>
+        <h4 class="review-context-title">Related in your deck</h4>
+        <p class="review-context-copy">Fine to add this one too.</p>
         <ul class="review-context-list">${items}</ul>
       </section>`);
   }
