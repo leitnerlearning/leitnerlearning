@@ -9,6 +9,8 @@ const BOX_INTERVALS_DAYS = [0, 1, 3, 7, 14, 30];
 const DAILY_GOAL_CAPS = [10, 15, 20, 30];
 const DAILY_PRACTICE_CAP = 20;
 const DAILY_GOAL_CAP_KEY = "leitner-learning-daily-goal-cap";
+const VOICE_GENDER_KEY = "leitner-learning-voice-gender";
+const VOICE_GENDERS = ["female", "male"];
 
 const LEARNING_LEVELS = [
   { short: "New", interval: "Waiting to learn", celebration: "Nice start. Keep going." },
@@ -2228,14 +2230,217 @@ function resumeSpeakModeIfNeeded() {
   scheduleSpeakForCurrentCard();
 }
 
+/** Cached browser TTS voices (Chrome/Safari populate these asynchronously). */
+let speechVoicesCache = [];
+let speechVoicesListening = false;
+let preferredVoiceGender = loadVoiceGender();
+
+function loadVoiceGender() {
+  const saved = storageGet(VOICE_GENDER_KEY);
+  return VOICE_GENDERS.includes(saved) ? saved : "female";
+}
+
+function saveVoiceGender(gender) {
+  preferredVoiceGender = VOICE_GENDERS.includes(gender) ? gender : "female";
+  storageSet(VOICE_GENDER_KEY, preferredVoiceGender);
+  updateVoiceGenderUI();
+}
+
+function toggleVoiceGender() {
+  saveVoiceGender(preferredVoiceGender === "female" ? "male" : "female");
+  // Short sample so the change is audible immediately
+  speakText("Hei", getActiveCategory().speechLang || "nb-NO");
+}
+
+function voiceGenderLabel(gender = preferredVoiceGender) {
+  return gender === "male" ? "Male" : "Female";
+}
+
+function updateVoiceGenderUI() {
+  const label = voiceGenderLabel();
+  const title = `Norwegian voice: ${label}. Tap to switch`;
+  document.querySelectorAll("[data-voice-gender-btn]").forEach((btn) => {
+    btn.textContent = `Voice · ${label}`;
+    btn.title = title;
+    btn.setAttribute("aria-label", title);
+    btn.dataset.voiceGender = preferredVoiceGender;
+  });
+}
+
+function ensureSpeechVoicesListener() {
+  if (speechVoicesListening || !window.speechSynthesis) return;
+  speechVoicesListening = true;
+  const refresh = () => {
+    speechVoicesCache = window.speechSynthesis.getVoices() || [];
+  };
+  refresh();
+  if (typeof window.speechSynthesis.addEventListener === "function") {
+    window.speechSynthesis.addEventListener("voiceschanged", refresh);
+  } else {
+    window.speechSynthesis.onvoiceschanged = refresh;
+  }
+}
+
+function getSpeechVoices() {
+  ensureSpeechVoicesListener();
+  if (!window.speechSynthesis) return [];
+  const live = window.speechSynthesis.getVoices() || [];
+  if (live.length) speechVoicesCache = live;
+  return speechVoicesCache;
+}
+
+function isNorwegianLangTag(lang) {
+  const tag = String(lang || "").toLowerCase().replace(/_/g, "-");
+  return tag.startsWith("nb") || tag.startsWith("nn") || tag === "no" || tag.startsWith("no-");
+}
+
+function isEnglishLangTag(lang) {
+  return String(lang || "").toLowerCase().replace(/_/g, "-").startsWith("en");
+}
+
+/**
+ * Infer voice gender from the engine name. Browser APIs do not expose gender.
+ */
+function detectVoiceGender(voice) {
+  const hay = `${voice.name || ""} ${voice.voiceURI || ""}`.toLowerCase();
+
+  if (
+    /\b(female|woman|girl|fiona|samantha|karen|moira|tessa|veena|zira|susan|hazel|serena|martha|catherine|victoria)\b/.test(
+      hay
+    ) ||
+    /\b(nora|hulda|pernille|iselin|kari|liv|astrid|inge|freja|freya|sonia|aria|jenny|sara|emma|ava|aria)\b/.test(
+      hay
+    )
+  ) {
+    return "female";
+  }
+
+  if (
+    /\b(male|man|boy|david|daniel|james|mark|george|fred|ravi|thomas|arthur|aaron|guy|ryan|eric)\b/.test(
+      hay
+    ) ||
+    /\b(henrik|finn|jon|olav|lars|anders|bjorn|bjørn|magnus|erik|nils|per)\b/.test(hay)
+  ) {
+    return "male";
+  }
+
+  // Microsoft “Online (Natural) - Norwegian (Bokmål)” often embeds the persona name first
+  if (/microsoft\s+(pernille|hulda|nora|iselin)\b/.test(hay)) return "female";
+  if (/microsoft\s+(finn|henrik|jon|olav)\b/.test(hay)) return "male";
+
+  return "unknown";
+}
+
+function voiceQualityBonus(voice) {
+  const hay = `${voice.name || ""} ${voice.voiceURI || ""}`.toLowerCase();
+  let bonus = 0;
+  // Prefer neural / natural / online voices over compact system drones
+  if (/\b(natural|neural|online|premium|enhanced|wavenet|studio)\b/.test(hay)) bonus += 45;
+  if (/\b(google|microsoft|apple|siri|samsung)\b/.test(hay)) bonus += 12;
+  if (/\b(compact|eloquence|espeak|festival|robot|dumb)\b/.test(hay)) bonus -= 55;
+  if (voice.localService === false) bonus += 8; // cloud voices are often less robotic
+  return bonus;
+}
+
+function langMatchScore(voiceLang, wantedLang) {
+  const v = String(voiceLang || "").toLowerCase().replace(/_/g, "-");
+  const w = String(wantedLang || "").toLowerCase().replace(/_/g, "-");
+  if (!v || !w) return 0;
+  if (v === w) return 100;
+  const vBase = v.split("-")[0];
+  const wBase = w.split("-")[0];
+  if (vBase === wBase) return 80;
+  // Norwegian family: nb / nn / no
+  if (isNorwegianLangTag(v) && isNorwegianLangTag(w)) return 70;
+  return 0;
+}
+
+/**
+ * Pick the least robotic voice for a language + preferred gender.
+ * Falls back across gender, then across any available voice for that language family.
+ */
+function pickBestVoice(lang, gender = preferredVoiceGender) {
+  const voices = getSpeechVoices();
+  if (!voices.length) return null;
+
+  const wantNb = isNorwegianLangTag(lang);
+  const wantEn = isEnglishLangTag(lang);
+  const preferred = gender === "male" ? "male" : "female";
+
+  let best = null;
+  let bestScore = -Infinity;
+
+  for (const voice of voices) {
+    let score = langMatchScore(voice.lang, lang);
+    if (score <= 0) {
+      // Allow Norwegian family when lang is nb-NO even if voice reports "no-NO"
+      if (wantNb && isNorwegianLangTag(voice.lang)) score = 60;
+      else if (wantEn && isEnglishLangTag(voice.lang)) score = 50;
+      else continue;
+    }
+
+    score += voiceQualityBonus(voice);
+
+    const g = detectVoiceGender(voice);
+    if (g === preferred) score += 55;
+    else if (g === "unknown") score += 8;
+    else score -= 25;
+
+    // Slight preference for Bokmål-tagged voices over Nynorsk when learning Bokmål
+    if (wantNb) {
+      const v = String(voice.lang || "").toLowerCase();
+      if (v.startsWith("nb")) score += 10;
+      else if (v.startsWith("nn")) score -= 5;
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      best = voice;
+    }
+  }
+
+  return best;
+}
+
 function speakText(text, lang) {
   if (!text || !window.speechSynthesis) return;
 
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = lang;
-  utterance.rate = 0.92;
-  window.speechSynthesis.speak(utterance);
+  ensureSpeechVoicesListener();
+
+  const run = () => {
+    // cancel() + immediate speak() can drop audio on Safari; brief gap is reliable
+    window.speechSynthesis.cancel();
+
+    window.setTimeout(() => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      const wantedLang = lang || "nb-NO";
+      const voice = pickBestVoice(wantedLang, preferredVoiceGender);
+
+      if (voice) {
+        utterance.voice = voice;
+        // Keep utterance.lang aligned with the chosen voice for cleaner prosody
+        utterance.lang = voice.lang || wantedLang;
+      } else {
+        utterance.lang = wantedLang;
+      }
+
+      // Slightly deliberate pace helps learners; natural pitch, full volume
+      const norwegian = isNorwegianLangTag(utterance.lang) || isNorwegianLangTag(wantedLang);
+      utterance.rate = norwegian ? 0.9 : 0.94;
+      utterance.pitch = preferredVoiceGender === "female" ? 1.03 : 0.97;
+      utterance.volume = 1;
+
+      window.speechSynthesis.speak(utterance);
+    }, 40);
+  };
+
+  // Some engines return [] until after a tick / voiceschanged
+  if (!getSpeechVoices().length) {
+    window.speechSynthesis.getVoices();
+    window.setTimeout(run, 80);
+    return;
+  }
+  run();
 }
 
 function speakForeign(text) {
@@ -6023,6 +6228,10 @@ function initEventListeners() {
     }
   });
 
+  document.querySelectorAll("[data-voice-gender-btn]").forEach((btn) => {
+    btn.addEventListener("click", () => toggleVoiceGender());
+  });
+
   document.getElementById("add-card-form")?.addEventListener("submit", (e) => {
     e.preventDefault();
     openAddCardReview();
@@ -6473,6 +6682,8 @@ function bootApp() {
 
     sanitizeReadProgress();
     initConfirmModal();
+    ensureSpeechVoicesListener();
+    updateVoiceGenderUI();
     initEventListeners();
     startPractice();
     renderAll();
