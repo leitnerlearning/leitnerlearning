@@ -2895,6 +2895,11 @@ body.welcome-open .app {
   box-shadow: 0 0 0 4px var(--brand-soft);
 }
 
+.library-search.library-search--ready {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 4px var(--brand-soft);
+}
+
 .library-search::placeholder {
   color: var(--text-tertiary);
 }
