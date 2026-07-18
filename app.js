@@ -7206,6 +7206,12 @@ function openAboutModal() {
   if (isWelcomeOpen()) return;
   const modal = document.getElementById("about-modal");
   if (!modal) return;
+  // Language only — no "free" claim (pricing may change later).
+  const lead = document.getElementById("about-lead");
+  if (lead) {
+    const category = getActiveCategory();
+    lead.textContent = category?.label || "Norwegian · Bokmål";
+  }
   modal.classList.remove("hidden");
   document.body.classList.add("modal-open");
   document.getElementById("about-close-btn")?.focus({ preventScroll: true });
