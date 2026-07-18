@@ -1980,11 +1980,10 @@ function getSpeechUnavailableMessage() {
 
 /**
  * Platform notes (Speak + Hear) — verify all when changing audio code:
- * - Desktop Chrome: SpeechRecognition needs Google cloud; often quiet pickup → interim + stable accept.
- * - Desktop Safari: good system TTS (Nora); recognition weaker; onend restart helps.
- * - Mobile Chrome: do not pre-call getUserMedia (re-prompts); skip recognition onend restart.
- * - Mobile Safari/iOS: audio locked until user gesture → unlockAudioPipeline on first tap.
- * - All: TTS volume max; Google audio may need blob URL + Web Audio gain on mobile.
+ * - Desktop Chrome: cloud speech; quiet pickup → interim + stable accept; keep one mic session.
+ * - Desktop Safari: Nora TTS; do not force Google; avoid cancel/warm-up that thins voices.
+ * - Mobile Chrome: one long recognition session (per-start shows "Microphone Access Allowed").
+ * - Mobile Safari/iOS: unlock AudioContext on gesture; always prefer system nb TTS (Nora).
  */
 function isCoarsePointerDevice() {
   try {
@@ -1999,27 +1998,50 @@ function isAppleWebKitBrowser() {
   return /AppleWebKit/i.test(ua) && !/Chrome|Chromium|CriOS|Edg|EdgiOS|Firefox|FxiOS/i.test(ua);
 }
 
-function initSpeech() {
+function isIosDevice() {
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPad|iPod/i.test(ua)) return true;
+  // iPadOS desktop UA
+  return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+}
+
+function prefersAppleSystemTts() {
+  return isAppleWebKitBrowser() || isIosDevice();
+}
+
+/**
+ * One SpeechRecognition instance while Speak is on.
+ * Restarting every card re-triggers Chrome's "Microphone Access Allowed" toast.
+ */
+let speakSessionRec = null;
+let speakSessionId = 0;
+/** Only accept transcripts while waiting for the current card's answer. */
+let speakCardArmed = false;
+let speakCardAttemptId = 0;
+let speakInterimStableTimer = null;
+let speakLastHeard = "";
+let speakCardSettled = false;
+
+function initSpeechSession() {
   const SpeechRecognition = getSpeechRecognitionCtor();
   if (!SpeechRecognition) return null;
 
   const rec = new SpeechRecognition();
   rec.lang = getDirectionLabels().answerLang || "en-US";
-  // Interim + alternatives: better pickup at normal volume (Chrome desktop especially).
   rec.interimResults = true;
-  rec.continuous = false;
+  // Continuous keeps the mic session open across cards (Chrome mobile toast fix).
+  rec.continuous = true;
   rec.maxAlternatives = 5;
   return rec;
 }
 
-/** Wake audio on first tap so Hear/Speak work on iOS and locked Chrome tabs. */
+/** Wake audio on first tap so Hear works on iOS. Avoid speechSynthesis cancel warm-up (hurts Safari voice quality). */
 let audioPipelineUnlocked = false;
 
 function unlockAudioPipeline() {
   if (audioPipelineUnlocked) return;
   audioPipelineUnlocked = true;
 
-  // Web Audio (iOS Safari often suspends until resume in a gesture)
   try {
     const ctx = getGoalAudioContext();
     if (ctx && ctx.state === "suspended") {
@@ -2029,20 +2051,7 @@ function unlockAudioPipeline() {
     /* ignore */
   }
 
-  // speechSynthesis: speak a silent utterance so later speak() is allowed
-  try {
-    if (window.speechSynthesis) {
-      const warm = new SpeechSynthesisUtterance(" ");
-      warm.volume = 0.01;
-      warm.rate = 2;
-      window.speechSynthesis.speak(warm);
-      window.speechSynthesis.cancel();
-    }
-  } catch {
-    /* ignore */
-  }
-
-  // HTMLAudioElement unlock
+  // Silent HTML audio unlock only (no speechSynthesis.cancel — that can degrade Safari Nora).
   try {
     const a = new Audio();
     a.src =
@@ -2134,30 +2143,50 @@ function setListeningUI(active) {
   updateSpeakButtonUI();
 }
 
-function stopActiveRecognition() {
+function clearSpeakInterimTimer() {
+  if (speakInterimStableTimer) {
+    window.clearTimeout(speakInterimStableTimer);
+    speakInterimStableTimer = null;
+  }
+}
+
+function stopSpeakSession() {
   speakAttemptId += 1;
-  if (!recognition) return;
-  const rec = recognition;
+  speakCardArmed = false;
+  speakCardSettled = false;
+  speakLastHeard = "";
+  clearSpeakInterimTimer();
+  clearSpeakAttemptTimer();
+
+  const rec = speakSessionRec || recognition;
+  speakSessionRec = null;
   recognition = null;
+  if (!rec) return;
   rec.onresult = null;
   rec.onerror = null;
   rec.onend = null;
+  rec.onstart = null;
   try {
-    rec.abort();
+    rec.stop();
   } catch {
     try {
-      rec.stop();
+      rec.abort();
     } catch {
-      // ignore
+      /* ignore */
     }
   }
+}
+
+/** @deprecated name kept for call sites — stops the whole speak session */
+function stopActiveRecognition() {
+  stopSpeakSession();
 }
 
 function setSpeakMode(active) {
   speakModeActive = active;
   if (!active) {
     clearSpeakScheduling();
-    stopActiveRecognition();
+    stopSpeakSession();
     setListeningUI(false);
     speakSoftRetries = 0;
   } else {
@@ -2169,8 +2198,7 @@ function setSpeakMode(active) {
 }
 
 /**
- * Toggle speak mode. No permission lectures — browser shows its own prompt once.
- * Do not call getUserMedia here: it can re-trigger mic UI on every session on some phones.
+ * Toggle speak mode. One mic session for the whole mode (avoids Chrome per-card toast).
  */
 function toggleSpeakMode() {
   if (speakModeActive) {
@@ -2224,7 +2252,11 @@ function setAnswerReceivedState(received) {
 }
 
 function scheduleSpeakForCurrentCard(delayMs = SPEAK_CARD_DELAY_MS) {
-  clearSpeakScheduling();
+  // Do not bump speakAttemptId / kill the mic session — only re-arm for the next card.
+  if (speakCardDelayTimer) {
+    window.clearTimeout(speakCardDelayTimer);
+    speakCardDelayTimer = null;
+  }
   if (!speakModeActive || !currentCard) return;
 
   clearCardAdvanceTimer();
@@ -2237,7 +2269,11 @@ function scheduleSpeakForCurrentCard(delayMs = SPEAK_CARD_DELAY_MS) {
 function handleSpeakAttemptTimeout() {
   if (!speakModeActive || !currentCard) return;
 
-  stopActiveRecognition();
+  // Disarm this card only — keep the long-lived mic session so Chrome does not re-toast.
+  speakCardArmed = false;
+  speakCardSettled = true;
+  clearSpeakInterimTimer();
+  clearSpeakAttemptTimer();
   setListeningUI(false);
 
   const answerText = getAnswerTargetText(currentCard);
@@ -2253,7 +2289,6 @@ function bestTranscriptFromSpeechEvent(event) {
   for (let i = event.resultIndex; i < event.results.length; i += 1) {
     const result = event.results[i];
     if (!result?.[0]) continue;
-    // Prefer highest-confidence alternative when available
     let piece = "";
     let bestConf = -1;
     for (let a = 0; a < result.length; a += 1) {
@@ -2271,6 +2306,140 @@ function bestTranscriptFromSpeechEvent(event) {
   return finalText || interimText;
 }
 
+function ensureSpeakSession() {
+  if (speakSessionRec) return speakSessionRec;
+  if (!window.isSecureContext || !speechRecognitionAvailable()) return null;
+
+  const rec = initSpeechSession();
+  if (!rec) return null;
+
+  const sessionId = ++speakSessionId;
+  speakSessionRec = rec;
+  recognition = rec;
+
+  rec.onstart = () => {
+    if (sessionId !== speakSessionId) return;
+    if (speakCardArmed) setListeningUI(true);
+  };
+
+  rec.onresult = (event) => {
+    if (sessionId !== speakSessionId) return;
+    if (!speakModeActive || !speakCardArmed || speakCardSettled) return;
+
+    const transcript = bestTranscriptFromSpeechEvent(event);
+    if (!transcript) return;
+
+    speakLastHeard = transcript;
+    const answerInput = document.getElementById("answer-input");
+    if (answerInput) answerInput.value = transcript;
+
+    const last = event.results?.[event.results.length - 1];
+    if (last?.isFinal) {
+      clearSpeakInterimTimer();
+      acceptSpeakTranscript(transcript);
+      return;
+    }
+
+    // Quiet speakers: accept after interim text stays stable briefly.
+    clearSpeakInterimTimer();
+    speakInterimStableTimer = window.setTimeout(() => {
+      speakInterimStableTimer = null;
+      if (
+        speakModeActive &&
+        speakCardArmed &&
+        !speakCardSettled &&
+        speakLastHeard
+      ) {
+        acceptSpeakTranscript(speakLastHeard);
+      }
+    }, SPEAK_INTERIM_STABLE_MS);
+  };
+
+  rec.onerror = (event) => {
+    if (sessionId !== speakSessionId) return;
+    if (event.error === "aborted" || event.error === "no-speech") {
+      // Continuous sessions emit no-speech between phrases — keep the session.
+      return;
+    }
+
+    if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+      setSpeakMode(false);
+      return;
+    }
+
+    if (event.error === "network") {
+      if (speakLastHeard && speakCardArmed && !speakCardSettled) {
+        acceptSpeakTranscript(speakLastHeard);
+        return;
+      }
+      if (speakSoftRetries < SPEAK_SOFT_RETRY_MAX) {
+        speakSoftRetries += 1;
+        // Restart session once or twice only (will toast again — unavoidable if session dies).
+        stopSpeakSession();
+        if (speakModeActive && currentCard) {
+          scheduleSpeakForCurrentCard(400);
+        }
+        return;
+      }
+      speakSoftRetries = 0;
+      setSpeakMode(false);
+    }
+  };
+
+  rec.onend = () => {
+    if (sessionId !== speakSessionId) return;
+    if (!speakModeActive) return;
+
+    // Unexpected end — restart quietly if still in Speak mode (desktop mainly).
+    // On mobile this may toast once; better than dead Speak.
+    window.setTimeout(() => {
+      if (!speakModeActive || sessionId !== speakSessionId) return;
+      if (speakSessionRec !== rec) return;
+      try {
+        rec.start();
+      } catch {
+        speakSessionRec = null;
+        recognition = null;
+        if (speakModeActive && currentCard) {
+          scheduleSpeakForCurrentCard(300);
+        }
+      }
+    }, 120);
+  };
+
+  try {
+    rec.start();
+  } catch {
+    speakSessionRec = null;
+    recognition = null;
+    return null;
+  }
+
+  return rec;
+}
+
+function acceptSpeakTranscript(raw) {
+  if (!speakModeActive || !speakCardArmed || speakCardSettled) return;
+  const transcript = String(raw || "").trim();
+  if (!transcript) return;
+
+  speakCardSettled = true;
+  speakCardArmed = false;
+  speakSoftRetries = 0;
+  clearSpeakInterimTimer();
+  clearSpeakAttemptTimer();
+  setListeningUI(false);
+
+  // Keep mic session open — do not stopSpeakSession() (Chrome toast fix).
+  const answerInput = document.getElementById("answer-input");
+  if (answerInput) answerInput.value = transcript;
+  submitAnswer({ fromSpeech: true });
+}
+
+/**
+ * Arm listening for the current card. Reuses one SpeechRecognition session
+ * so Chrome does not show "Microphone Access Allowed" on every word.
+ */
 function beginSpeakAttempt() {
   if (!speakModeActive || !currentCard) return;
   if (!window.isSecureContext || !speechRecognitionAvailable()) {
@@ -2279,155 +2448,35 @@ function beginSpeakAttempt() {
   }
 
   unlockAudioPipeline();
-  stopActiveRecognition();
   clearSpeakAttemptTimer();
+  clearSpeakInterimTimer();
 
-  const attemptId = ++speakAttemptId;
-  recognition = initSpeech();
-  if (!recognition) {
+  speakCardAttemptId += 1;
+  const cardAttempt = speakCardAttemptId;
+  speakCardArmed = true;
+  speakCardSettled = false;
+  speakLastHeard = "";
+  speakSoftRetries = 0;
+
+  hideFeedback();
+  setListeningUI(true);
+
+  const rec = ensureSpeakSession();
+  if (!rec) {
     setSpeakMode(false);
     return;
   }
 
-  setListeningUI(true);
-  // Never show permission/mic status copy — only answer feedback.
-  hideFeedback();
-
-  let settled = false;
-  let lastHeard = "";
-  let interimStableTimer = null;
-
-  const clearInterimStableTimer = () => {
-    if (interimStableTimer) {
-      window.clearTimeout(interimStableTimer);
-      interimStableTimer = null;
-    }
-  };
-
-  const acceptTranscript = (raw) => {
-    if (settled || attemptId !== speakAttemptId) return;
-    const transcript = String(raw || "").trim();
-    if (!transcript) return;
-    settled = true;
-    speakSoftRetries = 0;
-    clearInterimStableTimer();
-    clearSpeakAttemptTimer();
-    stopActiveRecognition();
-    setListeningUI(false);
-    const answerInput = document.getElementById("answer-input");
-    if (answerInput) answerInput.value = transcript;
-    submitAnswer({ fromSpeech: true });
-  };
-
-  recognition.onresult = (event) => {
-    if (attemptId !== speakAttemptId || settled) return;
-    const transcript = bestTranscriptFromSpeechEvent(event);
-    if (!transcript) return;
-
-    lastHeard = transcript;
-    const answerInput = document.getElementById("answer-input");
-    if (answerInput) answerInput.value = transcript;
-
-    const last = event.results?.[event.results.length - 1];
-    if (last?.isFinal) {
-      clearInterimStableTimer();
-      acceptTranscript(transcript);
-      return;
-    }
-
-    // Quiet speakers often never get isFinal on Chrome — accept after stable interim.
-    clearInterimStableTimer();
-    interimStableTimer = window.setTimeout(() => {
-      interimStableTimer = null;
-      if (!settled && attemptId === speakAttemptId && lastHeard) {
-        acceptTranscript(lastHeard);
-      }
-    }, SPEAK_INTERIM_STABLE_MS);
-  };
-
-  recognition.onerror = (event) => {
-    if (attemptId !== speakAttemptId || settled) return;
-    clearInterimStableTimer();
-    clearSpeakAttemptTimer();
-    stopActiveRecognition();
-    setListeningUI(false);
-
-    if (event.error === "aborted") return;
-
-    // Use anything we already heard before giving up.
-    if (lastHeard) {
-      acceptTranscript(lastHeard);
-      return;
-    }
-
-    if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-      // No permission copy — typing still works.
-      setSpeakMode(false);
-      return;
-    }
-
-    if (event.error === "network" || event.error === "no-speech") {
-      if (speakModeActive && currentCard && speakSoftRetries < SPEAK_SOFT_RETRY_MAX) {
-        speakSoftRetries += 1;
-        scheduleSpeakForCurrentCard(350);
-        return;
-      }
-      speakSoftRetries = 0;
-      if (event.error === "network") {
-        setSpeakMode(false);
-        return;
-      }
-      // Quiet miss — leave Speak on for the next card cycle or typing.
-      return;
-    }
-
-    if (speakModeActive) {
-      handleSpeakAttemptTimeout();
-    }
-  };
-
-  recognition.onend = () => {
-    if (attemptId !== speakAttemptId || settled) return;
-
-    // Session ended with partial speech (common on Chrome) — accept it.
-    if (lastHeard) {
-      acceptTranscript(lastHeard);
-      return;
-    }
-
-    // Desktop Safari/Chrome: re-open listen window until attempt timeout (helps quiet speech).
-    // Mobile: restarting re-triggers mic UI and is unstable — skip.
-    if (!isCoarsePointerDevice() && speakModeActive && currentCard) {
-      try {
-        recognition?.start();
-        setListeningUI(true);
-      } catch {
-        /* ignore */
-      }
-    }
-  };
-
+  // Per-card timeout (does not kill the shared mic session).
   speakAttemptTimer = window.setTimeout(() => {
-    if (attemptId !== speakAttemptId || settled) return;
-    clearInterimStableTimer();
-    if (lastHeard) {
-      acceptTranscript(lastHeard);
+    if (cardAttempt !== speakCardAttemptId) return;
+    if (!speakModeActive || speakCardSettled) return;
+    if (speakLastHeard) {
+      acceptSpeakTranscript(speakLastHeard);
       return;
     }
     handleSpeakAttemptTimeout();
   }, SPEAK_ATTEMPT_MS);
-
-  try {
-    recognition.start();
-  } catch {
-    clearInterimStableTimer();
-    clearSpeakAttemptTimer();
-    stopActiveRecognition();
-    setListeningUI(false);
-    if (speakModeActive) {
-      setSpeakMode(false);
-    }
-  }
 }
 
 function getAdvanceDelay(correct, fromSpeech = false) {
@@ -2438,10 +2487,21 @@ function getAdvanceDelay(correct, fromSpeech = false) {
 }
 
 function finishCardAndContinue(delayMs) {
-  clearSpeakScheduling();
-  stopActiveRecognition();
+  // Disarm card listen; keep shared Speak session alive (no per-card mic toast).
+  speakCardArmed = false;
+  speakCardSettled = true;
+  clearSpeakInterimTimer();
+  clearSpeakAttemptTimer();
+  if (speakCardDelayTimer) {
+    window.clearTimeout(speakCardDelayTimer);
+    speakCardDelayTimer = null;
+  }
   setListeningUI(false);
   clearCardAdvanceTimer();
+
+  if (!speakModeActive) {
+    stopSpeakSession();
+  }
 
   cardAdvanceTimer = window.setTimeout(() => {
     cardAdvanceTimer = null;
@@ -2838,35 +2898,43 @@ async function speakWithNeuralAudio(text, lang, gender, token) {
 function scoreNorwegianSystemVoice(voice) {
   if (!voice || !isNorwegianLangTag(voice.lang)) return -Infinity;
   const hay = `${voice.name || ""} ${voice.voiceURI || ""}`.toLowerCase();
-  if (/\b(compact|eloquence|espeak|festival|robot)\b/.test(hay)) return -100;
+  // Prefer enhanced/premium Apple voices over compact when both exist
+  if (/\b(eloquence|espeak|festival|robot)\b/.test(hay)) return -100;
 
   let score = voiceQualityBonus(voice);
-  // Known high-quality Norwegian speakers across Apple / Microsoft / Google
-  if (/\b(nora|pernille|finn|henrik|hulda|iselin)\b/.test(hay)) score += 55;
-  if (/\b(natural|neural|online|premium|enhanced|wavenet|studio)\b/.test(hay)) score += 40;
-  if (/\b(microsoft|apple|siri)\b/.test(hay)) score += 18;
-  if (/\bgoogle\b/.test(hay)) score += 12;
+  if (/\b(nora|pernille|finn|henrik|hulda|iselin)\b/.test(hay)) score += 60;
+  if (/\b(natural|neural|online|premium|enhanced|wavenet|studio)\b/.test(hay)) score += 45;
+  if (/\b(microsoft|apple|siri)\b/.test(hay)) score += 25;
+  // iOS often labels voices without "nora" — still prefer local Apple nb
+  if (voice.localService !== false && /\b(apple|com\.apple)\b/.test(hay)) score += 30;
+  if (/\bgoogle\b/.test(hay)) score += 8;
+  if (/\bcompact\b/.test(hay)) score -= 25;
   const lang = String(voice.lang || "").toLowerCase().replace(/_/g, "-");
-  if (lang.startsWith("nb")) score += 12;
+  if (lang.startsWith("nb")) score += 15;
   else if (lang.startsWith("nn")) score += 4;
   return score;
 }
 
 /**
  * Best premium Norwegian OS voice for a gender (or any gender if null).
- * Returns null if nothing clears the quality bar.
+ * On Apple, a single nb voice is treated as the default female speaker (Nora).
  */
 function findPremiumNorwegianVoice(gender = null) {
   const want = gender === "male" || gender === "female" ? gender : null;
   let best = null;
   let bestScore = -Infinity;
+  // Apple voices often score a bit lower by name — still prefer them over Google.
+  const threshold = prefersAppleSystemTts() ? 20 : NB_PREMIUM_VOICE_SCORE;
 
   for (const voice of getSpeechVoices()) {
     const score = scoreNorwegianSystemVoice(voice);
-    if (score < NB_PREMIUM_VOICE_SCORE) continue;
+    if (score < threshold) continue;
     if (want) {
       const g = detectVoiceGender(voice);
-      if (g !== want) continue;
+      // Apple usually exposes one female nb voice without a clear male pair.
+      if (g !== want && !(prefersAppleSystemTts() && want === "female" && g === "unknown")) {
+        continue;
+      }
     }
     if (score > bestScore) {
       bestScore = score;
@@ -2893,32 +2961,41 @@ function pickAnyNorwegianSystemVoice() {
 
 /**
  * Decide how to speak Norwegian for the selected gender.
- * Premium OS match when available; otherwise Google, then any system voice.
- * @returns {{ source: "system", voice: SpeechSynthesisVoice, rate: number, pitch: number, mode: string }
- *         | { source: "google", gender: string }}
+ * Safari/iOS: always prefer system nb (Nora) at natural rate — never Google if any OS nb exists.
  */
 function resolveNorwegianVoicePlan(gender = preferredVoiceGender) {
   const want = gender === "male" ? "male" : "female";
   ensureSpeechVoicesListener();
 
-  const matched = findPremiumNorwegianVoice(want);
-  if (matched) {
-    // Natural OS voices at full volume, slightly calm rate for clarity
-    return { source: "system", voice: matched, rate: 0.95, pitch: 1, mode: "natural" };
-  }
-
-  // Safari / iOS / any phone: prefer OS nb voice when present (often louder & more reliable).
-  if (isCoarsePointerDevice() || isAppleWebKitBrowser()) {
-    const anyNb =
-      pickAnyNorwegianSystemVoice() || pickBestVoice("nb-NO", want);
-    if (anyNb && isNorwegianLangTag(anyNb.lang)) {
+  // Apple first: natural Nora (or whatever nb voice the OS has).
+  if (prefersAppleSystemTts()) {
+    const appleVoice =
+      (want === "female"
+        ? findPremiumNorwegianVoice("female") || pickAnyNorwegianSystemVoice()
+        : findPremiumNorwegianVoice("male")) ||
+      (want === "female" ? pickAnyNorwegianSystemVoice() : null);
+    if (appleVoice) {
       return {
         source: "system",
-        voice: anyNb,
-        rate: 0.95,
+        voice: appleVoice,
+        rate: 1,
         pitch: 1,
-        mode: "platform-system",
+        mode: "apple-natural",
       };
+    }
+    // Male on Apple with only Nora: fall through to Google (no pitch-fake).
+  }
+
+  const matched = findPremiumNorwegianVoice(want);
+  if (matched) {
+    return { source: "system", voice: matched, rate: 1, pitch: 1, mode: "natural" };
+  }
+
+  // Phones: any OS nb before Google
+  if (isCoarsePointerDevice()) {
+    const anyNb = pickAnyNorwegianSystemVoice();
+    if (anyNb) {
+      return { source: "system", voice: anyNb, rate: 1, pitch: 1, mode: "mobile-system" };
     }
   }
 
@@ -2959,15 +3036,12 @@ function speakWithSystemVoice(text, lang, forcedVoice = null, options = {}) {
       utterance.lang = wantedLang;
     }
 
-    // Always full volume. Avoid pitch tricks that thin the voice (sounds quieter).
+    // Natural rate/pitch on Apple; full volume everywhere.
     if (rateOpt != null && pitchOpt != null) {
       utterance.rate = rateOpt;
       utterance.pitch = pitchOpt;
-    } else if (evenDuration) {
-      utterance.rate = 0.95;
-      utterance.pitch = 1;
     } else {
-      utterance.rate = 0.95;
+      utterance.rate = prefersAppleSystemTts() ? 1 : 0.98;
       utterance.pitch = 1;
     }
     utterance.volume = 1;
@@ -2977,27 +3051,27 @@ function speakWithSystemVoice(text, lang, forcedVoice = null, options = {}) {
         window.speechSynthesis.resume();
       }
       window.speechSynthesis.speak(utterance);
-      // Chrome bug: utterance can start paused
       if (window.speechSynthesis.paused) {
         window.speechSynthesis.resume();
       }
-      // iOS / Safari sometimes need a second resume on next tick
-      window.setTimeout(() => {
-        try {
-          if (window.speechSynthesis.paused) window.speechSynthesis.resume();
-        } catch {
-          /* ignore */
-        }
-      }, 60);
+      if (prefersAppleSystemTts()) {
+        window.setTimeout(() => {
+          try {
+            if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+          } catch {
+            /* ignore */
+          }
+        }, 40);
+      }
     } catch {
       /* ignore */
     }
   };
 
-  // Prefer immediate speak (keeps user gesture on mobile). Short wait only if voices empty.
+  // Immediate speak when possible (user gesture). Short wait only if voice list empty.
   if (!getSpeechVoices().length && window.speechSynthesis) {
     window.speechSynthesis.getVoices();
-    window.setTimeout(run, isCoarsePointerDevice() ? 30 : 60);
+    window.setTimeout(run, prefersAppleSystemTts() ? 20 : 50);
     return;
   }
   run();
@@ -6847,12 +6921,14 @@ function initEventListeners() {
 
   document.getElementById("hear-btn")?.addEventListener("click", () => {
     if (!currentCard) return;
-    clearSpeakScheduling();
-    stopActiveRecognition();
+    // Pause accepting speech while Hear plays — keep mic session open (no Chrome re-toast).
+    speakCardArmed = false;
+    clearSpeakInterimTimer();
+    clearSpeakAttemptTimer();
     setListeningUI(false);
     speakPromptForCard(currentCard);
     if (speakModeActive) {
-      speakCardDelayTimer = window.setTimeout(() => scheduleSpeakForCurrentCard(), 2200);
+      scheduleSpeakForCurrentCard(2200);
     }
   });
 
