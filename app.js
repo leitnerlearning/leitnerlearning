@@ -2632,7 +2632,11 @@ function cleanTranslationCandidate(text) {
     .trim();
 }
 
-function isGarbageTranslation(text) {
+/**
+ * Drop TM junk: JSON fragments, CSS/code compounds (Supervertical-align), etc.
+ * sourceText helps reject absurd expansions of short everyday words.
+ */
+function isGarbageTranslation(text, sourceText = "") {
   const cleaned = cleanTranslationCandidate(text);
   if (!cleaned) return true;
   if (cleaned.length > 140) return true;
@@ -2642,6 +2646,44 @@ function isGarbageTranslation(text) {
 
   const specialCount = (cleaned.match(/[{}[\]":,]/g) || []).length;
   if (specialCount >= 2 || specialCount / cleaned.length > 0.12) return true;
+
+  // CSS / layout / code-ish tokens that leak into Public_Corpora
+  if (
+    /(?:vertical-align|text-align|font-(?:size|weight|family)|line-height|letter-spacing|background-color|border-radius|z-index|flexbox|min-width|max-width|min-height|max-height|box-shadow|text-decoration|white-space|overflow-x|overflow-y|justify-content|align-items|align-self|grid-template|padding-|margin-|border-)/i.test(
+      cleaned
+    )
+  ) {
+    return true;
+  }
+  if (
+    /(?:vertical|horizontal|align|opacity|overflow|position|display|cursor|pointer|scroll|transform|transition|animation|keyframes|stylesheet|!important)/i.test(
+      cleaned
+    ) &&
+    /-/i.test(cleaned)
+  ) {
+    return true;
+  }
+
+  // camelCase / PascalCase compounds (getElementById, SuperVertical)
+  if (/[a-z][A-Z]/.test(cleaned)) return true;
+  if (/^[A-Z][a-z]+[A-Z]/.test(cleaned)) return true;
+
+  // Short everyday source → long hyphenated blob (super → Supervertical-align)
+  const source = cleanTranslationCandidate(sourceText);
+  if (source) {
+    const sourceWords = source.split(/\s+/).filter(Boolean);
+    const sourceCompact = source.replace(/[\s-]/g, "");
+    const cleanedCompact = cleaned.replace(/[\s-]/g, "");
+    if (sourceWords.length === 1 && sourceCompact.length <= 12) {
+      if (cleanedCompact.length >= Math.max(12, sourceCompact.length * 2 + 2) && /-/u.test(cleaned)) {
+        return true;
+      }
+      // One short word should not become a multi-hyphen technical phrase
+      if ((cleaned.match(/-/g) || []).length >= 1 && cleanedCompact.length > sourceCompact.length + 8) {
+        return true;
+      }
+    }
+  }
 
   return false;
 }
@@ -2685,10 +2727,14 @@ function scoreTranslationCandidate(entry, peers, toLang, sourceWordCount) {
     }
   }
 
-  // Single-word sources: prefer a single-word gloss over a long dictionary definition
-  if (sourceWordCount === 1 && toEnglish) {
-    if (words.length === 1) score += 0.02;
+  // Single-word sources: prefer a compact gloss (super → Super, not Supervertical-align)
+  if (sourceWordCount === 1) {
+    if (words.length === 1 && !entry.text.includes("-")) score += 0.04;
+    if (words.length === 1 && entry.text.includes("-")) score -= 0.06;
     if (words.length >= 3) score -= 0.04;
+    if (entry._sourceLen > 0 && normalizeAnswer(entry.text).replace(/\s+/g, "").length > entry._sourceLen * 2.5) {
+      score -= 0.1;
+    }
   }
 
   // Short acronyms (CV, ID…): prefer a real English word over echoing the acronym
@@ -2745,7 +2791,7 @@ function pickBestTranslationSuggestion(data, sourceText, toLang = "en") {
 
   const cleaned = candidates
     .map((entry) => ({ ...entry, text: cleanTranslationCandidate(entry.text) }))
-    .filter((entry) => entry.text && !isGarbageTranslation(entry.text))
+    .filter((entry) => entry.text && !isGarbageTranslation(entry.text, source))
     .filter((entry) => normalizeAnswer(entry.text) !== normalizeAnswer(source))
     .filter((entry) => entry.match >= minMatch || (!entry.fromMachine && entry.match >= 0.35));
 
