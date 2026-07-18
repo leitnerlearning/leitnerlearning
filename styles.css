@@ -2035,18 +2035,38 @@ body.welcome-open .app {
   color: var(--text-secondary);
 }
 
-.about-section a {
-  color: var(--brand-deep);
+.about-section strong {
+  color: var(--ink);
   font-weight: 600;
-  text-decoration: none;
 }
 
-.about-section a:hover,
-.about-section a:focus-visible {
-  color: var(--brand);
-  text-decoration: underline;
-  text-underline-offset: 0.12em;
-  outline: none;
+.about-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.about-list li {
+  position: relative;
+  padding-left: 0.85rem;
+}
+
+.about-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.28rem;
+  height: 0.28rem;
+  border-radius: 50%;
+  background: var(--brand);
+  opacity: 0.55;
 }
 
 .about-note {
@@ -2058,6 +2078,48 @@ body.welcome-open .app {
   font-size: 0.86rem !important;
   line-height: 1.5 !important;
   color: var(--text-secondary) !important;
+}
+
+.about-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.about-links li {
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius-xs);
+  transition: background 0.15s var(--ease);
+}
+
+.about-links li:hover,
+.about-links li:focus-within {
+  background: var(--brand-soft);
+}
+
+.about-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--brand-deep);
+  text-decoration: none;
+}
+
+.about-links a:hover,
+.about-links a:focus-visible {
+  color: var(--brand);
+  outline: none;
+}
+
+.about-link-ext {
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.55;
 }
 
 .about-contact-line {
