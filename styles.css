@@ -2026,18 +2026,19 @@ body.welcome-open .app {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.65rem 1rem;
+  padding: 0.55rem 0.85rem 0.55rem 0.75rem;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
-.about-title {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  line-height: 1.25;
+.about-logo {
+  display: block;
+  height: 2rem;
+  width: auto;
+  max-width: min(10.5rem, 58%);
+  object-fit: contain;
+  object-position: left center;
+  flex-shrink: 1;
 }
 
 .about-body {
