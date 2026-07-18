@@ -2251,9 +2251,9 @@ function resumeSpeakModeIfNeeded() {
  * Speech synthesis
  * ---------------
  * Norwegian hybrid plan:
- *  1) Prefer premium OS neural voices (Nora, Pernille, Finn, Henrik, …)
- *  2) If only one gender exists, reuse that engine with pitch for the other
- *  3) Else Google Translate TTS (one stream + mild rate cue)
+ *  1) Prefer premium OS neural voices when gender matches (Nora, Pernille, Finn, …)
+ *  2) Never pitch-shift a voice to fake the other gender (sounds weird)
+ *  3) Missing gender → Google Translate TTS (mild rate cue only)
  * English uses system voices with gender preference.
  */
 let speechVoicesCache = [];
@@ -2618,6 +2618,8 @@ function pickAnyNorwegianSystemVoice() {
 
 /**
  * Decide how to speak Norwegian for the selected gender.
+ * Only use a system voice when it is a real match for that gender.
+ * Pitch-shifting Nora (etc.) to "sound male" is intentionally avoided.
  * @returns {{ source: "system", voice: SpeechSynthesisVoice, rate: number, pitch: number, mode: string }
  *         | { source: "google", gender: string }}
  */
@@ -2625,36 +2627,9 @@ function resolveNorwegianVoicePlan(gender = preferredVoiceGender) {
   const want = gender === "male" ? "male" : "female";
   ensureSpeechVoicesListener();
 
-  const female = findPremiumNorwegianVoice("female");
-  const male = findPremiumNorwegianVoice("male");
-  const anyPremium = findPremiumNorwegianVoice(null);
-
-  // Natural path: real gender-matched speaker
-  if (want === "female" && female) {
-    return { source: "system", voice: female, rate: 0.96, pitch: 1, mode: "natural" };
-  }
-  if (want === "male" && male) {
-    return { source: "system", voice: male, rate: 0.96, pitch: 1, mode: "natural" };
-  }
-
-  // Only one premium gender on this device (classic Safari: Nora only).
-  // Reuse that engine with pitch so both sides stay high quality and consistent.
-  if (want === "male" && female && !male) {
-    return { source: "system", voice: female, rate: 0.98, pitch: 0.7, mode: "pitched" };
-  }
-  if (want === "female" && male && !female) {
-    return { source: "system", voice: male, rate: 0.98, pitch: 1.22, mode: "pitched" };
-  }
-
-  // Premium voice with unknown gender label — pitch-cue only
-  if (anyPremium) {
-    return {
-      source: "system",
-      voice: anyPremium,
-      rate: 0.97,
-      pitch: want === "male" ? 0.72 : 1.16,
-      mode: "pitched",
-    };
+  const matched = findPremiumNorwegianVoice(want);
+  if (matched) {
+    return { source: "system", voice: matched, rate: 0.96, pitch: 1, mode: "natural" };
   }
 
   return { source: "google", gender: want };
