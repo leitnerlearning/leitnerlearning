@@ -1739,43 +1739,99 @@ function sanitizeDeck(cards) {
     });
 }
 
+/** Prefer the card with more learning history when collapsing duplicates. */
+function cardProgressScore(card) {
+  if (!card) return -1;
+  const box = Math.min(Math.max(Number(card.box) || 1, 1), BOX_COUNT);
+  const correct = Number(card.correctCount) || 0;
+  const incorrect = Number(card.incorrectCount) || 0;
+  const reviewed = card.lastReviewedAt != null ? 1 : 0;
+  return reviewed * 10000 + (box - 1) * 100 + correct * 2 + incorrect;
+}
+
+function cardHasLearningProgress(card) {
+  if (!card) return false;
+  if (card.lastReviewedAt != null) return true;
+  if ((Number(card.correctCount) || 0) > 0) return true;
+  if ((Number(card.incorrectCount) || 0) > 0) return true;
+  if ((Number(card.box) || 1) > 1) return true;
+  return false;
+}
+
+/**
+ * Merge curated starter into saved deck without unbounded growth.
+ * - One card per normalized foreign form (keeps best progress)
+ * - Refresh gloss/band from starter
+ * - Add new starter words
+ * - Drop obsolete starter words only when they have no progress
+ * - Always keep user-added cards (no rank)
+ */
 function mergeStarterIntoDeck(existing, category = getActiveCategory()) {
   const starter = buildStarterDeck(category);
-  const byForeign = new Map();
-  existing.forEach((card) => {
-    byForeign.set(normalizeAnswer(card.foreign), card);
+  const starterByKey = new Map();
+  starter.forEach((card) => {
+    const key = normalizeAnswer(card.foreign);
+    if (key) starterByKey.set(key, card);
   });
 
-  let changed = false;
-  const merged = [...existing];
+  // Collapse duplicates already in the saved deck.
+  const existingByKey = new Map();
+  let hadDuplicateKeys = false;
+  existing.forEach((card) => {
+    const key = normalizeAnswer(card.foreign);
+    if (!key) return;
+    const prev = existingByKey.get(key);
+    if (!prev) {
+      existingByKey.set(key, card);
+      return;
+    }
+    hadDuplicateKeys = true;
+    existingByKey.set(
+      key,
+      cardProgressScore(card) >= cardProgressScore(prev) ? card : prev
+    );
+  });
+
+  const merged = [];
+  const usedKeys = new Set();
+
+  // Current curated set, preserving SRS when the word already exists.
   for (const entry of starter) {
     const key = normalizeAnswer(entry.foreign);
-    const current = byForeign.get(key);
+    if (!key || usedKeys.has(key)) continue;
+    usedKeys.add(key);
+
+    const current = existingByKey.get(key);
     if (current) {
-      // Refresh gloss and metadata from the curated starter (keeps SRS progress).
-      if (
-        current.native !== entry.native ||
-        current.rank !== entry.rank ||
-        current.category !== entry.category ||
-        current.band !== entry.band
-      ) {
-        current.native = entry.native;
-        current.rank = entry.rank ?? current.rank;
-        current.category = entry.category ?? current.category;
-        current.band = entry.band ?? current.band;
-        changed = true;
-      }
+      current.foreign = entry.foreign;
+      current.native = entry.native;
+      current.rank = entry.rank ?? current.rank;
+      current.category = entry.category ?? current.category;
+      current.band = entry.band ?? current.band;
+      merged.push(current);
+      existingByKey.delete(key);
       continue;
     }
-    const newCard = createCard(entry.foreign, entry.native, {
-      rank: entry.rank,
-      category: entry.category,
-      band: entry.band,
-    });
-    merged.push(newCard);
-    byForeign.set(key, newCard);
-    changed = true;
+
+    merged.push(entry);
   }
+
+  // Leftovers: user cards, or old starter words the user has already studied.
+  for (const card of existingByKey.values()) {
+    const key = normalizeAnswer(card.foreign);
+    if (!key || usedKeys.has(key)) continue;
+    const isUserCard = card.rank == null;
+    if (isUserCard || cardHasLearningProgress(card)) {
+      usedKeys.add(key);
+      merged.push(card);
+    }
+    // else: drop unused obsolete starter word (e.g. replaced reading vocab)
+  }
+
+  const changed =
+    hadDuplicateKeys ||
+    merged.length !== existing.length ||
+    merged.some((card, index) => card !== existing[index]);
 
   if (!changed) return existing;
   return merged.sort((a, b) => (a.rank ?? 99999) - (b.rank ?? 99999));
