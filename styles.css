@@ -2084,6 +2084,21 @@ body.welcome-open .app {
   font-weight: 600;
 }
 
+.about-inline-link {
+  color: var(--brand-deep);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--brand) 35%, transparent);
+  text-underline-offset: 0.15em;
+}
+
+.about-inline-link:hover,
+.about-inline-link:focus-visible {
+  color: var(--brand);
+  text-decoration-color: var(--brand);
+  outline: none;
+}
+
 .about-list {
   margin: 0;
   padding: 0;
