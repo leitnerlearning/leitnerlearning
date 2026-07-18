@@ -5204,7 +5204,8 @@ function isStatsPanelActive() {
 
 /**
  * One Top control: return to site header (tabs) so you can leave the page.
- * On Library, also put the cursor in Search (high-odds next action).
+ * On Library, gently pulse Search as a visual cue — but do not focus it.
+ * Focusing opens the mobile keyboard and covers the header/tabs.
  */
 function handlePageFloatTop() {
   setActiveLibraryJump(null);
@@ -5222,23 +5223,14 @@ function handlePageFloatTop() {
   const input = document.getElementById("library-search");
   if (!input) return;
 
-  const activate = () => {
-    try {
-      input.focus({ preventScroll: true });
-    } catch {
-      input.focus();
-    }
-    if (typeof input.select === "function") input.select();
-    input.classList.add("library-search--ready");
-    window.setTimeout(() => input.classList.remove("library-search--ready"), 1200);
-  };
-
-  // Keep tabs in view; focus search without yanking scroll back down.
-  activate();
-  window.setTimeout(activate, 350);
-  if (typeof window !== "undefined" && "onscrollend" in window) {
-    window.addEventListener("scrollend", activate, { once: true });
+  // Dismiss keyboard if search (or anything) was already focused.
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
   }
+
+  // Visual only — user taps Search when they actually want to type.
+  input.classList.add("library-search--ready");
+  window.setTimeout(() => input.classList.remove("library-search--ready"), 1200);
 }
 
 function updatePageFloatTopVisibility() {
