@@ -2957,18 +2957,21 @@ body.welcome-open .app {
   z-index: 6;
   display: flex;
   flex-wrap: nowrap;
-  gap: 0.35rem;
+  align-items: center;
+  gap: 0.28rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   margin: 0 0 1rem;
-  padding: 0.4rem 0.35rem;
+  padding: 0.35rem 0.4rem;
   background: var(--surface-glass-strong);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   box-shadow: var(--shadow-sm);
+  /* Let the last chip (Yours) fully enter the pill when scrolled */
+  scroll-padding-inline: 0.4rem;
 }
 
 .library-jump.hidden {
@@ -2979,13 +2982,19 @@ body.welcome-open .app {
   display: none;
 }
 
+/* Trailing spacer so horizontal scroll can park the last chip inside the bubble */
+.library-jump::after {
+  content: "";
+  flex: 0 0 0.15rem;
+}
+
 .library-jump-chip {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: var(--chip-min-h);
-  padding: var(--chip-pad-y) 0.75rem;
+  padding: var(--chip-pad-y) 0.65rem;
   border: 1px solid transparent;
   border-radius: var(--chip-radius);
   background: transparent;

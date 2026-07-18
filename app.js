@@ -5404,7 +5404,11 @@ function renderCardList() {
     const cards = filtered.filter((card) =>
       band === null ? !card.band : card.band === band
     );
-    if (!cards.length) continue;
+    // Always keep Yours in the jump bar (and as a section) on full library view,
+    // so layout does not jump when the first personal card is added.
+    const alwaysShowYours =
+      band === null && libraryFilter === "all" && !searching;
+    if (!cards.length && !alwaysShowYours) continue;
     sections.push({
       band,
       label: band ? BAND_LABELS[band] : "Yours",
