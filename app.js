@@ -5268,9 +5268,9 @@ function renderLibraryJumpNav(sections) {
     .map(({ band, label }) => {
       const key = librarySectionKey(band);
       const range = LIBRARY_JUMP_RANGE[key];
-      // Chip shows section name (Reading); title holds rank range when useful.
-      const title = range ? `${label} · ${range}` : label;
-      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}" title="${escapeAttr(title)}">${escapeHtml(label)}</button>`;
+      // Chip shows the name; hover only adds the range (no name repeat).
+      const titleAttr = range ? ` title="${escapeAttr(range)}"` : "";
+      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}"${titleAttr}>${escapeHtml(label)}</button>`;
     })
     .join("");
 
