@@ -98,7 +98,8 @@ let libraryRenderToken = 0;
 let libraryJumpObserver = null;
 const LIBRARY_BATCH_SIZE = 35;
 const LIBRARY_SCROLL_TOP_THRESHOLD = 360;
-const LIBRARY_JUMP_SHORT = {
+/** Rank ranges for tooltips — chip label uses BAND_LABELS so jump matches section titles. */
+const LIBRARY_JUMP_RANGE = {
   A: "1–50",
   B: "51–100",
   C: "101–160",
@@ -106,8 +107,6 @@ const LIBRARY_JUMP_SHORT = {
   E: "301–500",
   F: "501–750",
   G: "751–1k",
-  phrase: "Phrases",
-  yours: "Yours",
 };
 let categoryMenuOpen = false;
 let readStoryId = null;
@@ -5268,8 +5267,10 @@ function renderLibraryJumpNav(sections) {
   nav.innerHTML = sections
     .map(({ band, label }) => {
       const key = librarySectionKey(band);
-      const short = LIBRARY_JUMP_SHORT[key] || label;
-      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}" title="${escapeAttr(label)}">${escapeHtml(short)}</button>`;
+      const range = LIBRARY_JUMP_RANGE[key];
+      // Chip shows section name (Reading); title holds rank range when useful.
+      const title = range ? `${label} · ${range}` : label;
+      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}" title="${escapeAttr(title)}">${escapeHtml(label)}</button>`;
     })
     .join("");
 
