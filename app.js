@@ -5490,7 +5490,6 @@ function closeReadGloss() {
   const glossEl = document.getElementById("read-gloss");
   if (glossEl) {
     glossEl.classList.add("is-collapsed");
-    glossEl.classList.remove("read-gloss--deck", "read-gloss--extra");
     glossEl.hidden = true;
   }
   document.querySelectorAll(".read-word--active").forEach((el) => el.classList.remove("read-word--active"));
@@ -5519,13 +5518,10 @@ function openReadGloss(button) {
   const meaningEl = document.getElementById("read-gloss-meaning");
   if (!glossEl || !meaningEl) return;
 
-  const inDeck = payload.source === "deck" || payload.cardId != null;
-  const sourceLabel = inDeck ? "In your deck" : "Story word";
   const lemma = payload.matchedLemma;
-  const core = lemma ? `${payload.native} (from ${lemma})` : payload.native;
-  meaningEl.textContent = `${core} · ${sourceLabel}`;
-  glossEl.classList.toggle("read-gloss--deck", inDeck);
-  glossEl.classList.toggle("read-gloss--extra", !inDeck);
+  meaningEl.textContent = lemma
+    ? `${payload.native} (from ${lemma})`
+    : payload.native;
   glossEl.classList.remove("is-collapsed");
   glossEl.hidden = false;
 }
