@@ -2488,6 +2488,9 @@ let speechVoicesListening = false;
 let preferredVoiceGender = loadVoiceGender();
 let ttsPlayToken = 0;
 let ttsAudioEl = null;
+/** Delayed speak timer (must clear on stop — else sample phrase can replay later). */
+let ttsSpeakDelayTimer = null;
+let ttsBackupTimer = null;
 /** Minimum score to treat an OS Norwegian voice as "premium neural". */
 const NB_PREMIUM_VOICE_SCORE = 45;
 
@@ -2505,8 +2508,10 @@ function saveVoiceGender(gender) {
 function toggleVoiceGender() {
   unlockAudioPipeline();
   saveVoiceGender(preferredVoiceGender === "female" ? "male" : "female");
-  // Sample makes the switch obvious (same phrase, different profile)
-  speakText("Hei, hvordan har du det?", getActiveCategory().speechLang || "nb-NO");
+  // Preview only — never let this phrase leak into the next Hear
+  speakText("Hei, hvordan har du det?", getActiveCategory().speechLang || "nb-NO", {
+    preview: true,
+  });
 }
 
 function voiceGenderLabel(gender = preferredVoiceGender) {
@@ -2526,6 +2531,14 @@ function updateVoiceGenderUI() {
 
 function stopAllSpeech() {
   ttsPlayToken += 1;
+  if (ttsSpeakDelayTimer) {
+    window.clearTimeout(ttsSpeakDelayTimer);
+    ttsSpeakDelayTimer = null;
+  }
+  if (ttsBackupTimer) {
+    window.clearTimeout(ttsBackupTimer);
+    ttsBackupTimer = null;
+  }
   if (ttsAudioEl) {
     try {
       ttsAudioEl.pause();
@@ -2865,12 +2878,14 @@ function speakWithSystemVoice(text, lang, forcedVoice, rate, pitch, token) {
 }
 
 /**
- * Hear entry — simple dual path that actually works:
- * 1) After cancel(), wait ~70ms (Chrome requirement)
- * 2) speechSynthesis with gender rate/pitch + best OS voice
- * 3) Google audio backup (same delay) so Chrome still hears if synthesis is empty
+ * Hear entry — ONE scheduled speak per call (no racing backups).
+ * Pending timers are cleared in stopAllSpeech so a gender-preview sample
+ * cannot play again before the next Hear word/sentence.
+ *
+ * Chrome: cancel() then immediate speak() is silent → delay ~70ms.
+ * Safari female: Nora natural. Safari male / Chrome: Google for clear gender.
  */
-function speakText(text, lang) {
+function speakText(text, lang, options = {}) {
   const trimmed = String(text || "").trim();
   if (!trimmed) return;
 
@@ -2881,31 +2896,38 @@ function speakText(text, lang) {
   const gender = preferredVoiceGender;
   const profile = genderUtteranceProfile(gender);
   const nb = isNorwegianLangTag(wantedLang);
+  const isPreview = Boolean(options.preview);
 
   ensureSpeechVoicesListener();
   if (window.speechSynthesis) window.speechSynthesis.getVoices();
 
-  // CRITICAL: Chrome ignores speak() in the same turn as cancel(). Delay both paths.
-  window.setTimeout(() => {
+  ttsSpeakDelayTimer = window.setTimeout(() => {
+    ttsSpeakDelayTimer = null;
     if (token !== ttsPlayToken) return;
 
-    let osVoice = null;
-    if (nb) {
-      if (prefersAppleSystemTts() && gender === "female") {
-        // Safari female: Nora at natural settings (best quality)
-        osVoice =
+    // --- Safari / iOS ---
+    if (nb && prefersAppleSystemTts()) {
+      if (gender === "female") {
+        const nora =
           findPremiumNorwegianVoice("female") || pickAnyNorwegianSystemVoice();
-        if (osVoice) {
-          speakWithSystemVoice(trimmed, wantedLang, osVoice, 1, 1, token);
+        if (nora) {
+          // Preview: slight gender cue; Hear word: pure Nora
+          speakWithSystemVoice(
+            trimmed,
+            wantedLang,
+            nora,
+            isPreview ? 1.02 : 1,
+            isPreview ? 1.12 : 1,
+            token
+          );
           return;
         }
-      } else if (prefersAppleSystemTts() && gender === "male") {
-        osVoice = findPremiumNorwegianVoice("male");
-        if (osVoice) {
-          speakWithSystemVoice(trimmed, wantedLang, osVoice, 1, 1, token);
+      } else {
+        const maleOs = findPremiumNorwegianVoice("male");
+        if (maleOs) {
+          speakWithSystemVoice(trimmed, wantedLang, maleOs, 1, 1, token);
           return;
         }
-        // No OS male: Google male profile (clearly different from Nora)
         playGoogleTtsSimple(trimmed, wantedLang, "male", token).catch(() => {
           if (token !== ttsPlayToken) return;
           const nora = pickAnyNorwegianSystemVoice();
@@ -2919,38 +2941,40 @@ function speakText(text, lang) {
           );
         });
         return;
-      } else {
-        osVoice =
+      }
+    }
+
+    // --- Chrome / Android / default for Norwegian ---
+    // Prefer Google: reliable sound + audible male/female rate. One path only.
+    if (nb) {
+      playGoogleTtsSimple(trimmed, wantedLang, gender, token).catch(() => {
+        if (token !== ttsPlayToken) return;
+        const osVoice =
           findPremiumNorwegianVoice(gender) ||
           pickAnyNorwegianSystemVoice() ||
           pickBestVoice(wantedLang, gender);
-      }
-    } else {
-      osVoice = pickBestVoice(wantedLang, gender);
+        speakWithSystemVoice(
+          trimmed,
+          wantedLang,
+          osVoice,
+          profile.rate,
+          profile.pitch,
+          token
+        );
+      });
+      return;
     }
 
-    // Chrome / default: system with gender cue, then Google if synthesis is a no-op.
-    const started = speakWithSystemVoice(
+    // English (reverse practice prompts, etc.)
+    const enVoice = pickBestVoice(wantedLang, gender);
+    speakWithSystemVoice(
       trimmed,
       wantedLang,
-      osVoice,
+      enVoice,
       profile.rate,
       profile.pitch,
       token
     );
-
-    // Backup: Google audio so desktop Chrome still produces sound when voices are empty.
-    // Slightly later so we don't double-blast when system works.
-    window.setTimeout(() => {
-      if (token !== ttsPlayToken) return;
-      // If system is already speaking, leave it alone.
-      try {
-        if (window.speechSynthesis && window.speechSynthesis.speaking) return;
-      } catch {
-        /* ignore */
-      }
-      playGoogleTtsSimple(trimmed, wantedLang, gender, token).catch(() => {});
-    }, started ? 280 : 40);
   }, 70);
 }
 
