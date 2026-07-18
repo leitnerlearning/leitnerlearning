@@ -98,7 +98,7 @@ let libraryRenderToken = 0;
 let libraryJumpObserver = null;
 const LIBRARY_BATCH_SIZE = 35;
 const LIBRARY_SCROLL_TOP_THRESHOLD = 360;
-/** Rank ranges for tooltips — chip label uses BAND_LABELS so jump matches section titles. */
+/** Rank ranges shown next to section titles and in jump-chip tooltips. */
 const LIBRARY_JUMP_RANGE = {
   A: "1–50",
   B: "51–100",
@@ -5337,12 +5337,16 @@ function renderCardListSections(sections, list, token) {
 
   const pending = sections.map(({ band, label, cards }) => {
     const key = librarySectionKey(band);
+    const range = LIBRARY_JUMP_RANGE[key];
+    const rangeHtml = range
+      ? ` <span class="card-group-range">${escapeHtml(range)}</span>`
+      : "";
     const sectionEl = document.createElement("section");
     sectionEl.className = "card-group";
     sectionEl.id = `library-section-${key}`;
     sectionEl.dataset.librarySection = key;
     sectionEl.innerHTML = `
-      <h3 class="card-group-title">${escapeHtml(label)}</h3>
+      <h3 class="card-group-title">${escapeHtml(label)}${rangeHtml}</h3>
       <div class="card-group-list"></div>`;
     list.appendChild(sectionEl);
     return {
