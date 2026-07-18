@@ -831,6 +831,56 @@ function norwegianTypingMatches(user, expected) {
   return false;
 }
 
+/**
+ * Optional infinitive particles so bare verbs still count:
+ *   å spise ≈ spise    to be ≈ be
+ * Typing å without the letter: "a vaere" / "aa vaere" ≈ "å være" / "være".
+ */
+function stripAnswerParticles(text) {
+  let t = normalizeAnswer(text);
+  if (!t) return "";
+  // Norwegian infinitive marker (and common keyboard stand-ins)
+  t = t.replace(/^(å|aa)\s+/, "");
+  // English infinitive "to eat" → "eat"
+  t = t.replace(/^to\s+/, "");
+  // Leading "a " as ASCII for å (a være → være). English "a dog" → "dog" is usually fine too.
+  t = t.replace(/^a\s+/, "");
+  return t.trim();
+}
+
+/** All comparable cores for one answer (particles off/on + æøå typing folds). */
+function answerCoreVariants(text) {
+  const n = normalizeAnswer(text);
+  const cores = new Set();
+  if (!n) return cores;
+
+  const base = stripAnswerParticles(n) || n;
+  const forms = [n, base];
+  // Bare verb ↔ with particle (either side may be the card or the user)
+  if (base && !base.includes(" ")) {
+    forms.push(`å ${base}`);
+    forms.push(`to ${base}`);
+  }
+
+  for (const form of forms) {
+    if (!form) continue;
+    cores.add(form);
+    cores.add(foldNorwegianDigraphs(form));
+    cores.add(foldNorwegianLoose(form));
+    cores.add(foldEnglishDialectSpelling(form));
+  }
+  return cores;
+}
+
+function particleAnswerMatches(a, b) {
+  if (!a || !b) return false;
+  const left = answerCoreVariants(a);
+  for (const core of answerCoreVariants(b)) {
+    if (left.has(core)) return true;
+  }
+  return false;
+}
+
 function getAcceptedAnswers(native) {
   return native.split("/").map((part) => normalizeAnswer(part));
 }
@@ -1319,6 +1369,7 @@ function speechTokensMatch(userToken, expectedToken, lang) {
 function answersSoundAlike(user, expected, lang = "en") {
   if (!user || !expected) return false;
   if (user === expected) return true;
+  if (particleAnswerMatches(user, expected)) return true;
   if (sameSpeechHomophoneGroup(user, expected, lang)) return true;
 
   const userWords = user.split(" ").filter(Boolean);
@@ -1369,14 +1420,23 @@ function answersAreClose(user, expected) {
   if (norwegianTypingMatches(user, expected)) return true;
   // British spelling taught in Europe counts for American deck glosses
   if (englishDialectSpellingMatches(user, expected)) return true;
+  // å spise ≈ spise, to be ≈ be, a vaere ≈ være
+  if (particleAnswerMatches(user, expected)) return true;
   if (user.includes(expected) || expected.includes(user)) return true;
 
+  const userCore = stripAnswerParticles(user) || user;
+  const expectedCore = stripAnswerParticles(expected) || expected;
   const distance = Math.min(
     levenshtein(user, expected),
+    levenshtein(userCore, expectedCore),
     levenshtein(foldNorwegianLoose(user), foldNorwegianLoose(expected)),
-    levenshtein(foldEnglishDialectSpelling(user), foldEnglishDialectSpelling(expected))
+    levenshtein(foldNorwegianLoose(userCore), foldNorwegianLoose(expectedCore)),
+    levenshtein(foldEnglishDialectSpelling(user), foldEnglishDialectSpelling(expected)),
+    levenshtein(foldEnglishDialectSpelling(userCore), foldEnglishDialectSpelling(expectedCore))
   );
-  return distance <= maxEditDistance(expected);
+  // Score distance against the shorter core so "spise" vs "å spise" is not over-penalized
+  const distanceBudget = Math.max(maxEditDistance(expected), maxEditDistance(expectedCore));
+  return distance <= distanceBudget;
 }
 
 function getPracticeDirectionKey(categoryId = activeCategoryId) {
@@ -2681,6 +2741,7 @@ function glossPartsMatch(a, b) {
   if (normalizeAnswer(a) === normalizeAnswer(b)) return true;
   if (norwegianTypingMatches(a, b)) return true;
   if (englishDialectSpellingMatches(a, b)) return true;
+  if (particleAnswerMatches(a, b)) return true;
 
   const partsA = String(a)
     .split("/")
@@ -2696,7 +2757,8 @@ function glossPartsMatch(a, b) {
       if (
         left === right ||
         norwegianTypingMatches(left, right) ||
-        englishDialectSpellingMatches(left, right)
+        englishDialectSpellingMatches(left, right) ||
+        particleAnswerMatches(left, right)
       ) {
         return true;
       }
