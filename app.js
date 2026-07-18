@@ -6549,7 +6549,7 @@ function applyCategoryUI() {
   applyAddCardFormUI();
   applyPracticeDirectionUI();
 
-  document.title = `Leitner Learning · ${category.label.split(" · ")[0]}`;
+  document.title = "Leitner Learning";
 }
 
 function applyPracticeDirectionUI() {
