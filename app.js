@@ -1980,10 +1980,11 @@ function getSpeechUnavailableMessage() {
 
 /**
  * Platform notes (Speak + Hear) — verify all when changing audio code:
- * - Desktop Chrome: cloud speech; quiet pickup → interim + stable accept; keep one mic session.
- * - Desktop Safari: Nora TTS; do not force Google; avoid cancel/warm-up that thins voices.
- * - Mobile Chrome: one long recognition session (per-start shows "Microphone Access Allowed").
- * - Mobile Safari/iOS: unlock AudioContext on gesture; always prefer system nb TTS (Nora).
+ * - Desktop Chrome: cloud speech; interim + stable accept for normal volume.
+ * - Desktop Safari: Nora TTS; never force Google when OS nb exists.
+ * - Mobile Chrome: continuous recognition is unreliable and still re-toasts on restart;
+ *   use one-shot listen that actually hears. Toast on each card is a Chrome OS UI limit.
+ * - Mobile Safari/iOS: unlock AudioContext; prefer system nb TTS (Nora) at rate/pitch 1.
  */
 function isCoarsePointerDevice() {
   try {
@@ -2001,7 +2002,6 @@ function isAppleWebKitBrowser() {
 function isIosDevice() {
   const ua = navigator.userAgent || "";
   if (/iPhone|iPad|iPod/i.test(ua)) return true;
-  // iPadOS desktop UA
   return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
 }
 
@@ -2009,33 +2009,28 @@ function prefersAppleSystemTts() {
   return isAppleWebKitBrowser() || isIosDevice();
 }
 
-/**
- * One SpeechRecognition instance while Speak is on.
- * Restarting every card re-triggers Chrome's "Microphone Access Allowed" toast.
- */
-let speakSessionRec = null;
-let speakSessionId = 0;
-/** Only accept transcripts while waiting for the current card's answer. */
-let speakCardArmed = false;
-let speakCardAttemptId = 0;
+/** Reuse one SpeechRecognition object (less flaky than new every time). */
+let speakRecInstance = null;
 let speakInterimStableTimer = null;
-let speakLastHeard = "";
-let speakCardSettled = false;
 
-function initSpeechSession() {
+function getSpeakRecognition() {
   const SpeechRecognition = getSpeechRecognitionCtor();
   if (!SpeechRecognition) return null;
 
-  const rec = new SpeechRecognition();
+  if (!speakRecInstance) {
+    speakRecInstance = new SpeechRecognition();
+  }
+
+  const rec = speakRecInstance;
   rec.lang = getDirectionLabels().answerLang || "en-US";
   rec.interimResults = true;
-  // Continuous keeps the mic session open across cards (Chrome mobile toast fix).
-  rec.continuous = true;
+  // one-shot: reliable hearing on mobile Chrome (continuous broke pickup there)
+  rec.continuous = false;
   rec.maxAlternatives = 5;
   return rec;
 }
 
-/** Wake audio on first tap so Hear works on iOS. Avoid speechSynthesis cancel warm-up (hurts Safari voice quality). */
+/** Wake audio on first tap so Hear works on iOS. Avoid speechSynthesis cancel warm-up. */
 let audioPipelineUnlocked = false;
 
 function unlockAudioPipeline() {
@@ -2051,7 +2046,6 @@ function unlockAudioPipeline() {
     /* ignore */
   }
 
-  // Silent HTML audio unlock only (no speechSynthesis.cancel — that can degrade Safari Nora).
   try {
     const a = new Audio();
     a.src =
@@ -2150,16 +2144,11 @@ function clearSpeakInterimTimer() {
   }
 }
 
-function stopSpeakSession() {
+function stopActiveRecognition() {
   speakAttemptId += 1;
-  speakCardArmed = false;
-  speakCardSettled = false;
-  speakLastHeard = "";
   clearSpeakInterimTimer();
   clearSpeakAttemptTimer();
-
-  const rec = speakSessionRec || recognition;
-  speakSessionRec = null;
+  const rec = recognition;
   recognition = null;
   if (!rec) return;
   rec.onresult = null;
@@ -2177,16 +2166,11 @@ function stopSpeakSession() {
   }
 }
 
-/** @deprecated name kept for call sites — stops the whole speak session */
-function stopActiveRecognition() {
-  stopSpeakSession();
-}
-
 function setSpeakMode(active) {
   speakModeActive = active;
   if (!active) {
     clearSpeakScheduling();
-    stopSpeakSession();
+    stopActiveRecognition();
     setListeningUI(false);
     speakSoftRetries = 0;
   } else {
@@ -2198,7 +2182,7 @@ function setSpeakMode(active) {
 }
 
 /**
- * Toggle speak mode. One mic session for the whole mode (avoids Chrome per-card toast).
+ * Toggle speak mode. No permission lectures / getUserMedia (those re-prompt on phones).
  */
 function toggleSpeakMode() {
   if (speakModeActive) {
@@ -6921,10 +6905,8 @@ function initEventListeners() {
 
   document.getElementById("hear-btn")?.addEventListener("click", () => {
     if (!currentCard) return;
-    // Pause accepting speech while Hear plays — keep mic session open (no Chrome re-toast).
-    speakCardArmed = false;
-    clearSpeakInterimTimer();
-    clearSpeakAttemptTimer();
+    clearSpeakScheduling();
+    stopActiveRecognition();
     setListeningUI(false);
     speakPromptForCard(currentCard);
     if (speakModeActive) {
