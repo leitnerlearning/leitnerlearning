@@ -5197,21 +5197,32 @@ function scrollToLibrarySection(key) {
   target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-function scrollLibraryToTop() {
-  // True top of Library (title + add form), not the search row.
-  const anchor =
-    document.querySelector(".library-header") || document.getElementById("cards-panel");
-  anchor?.scrollIntoView({ behavior: "smooth", block: "start" });
+/** Float Top: page top so main tabs / other site sections are reachable again. */
+function scrollSiteToTop() {
   setActiveLibraryJump(null);
+  const header =
+    document.querySelector(".header") || document.querySelector(".app");
+  if (header) {
+    header.scrollIntoView({ behavior: "smooth", block: "start" });
+  } else {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 }
 
+/**
+ * Float Search: jump to Library header (title + add form + search row),
+ * then focus the search field.
+ */
 function focusLibrarySearch() {
   const input = document.getElementById("library-search");
-  if (!input) return;
+  const anchor =
+    document.querySelector(".library-header") ||
+    document.querySelector(".library-controls") ||
+    document.getElementById("cards-panel");
   setActiveLibraryJump(null);
+  anchor?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  // Bring the search field itself into view (not the whole controls block only).
-  input.scrollIntoView({ behavior: "smooth", block: "center" });
+  if (!input) return;
 
   const activate = () => {
     try {
@@ -5224,7 +5235,6 @@ function focusLibrarySearch() {
     window.setTimeout(() => input.classList.remove("library-search--ready"), 1000);
   };
 
-  // Focus in the click turn when possible; again after scroll settles.
   activate();
   window.setTimeout(activate, 320);
   if (typeof window !== "undefined" && "onscrollend" in window) {
@@ -7045,7 +7055,7 @@ function initEventListeners() {
   });
 
   document.getElementById("library-scroll-top")?.addEventListener("click", () => {
-    scrollLibraryToTop();
+    scrollSiteToTop();
   });
 
   document.getElementById("library-scroll-search")?.addEventListener("click", () => {
