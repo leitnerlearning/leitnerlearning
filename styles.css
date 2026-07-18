@@ -2033,12 +2033,10 @@ body.welcome-open .app {
 
 .about-logo {
   display: block;
-  height: 2rem;
-  width: auto;
-  max-width: min(10.5rem, 58%);
+  height: 1.75rem;
+  width: 1.75rem;
   object-fit: contain;
-  object-position: left center;
-  flex-shrink: 1;
+  flex-shrink: 0;
 }
 
 .about-body {
