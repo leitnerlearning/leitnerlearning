@@ -5198,23 +5198,38 @@ function scrollToLibrarySection(key) {
 }
 
 function scrollLibraryToTop() {
+  // True top of Library (title + add form), not the search row.
   const anchor =
-    document.querySelector(".library-controls") || document.getElementById("cards-panel");
+    document.querySelector(".library-header") || document.getElementById("cards-panel");
   anchor?.scrollIntoView({ behavior: "smooth", block: "start" });
   setActiveLibraryJump(null);
 }
 
 function focusLibrarySearch() {
   const input = document.getElementById("library-search");
-  const anchor =
-    document.querySelector(".library-controls") || document.getElementById("cards-panel");
-  anchor?.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (!input) return;
   setActiveLibraryJump(null);
-  // Focus after scroll starts so the field is on screen (esp. mobile).
-  window.setTimeout(() => {
-    input?.focus({ preventScroll: true });
-    input?.select?.();
-  }, 280);
+
+  // Bring the search field itself into view (not the whole controls block only).
+  input.scrollIntoView({ behavior: "smooth", block: "center" });
+
+  const activate = () => {
+    try {
+      input.focus({ preventScroll: true });
+    } catch {
+      input.focus();
+    }
+    if (typeof input.select === "function") input.select();
+    input.classList.add("library-search--ready");
+    window.setTimeout(() => input.classList.remove("library-search--ready"), 1000);
+  };
+
+  // Focus in the click turn when possible; again after scroll settles.
+  activate();
+  window.setTimeout(activate, 320);
+  if (typeof window !== "undefined" && "onscrollend" in window) {
+    window.addEventListener("scrollend", activate, { once: true });
+  }
 }
 
 function updateLibraryScrollTopVisibility() {
