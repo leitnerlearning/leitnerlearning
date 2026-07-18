@@ -2790,15 +2790,23 @@ async function updateForeignSuggestions() {
   getStarterSuggestions(query, 4).forEach(addSuggestion);
   getLibrarySuggestions(query, 4).forEach(addSuggestion);
 
-  const { foreignCode, nativeCode } = getCategoryLanguageCodes();
-  const translated = await fetchTranslationSuggestion(query, foreignCode, nativeCode);
-  if (translated && activeSuggestField === "foreign" && input.value.trim() === query) {
-    addSuggestion({
-      foreign: query,
-      native: translated,
-      meta: "Suggested translation",
-      selectable: true,
-    });
+  // Don't advertise a "translation" of keyboard mash — it only creates false confidence later.
+  if (!looksLikeGibberish(query)) {
+    const { foreignCode, nativeCode } = getCategoryLanguageCodes();
+    const translated = await fetchTranslationSuggestion(query, foreignCode, nativeCode);
+    if (
+      translated &&
+      !looksLikeGibberish(translated) &&
+      activeSuggestField === "foreign" &&
+      input.value.trim() === query
+    ) {
+      addSuggestion({
+        foreign: query,
+        native: translated,
+        meta: "Suggested translation",
+        selectable: true,
+      });
+    }
   }
 
   renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
@@ -2833,15 +2841,22 @@ async function updateNativeSuggestions() {
   getStarterSuggestions(query, 4).forEach(addSuggestion);
   getLibrarySuggestions(query, 4).forEach(addSuggestion);
 
-  const { foreignCode, nativeCode } = getCategoryLanguageCodes();
-  const translated = await fetchTranslationSuggestion(query, nativeCode, foreignCode);
-  if (translated && activeSuggestField === "native" && input.value.trim() === query) {
-    addSuggestion({
-      foreign: translated,
-      native: query,
-      meta: "Suggested translation",
-      selectable: true,
-    });
+  if (!looksLikeGibberish(query)) {
+    const { foreignCode, nativeCode } = getCategoryLanguageCodes();
+    const translated = await fetchTranslationSuggestion(query, nativeCode, foreignCode);
+    if (
+      translated &&
+      !looksLikeGibberish(translated) &&
+      activeSuggestField === "native" &&
+      input.value.trim() === query
+    ) {
+      addSuggestion({
+        foreign: translated,
+        native: query,
+        meta: "Suggested translation",
+        selectable: true,
+      });
+    }
   }
 
   renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
@@ -2923,6 +2938,102 @@ function getRelatedEntriesForReview(foreign, native, limit = 5) {
   return results.slice(0, limit);
 }
 
+/**
+ * Keyboard mash / nonsense detector. Conservative on short real words (styrke, fjell)
+ * but catches runs like "soksdfjklsdflgo".
+ */
+function wordLooksLikeGibberish(word) {
+  if (!word || word.length < 5) return false;
+
+  const vowels = (word.match(/[aeiouyæøåäöü]/gi) || []).length;
+  const ratio = vowels / word.length;
+
+  if (vowels === 0) return true;
+
+  // Same keyboard row runs (asdf…, qwer…, zxcv…)
+  if (
+    /[qwertyuiop]{4,}/i.test(word) ||
+    /[asdfghjkl]{4,}/i.test(word) ||
+    /[zxcvbnm]{4,}/i.test(word)
+  ) {
+    return true;
+  }
+
+  // Long mash with too few vowels (avoids flagging "strengths")
+  if (word.length >= 10 && ratio < 0.28) return true;
+  if (word.length >= 14 && ratio < 0.34) return true;
+
+  // Extremely rare in Norwegian/English lemmas
+  if (/[bcdfghjklmnpqrstvwxz]{6,}/i.test(word)) return true;
+
+  if (/(.)\1{3,}/i.test(word)) return true;
+
+  return false;
+}
+
+function looksLikeGibberish(text) {
+  const words = normalizeAnswer(String(text || ""))
+    .split(" ")
+    .map((word) => word.replace(/[^a-zæøåäöü]/gi, ""))
+    .filter(Boolean);
+
+  if (!words.length) return false;
+  return words.some((word) => wordLooksLikeGibberish(word));
+}
+
+function nonsenseReviewSummary(learningName, foreignGibberish, nativeGibberish, suggestedForeign, suggestedNative) {
+  if (foreignGibberish && nativeGibberish) {
+    return {
+      matches: false,
+      targetField: null,
+      suggestedValue: null,
+      title: "Looks like nonsense",
+      copy: "Neither side looks like a real word. Fix the text before adding, or only add it if you really mean to.",
+    };
+  }
+
+  // Only ever suggest a fix FROM the side that looks real — never "translate" mash into approval.
+  if (foreignGibberish) {
+    if (suggestedForeign && !looksLikeGibberish(suggestedForeign)) {
+      return {
+        matches: false,
+        targetField: "foreign",
+        suggestedValue: suggestedForeign,
+        title: `${learningName} looks like nonsense`,
+        copy: `“${suggestedForeign}” is a normal ${learningName} for the English you typed. Tap to use it, or rewrite the ${learningName} yourself.`,
+      };
+    }
+    return {
+      matches: false,
+      targetField: null,
+      suggestedValue: null,
+      title: `${learningName} looks like nonsense`,
+      copy: `That doesn’t look like real ${learningName}. Rewrite it before adding — a translation tool will still “match” pure gibberish if you let it.`,
+    };
+  }
+
+  if (nativeGibberish) {
+    if (suggestedNative && !looksLikeGibberish(suggestedNative)) {
+      return {
+        matches: false,
+        targetField: "native",
+        suggestedValue: suggestedNative,
+        title: "English looks like nonsense",
+        copy: `“${suggestedNative}” is a common English for the ${learningName} you typed. Tap to use it, or rewrite the English yourself.`,
+      };
+    }
+    return {
+      matches: false,
+      targetField: null,
+      suggestedValue: null,
+      title: "English looks like nonsense",
+      copy: "That doesn’t look like real English. Rewrite it before adding.",
+    };
+  }
+
+  return null;
+}
+
 function getTranslationReviewSummary(foreign, native, suggestedNative, suggestedForeign, localPair = null) {
   const learningName = getActiveCategory().learningLanguageName || "Norwegian";
   const foreignWords = foreign.trim().split(/\s+/).filter(Boolean).length;
@@ -2931,14 +3042,22 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
   const isPhrase = foreignWords >= 2 || nativeWords >= 2;
   const where = localPair?.source === "library" ? "your library" : "the starter deck";
 
-  // Curated local data beats machine translation (idioms, multi-sense words, etc.)
+  const foreignGibberish = looksLikeGibberish(foreign);
+  const nativeGibberish = looksLikeGibberish(native);
+
+  // Never treat a translation OF mash as evidence that mash is fine.
+  const safeSuggestedNative =
+    foreignGibberish || looksLikeGibberish(suggestedNative) ? null : suggestedNative;
+  const safeSuggestedForeign =
+    nativeGibberish || looksLikeGibberish(suggestedForeign) ? null : suggestedForeign;
+
+  // Curated local data first (can still rescue mash on one side with a real deck pair).
   if (localPair) {
     const foreignOk = glossPartsMatch(localPair.foreign, foreign);
     const nativeOk = glossPartsMatch(localPair.native, native);
 
-    // Only green-light when BOTH sides match the curated pair.
-    // (English-only match after the user wrecks Norwegian used to say "looks good".)
-    if (foreignOk && nativeOk) {
+    // Only green-light when BOTH sides match the curated pair (and aren't mash).
+    if (foreignOk && nativeOk && !foreignGibberish && !nativeGibberish) {
       return {
         matches: true,
         targetField: null,
@@ -2948,7 +3067,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       };
     }
 
-    if (foreignOk && !nativeOk) {
+    if (foreignOk && !nativeOk && !foreignGibberish) {
       return {
         matches: false,
         targetField: "native",
@@ -2958,7 +3077,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       };
     }
 
-    if (nativeOk && !foreignOk) {
+    if (nativeOk && !foreignOk && !nativeGibberish) {
       return {
         matches: false,
         targetField: "foreign",
@@ -2969,31 +3088,43 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     }
   }
 
-  const foreignOk = suggestedForeign ? glossPartsMatch(suggestedForeign, foreign) : false;
-  const nativeOk = suggestedNative ? glossPartsMatch(suggestedNative, native) : false;
+  // Nonsense wins over "MT says it matches" (the confidence loophole).
+  if (foreignGibberish || nativeGibberish) {
+    const nonsense = nonsenseReviewSummary(
+      learningName,
+      foreignGibberish,
+      nativeGibberish,
+      // Fixes only FROM the side that looks real
+      nativeGibberish ? null : suggestedForeign,
+      foreignGibberish ? null : suggestedNative
+    );
+    if (nonsense) return nonsense;
+  }
+
+  const foreignOk = safeSuggestedForeign ? glossPartsMatch(safeSuggestedForeign, foreign) : false;
+  const nativeOk = safeSuggestedNative ? glossPartsMatch(safeSuggestedNative, native) : false;
 
   // Fields look swapped (English in Norwegian box and vice versa)
   if (
-    suggestedForeign &&
-    suggestedNative &&
+    safeSuggestedForeign &&
+    safeSuggestedNative &&
     !foreignOk &&
     !nativeOk &&
-    glossPartsMatch(suggestedForeign, native) &&
-    glossPartsMatch(suggestedNative, foreign)
+    glossPartsMatch(safeSuggestedForeign, native) &&
+    glossPartsMatch(safeSuggestedNative, foreign)
   ) {
     return {
       matches: false,
       targetField: "swap",
       suggestedValue: null,
-      suggestedForeign,
-      suggestedNative,
+      suggestedForeign: safeSuggestedForeign,
+      suggestedNative: safeSuggestedNative,
       title: "Sides look swapped",
-      copy: `This reads like English and ${learningName} are in the wrong boxes. Tap to swap to “${suggestedNative}” / “${suggestedForeign}”.`,
+      copy: `This reads like English and ${learningName} are in the wrong boxes. Tap to swap to “${safeSuggestedNative}” / “${safeSuggestedForeign}”.`,
     };
   }
 
-  // Green light only when BOTH directions agree. One-sided matches are unreliable:
-  // MT often ignores gibberish tails ("Jeg liker å kgnk…") and still returns a clean English.
+  // Green only when BOTH directions agree AND neither side is mash.
   if (foreignOk && nativeOk) {
     return {
       matches: true,
@@ -3006,13 +3137,13 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
 
   // One side checks out, the other doesn't: offer a fix when we have one
   if (foreignOk && !nativeOk) {
-    if (suggestedNative) {
+    if (safeSuggestedNative) {
       return {
         matches: false,
         targetField: "native",
-        suggestedValue: suggestedNative,
+        suggestedValue: safeSuggestedNative,
         title: "English might not match",
-        copy: `For “${foreign}”, a common English is “${suggestedNative}”. You typed “${native}”.`,
+        copy: `For “${foreign}”, a common English is “${safeSuggestedNative}”. You typed “${native}”.`,
       };
     }
     return {
@@ -3025,13 +3156,13 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
   }
 
   if (nativeOk && !foreignOk) {
-    if (suggestedForeign) {
+    if (safeSuggestedForeign) {
       return {
         matches: false,
         targetField: "foreign",
-        suggestedValue: suggestedForeign,
+        suggestedValue: safeSuggestedForeign,
         title: `${learningName} might not match`,
-        copy: `For “${native}”, a common ${learningName} is “${suggestedForeign}”. You typed “${foreign}”.`,
+        copy: `For “${native}”, a common ${learningName} is “${safeSuggestedForeign}”. You typed “${foreign}”.`,
       };
     }
     return {
@@ -3044,11 +3175,10 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
   }
 
   // Both sides disagree, or multi-word: MT is unreliable for idioms/slang/dialect.
-  // Soft-warn only. Never force a rewrite of what might be correct local language.
-  if (isPhrase || (suggestedForeign && suggestedNative)) {
+  if (isPhrase || (safeSuggestedForeign && safeSuggestedNative)) {
     const toolBits = [];
-    if (suggestedForeign) toolBits.push(`${learningName}: “${suggestedForeign}”`);
-    if (suggestedNative) toolBits.push(`English: “${suggestedNative}”`);
+    if (safeSuggestedForeign) toolBits.push(`${learningName}: “${safeSuggestedForeign}”`);
+    if (safeSuggestedNative) toolBits.push(`English: “${safeSuggestedNative}”`);
     const toolNote = toolBits.length ? ` Tool guessed ${toolBits.join(", ")}.` : "";
     return {
       matches: false,
@@ -3059,24 +3189,24 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     };
   }
 
-  // Single-word, only one direction returned: safe enough to offer a fix
-  if (suggestedForeign) {
+  // Single-word: only suggest a fix FROM a non-mash source
+  if (safeSuggestedForeign) {
     return {
       matches: false,
       targetField: "foreign",
-      suggestedValue: suggestedForeign,
+      suggestedValue: safeSuggestedForeign,
       title: "Different translation found",
-      copy: `For “${native}”, a common ${learningName} is “${suggestedForeign}”. You typed “${foreign}”.`,
+      copy: `For “${native}”, a common ${learningName} is “${safeSuggestedForeign}”. You typed “${foreign}”.`,
     };
   }
 
-  if (suggestedNative) {
+  if (safeSuggestedNative) {
     return {
       matches: false,
       targetField: "native",
-      suggestedValue: suggestedNative,
+      suggestedValue: safeSuggestedNative,
       title: "Different translation found",
-      copy: `For “${foreign}”, a common English is “${suggestedNative}”. You typed “${native}”.`,
+      copy: `For “${foreign}”, a common English is “${safeSuggestedNative}”. You typed “${native}”.`,
     };
   }
 
@@ -3256,30 +3386,16 @@ function applyReviewSuggestion() {
     if (nativeInput) nativeInput.value = suggestedNative;
     if (reviewForeign) reviewForeign.textContent = suggestedForeign;
     if (reviewNative) reviewNative.textContent = suggestedNative;
-    state.foreign = suggestedForeign;
-    state.native = suggestedNative;
   } else if (targetField === "foreign") {
     if (foreignInput) foreignInput.value = suggestedValue;
     if (reviewForeign) reviewForeign.textContent = suggestedValue;
-    state.foreign = suggestedValue;
   } else {
     if (nativeInput) nativeInput.value = suggestedValue;
     if (reviewNative) reviewNative.textContent = suggestedValue;
-    state.native = suggestedValue;
   }
 
-  const duplicate = findDeckCardByForeign(state.foreign, editingCardId);
-  const localPair = findLocalDeckPair(state.foreign, state.native);
-
-  renderAddCardReviewContext({
-    foreign: state.foreign,
-    native: state.native,
-    duplicate,
-    suggestedNative: state.suggestedNative,
-    suggestedForeign: state.suggestedForeign,
-    related: state.related,
-    localPair,
-  });
+  // Full re-check with fresh MT — never re-approve using stale translations of the old text.
+  openAddCardReview();
 }
 
 function closeAddCardReview() {
