@@ -2778,7 +2778,7 @@ function pickBestTranslationSuggestion(data, sourceText, toLang = "en") {
 
 async function fetchTranslationSuggestion(text, fromLang, toLang) {
   const trimmed = text.trim();
-  if (!trimmed) return null;
+  if (!trimmed || !shouldRequestTranslation(trimmed)) return null;
 
   const from = toMyMemoryLangCode(fromLang);
   const to = toMyMemoryLangCode(toLang);
@@ -2788,7 +2788,19 @@ async function fetchTranslationSuggestion(text, fromLang, toLang) {
     if (!response.ok) return null;
     const data = await response.json();
     if (data.responseStatus !== 200) return null;
-    return pickBestTranslationSuggestion(data, trimmed, to);
+    const picked = pickBestTranslationSuggestion(data, trimmed, to);
+    if (!picked || looksLikeGibberish(picked)) return null;
+    // Refuse absurd compressions: resumekeieie → CV-en (API guessing from a stem)
+    const sourceCompact = normalizeAnswer(trimmed).replace(/\s+/g, "");
+    const pickedCompact = normalizeAnswer(picked).replace(/\s+/g, "");
+    if (
+      sourceCompact.length >= 9 &&
+      pickedCompact.length <= 6 &&
+      sourceCompact.length >= pickedCompact.length * 2
+    ) {
+      return null;
+    }
+    return picked;
   } catch {
     return null;
   }
@@ -2893,15 +2905,10 @@ async function updateForeignSuggestions() {
   getLibrarySuggestions(query, 4).forEach(addSuggestion);
 
   // Don't advertise a "translation" of keyboard mash — it only creates false confidence later.
-  if (!looksLikeGibberish(query)) {
+  if (shouldRequestTranslation(query)) {
     const { foreignCode, nativeCode } = getCategoryLanguageCodes();
     const translated = await fetchTranslationSuggestion(query, foreignCode, nativeCode);
-    if (
-      translated &&
-      !looksLikeGibberish(translated) &&
-      activeSuggestField === "foreign" &&
-      input.value.trim() === query
-    ) {
+    if (translated && activeSuggestField === "foreign" && input.value.trim() === query) {
       addSuggestion({
         foreign: query,
         native: translated,
@@ -2944,15 +2951,10 @@ async function updateNativeSuggestions() {
   getStarterSuggestions(query, 4).forEach(addSuggestion);
   getLibrarySuggestions(query, 4).forEach(addSuggestion);
 
-  if (!looksLikeGibberish(query)) {
+  if (shouldRequestTranslation(query)) {
     const { foreignCode, nativeCode } = getCategoryLanguageCodes();
     const translated = await fetchTranslationSuggestion(query, nativeCode, foreignCode);
-    if (
-      translated &&
-      !looksLikeGibberish(translated) &&
-      activeSuggestField === "native" &&
-      input.value.trim() === query
-    ) {
+    if (translated && activeSuggestField === "native" && input.value.trim() === query) {
       addSuggestion({
         foreign: translated,
         native: query,
@@ -3044,8 +3046,7 @@ function getRelatedEntriesForReview(foreign, native, limit = 5) {
 
 /**
  * Keyboard mash / nonsense detector.
- * Avoid "any letters from the qwerty row" checks — those false-flag real words
- * (skjorte, universitet) because that row includes vowels.
+ * Also catches "real stem + babble" like resumekeieie (MT still invents CV-en from that).
  */
 function wordLooksLikeGibberish(word) {
   if (!word || word.length < 5) return false;
@@ -3073,6 +3074,24 @@ function wordLooksLikeGibberish(word) {
 
   if (/(.)\1{3,}/i.test(word)) return true;
 
+  // Babbling tails: eieie, lololo, kekeke (real words rarely end this way)
+  if (word.length >= 8 && /([aeiouyæøåäöü]{2})\1{2,}/i.test(word)) return true;
+  if (word.length >= 8 && /(..)\1{2,}/i.test(word)) return true;
+
+  // Second half is mostly vowels — "resume" + "keieie"
+  if (word.length >= 9) {
+    const tail = word.slice(Math.floor(word.length / 2));
+    const tailVowels = (tail.match(/[aeiouyæøåäöü]/gi) || []).length;
+    if (tail.length >= 4 && tailVowels / tail.length >= 0.72) return true;
+  }
+
+  // Last 5 letters are all (or nearly all) vowels — eieie, not poeia
+  if (word.length >= 9) {
+    const tip = word.slice(-5);
+    const tipVowels = (tip.match(/[aeiouyæøåäöü]/gi) || []).length;
+    if (tipVowels >= 5) return true;
+  }
+
   return false;
 }
 
@@ -3084,6 +3103,14 @@ function looksLikeGibberish(text) {
 
   if (!words.length) return false;
   return words.some((word) => wordLooksLikeGibberish(word));
+}
+
+/** Never ask the translation API to "fix" keyboard mash into a real word. */
+function shouldRequestTranslation(text) {
+  const trimmed = String(text || "").trim();
+  if (!trimmed || trimmed.length < 2) return false;
+  if (looksLikeGibberish(trimmed)) return false;
+  return true;
 }
 
 function nonsenseReviewSummary(learningName, foreignGibberish, nativeGibberish, suggestedForeign, suggestedNative) {
