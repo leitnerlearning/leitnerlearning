@@ -116,6 +116,8 @@ let readMenuTrail = null;
 let editingCardId = null;
 let addCardReviewOpen = false;
 let addCardReviewState = null;
+/** Snapshot of the form before the user started typing / picking suggestions. */
+let addCardFormBaseline = { foreign: "", native: "" };
 let foreignSuggestTimer = null;
 let nativeSuggestTimer = null;
 let activeSuggestField = null;
@@ -2812,6 +2814,7 @@ async function updateForeignSuggestions() {
   renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
     document.getElementById("new-foreign").value = item.foreign;
     document.getElementById("new-native").value = item.native;
+    syncAddCardResetButton();
     document.getElementById("new-foreign")?.focus();
   });
 }
@@ -2862,6 +2865,7 @@ async function updateNativeSuggestions() {
   renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
     document.getElementById("new-foreign").value = item.foreign;
     document.getElementById("new-native").value = item.native;
+    syncAddCardResetButton();
     document.getElementById("new-foreign")?.focus();
   });
 }
@@ -3395,6 +3399,7 @@ function applyReviewSuggestion() {
     if (reviewNative) reviewNative.textContent = suggestedValue;
   }
 
+  syncAddCardResetButton();
   // Full re-check with fresh MT — never re-approve using stale translations of the old text.
   openAddCardReview();
 }
@@ -3468,14 +3473,51 @@ async function openAddCardReview() {
   });
 }
 
+function setAddCardFormBaseline(foreign = "", native = "") {
+  addCardFormBaseline = {
+    foreign: String(foreign || ""),
+    native: String(native || ""),
+  };
+  syncAddCardResetButton();
+}
+
+function isAddCardFormDirty() {
+  const foreign = document.getElementById("new-foreign")?.value || "";
+  const native = document.getElementById("new-native")?.value || "";
+  return foreign !== addCardFormBaseline.foreign || native !== addCardFormBaseline.native;
+}
+
+function syncAddCardResetButton() {
+  const btn = document.getElementById("add-card-reset-fields");
+  if (!btn) return;
+  const dirty = isAddCardFormDirty();
+  btn.hidden = !dirty;
+  btn.disabled = !dirty;
+}
+
+/** Restore English/Norwegian boxes to how they were before this add/edit session. */
+function restoreAddCardFormBaseline() {
+  const foreignInput = document.getElementById("new-foreign");
+  const nativeInput = document.getElementById("new-native");
+  if (foreignInput) foreignInput.value = addCardFormBaseline.foreign;
+  if (nativeInput) nativeInput.value = addCardFormBaseline.native;
+  suppressAddCardSuggestions = false;
+  closeAddCardReview();
+  hideLibrarySuggestions();
+  syncAddCardResetButton();
+  (nativeInput || foreignInput)?.focus();
+}
+
 function resetAddCardForm() {
   editingCardId = null;
   suppressAddCardSuggestions = false;
   document.getElementById("add-card-form")?.reset();
+  setAddCardFormBaseline("", "");
   closeAddCardReview();
   hideLibrarySuggestions();
   applyAddCardFormUI();
   document.querySelectorAll(".card-item.is-editing").forEach((el) => el.classList.remove("is-editing"));
+  syncAddCardResetButton();
 }
 
 function startEditCard(cardId) {
@@ -3486,6 +3528,7 @@ function startEditCard(cardId) {
   editingCardId = card.id;
   document.getElementById("new-foreign").value = card.foreign;
   document.getElementById("new-native").value = card.native;
+  setAddCardFormBaseline(card.foreign, card.native);
   closeAddCardReview();
   hideLibrarySuggestions();
   applyAddCardFormUI();
@@ -3495,6 +3538,7 @@ function startEditCard(cardId) {
 
   document.getElementById("add-card-form")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   document.getElementById("new-native")?.focus();
+  syncAddCardResetButton();
 }
 
 function saveLibraryCard(foreign, native) {
@@ -5269,6 +5313,10 @@ function initEventListeners() {
 
   document.getElementById("add-card-cancel-edit")?.addEventListener("click", resetAddCardForm);
 
+  document.getElementById("add-card-reset-fields")?.addEventListener("click", () => {
+    restoreAddCardFormBaseline();
+  });
+
   document.getElementById("add-card-edit-existing")?.addEventListener("click", (e) => {
     const cardId = e.currentTarget.dataset.cardId;
     if (!cardId) return;
@@ -5332,6 +5380,7 @@ function initEventListeners() {
     suppressAddCardSuggestions = false;
     activeSuggestField = "foreign";
     invalidateAddCardReviewIfStale();
+    syncAddCardResetButton();
     queueForeignSuggestions();
   });
 
@@ -5344,6 +5393,7 @@ function initEventListeners() {
     suppressAddCardSuggestions = false;
     activeSuggestField = "native";
     invalidateAddCardReviewIfStale();
+    syncAddCardResetButton();
     queueNativeSuggestions();
   });
 

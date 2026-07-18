@@ -2419,9 +2419,22 @@ body.welcome-open .app {
   }
 }
 
-.add-card-form .btn.primary {
-  width: 100%;
+.add-card-form-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
   margin-top: 0.65rem;
+}
+
+.add-card-form-actions .btn.ghost {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+}
+
+.add-card-form-actions .btn.primary {
+  flex: 1 1 auto;
+  width: auto;
+  margin-top: 0;
 }
 
 .add-card-form input {
