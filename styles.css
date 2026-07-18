@@ -520,25 +520,6 @@ html {
     min-height: 44px;
   }
 
-  .card-item {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
-  }
-
-  .card-item-actions {
-    justify-content: stretch;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-  }
-
-  .card-item-actions .btn {
-    min-height: 44px;
-    width: 100%;
-    touch-action: manipulation;
-  }
-
   .box-stat-row,
   .band-stat-row,
   .read-stat-row {
@@ -3137,6 +3118,7 @@ body.welcome-open .app {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  width: 100%;
   padding: 0.95rem 1.1rem;
   background: var(--surface-glass-strong);
   backdrop-filter: blur(10px);
@@ -3149,6 +3131,12 @@ body.welcome-open .app {
 
 .card-item:hover {
   border-color: var(--brand-ring);
+}
+
+.card-item-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: left;
 }
 
 .card-item-actions {
@@ -3164,6 +3152,7 @@ body.welcome-open .app {
   color: var(--brand-deep);
   word-break: break-word;
   line-height: 1.25;
+  text-align: left;
 }
 
 .card-item-native {
@@ -3171,6 +3160,38 @@ body.welcome-open .app {
   color: var(--text-secondary);
   margin-top: 0.2rem;
   line-height: 1.35;
+  text-align: left;
+}
+
+/*
+ * Mobile library list: must come AFTER base .card-item so align-items: stretch
+ * wins over align-items: center. Otherwise each card shrink-wraps its text and
+ * centers it — short vs long words zigzag left/right while scrolling.
+ */
+@media (max-width: 720px) {
+  .card-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .card-item-text {
+    width: 100%;
+    flex: none;
+  }
+
+  .card-item-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .card-item-actions .btn {
+    min-height: 44px;
+    width: 100%;
+    touch-action: manipulation;
+  }
 }
 
 /* Progress tab */
