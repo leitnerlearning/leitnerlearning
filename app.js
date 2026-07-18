@@ -22,13 +22,13 @@ const LEARNING_LEVELS = [
 ];
 
 const BAND_LABELS = {
-  A: "1–50 · most used",
-  B: "51–100 · common",
-  C: "101–160 · more words",
-  D: "161–300 · building fluency",
-  E: "301–500 · campus & marine",
-  F: "501–750 · reading words",
-  G: "751–1000 · story forms",
+  A: "Essentials",
+  B: "Core",
+  C: "Daily",
+  D: "Expanded",
+  E: "Campus & life",
+  F: "Reading",
+  G: "Wider reading",
   phrase: "Phrases",
 };
 
