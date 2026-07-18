@@ -122,6 +122,9 @@ let foreignSuggestTimer = null;
 let nativeSuggestTimer = null;
 let activeSuggestField = null;
 let suppressAddCardSuggestions = false;
+/** Bumps on each suggest pass so slow MyMemory replies cannot overwrite newer local hits. */
+let foreignSuggestToken = 0;
+let nativeSuggestToken = 0;
 let readVocabIndex = null;
 let confirmResolve = null;
 
@@ -2825,6 +2828,7 @@ function withinOneEdit(a, b) {
 function softGlossMatch(a, b) {
   if (!a || !b) return false;
   if (glossPartsMatch(a, b)) return true;
+  if (particleAnswerMatches(a, b)) return true;
 
   const partsA = String(a)
     .split("/")
@@ -2837,6 +2841,7 @@ function softGlossMatch(a, b) {
 
   for (const left of partsA) {
     for (const right of partsB) {
+      if (particleAnswerMatches(left, right)) return true;
       if (englishInflectionMatch(left, right)) return true;
       if (englishDialectSpellingMatches(left, right)) return true;
       if (withinOneEdit(left, right)) return true;
@@ -2862,19 +2867,36 @@ function preferDisplayForm(text) {
 function suggestionMatchScore(query, foreign, native) {
   const q = normalizeAnswer(query);
   if (!q) return 0;
+  const qCore = stripAnswerParticles(q) || q;
 
   const scoreSide = (sideRaw) => {
     const side = normalizeAnswer(sideRaw);
     if (!side) return 0;
     if (side === q) return 100;
+    // å spise ≈ spise, to be ≈ be (same card, optional particle)
+    if (particleAnswerMatches(sideRaw, query) || particleAnswerMatches(side, q)) return 96;
     if (softGlossMatch(sideRaw, query) || softGlossMatch(side, q)) return 92;
-    if (side.startsWith(q)) return 80;
+    if (side.startsWith(q) || (qCore.length >= 2 && side.startsWith(qCore))) return 80;
     const words = side.split(" ");
-    if (words.some((word) => word === q)) return 70;
-    if (words.some((word) => englishInflectionMatch(word, q) || withinOneEdit(word, q))) return 68;
-    if (words.some((word) => word.startsWith(q))) return 55;
+    if (words.some((word) => word === q || word === qCore)) return 70;
+    if (
+      words.some(
+        (word) =>
+          particleAnswerMatches(word, q) ||
+          particleAnswerMatches(word, qCore) ||
+          englishInflectionMatch(word, q) ||
+          withinOneEdit(word, q) ||
+          withinOneEdit(word, qCore)
+      )
+    ) {
+      return 68;
+    }
+    if (words.some((word) => word.startsWith(q) || (qCore.length >= 2 && word.startsWith(qCore)))) {
+      return 55;
+    }
     // Avoid flooding on 1–2 letter mid-word hits (en, er, to…)
     if (q.length >= 3 && side.includes(q)) return 30;
+    if (qCore.length >= 3 && side.includes(qCore)) return 28;
     if (q.length === 2 && (side.startsWith(q) || words.some((word) => word.startsWith(q)))) return 20;
     return 0;
   };
@@ -3303,6 +3325,7 @@ async function updateForeignSuggestions() {
   if (!input || !container || activeSuggestField !== "foreign" || !shouldShowAddCardSuggestions()) return;
 
   const query = input.value.trim();
+  const token = ++foreignSuggestToken;
   if (!query) {
     container.classList.add("hidden");
     syncAddCardSuggestingState();
@@ -3319,13 +3342,27 @@ async function updateForeignSuggestions() {
     suggestions.push(item);
   };
 
-  getStarterSuggestions(query, 4).forEach(addSuggestion);
-  getLibrarySuggestions(query, 4).forEach(addSuggestion);
+  const paint = () => {
+    if (token !== foreignSuggestToken || activeSuggestField !== "foreign") return;
+    if (input.value.trim() !== query) return;
+    renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
+      document.getElementById("new-foreign").value = item.foreign;
+      document.getElementById("new-native").value = item.native;
+      syncAddCardResetButton();
+      document.getElementById("new-foreign")?.focus();
+    });
+  };
+
+  // Local deck first — do not wait on MyMemory or nothing shows while the network spins
+  getStarterSuggestions(query, 6).forEach(addSuggestion);
+  getLibrarySuggestions(query, 6).forEach(addSuggestion);
+  paint();
 
   // Don't advertise a "translation" of keyboard mash — it only creates false confidence later.
   if (shouldRequestTranslation(query)) {
     const { foreignCode, nativeCode } = getCategoryLanguageCodes();
     const translated = await fetchTranslationSuggestion(query, foreignCode, nativeCode);
+    if (token !== foreignSuggestToken) return;
     if (translated && activeSuggestField === "foreign" && input.value.trim() === query) {
       addSuggestion({
         foreign: query,
@@ -3333,15 +3370,9 @@ async function updateForeignSuggestions() {
         meta: "Suggested translation",
         selectable: true,
       });
+      paint();
     }
   }
-
-  renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
-    document.getElementById("new-foreign").value = item.foreign;
-    document.getElementById("new-native").value = item.native;
-    syncAddCardResetButton();
-    document.getElementById("new-foreign")?.focus();
-  });
 }
 
 async function updateNativeSuggestions() {
@@ -3350,6 +3381,7 @@ async function updateNativeSuggestions() {
   if (!input || !container || activeSuggestField !== "native" || !shouldShowAddCardSuggestions()) return;
 
   const query = input.value.trim();
+  const token = ++nativeSuggestToken;
   if (!query) {
     container.classList.add("hidden");
     syncAddCardSuggestingState();
@@ -3366,12 +3398,25 @@ async function updateNativeSuggestions() {
     suggestions.push(item);
   };
 
-  getStarterSuggestions(query, 4).forEach(addSuggestion);
-  getLibrarySuggestions(query, 4).forEach(addSuggestion);
+  const paint = () => {
+    if (token !== nativeSuggestToken || activeSuggestField !== "native") return;
+    if (input.value.trim() !== query) return;
+    renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
+      document.getElementById("new-foreign").value = item.foreign;
+      document.getElementById("new-native").value = item.native;
+      syncAddCardResetButton();
+      document.getElementById("new-foreign")?.focus();
+    });
+  };
+
+  getStarterSuggestions(query, 6).forEach(addSuggestion);
+  getLibrarySuggestions(query, 6).forEach(addSuggestion);
+  paint();
 
   if (shouldRequestTranslation(query)) {
     const { foreignCode, nativeCode } = getCategoryLanguageCodes();
     const translated = await fetchTranslationSuggestion(query, nativeCode, foreignCode);
+    if (token !== nativeSuggestToken) return;
     if (translated && activeSuggestField === "native" && input.value.trim() === query) {
       addSuggestion({
         foreign: translated,
@@ -3379,15 +3424,9 @@ async function updateNativeSuggestions() {
         meta: "Suggested translation",
         selectable: true,
       });
+      paint();
     }
   }
-
-  renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
-    document.getElementById("new-foreign").value = item.foreign;
-    document.getElementById("new-native").value = item.native;
-    syncAddCardResetButton();
-    document.getElementById("new-foreign")?.focus();
-  });
 }
 
 function queueForeignSuggestions() {
