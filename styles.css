@@ -437,12 +437,6 @@ html {
     font-size: clamp(1rem, 3.6vw, 1.35rem);
   }
 
-  .panel-lead {
-    margin-top: -0.75rem;
-    margin-bottom: 1.1rem;
-    font-size: var(--text-sm);
-  }
-
   .practice-meta {
     gap: 0.4rem;
     margin-bottom: 1.1rem;
@@ -577,10 +571,6 @@ html {
   .panel.active {
     width: 100%;
     min-width: 0;
-  }
-
-  #practice-panel .panel-lead {
-    display: none;
   }
 
   .empty-state {
@@ -766,19 +756,6 @@ main {
   font-size: 1rem;
   line-height: 1.5;
   color: var(--text-secondary);
-}
-
-.panel-lead {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: var(--text-md);
-  line-height: 1.65;
-  letter-spacing: -0.01em;
-  white-space: pre-line;
-  margin: -1.25rem 0 1.5rem;
-  max-width: 28rem;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 /* Practice meta */
@@ -974,10 +951,6 @@ main {
 
 .app.practice-focus .daily-progress {
   margin-bottom: 1rem;
-}
-
-#practice-panel .panel-lead.hidden {
-  display: none;
 }
 
 .practice-card-top {
@@ -1418,6 +1391,33 @@ main {
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
+}
+
+/* Wide screens: balance empty Review with space, not instructional copy */
+@media (min-width: 721px) {
+  #practice-panel:has(#practice-empty:not(.hidden)) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: min(58vh, 32rem);
+    justify-content: center;
+    padding-block: 0.5rem 1.25rem;
+  }
+
+  #practice-panel:has(#practice-empty:not(.hidden)) .practice-meta,
+  #practice-panel:has(#practice-empty:not(.hidden)) .daily-progress {
+    width: min(100%, 26rem);
+  }
+
+  #practice-empty:not(.hidden) {
+    width: min(100%, 26rem);
+    margin-inline: auto;
+  }
+
+  #practice-panel:has(#practice-active:not(.hidden)) .practice-card {
+    width: min(100%, 32rem);
+    margin-inline: auto;
+  }
 }
 
 .empty-icon {

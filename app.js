@@ -3100,16 +3100,10 @@ function renderPractice() {
   const emptyEl = document.getElementById("practice-empty");
   const activeEl = document.getElementById("practice-active");
 
-  const panelLead = document.getElementById("panel-lead");
-
   if (!currentCard) {
     renderEmptyState();
     emptyEl.classList.remove("hidden");
     activeEl.classList.add("hidden");
-    const ritualFocus =
-      emptyEl.classList.contains("empty-state--actions") ||
-      emptyEl.classList.contains("empty-state--power-complete");
-    panelLead?.classList.toggle("hidden", ritualFocus);
     updatePracticeFocusClass();
     return;
   }
@@ -3117,7 +3111,6 @@ function renderPractice() {
   sessionJustCompleted = false;
   emptyEl.classList.add("hidden");
   activeEl.classList.remove("hidden");
-  panelLead?.classList.add("hidden");
   updatePracticeFocusClass();
 
   const labels = getDirectionLabels();
@@ -6045,11 +6038,6 @@ function applyCategoryUI() {
     const el = document.getElementById(id);
     if (el && text) el.textContent = text;
   };
-
-  const panelLeadEl = document.getElementById("panel-lead");
-  if (panelLeadEl && category.panelLead) {
-    panelLeadEl.textContent = category.panelLead;
-  }
 
   applyAddCardFormUI();
   applyPracticeDirectionUI();

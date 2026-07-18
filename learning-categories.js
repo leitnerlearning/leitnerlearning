@@ -13,8 +13,6 @@ const LEARNING_CATEGORIES = [
     answerLang: "en-US",
     promptLabel: "Norwegian → English",
     reversePromptLabel: "English → Norwegian",
-    panelLead:
-      "1,000 common Norwegian words\nThe first 500 cover most of what shows up in our stories\nLearn them all and the stories get much easier",
     deckTitle: "Norwegian essentials",
     deckBlurb: "from everyday Bokmål, based on",
     starterPreviewLead: "The fifty words you hear most often.",
