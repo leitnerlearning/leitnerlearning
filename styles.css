@@ -67,12 +67,20 @@
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  /* Keep the page on a single vertical track (no sideways bounce on mobile). */
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
   font-family: var(--font);
   background:
     radial-gradient(ellipse 85% 50% at 50% -10%, var(--brand-glow), transparent 70%),
@@ -84,10 +92,7 @@ body {
   letter-spacing: -0.022em;
   position: relative;
   overflow-x: hidden;
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-x: none;
 }
 
 /* Ambient brand — soft glow */
@@ -133,12 +138,21 @@ html {
 .app {
   position: relative;
   z-index: 1;
-  max-width: 780px;
+  width: 100%;
+  max-width: min(780px, 100%);
   margin: 0 auto;
   padding: 2.5rem 1.5rem 3rem;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: clip;
+  box-sizing: border-box;
+}
+
+main,
+.panel {
+  max-width: 100%;
+  min-width: 0;
 }
 
 /* Header */
@@ -476,13 +490,14 @@ html {
 
   .filter-chips {
     flex-wrap: nowrap;
+    max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
     scrollbar-width: none;
     padding-bottom: 0.15rem;
-    margin: 0 -0.15rem;
-    padding-left: 0.15rem;
-    padding-right: 0.15rem;
+    /* No negative margins — those widen the page and enable sideways bounce. */
+    margin: 0;
   }
 
   .filter-chips::-webkit-scrollbar {
@@ -497,8 +512,10 @@ html {
 
   .library-jump {
     top: 0.35rem;
+    max-width: 100%;
     border-radius: var(--radius-sm);
     padding: 0.35rem;
+    overscroll-behavior-x: contain;
   }
 
   .library-jump-chip {
@@ -2945,8 +2962,12 @@ body.welcome-open .app {
   flex-wrap: nowrap;
   align-items: center;
   gap: 0.28rem;
+  max-width: 100%;
+  box-sizing: border-box;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  /* Horizontal chip scroll stays in the pill — does not drag the whole page. */
+  overscroll-behavior-x: contain;
   scrollbar-width: none;
   margin: 0 0 1rem;
   padding: 0.35rem 0.4rem;
