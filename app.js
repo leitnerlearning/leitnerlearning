@@ -3619,6 +3619,11 @@ function nonsenseReviewSummary(learningName, foreignGibberish, nativeGibberish, 
   return null;
 }
 
+/** English then Norwegian — same order as the review panel. */
+function formatReviewPair(foreign, native) {
+  return `“${native}” / “${preferDisplayForm(foreign)}”`;
+}
+
 function getTranslationReviewSummary(foreign, native, suggestedNative, suggestedForeign, localPair = null) {
   const learningName = getActiveCategory().learningLanguageName || "Norwegian";
   const foreignWords = foreign.trim().split(/\s+/).filter(Boolean).length;
@@ -3675,7 +3680,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     if (foreignStrong && nativeStrong && !foreignGibberish && !nativeGibberish && !displayMatches) {
       return makePairFix(
         "Close — use the deck spelling?",
-        `In ${where} this is “${localPair.foreign}” / “${localPair.native}”. Tap to fill both sides that way.`,
+        `In ${where} this is ${formatReviewPair(localPair.foreign, localPair.native)}. Tap to fill both sides that way.`,
         localPair.foreign,
         localPair.native
       );
@@ -3685,7 +3690,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     if (foreignStrong && !nativeStrong && !foreignGibberish) {
       return makePairFix(
         "Same Norwegian in your deck",
-        `In ${where}, “${localPair.foreign}” is “${localPair.native}”. You typed “${native}”. Tap to use the deck pair.`,
+        `In ${where}: ${formatReviewPair(localPair.foreign, localPair.native)}. You typed “${native}”. Tap to use the deck pair.`,
         localPair.foreign,
         localPair.native
       );
@@ -3695,7 +3700,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     if (nativeStrong && !foreignStrong && !nativeGibberish) {
       return makePairFix(
         "Same English in your deck",
-        `In ${where}, “${localPair.native}” is “${localPair.foreign}”. You typed “${foreign}”. Tap to use the deck pair.`,
+        `In ${where}: ${formatReviewPair(localPair.foreign, localPair.native)}. You typed “${foreign}”. Tap to use the deck pair.`,
         localPair.foreign,
         localPair.native
       );
@@ -3736,7 +3741,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       suggestedForeign: preferDisplayForm(safeSuggestedForeign),
       suggestedNative: safeSuggestedNative,
       title: "Sides look swapped",
-      copy: `This reads like English and ${learningName} are in the wrong boxes. Tap to swap to “${safeSuggestedNative}” / “${preferDisplayForm(safeSuggestedForeign)}”.`,
+      copy: `This reads like English and ${learningName} are in the wrong boxes. Tap to swap to ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)}.`,
     };
   }
 
@@ -3758,7 +3763,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       ) {
         return makePairFix(
           "Tiny spelling tweak?",
-          `Usual written form is “${canonForeign}” / “${canonNative}”. Tap to use that, or keep yours.`,
+          `Usual written form is ${formatReviewPair(canonForeign, canonNative)}. Tap to use that, or keep yours.`,
           safeSuggestedForeign,
           safeSuggestedNative
         );
@@ -3781,14 +3786,14 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     if (safeSuggestedForeign && safeSuggestedNative && !isPhrase) {
       return makePairFix(
         "Suggested pair",
-        `A common pair is “${preferDisplayForm(safeSuggestedForeign)}” / “${safeSuggestedNative}”. Tap to use it, or keep yours if you prefer.`,
+        `A common pair is ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)}. Tap to use it, or keep yours if you prefer.`,
         safeSuggestedForeign,
         safeSuggestedNative
       );
     }
     const toolBits = [];
-    if (safeSuggestedForeign) toolBits.push(`${learningName}: “${preferDisplayForm(safeSuggestedForeign)}”`);
     if (safeSuggestedNative) toolBits.push(`English: “${safeSuggestedNative}”`);
+    if (safeSuggestedForeign) toolBits.push(`${learningName}: “${preferDisplayForm(safeSuggestedForeign)}”`);
     const toolNote = toolBits.length ? ` Tool guessed ${toolBits.join(", ")}.` : "";
     return {
       matches: false,
