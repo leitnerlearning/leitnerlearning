@@ -2230,10 +2230,18 @@ function resumeSpeakModeIfNeeded() {
   scheduleSpeakForCurrentCard();
 }
 
-/** Cached browser TTS voices (Chrome/Safari populate these asynchronously). */
+/**
+ * Speech synthesis
+ * ---------------
+ * Browser speechSynthesis is often robotic for Norwegian (one compact voice, or
+ * English fallback). Norwegian uses Google Translate’s neural TTS audio instead,
+ * with distinct male/female playback profiles. English still uses system voices.
+ */
 let speechVoicesCache = [];
 let speechVoicesListening = false;
 let preferredVoiceGender = loadVoiceGender();
+let ttsPlayToken = 0;
+let ttsAudioEl = null;
 
 function loadVoiceGender() {
   const saved = storageGet(VOICE_GENDER_KEY);
@@ -2248,8 +2256,8 @@ function saveVoiceGender(gender) {
 
 function toggleVoiceGender() {
   saveVoiceGender(preferredVoiceGender === "female" ? "male" : "female");
-  // Short sample so the change is audible immediately
-  speakText("Hei", getActiveCategory().speechLang || "nb-NO");
+  // Sample makes the switch obvious (same phrase, different profile)
+  speakText("Hei, hvordan har du det?", getActiveCategory().speechLang || "nb-NO");
 }
 
 function voiceGenderLabel(gender = preferredVoiceGender) {
@@ -2265,6 +2273,25 @@ function updateVoiceGenderUI() {
     btn.setAttribute("aria-label", title);
     btn.dataset.voiceGender = preferredVoiceGender;
   });
+}
+
+function stopAllSpeech() {
+  ttsPlayToken += 1;
+  if (ttsAudioEl) {
+    try {
+      ttsAudioEl.pause();
+      ttsAudioEl.removeAttribute("src");
+      ttsAudioEl.load();
+    } catch {
+      /* ignore */
+    }
+    ttsAudioEl = null;
+  }
+  try {
+    window.speechSynthesis?.cancel();
+  } catch {
+    /* ignore */
+  }
 }
 
 function ensureSpeechVoicesListener() {
@@ -2290,17 +2317,20 @@ function getSpeechVoices() {
 }
 
 function isNorwegianLangTag(lang) {
-  const tag = String(lang || "").toLowerCase().replace(/_/g, "-");
+  const tag = String(lang || "")
+    .toLowerCase()
+    .replace(/_/g, "-");
   return tag.startsWith("nb") || tag.startsWith("nn") || tag === "no" || tag.startsWith("no-");
 }
 
 function isEnglishLangTag(lang) {
-  return String(lang || "").toLowerCase().replace(/_/g, "-").startsWith("en");
+  return String(lang || "")
+    .toLowerCase()
+    .replace(/_/g, "-")
+    .startsWith("en");
 }
 
-/**
- * Infer voice gender from the engine name. Browser APIs do not expose gender.
- */
+/** Infer gender from engine name (Web Speech API has no gender field). */
 function detectVoiceGender(voice) {
   const hay = `${voice.name || ""} ${voice.voiceURI || ""}`.toLowerCase();
 
@@ -2308,9 +2338,7 @@ function detectVoiceGender(voice) {
     /\b(female|woman|girl|fiona|samantha|karen|moira|tessa|veena|zira|susan|hazel|serena|martha|catherine|victoria)\b/.test(
       hay
     ) ||
-    /\b(nora|hulda|pernille|iselin|kari|liv|astrid|inge|freja|freya|sonia|aria|jenny|sara|emma|ava|aria)\b/.test(
-      hay
-    )
+    /\b(nora|hulda|pernille|iselin|kari|liv|astrid|freja|freya|sonia|jenny|sara|emma|ava)\b/.test(hay)
   ) {
     return "female";
   }
@@ -2319,12 +2347,11 @@ function detectVoiceGender(voice) {
     /\b(male|man|boy|david|daniel|james|mark|george|fred|ravi|thomas|arthur|aaron|guy|ryan|eric)\b/.test(
       hay
     ) ||
-    /\b(henrik|finn|jon|olav|lars|anders|bjorn|bjørn|magnus|erik|nils|per)\b/.test(hay)
+    /\b(henrik|finn|jon|olav|lars|anders|bjorn|bjørn|magnus|erik|nils)\b/.test(hay)
   ) {
     return "male";
   }
 
-  // Microsoft “Online (Natural) - Norwegian (Bokmål)” often embeds the persona name first
   if (/microsoft\s+(pernille|hulda|nora|iselin)\b/.test(hay)) return "female";
   if (/microsoft\s+(finn|henrik|jon|olav)\b/.test(hay)) return "male";
 
@@ -2334,31 +2361,27 @@ function detectVoiceGender(voice) {
 function voiceQualityBonus(voice) {
   const hay = `${voice.name || ""} ${voice.voiceURI || ""}`.toLowerCase();
   let bonus = 0;
-  // Prefer neural / natural / online voices over compact system drones
   if (/\b(natural|neural|online|premium|enhanced|wavenet|studio)\b/.test(hay)) bonus += 45;
   if (/\b(google|microsoft|apple|siri|samsung)\b/.test(hay)) bonus += 12;
-  if (/\b(compact|eloquence|espeak|festival|robot|dumb)\b/.test(hay)) bonus -= 55;
-  if (voice.localService === false) bonus += 8; // cloud voices are often less robotic
+  if (/\b(compact|eloquence|espeak|festival|robot)\b/.test(hay)) bonus -= 55;
+  if (voice.localService === false) bonus += 8;
   return bonus;
 }
 
 function langMatchScore(voiceLang, wantedLang) {
-  const v = String(voiceLang || "").toLowerCase().replace(/_/g, "-");
-  const w = String(wantedLang || "").toLowerCase().replace(/_/g, "-");
+  const v = String(voiceLang || "")
+    .toLowerCase()
+    .replace(/_/g, "-");
+  const w = String(wantedLang || "")
+    .toLowerCase()
+    .replace(/_/g, "-");
   if (!v || !w) return 0;
   if (v === w) return 100;
-  const vBase = v.split("-")[0];
-  const wBase = w.split("-")[0];
-  if (vBase === wBase) return 80;
-  // Norwegian family: nb / nn / no
+  if (v.split("-")[0] === w.split("-")[0]) return 80;
   if (isNorwegianLangTag(v) && isNorwegianLangTag(w)) return 70;
   return 0;
 }
 
-/**
- * Pick the least robotic voice for a language + preferred gender.
- * Falls back across gender, then across any available voice for that language family.
- */
 function pickBestVoice(lang, gender = preferredVoiceGender) {
   const voices = getSpeechVoices();
   if (!voices.length) return null;
@@ -2373,7 +2396,6 @@ function pickBestVoice(lang, gender = preferredVoiceGender) {
   for (const voice of voices) {
     let score = langMatchScore(voice.lang, lang);
     if (score <= 0) {
-      // Allow Norwegian family when lang is nb-NO even if voice reports "no-NO"
       if (wantNb && isNorwegianLangTag(voice.lang)) score = 60;
       else if (wantEn && isEnglishLangTag(voice.lang)) score = 50;
       else continue;
@@ -2384,9 +2406,8 @@ function pickBestVoice(lang, gender = preferredVoiceGender) {
     const g = detectVoiceGender(voice);
     if (g === preferred) score += 55;
     else if (g === "unknown") score += 8;
-    else score -= 25;
+    else score -= 35;
 
-    // Slight preference for Bokmål-tagged voices over Nynorsk when learning Bokmål
     if (wantNb) {
       const v = String(voice.lang || "").toLowerCase();
       if (v.startsWith("nb")) score += 10;
@@ -2402,45 +2423,213 @@ function pickBestVoice(lang, gender = preferredVoiceGender) {
   return best;
 }
 
-function speakText(text, lang) {
-  if (!text || !window.speechSynthesis) return;
+/** Split long lines so Google TTS stays under its length limit. */
+function splitTtsChunks(text, maxLen = 160) {
+  const cleaned = String(text || "").replace(/\s+/g, " ").trim();
+  if (!cleaned) return [];
+  if (cleaned.length <= maxLen) return [cleaned];
+
+  const parts = [];
+  let rest = cleaned;
+  while (rest.length > maxLen) {
+    let cut = -1;
+    for (const sep of [". ", "? ", "! ", "; ", ", ", " "]) {
+      const at = rest.lastIndexOf(sep, maxLen);
+      if (at > maxLen * 0.4) {
+        cut = at + sep.length;
+        break;
+      }
+    }
+    if (cut <= 0) cut = maxLen;
+    parts.push(rest.slice(0, cut).trim());
+    rest = rest.slice(cut).trim();
+  }
+  if (rest) parts.push(rest);
+  return parts;
+}
+
+function googleTtsUrl(text, langTag) {
+  const tl = isNorwegianLangTag(langTag) ? "nb" : String(langTag || "en").split(/[-_]/)[0] || "en";
+  return (
+    "https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=" +
+    encodeURIComponent(tl) +
+    "&q=" +
+    encodeURIComponent(text)
+  );
+}
+
+/**
+ * Gender profiles for the single Google Norwegian voice.
+ * (The API has no separate male/female Norwegian voice; rate/pitch simulate two speakers.)
+ */
+function neuralPlaybackProfile(gender) {
+  // Google exposes one Norwegian voice; rate shifts create two clear speaker profiles.
+  if (gender === "male") {
+    return { playbackRate: 0.82, volume: 1 };
+  }
+  return { playbackRate: 1.08, volume: 1 };
+}
+
+function playAudioUrl(url, { playbackRate = 1, volume = 1, token } = {}) {
+  return new Promise((resolve, reject) => {
+    if (token !== ttsPlayToken) {
+      resolve();
+      return;
+    }
+
+    const audio = new Audio();
+    ttsAudioEl = audio;
+    audio.preload = "auto";
+    audio.playbackRate = playbackRate;
+    audio.volume = volume;
+    audio.src = url;
+
+    const cleanup = () => {
+      audio.onended = null;
+      audio.onerror = null;
+      if (ttsAudioEl === audio) ttsAudioEl = null;
+    };
+
+    audio.onended = () => {
+      cleanup();
+      resolve();
+    };
+    audio.onerror = () => {
+      cleanup();
+      reject(new Error("Audio failed to load"));
+    };
+
+    const playPromise = audio.play();
+    if (playPromise && typeof playPromise.then === "function") {
+      playPromise.catch((err) => {
+        cleanup();
+        reject(err);
+      });
+    }
+  });
+}
+
+async function speakWithNeuralAudio(text, lang, gender, token) {
+  const profile = neuralPlaybackProfile(gender);
+  const chunks = splitTtsChunks(text);
+  if (!chunks.length) return;
+
+  for (const chunk of chunks) {
+    if (token !== ttsPlayToken) return;
+    const url = googleTtsUrl(chunk, lang);
+    await playAudioUrl(url, { ...profile, token });
+  }
+}
+
+/**
+ * True male/female neural voices when the OS/browser exposes them
+ * (e.g. Microsoft Pernille / Finn in Edge). Only used when gender matches.
+ */
+function findGenderMatchedNeuralSystemVoice(gender) {
+  const preferred = gender === "male" ? "male" : "female";
+  let best = null;
+  let bestScore = -Infinity;
+
+  for (const voice of getSpeechVoices()) {
+    if (!isNorwegianLangTag(voice.lang)) continue;
+    const hay = `${voice.name || ""} ${voice.voiceURI || ""}`.toLowerCase();
+    if (/\b(compact|eloquence|espeak|festival)\b/.test(hay)) continue;
+
+    const g = detectVoiceGender(voice);
+    if (g !== preferred) continue;
+
+    let score = voiceQualityBonus(voice);
+    if (/\b(natural|neural|online|premium|enhanced)\b/.test(hay)) score += 50;
+    if (/\b(pernille|finn|nora|hulda|iselin)\b/.test(hay)) score += 40;
+    if (/\bmicrosoft\b/.test(hay)) score += 15;
+
+    if (score > bestScore) {
+      bestScore = score;
+      best = voice;
+    }
+  }
+
+  // Require a clearly high-quality gender-matched voice (not generic compact TTS)
+  return bestScore >= 40 ? best : null;
+}
+
+function speakWithSystemVoice(text, lang, forcedVoice = null) {
+  if (!window.speechSynthesis) return;
 
   ensureSpeechVoicesListener();
 
   const run = () => {
-    // cancel() + immediate speak() can drop audio on Safari; brief gap is reliable
-    window.speechSynthesis.cancel();
+    try {
+      window.speechSynthesis.cancel();
+    } catch {
+      /* ignore */
+    }
 
     window.setTimeout(() => {
+      if (!text) return;
       const utterance = new SpeechSynthesisUtterance(text);
-      const wantedLang = lang || "nb-NO";
-      const voice = pickBestVoice(wantedLang, preferredVoiceGender);
+      const wantedLang = lang || "en-US";
+      const voice = forcedVoice || pickBestVoice(wantedLang, preferredVoiceGender);
 
       if (voice) {
         utterance.voice = voice;
-        // Keep utterance.lang aligned with the chosen voice for cleaner prosody
         utterance.lang = voice.lang || wantedLang;
       } else {
         utterance.lang = wantedLang;
       }
 
-      // Slightly deliberate pace helps learners; natural pitch, full volume
-      const norwegian = isNorwegianLangTag(utterance.lang) || isNorwegianLangTag(wantedLang);
-      utterance.rate = norwegian ? 0.9 : 0.94;
-      utterance.pitch = preferredVoiceGender === "female" ? 1.03 : 0.97;
+      // Natural pace when we already have a real neural speaker; otherwise pitch-split
+      if (forcedVoice) {
+        utterance.rate = 0.92;
+        utterance.pitch = 1;
+      } else if (preferredVoiceGender === "male") {
+        utterance.rate = 0.92;
+        utterance.pitch = 0.72;
+      } else {
+        utterance.rate = 0.96;
+        utterance.pitch = 1.18;
+      }
       utterance.volume = 1;
-
       window.speechSynthesis.speak(utterance);
-    }, 40);
+    }, 30);
   };
 
-  // Some engines return [] until after a tick / voiceschanged
   if (!getSpeechVoices().length) {
     window.speechSynthesis.getVoices();
     window.setTimeout(run, 80);
     return;
   }
   run();
+}
+
+/**
+ * Norwegian: real OS neural voice when gender-matched, else Google neural audio.
+ * English: system voices with gender preference.
+ */
+function speakText(text, lang) {
+  const trimmed = String(text || "").trim();
+  if (!trimmed) return;
+
+  stopAllSpeech();
+  const token = ttsPlayToken;
+  const wantedLang = lang || "nb-NO";
+
+  if (isNorwegianLangTag(wantedLang)) {
+    ensureSpeechVoicesListener();
+    const matched = findGenderMatchedNeuralSystemVoice(preferredVoiceGender);
+    if (matched) {
+      speakWithSystemVoice(trimmed, wantedLang, matched);
+      return;
+    }
+
+    speakWithNeuralAudio(trimmed, wantedLang, preferredVoiceGender, token).catch(() => {
+      if (token !== ttsPlayToken) return;
+      speakWithSystemVoice(trimmed, wantedLang);
+    });
+    return;
+  }
+
+  speakWithSystemVoice(trimmed, wantedLang);
 }
 
 function speakForeign(text) {
