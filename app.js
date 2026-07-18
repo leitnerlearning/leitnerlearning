@@ -3651,17 +3651,22 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
   const nativeGibberish = looksLikeGibberish(native);
 
   // Never treat a translation OF mash as evidence that mash is fine.
+  // Strip sentence punctuation so "eat." never becomes a "spelling tweak" vs "eat".
   const safeSuggestedNative =
-    foreignGibberish || looksLikeGibberish(suggestedNative) ? null : suggestedNative;
+    foreignGibberish || looksLikeGibberish(suggestedNative)
+      ? null
+      : stripFlashcardPunctuation(suggestedNative) || null;
   const safeSuggestedForeign =
-    nativeGibberish || looksLikeGibberish(suggestedForeign) ? null : suggestedForeign;
+    nativeGibberish || looksLikeGibberish(suggestedForeign)
+      ? null
+      : preferDisplayForm(suggestedForeign) || null;
 
   const makePairFix = (title, copy, pairForeign, pairNative) => ({
     matches: false,
     targetField: "pair",
     suggestedValue: null,
     suggestedForeign: preferDisplayForm(pairForeign),
-    suggestedNative: pairNative,
+    suggestedNative: stripFlashcardPunctuation(pairNative),
     title,
     copy,
   });
@@ -3767,20 +3772,22 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     const both = foreignOk && nativeOk;
     if (both && safeSuggestedForeign && safeSuggestedNative) {
       const canonForeign = preferDisplayForm(safeSuggestedForeign);
-      const canonNative = safeSuggestedNative;
-      // Only nudge tiny form tweaks when BOTH directions agree on the same pair
+      const canonNative = stripFlashcardPunctuation(safeSuggestedNative);
+      const userForeign = stripFlashcardPunctuation(foreign);
+      const userNative = stripFlashcardPunctuation(native);
+      // Only nudge real form tweaks (å vs bare verb, casing, etc.) — not trailing periods
       if (
         foreignExact &&
         nativeExact &&
-        (foreign !== canonForeign || native !== canonNative) &&
+        (userForeign !== stripFlashcardPunctuation(canonForeign) || userNative !== canonNative) &&
         softGlossMatch(canonForeign, foreign) &&
         softGlossMatch(canonNative, native)
       ) {
         return makePairFix(
           "Tiny spelling tweak?",
-          `Tap to use the usual form ${formatReviewPair(canonForeign, canonNative)}, or keep yours.`,
-          safeSuggestedForeign,
-          safeSuggestedNative
+          `Tap to use ${formatReviewPair(canonForeign, canonNative)}, or keep yours.`,
+          canonForeign,
+          canonNative
         );
       }
     }
@@ -3926,12 +3933,15 @@ function renderAddCardReviewContext({
         : translation.targetField === "pair"
           ? "Use suggested pair on both sides"
           : "Use suggested translation";
+    // Skip extra hint when the copy already says "Tap to…"
     const actionHint =
-      translation.targetField === "swap"
-        ? "Tap to swap the two sides"
-        : translation.targetField === "pair"
-          ? "Tap to fill both boxes with the usual form"
-          : "Tap to use the suggested translation";
+      translation.copy && /^Tap to\b/i.test(translation.copy.trim())
+        ? ""
+        : translation.targetField === "swap"
+          ? "Tap to swap the two sides"
+          : translation.targetField === "pair"
+            ? "Tap the box to apply"
+            : "Tap to use the suggested translation";
     blocks.push(`
       <section
         class="review-context-block ${translation.matches ? "is-match" : "is-differs"}${actionable ? " is-actionable" : ""}"
@@ -3943,7 +3953,7 @@ function renderAddCardReviewContext({
             ? `<p class="review-context-copy">${escapeHtml(translation.copy)}</p>`
             : ""
         }
-        ${actionable ? `<p class="review-context-hint">${escapeHtml(actionHint)}</p>` : ""}
+        ${actionable && actionHint ? `<p class="review-context-hint">${escapeHtml(actionHint)}</p>` : ""}
       </section>`);
   }
 
@@ -4033,7 +4043,7 @@ function applyReviewSuggestion() {
 
   if (targetField === "swap" || targetField === "pair") {
     const nextForeign = preferDisplayForm(suggestedForeign);
-    const nextNative = suggestedNative;
+    const nextNative = stripFlashcardPunctuation(suggestedNative);
     if (foreignInput) foreignInput.value = nextForeign;
     if (nativeInput) nativeInput.value = nextNative;
     if (reviewForeign) reviewForeign.textContent = nextForeign;
@@ -4043,8 +4053,9 @@ function applyReviewSuggestion() {
     if (foreignInput) foreignInput.value = nextForeign;
     if (reviewForeign) reviewForeign.textContent = nextForeign;
   } else {
-    if (nativeInput) nativeInput.value = suggestedValue;
-    if (reviewNative) reviewNative.textContent = suggestedValue;
+    const nextNative = stripFlashcardPunctuation(suggestedValue);
+    if (nativeInput) nativeInput.value = nextNative;
+    if (reviewNative) reviewNative.textContent = nextNative;
   }
 
   syncAddCardResetButton();
@@ -4074,8 +4085,8 @@ async function openAddCardReview() {
   const context = document.getElementById("add-card-review-context");
   if (!review || !reviewForeign || !reviewNative || !context) return;
 
-  reviewForeign.textContent = foreign;
-  reviewNative.textContent = native;
+  reviewForeign.textContent = stripFlashcardPunctuation(foreign);
+  reviewNative.textContent = stripFlashcardPunctuation(native);
   context.classList.remove("hidden");
   context.innerHTML = `<p class="review-context-loading">Checking…</p>`;
 
