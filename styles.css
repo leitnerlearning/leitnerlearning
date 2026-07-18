@@ -2343,6 +2343,19 @@ body.welcome-open .app {
   background: rgba(255, 255, 255, 0.42);
 }
 
+.review-context-block.is-info {
+  border-color: rgba(37, 99, 235, 0.18);
+  background: rgba(239, 246, 255, 0.65);
+}
+
+.review-context-block.is-info .review-context-title {
+  color: #1e40af;
+}
+
+.review-context-block.is-info .review-context-list {
+  margin-top: 0.45rem;
+}
+
 .review-context-title {
   margin: 0 0 0.3rem;
   font-size: 0.76rem;

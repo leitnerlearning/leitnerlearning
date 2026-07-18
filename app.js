@@ -2669,6 +2669,9 @@ function isGarbageTranslation(text, sourceText = "") {
     return true;
   }
 
+  // Dated slang TM noise (flott → bang-up) when a normal word is expected
+  if (/^(bang-up|bully|corking|top-hole|spiffing)$/i.test(cleaned)) return true;
+
   // camelCase / PascalCase compounds (getElementById, SuperVertical)
   if (/[a-z][A-Z]/.test(cleaned)) return true;
   if (/^[A-Z][a-z]+[A-Z]/.test(cleaned)) return true;
@@ -3081,10 +3084,13 @@ function getRelatedEntriesForReview(foreign, native, limit = 5) {
   const results = [];
   const terms = [foreign, native].map((term) => term.trim()).filter((term) => term.length >= 2);
 
-  const consider = (item) => {
+  const consider = (item, term) => {
     const foreignKey = normalizeAnswer(item.foreign);
     if (seen.has(foreignKey)) return;
     if (foreignKey === exactForeign) return;
+    // Skip weak mid-string hits (great → great-grandmother) — only clear relatives
+    const score = suggestionMatchScore(term, item.foreign, item.native);
+    if (score < 55) return;
     if (editingCardId) {
       const editingCard = deck.find((card) => card.id === editingCardId);
       if (editingCard && foreignKey === normalizeAnswer(editingCard.foreign)) return;
@@ -3094,8 +3100,8 @@ function getRelatedEntriesForReview(foreign, native, limit = 5) {
   };
 
   terms.forEach((term) => {
-    getStarterSuggestions(term, 6).forEach(consider);
-    getLibrarySuggestions(term, 6).forEach(consider);
+    getStarterSuggestions(term, 6).forEach((item) => consider(item, term));
+    getLibrarySuggestions(term, 6).forEach((item) => consider(item, term));
   });
 
   return results.slice(0, limit);
@@ -3330,81 +3336,39 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     };
   }
 
-  // Both directions agree. If caps/plural still differ from the common form, offer a one-tap fix.
-  if (foreignOk && nativeOk && safeSuggestedForeign && safeSuggestedNative) {
-    const canonForeign = preferDisplayForm(safeSuggestedForeign);
-    const canonNative = safeSuggestedNative;
-    if (foreign === canonForeign && native === canonNative) {
-      return {
-        matches: true,
-        targetField: null,
-        suggestedValue: null,
-        title: "Looks good",
-        copy: "This matches a common translation.",
-      };
+  // Either direction confirming is enough for a real everyday pair.
+  // Requiring both caused false alarms: great/flott is valid, but reverse TM may say
+  // "bang-up", or EN→NO may prefer "god" while the learner chose "flott" (also fine).
+  if ((foreignOk || nativeOk) && !foreignGibberish && !nativeGibberish) {
+    const both = foreignOk && nativeOk;
+    if (both && safeSuggestedForeign && safeSuggestedNative) {
+      const canonForeign = preferDisplayForm(safeSuggestedForeign);
+      const canonNative = safeSuggestedNative;
+      // Only nudge tiny form tweaks when BOTH directions agree on the same pair
+      if (
+        foreignExact &&
+        nativeExact &&
+        (foreign !== canonForeign || native !== canonNative) &&
+        softGlossMatch(canonForeign, foreign) &&
+        softGlossMatch(canonNative, native)
+      ) {
+        return makePairFix(
+          "Tiny spelling tweak?",
+          `Usual written form is “${canonForeign}” / “${canonNative}”. Tap to use that, or keep yours.`,
+          safeSuggestedForeign,
+          safeSuggestedNative
+        );
+      }
     }
 
-    // Same meaning (case, plural, one letter) but not the usual written form
-    return makePairFix(
-      foreignExact && nativeExact ? "Tiny spelling tweak?" : "Close match",
-      `Usual form is “${canonForeign}” / “${canonNative}”. You typed “${foreign}” / “${native}”. Tap to fill both sides that way.`,
-      safeSuggestedForeign,
-      safeSuggestedNative
-    );
-  }
-
-  // One side checks out, the other doesn't: prefer filling the full usual pair when we have both
-  if (foreignOk && !nativeOk) {
-    if (safeSuggestedNative && safeSuggestedForeign) {
-      return makePairFix(
-        "English might not match",
-        `For “${preferDisplayForm(safeSuggestedForeign)}”, a common English is “${safeSuggestedNative}”. You typed “${native}”. Tap to fill both sides.`,
-        safeSuggestedForeign,
-        safeSuggestedNative
-      );
-    }
-    if (safeSuggestedNative) {
-      return {
-        matches: false,
-        targetField: "native",
-        suggestedValue: safeSuggestedNative,
-        title: "English might not match",
-        copy: `For “${foreign}”, a common English is “${safeSuggestedNative}”. You typed “${native}”.`,
-      };
-    }
     return {
-      matches: false,
+      matches: true,
       targetField: null,
       suggestedValue: null,
-      title: "English looks off",
-      copy: `The ${learningName} side looks familiar, but the English doesn’t line up with a common translation. Double-check before adding.`,
-    };
-  }
-
-  if (nativeOk && !foreignOk) {
-    if (safeSuggestedForeign && safeSuggestedNative) {
-      return makePairFix(
-        `${learningName} might not match`,
-        `For “${safeSuggestedNative}”, a common ${learningName} is “${preferDisplayForm(safeSuggestedForeign)}”. You typed “${foreign}”. Tap to fill both sides.`,
-        safeSuggestedForeign,
-        safeSuggestedNative
-      );
-    }
-    if (safeSuggestedForeign) {
-      return {
-        matches: false,
-        targetField: "foreign",
-        suggestedValue: preferDisplayForm(safeSuggestedForeign),
-        title: `${learningName} might not match`,
-        copy: `For “${native}”, a common ${learningName} is “${preferDisplayForm(safeSuggestedForeign)}”. You typed “${foreign}”.`,
-      };
-    }
-    return {
-      matches: false,
-      targetField: null,
-      suggestedValue: null,
-      title: `${learningName} looks off`,
-      copy: `The English side looks familiar, but the ${learningName} doesn’t line up with a common translation. Double-check before adding.`,
+      title: "Looks good",
+      copy: both
+        ? "This matches a common translation. Fine to add."
+        : "This looks like a solid pair. Everyday language often has several good options — add the one you want to learn.",
     };
   }
 
@@ -3572,8 +3536,9 @@ function renderAddCardReviewContext({
       .join("");
 
     blocks.push(`
-      <section class="review-context-block">
-        <h4 class="review-context-title">Similar in your deck</h4>
+      <section class="review-context-block is-info">
+        <h4 class="review-context-title">Related cards you already have</h4>
+        <p class="review-context-copy">Nearby words — not a problem. Add this one too if you want it in your everyday set.</p>
         <ul class="review-context-list">${items}</ul>
       </section>`);
   }
