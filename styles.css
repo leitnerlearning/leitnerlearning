@@ -511,7 +511,7 @@ html {
     scroll-margin-top: 3.75rem;
   }
 
-  .library-scroll-top {
+  .library-float-actions {
     right: max(0.85rem, env(safe-area-inset-right, 0px));
     bottom: max(0.95rem, env(safe-area-inset-bottom, 0px));
   }
@@ -3020,11 +3020,21 @@ body.welcome-open .app {
   box-shadow: var(--shadow-brand);
 }
 
-.library-scroll-top {
+.library-float-actions {
   position: fixed;
   right: max(1rem, env(safe-area-inset-right, 0px));
   bottom: max(1.15rem, env(safe-area-inset-bottom, 0px));
   z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.library-float-actions.hidden {
+  display: none;
+}
+
+.library-float-btn {
   min-height: 44px;
   min-width: 44px;
   padding: 0.55rem 0.95rem;
@@ -3045,21 +3055,18 @@ body.welcome-open .app {
   transition:
     opacity 0.2s var(--ease),
     transform 0.2s var(--ease),
-    background 0.2s var(--ease);
+    background 0.2s var(--ease),
+    border-color 0.2s var(--ease);
 }
 
-.library-scroll-top.hidden {
-  display: none;
-}
-
-.library-scroll-top:hover,
-.library-scroll-top:focus-visible {
+.library-float-btn:hover,
+.library-float-btn:focus-visible {
   background: var(--brand-soft);
   border-color: var(--brand-ring);
   outline: none;
 }
 
-.library-scroll-top:active {
+.library-float-btn:active {
   transform: scale(0.97);
 }
 

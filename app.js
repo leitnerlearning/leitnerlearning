@@ -5205,11 +5205,24 @@ function scrollLibraryToTop() {
   setActiveLibraryJump(null);
 }
 
+function focusLibrarySearch() {
+  const input = document.getElementById("library-search");
+  const anchor =
+    document.querySelector(".library-controls") || document.getElementById("cards-panel");
+  anchor?.scrollIntoView({ behavior: "smooth", block: "start" });
+  setActiveLibraryJump(null);
+  // Focus after scroll starts so the field is on screen (esp. mobile).
+  window.setTimeout(() => {
+    input?.focus({ preventScroll: true });
+    input?.select?.();
+  }, 280);
+}
+
 function updateLibraryScrollTopVisibility() {
-  const btn = document.getElementById("library-scroll-top");
-  if (!btn) return;
+  const dock = document.getElementById("library-float-actions");
+  if (!dock) return;
   const show = isCardsPanelActive() && window.scrollY > LIBRARY_SCROLL_TOP_THRESHOLD;
-  btn.classList.toggle("hidden", !show);
+  dock.classList.toggle("hidden", !show);
 }
 
 function observeLibraryJumpSections(sections) {
@@ -6810,7 +6823,7 @@ function switchTab(tabName) {
   if (tabName === "stats") renderStatsSummary();
   if (tabName === "cards") renderCardList();
   if (tabName !== "cards") {
-    document.getElementById("library-scroll-top")?.classList.add("hidden");
+    document.getElementById("library-float-actions")?.classList.add("hidden");
   } else {
     updateLibraryScrollTopVisibility();
   }
@@ -6999,6 +7012,10 @@ function initEventListeners() {
 
   document.getElementById("library-scroll-top")?.addEventListener("click", () => {
     scrollLibraryToTop();
+  });
+
+  document.getElementById("library-scroll-search")?.addEventListener("click", () => {
+    focusLibrarySearch();
   });
 
   window.addEventListener("scroll", updateLibraryScrollTopVisibility, { passive: true });
