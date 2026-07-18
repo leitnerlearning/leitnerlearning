@@ -2024,34 +2024,34 @@ body.welcome-open .app {
 .about-card-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 0.75rem;
-  padding: 0.55rem 0.85rem 0.55rem 0.75rem;
-  border-bottom: 1px solid var(--border);
+  padding: 0.45rem 0.65rem 0;
   flex-shrink: 0;
 }
 
 .about-logo {
   display: block;
-  height: 1.75rem;
-  width: 1.75rem;
+  height: 3.25rem;
+  width: auto;
+  margin: 0.15rem auto 0.85rem;
   object-fit: contain;
-  flex-shrink: 0;
 }
 
 .about-body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0.85rem 1rem 0.9rem;
+  padding: 0 1rem 0.95rem;
 }
 
 .about-lead {
-  margin: 0 0 0.85rem;
-  font-size: var(--text-sm);
+  margin: 0 0 0.95rem;
+  font-size: var(--text-base, 1rem);
   font-weight: 600;
   line-height: var(--lh-body);
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   color: var(--ink);
+  text-align: center;
 }
 
 .about-section {
