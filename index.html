@@ -27,7 +27,7 @@
     <link rel="icon" href="brand/logo-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="brand/logo-icon.png" />
     <link rel="apple-touch-icon" sizes="360x360" href="brand/logo-icon-180@2x.png" />
-    <link rel="stylesheet" href="styles.css?v=134" />
+    <link rel="stylesheet" href="styles.css?v=135" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -421,25 +421,12 @@
 
           <div id="card-list" class="card-list"></div>
 
-          <div
-            id="library-float-actions"
-            class="library-float-actions hidden"
-            role="group"
-            aria-label="Library quick actions"
-          >
-            <button
-              type="button"
-              id="library-scroll-search"
-              class="library-float-btn"
-              aria-label="Search library"
-            >
-              Search
-            </button>
+          <div id="library-float-actions" class="page-float-top hidden">
             <button
               type="button"
               id="library-scroll-top"
-              class="library-float-btn"
-              aria-label="Back to top of library"
+              class="page-float-top-btn"
+              aria-label="Back to top"
             >
               Top
             </button>
@@ -485,6 +472,17 @@
             </div>
             <div class="read-progress-stats" id="read-progress-stats"></div>
           </section>
+
+          <div id="progress-float-actions" class="page-float-top hidden">
+            <button
+              type="button"
+              id="progress-scroll-top"
+              class="page-float-top-btn"
+              aria-label="Back to top"
+            >
+              Top
+            </button>
+          </div>
         </section>
       </main>
 
@@ -631,6 +629,6 @@
     <script src="learning-categories.js?v=37"></script>
     <script src="read-stories.js?v=13"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=209"></script>
+    <script src="app.js?v=210"></script>
   </body>
 </html>

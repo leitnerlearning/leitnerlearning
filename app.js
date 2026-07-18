@@ -5197,9 +5197,18 @@ function scrollToLibrarySection(key) {
   target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-/** Float Top: page top so main tabs / other site sections are reachable again. */
-function scrollSiteToTop() {
+function isStatsPanelActive() {
+  const panel = document.getElementById("stats-panel");
+  return Boolean(panel?.classList.contains("active") && !panel.hidden);
+}
+
+/**
+ * One Top control: return to site header (tabs) so you can leave the page.
+ * On Library, also put the cursor in Search (high-odds next action).
+ */
+function handlePageFloatTop() {
   setActiveLibraryJump(null);
+
   const header =
     document.querySelector(".header") || document.querySelector(".app");
   if (header) {
@@ -5207,21 +5216,10 @@ function scrollSiteToTop() {
   } else {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-}
 
-/**
- * Float Search: jump to Library header (title + add form + search row),
- * then focus the search field.
- */
-function focusLibrarySearch() {
+  if (!isCardsPanelActive()) return;
+
   const input = document.getElementById("library-search");
-  const anchor =
-    document.querySelector(".library-header") ||
-    document.querySelector(".library-controls") ||
-    document.getElementById("cards-panel");
-  setActiveLibraryJump(null);
-  anchor?.scrollIntoView({ behavior: "smooth", block: "start" });
-
   if (!input) return;
 
   const activate = () => {
@@ -5232,21 +5230,33 @@ function focusLibrarySearch() {
     }
     if (typeof input.select === "function") input.select();
     input.classList.add("library-search--ready");
-    window.setTimeout(() => input.classList.remove("library-search--ready"), 1000);
+    window.setTimeout(() => input.classList.remove("library-search--ready"), 1200);
   };
 
+  // Keep tabs in view; focus search without yanking scroll back down.
   activate();
-  window.setTimeout(activate, 320);
+  window.setTimeout(activate, 350);
   if (typeof window !== "undefined" && "onscrollend" in window) {
     window.addEventListener("scrollend", activate, { once: true });
   }
 }
 
+function updatePageFloatTopVisibility() {
+  const libraryDock = document.getElementById("library-float-actions");
+  const progressDock = document.getElementById("progress-float-actions");
+  const scrolled = window.scrollY > LIBRARY_SCROLL_TOP_THRESHOLD;
+
+  if (libraryDock) {
+    libraryDock.classList.toggle("hidden", !(isCardsPanelActive() && scrolled));
+  }
+  if (progressDock) {
+    progressDock.classList.toggle("hidden", !(isStatsPanelActive() && scrolled));
+  }
+}
+
+/** @deprecated name kept for existing call sites */
 function updateLibraryScrollTopVisibility() {
-  const dock = document.getElementById("library-float-actions");
-  if (!dock) return;
-  const show = isCardsPanelActive() && window.scrollY > LIBRARY_SCROLL_TOP_THRESHOLD;
-  dock.classList.toggle("hidden", !show);
+  updatePageFloatTopVisibility();
 }
 
 function observeLibraryJumpSections(sections) {
@@ -6866,10 +6876,10 @@ function switchTab(tabName) {
   }
   if (tabName === "stats") renderStatsSummary();
   if (tabName === "cards") renderCardList();
-  if (tabName !== "cards") {
-    document.getElementById("library-float-actions")?.classList.add("hidden");
-  } else {
-    updateLibraryScrollTopVisibility();
+  document.getElementById("library-float-actions")?.classList.add("hidden");
+  document.getElementById("progress-float-actions")?.classList.add("hidden");
+  if (tabName === "cards" || tabName === "stats") {
+    updatePageFloatTopVisibility();
   }
   updateCategoryPickerAvailability();
 }
@@ -7055,14 +7065,14 @@ function initEventListeners() {
   });
 
   document.getElementById("library-scroll-top")?.addEventListener("click", () => {
-    scrollSiteToTop();
+    handlePageFloatTop();
   });
 
-  document.getElementById("library-scroll-search")?.addEventListener("click", () => {
-    focusLibrarySearch();
+  document.getElementById("progress-scroll-top")?.addEventListener("click", () => {
+    handlePageFloatTop();
   });
 
-  window.addEventListener("scroll", updateLibraryScrollTopVisibility, { passive: true });
+  window.addEventListener("scroll", updatePageFloatTopVisibility, { passive: true });
 
   document.querySelectorAll(".category-picker-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {

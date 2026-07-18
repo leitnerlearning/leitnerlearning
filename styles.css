@@ -511,7 +511,7 @@ html {
     scroll-margin-top: 3.75rem;
   }
 
-  .library-float-actions {
+  .page-float-top {
     right: max(0.85rem, env(safe-area-inset-right, 0px));
     bottom: max(0.95rem, env(safe-area-inset-bottom, 0px));
   }
@@ -3034,21 +3034,21 @@ body.welcome-open .app {
   box-shadow: var(--shadow-brand);
 }
 
-.library-float-actions {
+/* Shared Top control for long Library / Progress pages */
+.page-float-top {
   position: fixed;
   right: max(1rem, env(safe-area-inset-right, 0px));
   bottom: max(1.15rem, env(safe-area-inset-bottom, 0px));
   z-index: 30;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
 }
 
-.library-float-actions.hidden {
+.page-float-top.hidden {
   display: none;
 }
 
-.library-float-btn {
+.page-float-top-btn {
   min-height: 44px;
   min-width: 44px;
   padding: 0.55rem 0.95rem;
@@ -3073,14 +3073,14 @@ body.welcome-open .app {
     border-color 0.2s var(--ease);
 }
 
-.library-float-btn:hover,
-.library-float-btn:focus-visible {
+.page-float-top-btn:hover,
+.page-float-top-btn:focus-visible {
   background: var(--brand-soft);
   border-color: var(--brand-ring);
   outline: none;
 }
 
-.library-float-btn:active {
+.page-float-top-btn:active {
   transform: scale(0.97);
 }
 
