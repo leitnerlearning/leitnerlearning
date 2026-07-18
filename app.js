@@ -1964,7 +1964,8 @@ function getSpeechErrorMessage(errorCode) {
     case "audio-capture":
       return "No mic found. Check permissions, or type instead.";
     case "network":
-      return "Speech needs a network connection here. Type instead.";
+      // Chrome labels many speech-service failures as "network" even when online.
+      return "Speech service didn't respond. Tap Speak to try again, or type.";
     case "language-not-supported":
       return "This browser can't hear that language. Type instead.";
     case "no-speech":
@@ -1973,6 +1974,10 @@ function getSpeechErrorMessage(errorCode) {
       return getSpeechUnavailableMessage();
   }
 }
+
+/** Chrome often fires a spurious "network" error once; retry a couple of times. */
+let speakNetworkRetries = 0;
+const SPEAK_NETWORK_MAX_RETRIES = 2;
 
 /** True for phones/tablets where delayed speak()/start() often loses the user gesture. */
 function isCoarsePointerDevice() {
@@ -2078,9 +2083,11 @@ function setSpeakMode(active) {
     clearSpeakScheduling();
     stopActiveRecognition();
     setListeningUI(false);
+    speakNetworkRetries = 0;
   } else {
     // Clear sticky "mic blocked" (etc.) when Speak turns on successfully.
     hideFeedback();
+    speakNetworkRetries = 0;
   }
   updateSpeakButtonUI();
   updateAnswerInputPlaceholder();
@@ -2209,6 +2216,7 @@ function beginSpeakAttempt() {
     const text = String(transcript || "").trim();
     if (!text) return;
     settled = true;
+    speakNetworkRetries = 0;
     clearSpeakAttemptTimer();
     if (recognition === rec) recognition = null;
     releaseRecognitionInstance(rec);
@@ -2262,11 +2270,29 @@ function beginSpeakAttempt() {
     releaseRecognitionInstance(rec);
     setListeningUI(false);
 
+    if (code === "network") {
+      // Often a transient Chrome speech-backend blip, not an offline machine.
+      if (lastTranscript) {
+        finishWithTranscript(lastTranscript);
+        return;
+      }
+      if (speakModeActive && currentCard && speakNetworkRetries < SPEAK_NETWORK_MAX_RETRIES) {
+        speakNetworkRetries += 1;
+        showFeedback("Reconnecting speech…", "revealed", { autoHideMs: 2500 });
+        scheduleSpeakForCurrentCard(450);
+        return;
+      }
+      settled = true;
+      speakNetworkRetries = 0;
+      showFeedback(getSpeechErrorMessage("network"), "revealed", { autoHideMs: 7000 });
+      setSpeakMode(false);
+      return;
+    }
+
     if (
       code === "not-allowed" ||
       code === "service-not-allowed" ||
       code === "audio-capture" ||
-      code === "network" ||
       code === "language-not-supported"
     ) {
       settled = true;
