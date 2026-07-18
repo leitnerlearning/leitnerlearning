@@ -3988,21 +3988,27 @@ body.welcome-open .app {
   white-space: nowrap;
 }
 
+/* Same idea as practice .feedback: chip hugs the text, not a full-width bar */
 .read-gloss-slot {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.75rem;
-  margin-top: 0.35rem;
+  min-height: 2rem;
+  margin-top: 0.3rem;
 }
 
 .read-gloss {
-  width: 100%;
-  padding: 0.55rem 0.75rem;
-  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  max-width: 100%;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
   background: linear-gradient(135deg, rgba(91, 154, 255, 0.12), rgba(54, 95, 207, 0.06));
   border: 1px solid var(--brand-ring);
   text-align: center;
+  box-sizing: border-box;
 }
 
 .read-gloss.is-collapsed {
@@ -4011,10 +4017,12 @@ body.welcome-open .app {
 
 .read-gloss-meaning {
   margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.4;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
   color: var(--brand-deep);
-  font-weight: 500;
+  font-weight: 600;
+  word-break: break-word;
 }
 
 .read-focus-en-slot {
