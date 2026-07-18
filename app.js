@@ -1977,6 +1977,69 @@ function isCoarsePointerDevice() {
   }
 }
 
+function isIosDevice() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+}
+
+/**
+ * Once the user taps Block, the browser will not show the permission popup again
+ * until they change site settings. Tell them how.
+ */
+function getMicBlockedHelpMessage() {
+  if (isIosDevice()) {
+    return "Mic is blocked for this site. On iPhone: Settings → Safari (or Chrome) → Microphone → Allow, then reload this page.";
+  }
+  if (isCoarsePointerDevice()) {
+    return "Mic is blocked for this site. In Chrome: tap the lock icon by the address → Permissions → Microphone → Allow, then reload.";
+  }
+  return "Mic is blocked for this site. Click the lock icon in the address bar → Site settings → Microphone → Allow, then reload.";
+}
+
+/** @returns {Promise<"granted"|"denied"|"prompt"|"unknown">} */
+async function queryMicPermissionState() {
+  try {
+    if (!navigator.permissions?.query) return "unknown";
+    const status = await navigator.permissions.query({ name: "microphone" });
+    if (status.state === "granted" || status.state === "denied" || status.state === "prompt") {
+      return status.state;
+    }
+  } catch {
+    // Safari / some browsers reject microphone permission queries.
+  }
+  return "unknown";
+}
+
+/**
+ * Ask for mic access in a user tap so the system dialog can appear.
+ * If permission was previously denied, the dialog will not show — caller should
+ * show getMicBlockedHelpMessage().
+ * @returns {Promise<"granted"|"denied"|"unavailable">}
+ */
+async function requestMicAccess() {
+  if (!navigator.mediaDevices?.getUserMedia) return "unavailable";
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((track) => {
+      try {
+        track.stop();
+      } catch {
+        /* ignore */
+      }
+    });
+    return "granted";
+  } catch (err) {
+    const name = String(err?.name || "");
+    if (name === "NotAllowedError" || name === "PermissionDeniedError" || name === "SecurityError") {
+      return "denied";
+    }
+    if (name === "NotFoundError" || name === "DevicesNotFoundError") {
+      return "unavailable";
+    }
+    // Other errors: still try SpeechRecognition.
+    return "granted";
+  }
+}
+
 const SPEAK_CARD_DELAY_MS = 550;
 const SPEAK_RETRY_DELAY_MS = 3200;
 const SPEAK_ATTEMPT_MS = 10000;
@@ -2064,7 +2127,7 @@ function setSpeakMode(active) {
   updateAnswerInputPlaceholder();
 }
 
-function toggleSpeakMode() {
+async function toggleSpeakMode() {
   if (speakModeActive) {
     setSpeakMode(false);
     hideFeedback();
@@ -2078,10 +2141,35 @@ function toggleSpeakMode() {
     return;
   }
 
+  // If already permanently blocked, the browser will not show a permission popup.
+  const prior = await queryMicPermissionState();
+  if (prior === "denied") {
+    showFeedback(getMicBlockedHelpMessage(), "revealed", { autoHideMs: 14000 });
+    return;
+  }
+
+  // Ask now so Chrome can show Allow/Block (only works when state is still "prompt").
+  if (prior === "prompt" || prior === "unknown") {
+    const access = await requestMicAccess();
+    if (access === "denied") {
+      showFeedback(getMicBlockedHelpMessage(), "revealed", { autoHideMs: 14000 });
+      return;
+    }
+    if (access === "unavailable") {
+      showFeedback("No mic found on this device. Type instead.", "revealed", {
+        autoHideMs: 6000,
+      });
+      return;
+    }
+  }
+
   setSpeakMode(true);
   if (currentCard) {
-    // Start listening right away (same as the original flow that worked well).
     beginSpeakAttempt();
+  } else {
+    showFeedback("Mic ready. Start a card, then tap Speak again.", "revealed", {
+      autoHideMs: 4500,
+    });
   }
 }
 
@@ -2186,11 +2274,7 @@ function beginSpeakAttempt() {
     if (event.error === "aborted") return;
 
     if (event.error === "not-allowed" || event.error === "service-not-allowed") {
-      showFeedback(
-        "Mic is blocked. Allow it for this site, then tap Speak again.",
-        "revealed",
-        { autoHideMs: 7000 }
-      );
+      showFeedback(getMicBlockedHelpMessage(), "revealed", { autoHideMs: 14000 });
       setSpeakMode(false);
       return;
     }
