@@ -2397,7 +2397,7 @@ function findDeckCardByForeign(foreign, excludeId = null) {
   );
 }
 
-/** Slash glosses: "dog / hound" matches "dog". */
+/** Slash glosses: "dog / hound" matches "dog". Case-insensitive. */
 function glossPartsMatch(a, b) {
   if (!a || !b) return false;
   if (normalizeAnswer(a) === normalizeAnswer(b)) return true;
@@ -2420,6 +2420,87 @@ function glossPartsMatch(a, b) {
   return false;
 }
 
+/** resume ≈ resumes, box ≈ boxes (simple English inflection, not full stemming). */
+function englishInflectionMatch(a, b) {
+  const x = normalizeAnswer(a);
+  const y = normalizeAnswer(b);
+  if (!x || !y || x.includes(" ") || y.includes(" ")) return false;
+  if (x === y) return true;
+  if (x + "s" === y || y + "s" === x) return true;
+  if (x + "es" === y || y + "es" === x) return true;
+  if (x.endsWith("y") && x.length > 2 && x.slice(0, -1) + "ies" === y) return true;
+  if (y.endsWith("y") && y.length > 2 && y.slice(0, -1) + "ies" === x) return true;
+  if (x.endsWith("ie") && x + "s" === y) return true;
+  if (y.endsWith("ie") && y + "s" === x) return true;
+  return false;
+}
+
+/** One substitution/insert/delete — only for longer single tokens (avoids "to"≈"too" chaos). */
+function withinOneEdit(a, b) {
+  const s = normalizeAnswer(a);
+  const t = normalizeAnswer(b);
+  if (!s || !t || s === t) return s === t;
+  if (s.includes(" ") || t.includes(" ")) return false;
+  if (s.length < 4 || t.length < 4) return false;
+  if (Math.abs(s.length - t.length) > 1) return false;
+
+  let i = 0;
+  let j = 0;
+  let edits = 0;
+  while (i < s.length && j < t.length) {
+    if (s[i] === t[j]) {
+      i += 1;
+      j += 1;
+      continue;
+    }
+    edits += 1;
+    if (edits > 1) return false;
+    if (s.length > t.length) i += 1;
+    else if (t.length > s.length) j += 1;
+    else {
+      i += 1;
+      j += 1;
+    }
+  }
+  edits += s.length - i + (t.length - j);
+  return edits <= 1;
+}
+
+/**
+ * Soft match for suggestions/review: case, æ/ø/å typing, slash glosses,
+ * simple plurals, and one-letter typos on longer words.
+ */
+function softGlossMatch(a, b) {
+  if (!a || !b) return false;
+  if (glossPartsMatch(a, b)) return true;
+
+  const partsA = String(a)
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  const partsB = String(b)
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  for (const left of partsA) {
+    for (const right of partsB) {
+      if (englishInflectionMatch(left, right)) return true;
+      if (withinOneEdit(left, right)) return true;
+      if (norwegianTypingMatches(left, right)) return true;
+    }
+  }
+  return false;
+}
+
+/** Prefer CV over cv for short Latin acronyms when applying suggestions. */
+function preferDisplayForm(text) {
+  const cleaned = cleanTranslationCandidate(text);
+  if (!cleaned) return cleaned;
+  if (/^[a-z]{2,4}$/.test(cleaned)) return cleaned.toUpperCase();
+  return cleaned;
+}
+
 function suggestionMatchScore(query, foreign, native) {
   const q = normalizeAnswer(query);
   if (!q) return 0;
@@ -2428,9 +2509,11 @@ function suggestionMatchScore(query, foreign, native) {
     const side = normalizeAnswer(sideRaw);
     if (!side) return 0;
     if (side === q) return 100;
+    if (softGlossMatch(sideRaw, query) || softGlossMatch(side, q)) return 92;
     if (side.startsWith(q)) return 80;
     const words = side.split(" ");
     if (words.some((word) => word === q)) return 70;
+    if (words.some((word) => englishInflectionMatch(word, q) || withinOneEdit(word, q))) return 68;
     if (words.some((word) => word.startsWith(q))) return 55;
     // Avoid flooding on 1–2 letter mid-word hits (en, er, to…)
     if (q.length >= 3 && side.includes(q)) return 30;
@@ -2516,27 +2599,25 @@ function findLocalDeckPair(foreign, native) {
   // Full pair match first (avoids hijacking a shared English gloss).
   if (hasForeign && hasNative) {
     const exactPair = candidates.find(
-      (entry) =>
-        (normalizeAnswer(entry.foreign) === normalizeAnswer(foreign) ||
-          norwegianTypingMatches(entry.foreign, foreign)) &&
-        glossPartsMatch(entry.native, native)
+      (entry) => softGlossMatch(entry.foreign, foreign) && softGlossMatch(entry.native, native)
     );
     if (exactPair) return exactPair;
   }
 
   if (hasForeign) {
-    const exactForeign = candidates.find(
-      (entry) => normalizeAnswer(entry.foreign) === normalizeAnswer(foreign)
-    );
+    const exactForeign = candidates.find((entry) => glossPartsMatch(entry.foreign, foreign));
     if (exactForeign) return exactForeign;
 
-    const foldForeign = candidates.find((entry) => norwegianTypingMatches(entry.foreign, foreign));
-    if (foldForeign) return foldForeign;
+    const softForeign = candidates.find((entry) => softGlossMatch(entry.foreign, foreign));
+    if (softForeign) return softForeign;
   }
 
   if (hasNative) {
     const exactNative = candidates.find((entry) => glossPartsMatch(entry.native, native));
     if (exactNative) return exactNative;
+
+    const softNative = candidates.find((entry) => softGlossMatch(entry.native, native));
+    if (softNative) return softNative;
   }
 
   return null;
@@ -2610,6 +2691,17 @@ function scoreTranslationCandidate(entry, peers, toLang, sourceWordCount) {
     if (words.length >= 3) score -= 0.04;
   }
 
+  // Short acronyms (CV, ID…): prefer a real English word over echoing the acronym
+  if (sourceWordCount === 1 && toEnglish && entry._sourceLen > 0 && entry._sourceLen <= 3) {
+    if (words.length === 1 && text.length > entry._sourceLen + 1) score += 0.05;
+    if (words.length >= 2) score += 0.03;
+  }
+
+  // Prefer conventional acronym casing when the hit is a short all-letter token
+  if (words.length === 1 && /^[a-z]{2,4}$/i.test(entry.text) && entry.text === entry.text.toUpperCase()) {
+    score += 0.01;
+  }
+
   // For short sources, lightly prefer neural MT over dusty TM junk — but only as a tie-break
   if (sourceWordCount <= 2 && entry.fromMachine) score += 0.01;
 
@@ -2666,14 +2758,22 @@ function pickBestTranslationSuggestion(data, sourceText, toLang = "en") {
   });
   const unique = [...byText.values()];
 
+  const sourceLen = normalizeAnswer(source).replace(/\s+/g, "").length;
   const ranked = unique
     .map((entry) => ({
       ...entry,
-      _rank: scoreTranslationCandidate(entry, unique, targetLang, wordCount),
+      _sourceLen: sourceLen,
+      _rank: scoreTranslationCandidate(
+        { ...entry, _sourceLen: sourceLen },
+        unique,
+        targetLang,
+        wordCount
+      ),
     }))
     .sort((a, b) => b._rank - a._rank || b.match - a.match);
 
-  return ranked[0]?.text || null;
+  const best = ranked[0]?.text || null;
+  return best ? preferDisplayForm(best) : null;
 }
 
 async function fetchTranslationSuggestion(text, fromLang, toLang) {
@@ -3056,13 +3156,27 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
   const safeSuggestedForeign =
     nativeGibberish || looksLikeGibberish(suggestedForeign) ? null : suggestedForeign;
 
+  const makePairFix = (title, copy, pairForeign, pairNative) => ({
+    matches: false,
+    targetField: "pair",
+    suggestedValue: null,
+    suggestedForeign: preferDisplayForm(pairForeign),
+    suggestedNative: pairNative,
+    title,
+    copy,
+  });
+
   // Curated local data first (can still rescue mash on one side with a real deck pair).
   if (localPair) {
-    const foreignOk = glossPartsMatch(localPair.foreign, foreign);
-    const nativeOk = glossPartsMatch(localPair.native, native);
+    const foreignOk = softGlossMatch(localPair.foreign, foreign);
+    const nativeOk = softGlossMatch(localPair.native, native);
+    const foreignExact = glossPartsMatch(localPair.foreign, foreign);
+    const nativeExact = glossPartsMatch(localPair.native, native);
+    const displayMatches =
+      foreign === localPair.foreign && native === localPair.native;
 
-    // Only green-light when BOTH sides match the curated pair (and aren't mash).
-    if (foreignOk && nativeOk && !foreignGibberish && !nativeGibberish) {
+    // Exact curated pair (including capitalization)
+    if (foreignExact && nativeExact && displayMatches && !foreignGibberish && !nativeGibberish) {
       return {
         matches: true,
         targetField: null,
@@ -3072,24 +3186,32 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       };
     }
 
+    // Meaning matches deck, but spelling/caps/plural is off — offer the deck form for both sides
+    if (foreignOk && nativeOk && !foreignGibberish && !nativeGibberish && !displayMatches) {
+      return makePairFix(
+        "Close — use the deck spelling?",
+        `In ${where} this is “${localPair.foreign}” / “${localPair.native}”. Tap to fill both sides that way.`,
+        localPair.foreign,
+        localPair.native
+      );
+    }
+
     if (foreignOk && !nativeOk && !foreignGibberish) {
-      return {
-        matches: false,
-        targetField: "native",
-        suggestedValue: localPair.native,
-        title: "Same Norwegian in your deck",
-        copy: `In ${where}, “${localPair.foreign}” is “${localPair.native}”. You typed “${native}”.`,
-      };
+      return makePairFix(
+        "Same Norwegian in your deck",
+        `In ${where}, “${localPair.foreign}” is “${localPair.native}”. You typed “${native}”. Tap to use the deck pair.`,
+        localPair.foreign,
+        localPair.native
+      );
     }
 
     if (nativeOk && !foreignOk && !nativeGibberish) {
-      return {
-        matches: false,
-        targetField: "foreign",
-        suggestedValue: localPair.foreign,
-        title: "Same English in your deck",
-        copy: `In ${where}, “${localPair.native}” is “${localPair.foreign}”. You typed “${foreign}”.`,
-      };
+      return makePairFix(
+        "Same English in your deck",
+        `In ${where}, “${localPair.native}” is “${localPair.foreign}”. You typed “${foreign}”. Tap to use the deck pair.`,
+        localPair.foreign,
+        localPair.native
+      );
     }
   }
 
@@ -3106,8 +3228,10 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     if (nonsense) return nonsense;
   }
 
-  const foreignOk = safeSuggestedForeign ? glossPartsMatch(safeSuggestedForeign, foreign) : false;
-  const nativeOk = safeSuggestedNative ? glossPartsMatch(safeSuggestedNative, native) : false;
+  const foreignOk = safeSuggestedForeign ? softGlossMatch(safeSuggestedForeign, foreign) : false;
+  const nativeOk = safeSuggestedNative ? softGlossMatch(safeSuggestedNative, native) : false;
+  const foreignExact = safeSuggestedForeign ? glossPartsMatch(safeSuggestedForeign, foreign) : false;
+  const nativeExact = safeSuggestedNative ? glossPartsMatch(safeSuggestedNative, native) : false;
 
   // Fields look swapped (English in Norwegian box and vice versa)
   if (
@@ -3115,33 +3239,53 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     safeSuggestedNative &&
     !foreignOk &&
     !nativeOk &&
-    glossPartsMatch(safeSuggestedForeign, native) &&
-    glossPartsMatch(safeSuggestedNative, foreign)
+    softGlossMatch(safeSuggestedForeign, native) &&
+    softGlossMatch(safeSuggestedNative, foreign)
   ) {
     return {
       matches: false,
       targetField: "swap",
       suggestedValue: null,
-      suggestedForeign: safeSuggestedForeign,
+      suggestedForeign: preferDisplayForm(safeSuggestedForeign),
       suggestedNative: safeSuggestedNative,
       title: "Sides look swapped",
-      copy: `This reads like English and ${learningName} are in the wrong boxes. Tap to swap to “${safeSuggestedNative}” / “${safeSuggestedForeign}”.`,
+      copy: `This reads like English and ${learningName} are in the wrong boxes. Tap to swap to “${safeSuggestedNative}” / “${preferDisplayForm(safeSuggestedForeign)}”.`,
     };
   }
 
-  // Green only when BOTH directions agree AND neither side is mash.
-  if (foreignOk && nativeOk) {
-    return {
-      matches: true,
-      targetField: null,
-      suggestedValue: null,
-      title: "Looks good",
-      copy: "This matches a common translation.",
-    };
+  // Both directions agree. If caps/plural still differ from the common form, offer a one-tap fix.
+  if (foreignOk && nativeOk && safeSuggestedForeign && safeSuggestedNative) {
+    const canonForeign = preferDisplayForm(safeSuggestedForeign);
+    const canonNative = safeSuggestedNative;
+    if (foreign === canonForeign && native === canonNative) {
+      return {
+        matches: true,
+        targetField: null,
+        suggestedValue: null,
+        title: "Looks good",
+        copy: "This matches a common translation.",
+      };
+    }
+
+    // Same meaning (case, plural, one letter) but not the usual written form
+    return makePairFix(
+      foreignExact && nativeExact ? "Tiny spelling tweak?" : "Close match",
+      `Usual form is “${canonForeign}” / “${canonNative}”. You typed “${foreign}” / “${native}”. Tap to fill both sides that way.`,
+      safeSuggestedForeign,
+      safeSuggestedNative
+    );
   }
 
-  // One side checks out, the other doesn't: offer a fix when we have one
+  // One side checks out, the other doesn't: prefer filling the full usual pair when we have both
   if (foreignOk && !nativeOk) {
+    if (safeSuggestedNative && safeSuggestedForeign) {
+      return makePairFix(
+        "English might not match",
+        `For “${preferDisplayForm(safeSuggestedForeign)}”, a common English is “${safeSuggestedNative}”. You typed “${native}”. Tap to fill both sides.`,
+        safeSuggestedForeign,
+        safeSuggestedNative
+      );
+    }
     if (safeSuggestedNative) {
       return {
         matches: false,
@@ -3161,13 +3305,21 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
   }
 
   if (nativeOk && !foreignOk) {
+    if (safeSuggestedForeign && safeSuggestedNative) {
+      return makePairFix(
+        `${learningName} might not match`,
+        `For “${safeSuggestedNative}”, a common ${learningName} is “${preferDisplayForm(safeSuggestedForeign)}”. You typed “${foreign}”. Tap to fill both sides.`,
+        safeSuggestedForeign,
+        safeSuggestedNative
+      );
+    }
     if (safeSuggestedForeign) {
       return {
         matches: false,
         targetField: "foreign",
-        suggestedValue: safeSuggestedForeign,
+        suggestedValue: preferDisplayForm(safeSuggestedForeign),
         title: `${learningName} might not match`,
-        copy: `For “${native}”, a common ${learningName} is “${safeSuggestedForeign}”. You typed “${foreign}”.`,
+        copy: `For “${native}”, a common ${learningName} is “${preferDisplayForm(safeSuggestedForeign)}”. You typed “${foreign}”.`,
       };
     }
     return {
@@ -3181,8 +3333,17 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
 
   // Both sides disagree, or multi-word: MT is unreliable for idioms/slang/dialect.
   if (isPhrase || (safeSuggestedForeign && safeSuggestedNative)) {
+    // Still offer a full pair when both directions returned something usable
+    if (safeSuggestedForeign && safeSuggestedNative && !isPhrase) {
+      return makePairFix(
+        "Suggested pair",
+        `A common pair is “${preferDisplayForm(safeSuggestedForeign)}” / “${safeSuggestedNative}”. Tap to use it, or keep yours if you prefer.`,
+        safeSuggestedForeign,
+        safeSuggestedNative
+      );
+    }
     const toolBits = [];
-    if (safeSuggestedForeign) toolBits.push(`${learningName}: “${safeSuggestedForeign}”`);
+    if (safeSuggestedForeign) toolBits.push(`${learningName}: “${preferDisplayForm(safeSuggestedForeign)}”`);
     if (safeSuggestedNative) toolBits.push(`English: “${safeSuggestedNative}”`);
     const toolNote = toolBits.length ? ` Tool guessed ${toolBits.join(", ")}.` : "";
     return {
@@ -3199,9 +3360,9 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     return {
       matches: false,
       targetField: "foreign",
-      suggestedValue: safeSuggestedForeign,
+      suggestedValue: preferDisplayForm(safeSuggestedForeign),
       title: "Different translation found",
-      copy: `For “${native}”, a common ${learningName} is “${safeSuggestedForeign}”. You typed “${foreign}”.`,
+      copy: `For “${native}”, a common ${learningName} is “${preferDisplayForm(safeSuggestedForeign)}”. You typed “${foreign}”.`,
     };
   }
 
@@ -3288,14 +3449,25 @@ function renderAddCardReviewContext({
     const canApplyOne =
       !translation.matches &&
       Boolean(translation.targetField && translation.suggestedValue) &&
-      translation.targetField !== "swap";
-    const canSwap =
+      translation.targetField !== "swap" &&
+      translation.targetField !== "pair";
+    const canApplyPair =
       !translation.matches &&
-      translation.targetField === "swap" &&
+      (translation.targetField === "swap" || translation.targetField === "pair") &&
       Boolean(translation.suggestedForeign && translation.suggestedNative);
-    const actionable = canApplyOne || canSwap;
-    const actionLabel = canSwap ? "Swap fields to suggested pair" : "Use suggested translation";
-    const actionHint = canSwap ? "Tap to swap the two sides" : "Tap to use the suggested translation";
+    const actionable = canApplyOne || canApplyPair;
+    const actionLabel =
+      translation.targetField === "swap"
+        ? "Swap fields to suggested pair"
+        : translation.targetField === "pair"
+          ? "Use suggested pair on both sides"
+          : "Use suggested translation";
+    const actionHint =
+      translation.targetField === "swap"
+        ? "Tap to swap the two sides"
+        : translation.targetField === "pair"
+          ? "Tap to fill both boxes with the usual form"
+          : "Tap to use the suggested translation";
     blocks.push(`
       <section
         class="review-context-block ${translation.matches ? "is-match" : "is-differs"}${actionable ? " is-actionable" : ""}"
@@ -3378,22 +3550,30 @@ function applyReviewSuggestion() {
 
   const { targetField, suggestedValue, suggestedForeign, suggestedNative } = state.translation;
   if (!targetField) return;
-  if (targetField !== "swap" && !suggestedValue) return;
-  if (targetField === "swap" && !(suggestedForeign && suggestedNative)) return;
+  if (targetField !== "swap" && targetField !== "pair" && !suggestedValue) return;
+  if (
+    (targetField === "swap" || targetField === "pair") &&
+    !(suggestedForeign && suggestedNative)
+  ) {
+    return;
+  }
 
   const foreignInput = document.getElementById("new-foreign");
   const nativeInput = document.getElementById("new-native");
   const reviewForeign = document.getElementById("review-foreign");
   const reviewNative = document.getElementById("review-native");
 
-  if (targetField === "swap") {
-    if (foreignInput) foreignInput.value = suggestedForeign;
-    if (nativeInput) nativeInput.value = suggestedNative;
-    if (reviewForeign) reviewForeign.textContent = suggestedForeign;
-    if (reviewNative) reviewNative.textContent = suggestedNative;
+  if (targetField === "swap" || targetField === "pair") {
+    const nextForeign = preferDisplayForm(suggestedForeign);
+    const nextNative = suggestedNative;
+    if (foreignInput) foreignInput.value = nextForeign;
+    if (nativeInput) nativeInput.value = nextNative;
+    if (reviewForeign) reviewForeign.textContent = nextForeign;
+    if (reviewNative) reviewNative.textContent = nextNative;
   } else if (targetField === "foreign") {
-    if (foreignInput) foreignInput.value = suggestedValue;
-    if (reviewForeign) reviewForeign.textContent = suggestedValue;
+    const nextForeign = preferDisplayForm(suggestedValue);
+    if (foreignInput) foreignInput.value = nextForeign;
+    if (reviewForeign) reviewForeign.textContent = nextForeign;
   } else {
     if (nativeInput) nativeInput.value = suggestedValue;
     if (reviewNative) reviewNative.textContent = suggestedValue;
