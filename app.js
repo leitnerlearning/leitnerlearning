@@ -1956,6 +1956,31 @@ function getSpeechUnavailableMessage() {
   return "Could not start the mic. Type instead.";
 }
 
+function getSpeechErrorMessage(errorCode) {
+  switch (errorCode) {
+    case "not-allowed":
+    case "service-not-allowed":
+      return "Mic is blocked. Allow it for this site in browser settings, or type instead.";
+    case "audio-capture":
+      return "No mic found. Check permissions, or type instead.";
+    case "network":
+      return "Speech needs a network connection here. Type instead.";
+    case "no-speech":
+      return "Didn't hear anything. Tap Speak and try again, or type.";
+    default:
+      return getSpeechUnavailableMessage();
+  }
+}
+
+/** True for phones/tablets where delayed speak()/start() often loses the user gesture. */
+function isCoarsePointerDevice() {
+  try {
+    return window.matchMedia("(pointer: coarse)").matches;
+  } catch {
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+  }
+}
+
 function initSpeech() {
   const SpeechRecognition = getSpeechRecognitionCtor();
   if (!SpeechRecognition) return null;
@@ -1966,6 +1991,37 @@ function initSpeech() {
   rec.continuous = false;
   rec.maxAlternatives = 1;
   return rec;
+}
+
+/**
+ * Ask for mic access inside a user tap (required on mobile Chrome).
+ * Stops tracks immediately — SpeechRecognition uses the mic itself after.
+ */
+async function ensureMicPermission() {
+  if (!navigator.mediaDevices?.getUserMedia) return true;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((track) => {
+      try {
+        track.stop();
+      } catch {
+        /* ignore */
+      }
+    });
+    return true;
+  } catch (err) {
+    const name = String(err?.name || "");
+    if (name === "NotAllowedError" || name === "PermissionDeniedError") {
+      showFeedback(getSpeechErrorMessage("not-allowed"), "revealed");
+      return false;
+    }
+    if (name === "NotFoundError" || name === "DevicesNotFoundError") {
+      showFeedback(getSpeechErrorMessage("audio-capture"), "revealed");
+      return false;
+    }
+    // Some browsers have recognition without getUserMedia — continue and try start().
+    return true;
+  }
 }
 
 const SPEAK_CARD_DELAY_MS = 550;
@@ -2053,7 +2109,7 @@ function setSpeakMode(active) {
   updateAnswerInputPlaceholder();
 }
 
-function toggleSpeakMode() {
+async function toggleSpeakMode() {
   if (speakModeActive) {
     setSpeakMode(false);
     return;
@@ -2064,8 +2120,15 @@ function toggleSpeakMode() {
     return;
   }
 
+  // Mobile Chrome blocks recognition.start() if permission was never granted in a tap.
+  const allowed = await ensureMicPermission();
+  if (!allowed) return;
+
   setSpeakMode(true);
-  if (currentCard) scheduleSpeakForCurrentCard();
+  if (currentCard) {
+    // Start now while still near the user gesture (delay loses mic permission on Android).
+    beginSpeakAttempt();
+  }
 }
 
 function ensureCardAttemptState() {
@@ -2165,20 +2228,24 @@ function beginSpeakAttempt() {
     stopActiveRecognition();
     setListeningUI(false);
 
-    if (event.error === "not-allowed") {
-      showFeedback(
-        "Mic is blocked. Allow it for this site in Settings, or just type.",
-        "revealed"
-      );
+    if (event.error === "aborted") return;
+
+    if (
+      event.error === "not-allowed" ||
+      event.error === "service-not-allowed" ||
+      event.error === "audio-capture" ||
+      event.error === "network"
+    ) {
+      showFeedback(getSpeechErrorMessage(event.error), "revealed");
       setSpeakMode(false);
       return;
     }
 
-    if (event.error === "aborted") return;
-
-    if (event.error === "service-not-allowed") {
-      showFeedback(getSpeechUnavailableMessage(), "revealed");
-      setSpeakMode(false);
+    if (event.error === "no-speech") {
+      if (speakModeActive) {
+        // Give another try without failing the card.
+        scheduleSpeakForCurrentCard(400);
+      }
       return;
     }
 
@@ -2192,7 +2259,8 @@ function beginSpeakAttempt() {
 
   recognition.onend = () => {
     if (attemptId !== speakAttemptId) return;
-    // Safari ends the session after silence; keep the attempt (and indicator) alive until timeout or result.
+    // Auto-restart helps Safari; on mobile Chrome it often throws and kills the session.
+    if (isCoarsePointerDevice()) return;
     try {
       recognition.start();
     } catch {
@@ -2207,7 +2275,7 @@ function beginSpeakAttempt() {
 
   try {
     recognition.start();
-  } catch {
+  } catch (err) {
     clearSpeakAttemptTimer();
     stopActiveRecognition();
     setListeningUI(false);
@@ -2547,6 +2615,33 @@ function playAudioUrl(url, { playbackRate = 1, volume = 1, token } = {}) {
   });
 }
 
+/**
+ * Fetch TTS as a blob so mobile Chrome can play it (cross-origin URL + play()
+ * often fails after an async gap; blob: URLs are more reliable).
+ */
+async function playGoogleTtsBlob(text, lang, { playbackRate = 1, volume = 1, token } = {}) {
+  if (token !== ttsPlayToken) return;
+  const url = googleTtsUrl(text, lang);
+  const response = await fetch(url, { mode: "cors", credentials: "omit", cache: "force-cache" });
+  if (!response.ok) throw new Error("TTS fetch failed");
+  const blob = await response.blob();
+  if (!blob || blob.size < 32) throw new Error("TTS empty");
+  // Reject HTML error pages returned as 200
+  if (blob.type && /html|json|text/i.test(blob.type) && !/audio/i.test(blob.type)) {
+    throw new Error("TTS not audio");
+  }
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    await playAudioUrl(objectUrl, { playbackRate, volume, token });
+  } finally {
+    try {
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 async function speakWithNeuralAudio(text, lang, gender, token) {
   const profile = neuralPlaybackProfile(gender);
   const chunks = splitTtsChunks(text);
@@ -2554,8 +2649,13 @@ async function speakWithNeuralAudio(text, lang, gender, token) {
 
   for (const chunk of chunks) {
     if (token !== ttsPlayToken) return;
-    const url = googleTtsUrl(chunk, lang);
-    await playAudioUrl(url, { ...profile, token });
+    try {
+      await playGoogleTtsBlob(chunk, lang, { ...profile, token });
+    } catch {
+      // Direct URL play (desktop-friendly); blob path failed
+      const url = googleTtsUrl(chunk, lang);
+      await playAudioUrl(url, { ...profile, token });
+    }
   }
 }
 
@@ -2618,8 +2718,7 @@ function pickAnyNorwegianSystemVoice() {
 
 /**
  * Decide how to speak Norwegian for the selected gender.
- * Only use a system voice when it is a real match for that gender.
- * Pitch-shifting Nora (etc.) to "sound male" is intentionally avoided.
+ * Premium OS match when available; otherwise Google, then any system voice.
  * @returns {{ source: "system", voice: SpeechSynthesisVoice, rate: number, pitch: number, mode: string }
  *         | { source: "google", gender: string }}
  */
@@ -2630,6 +2729,21 @@ function resolveNorwegianVoicePlan(gender = preferredVoiceGender) {
   const matched = findPremiumNorwegianVoice(want);
   if (matched) {
     return { source: "system", voice: matched, rate: 0.96, pitch: 1, mode: "natural" };
+  }
+
+  // Mobile: any Norwegian system voice is more reliable than Google audio URLs.
+  if (isCoarsePointerDevice()) {
+    const anyNb =
+      pickAnyNorwegianSystemVoice() || pickBestVoice("nb-NO", want);
+    if (anyNb && isNorwegianLangTag(anyNb.lang)) {
+      return {
+        source: "system",
+        voice: anyNb,
+        rate: 0.96,
+        pitch: want === "male" ? 0.85 : 1.05,
+        mode: "mobile-system",
+      };
+    }
   }
 
   return { source: "google", gender: want };
@@ -2646,55 +2760,62 @@ function speakWithSystemVoice(text, lang, forcedVoice = null, options = {}) {
   } = options;
 
   const run = () => {
+    if (!text) return;
     try {
       window.speechSynthesis.cancel();
     } catch {
       /* ignore */
     }
-    try {
-      window.speechSynthesis.cancel();
-    } catch {
-      /* ignore */
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    const wantedLang = lang || "en-US";
+    const voice =
+      forcedVoice ||
+      (evenDuration && isNorwegianLangTag(wantedLang)
+        ? pickAnyNorwegianSystemVoice()
+        : pickBestVoice(wantedLang, preferredVoiceGender));
+
+    if (voice) {
+      utterance.voice = voice;
+      utterance.lang = voice.lang || wantedLang;
+    } else {
+      utterance.lang = wantedLang;
     }
 
-    window.setTimeout(() => {
-      if (!text) return;
-      const utterance = new SpeechSynthesisUtterance(text);
-      const wantedLang = lang || "en-US";
-      const voice =
-        forcedVoice ||
-        (evenDuration && isNorwegianLangTag(wantedLang)
-          ? pickAnyNorwegianSystemVoice()
-          : pickBestVoice(wantedLang, preferredVoiceGender));
+    if (rateOpt != null && pitchOpt != null) {
+      utterance.rate = rateOpt;
+      utterance.pitch = pitchOpt;
+    } else if (evenDuration) {
+      utterance.rate = 1;
+      utterance.pitch = preferredVoiceGender === "male" ? 0.85 : 1.05;
+    } else if (preferredVoiceGender === "male") {
+      utterance.rate = 0.94;
+      utterance.pitch = 0.85;
+    } else {
+      utterance.rate = 0.96;
+      utterance.pitch = 1.05;
+    }
+    utterance.volume = 1;
 
-      if (voice) {
-        utterance.voice = voice;
-        utterance.lang = voice.lang || wantedLang;
-      } else {
-        utterance.lang = wantedLang;
+    try {
+      // Chrome sometimes leaves synthesis paused; resume so speak() is audible.
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
       }
-
-      if (rateOpt != null && pitchOpt != null) {
-        utterance.rate = rateOpt;
-        utterance.pitch = pitchOpt;
-      } else if (evenDuration) {
-        utterance.rate = 1;
-        utterance.pitch = preferredVoiceGender === "male" ? 0.75 : 1.15;
-      } else if (preferredVoiceGender === "male") {
-        utterance.rate = 0.92;
-        utterance.pitch = 0.72;
-      } else {
-        utterance.rate = 0.96;
-        utterance.pitch = 1.18;
-      }
-      utterance.volume = 1;
       window.speechSynthesis.speak(utterance);
-    }, 40);
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    } catch {
+      /* ignore */
+    }
   };
 
-  if (!getSpeechVoices().length) {
+  // Avoid setTimeout when possible — mobile Chrome drops speak() outside the user gesture.
+  if (!getSpeechVoices().length && window.speechSynthesis) {
     window.speechSynthesis.getVoices();
-    window.setTimeout(run, 80);
+    // One short wait only to load the voice list; still better than silence.
+    window.setTimeout(run, isCoarsePointerDevice() ? 50 : 80);
     return;
   }
   run();
@@ -2712,6 +2833,7 @@ function speakNorwegianWithPlan(text, lang, token) {
     return;
   }
 
+  // Desktop / no OS nb voice: Google audio, then system fallback.
   speakWithNeuralAudio(text, lang, preferredVoiceGender, token).catch(() => {
     if (token !== ttsPlayToken) return;
     speakWithSystemVoice(text, lang, null, { evenDuration: true });
@@ -2719,7 +2841,7 @@ function speakNorwegianWithPlan(text, lang, token) {
 }
 
 /**
- * Norwegian: hybrid OS premium voices + Google fallback.
+ * Norwegian: hybrid OS premium / mobile system voices + Google fallback.
  * English: system voices with gender preference.
  */
 function speakText(text, lang) {
@@ -2732,10 +2854,11 @@ function speakText(text, lang) {
 
   if (isNorwegianLangTag(wantedLang)) {
     ensureSpeechVoicesListener();
-    // Safari often returns [] until voiceschanged; brief wait picks up Nora/etc.
+    // Warm voices list; on mobile prefer speaking ASAP (gesture / unlock).
     if (!getSpeechVoices().length && window.speechSynthesis) {
       window.speechSynthesis.getVoices();
-      window.setTimeout(() => speakNorwegianWithPlan(trimmed, wantedLang, token), 120);
+      const waitMs = isCoarsePointerDevice() ? 40 : 120;
+      window.setTimeout(() => speakNorwegianWithPlan(trimmed, wantedLang, token), waitMs);
       return;
     }
     speakNorwegianWithPlan(trimmed, wantedLang, token);
