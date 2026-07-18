@@ -2493,11 +2493,16 @@ function softGlossMatch(a, b) {
   return false;
 }
 
-/** Prefer CV over cv for short Latin acronyms when applying suggestions. */
+/**
+ * Light display polish only. Do NOT uppercase normal words (god → GOD was wrong).
+ * Only promote true consonant-only acronyms: cv → CV, pdf → PDF.
+ */
 function preferDisplayForm(text) {
   const cleaned = cleanTranslationCandidate(text);
   if (!cleaned) return cleaned;
-  if (/^[a-z]{2,4}$/.test(cleaned)) return cleaned.toUpperCase();
+  if (/^[a-z]{2,4}$/.test(cleaned) && !/[aeiouyæøåäöü]/i.test(cleaned)) {
+    return cleaned.toUpperCase();
+  }
   return cleaned;
 }
 
@@ -2732,8 +2737,13 @@ function scoreTranslationCandidate(entry, peers, toLang, sourceWordCount) {
     if (words.length === 1 && !entry.text.includes("-")) score += 0.04;
     if (words.length === 1 && entry.text.includes("-")) score -= 0.06;
     if (words.length >= 3) score -= 0.04;
-    if (entry._sourceLen > 0 && normalizeAnswer(entry.text).replace(/\s+/g, "").length > entry._sourceLen * 2.5) {
+    const outLen = text.replace(/\s+/g, "").length;
+    if (entry._sourceLen > 0 && outLen > entry._sourceLen * 2.5 && outLen >= 12) {
       score -= 0.1;
+    }
+    // great: god and flott often tie at 0.99 — slight preference for a fuller everyday gloss
+    if (!toEnglish && words.length === 1 && outLen >= 4 && outLen <= 12) {
+      score += 0.015;
     }
   }
 
@@ -2743,8 +2753,8 @@ function scoreTranslationCandidate(entry, peers, toLang, sourceWordCount) {
     if (words.length >= 2) score += 0.03;
   }
 
-  // Prefer conventional acronym casing when the hit is a short all-letter token
-  if (words.length === 1 && /^[a-z]{2,4}$/i.test(entry.text) && entry.text === entry.text.toUpperCase()) {
+  // Prefer conventional acronym casing when the hit is already a short ALL-CAPS token
+  if (words.length === 1 && /^[A-Z]{2,4}$/.test(entry.text)) {
     score += 0.01;
   }
 
@@ -2792,7 +2802,8 @@ function pickBestTranslationSuggestion(data, sourceText, toLang = "en") {
   const cleaned = candidates
     .map((entry) => ({ ...entry, text: cleanTranslationCandidate(entry.text) }))
     .filter((entry) => entry.text && !isGarbageTranslation(entry.text, source))
-    .filter((entry) => normalizeAnswer(entry.text) !== normalizeAnswer(source))
+    // Do NOT drop loanwords that match the source (super → Super / super).
+    // Old filter required text ≠ source and hid valid shared words.
     .filter((entry) => entry.match >= minMatch || (!entry.fromMachine && entry.match >= 0.35));
 
   // Dedupe by normalized text, keep the best raw match per form
