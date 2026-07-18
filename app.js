@@ -6,7 +6,9 @@ const LEGACY_STORAGE_KEYS = [
 const BOX_COUNT = 6;
 
 const BOX_INTERVALS_DAYS = [0, 1, 3, 7, 14, 30];
+const DAILY_GOAL_CAPS = [10, 15, 20, 30];
 const DAILY_PRACTICE_CAP = 20;
+const DAILY_GOAL_CAP_KEY = "leitner-learning-daily-goal-cap";
 
 const LEARNING_LEVELS = [
   { short: "New", interval: "Waiting to learn", celebration: "Nice start. Keep going." },
@@ -452,9 +454,64 @@ function shuffleInPlace(items, randomFn = Math.random) {
   return items;
 }
 
+function getDailyPracticeCap() {
+  const n = Number(storageGet(DAILY_GOAL_CAP_KEY));
+  return DAILY_GOAL_CAPS.includes(n) ? n : DAILY_PRACTICE_CAP;
+}
+
+function setDailyPracticeCap(cap) {
+  const next = DAILY_GOAL_CAPS.includes(Number(cap)) ? Number(cap) : DAILY_PRACTICE_CAP;
+  storageSet(DAILY_GOAL_CAP_KEY, String(next));
+  return next;
+}
+
 function computeDailyGoal(dueCount) {
   if (dueCount <= 0) return 0;
-  return Math.min(dueCount, DAILY_PRACTICE_CAP);
+  return Math.min(dueCount, getDailyPracticeCap());
+}
+
+/** Recompute today's goal from the saved cap (raise or lower mid-day safely). */
+function applyCapToTodayState() {
+  const state = ensureDailyPracticeState();
+  const cap = getDailyPracticeCap();
+  const due = getDueCards(deck);
+  const completed = new Set(state.completedIds);
+  const remainingDue = due.filter((card) => !completed.has(card.id)).length;
+
+  if (state.reviewed === 0 && remainingDue === 0) {
+    state.goal = 0;
+    state.goalMet = deck.length > 0;
+    state.dailyQueue = [];
+    state.extraMode = false;
+    saveDailyPractice(state);
+    return state;
+  }
+
+  const newGoal = Math.max(state.reviewed, Math.min(cap, state.reviewed + remainingDue));
+  state.goal = newGoal;
+  state.goalMet = newGoal > 0 && state.reviewed >= newGoal;
+  if (!state.goalMet) state.extraMode = false;
+
+  const need = Math.max(0, state.goal - state.reviewed);
+  const completedInQueue = state.dailyQueue.filter((id) => completed.has(id));
+  const pending = state.dailyQueue.filter((id) => !completed.has(id));
+  state.dailyQueue = [...completedInQueue, ...pending.slice(0, need)];
+
+  refreshDailyPracticeQueue(state);
+  saveDailyPractice(state);
+  return state;
+}
+
+function selectDailyGoalCap(cap) {
+  setDailyPracticeCap(cap);
+  applyCapToTodayState();
+  const keepId = currentCard?.id || null;
+  buildSessionQueue();
+  if (keepId) {
+    sessionQueue = sessionQueue.filter((id) => id !== keepId);
+  }
+  closeGoalCapModal();
+  renderAll();
 }
 
 function sortCardIdsByPracticePriority(cardIds, completed = new Set()) {
@@ -2595,8 +2652,7 @@ function renderPractice() {
   const progressBar = document.getElementById("daily-progress");
   const progressFill = document.getElementById("daily-progress-fill");
 
-  const onPracticeHome = !currentCard;
-  const showGoal = !onPracticeHome && daily.goal > 0 && !daily.extraMode;
+  const showGoal = daily.goal > 0 && !daily.extraMode;
   const practiceMeta = document.getElementById("practice-meta");
 
   if (goalChip) {
@@ -2604,6 +2660,10 @@ function renderPractice() {
     goalChip.classList.toggle("goal-met", daily.goalMet);
     if (showGoal) {
       goalChip.textContent = `${daily.reviewed}/${daily.goal}`;
+      goalChip.setAttribute(
+        "aria-label",
+        `Daily goal ${daily.reviewed} of ${daily.goal}. Tap to change daily target.`
+      );
     }
   }
 
@@ -6110,10 +6170,25 @@ function initEventListeners() {
     if (e.target.id === "about-modal") closeAboutModal();
   });
 
+  document.getElementById("daily-goal-chip")?.addEventListener("click", () => openGoalCapModal());
+  document.getElementById("goal-cap-close-btn")?.addEventListener("click", () => closeGoalCapModal());
+  document.getElementById("goal-cap-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "goal-cap-modal") closeGoalCapModal();
+  });
+  document.getElementById("goal-cap-options")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-goal-cap]");
+    if (!btn) return;
+    selectDailyGoalCap(Number(btn.dataset.goalCap));
+  });
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       const welcome = document.getElementById("welcome-modal");
       if (welcome && !welcome.classList.contains("hidden")) return;
+      if (isGoalCapOpen()) {
+        closeGoalCapModal();
+        return;
+      }
       const about = document.getElementById("about-modal");
       if (about && !about.classList.contains("hidden")) {
         closeAboutModal();
@@ -6289,6 +6364,41 @@ function initConfirmModal() {
 function isAboutOpen() {
   const modal = document.getElementById("about-modal");
   return Boolean(modal && !modal.classList.contains("hidden"));
+}
+
+function isGoalCapOpen() {
+  const modal = document.getElementById("goal-cap-modal");
+  return Boolean(modal && !modal.classList.contains("hidden"));
+}
+
+function openGoalCapModal() {
+  if (isWelcomeOpen() || isAboutOpen()) return;
+  const modal = document.getElementById("goal-cap-modal");
+  if (!modal) return;
+  const cap = getDailyPracticeCap();
+  modal.querySelectorAll("[data-goal-cap]").forEach((btn) => {
+    const value = Number(btn.dataset.goalCap);
+    const selected = value === cap;
+    btn.classList.toggle("is-selected", selected);
+    btn.setAttribute("aria-checked", selected ? "true" : "false");
+  });
+  modal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+  const selectedBtn =
+    modal.querySelector("[data-goal-cap].is-selected") ||
+    modal.querySelector("[data-goal-cap]");
+  selectedBtn?.focus({ preventScroll: true });
+}
+
+function closeGoalCapModal() {
+  const modal = document.getElementById("goal-cap-modal");
+  if (!modal) return;
+  modal.classList.add("hidden");
+  if (!isWelcomeOpen() && !isAboutOpen()) {
+    const confirmOpen = !document.getElementById("confirm-modal")?.classList.contains("hidden");
+    if (!confirmOpen) document.body.classList.remove("modal-open");
+  }
+  document.getElementById("daily-goal-chip")?.focus({ preventScroll: true });
 }
 
 function openAboutModal() {

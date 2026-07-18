@@ -26,7 +26,7 @@
     <link rel="icon" href="brand/logo-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="brand/logo-icon.png" />
     <link rel="apple-touch-icon" sizes="360x360" href="brand/logo-icon-180@2x.png" />
-    <link rel="stylesheet" href="styles.css?v=110" />
+    <link rel="stylesheet" href="styles.css?v=111" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -68,7 +68,15 @@ The first 500 cover most of what shows up in our stories
 Learn them all and the stories get much easier</p>
 
           <div class="practice-meta hidden" id="practice-meta">
-            <div class="meta-chip hidden" id="daily-goal-chip">0/0</div>
+            <button
+              type="button"
+              class="meta-chip meta-chip--button hidden"
+              id="daily-goal-chip"
+              aria-haspopup="dialog"
+              aria-controls="goal-cap-modal"
+            >
+              0/0
+            </button>
           </div>
           <div
             class="daily-progress hidden"
@@ -502,6 +510,35 @@ Learn them all and the stories get much easier</p>
     </div>
 
     <div
+      class="goal-cap-modal hidden"
+      id="goal-cap-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="goal-cap-title"
+    >
+      <div class="goal-cap-card">
+        <div class="goal-cap-head">
+          <h2 class="goal-cap-title" id="goal-cap-title">Daily goal</h2>
+          <button type="button" class="btn ghost small" id="goal-cap-close-btn">Close</button>
+        </div>
+        <p class="goal-cap-lead">
+          How many cards to aim for each day, when that many are due.
+        </p>
+        <div
+          class="goal-cap-options"
+          id="goal-cap-options"
+          role="radiogroup"
+          aria-label="Daily card target"
+        >
+          <button type="button" class="goal-cap-option" data-goal-cap="10" role="radio" aria-checked="false">10</button>
+          <button type="button" class="goal-cap-option" data-goal-cap="15" role="radio" aria-checked="false">15</button>
+          <button type="button" class="goal-cap-option" data-goal-cap="20" role="radio" aria-checked="false">20</button>
+          <button type="button" class="goal-cap-option" data-goal-cap="30" role="radio" aria-checked="false">30</button>
+        </div>
+      </div>
+    </div>
+
+    <div
       class="confirm-modal hidden"
       id="confirm-modal"
       role="dialog"
@@ -545,7 +582,7 @@ Learn them all and the stories get much easier</p>
               You answer from memory. Right answers move up a level so you see them less often;
               wrong answers come back sooner. That is the
               <strong>Leitner system</strong>
-              (Sebastian Leitner, 1972). Six levels here, with a daily goal.
+              (Sebastian Leitner, 1972). Six levels here, with a daily goal you can set.
             </p>
           </section>
 
@@ -610,6 +647,6 @@ Learn them all and the stories get much easier</p>
     <script src="learning-categories.js?v=36"></script>
     <script src="read-stories.js?v=9"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=168"></script>
+    <script src="app.js?v=169"></script>
   </body>
 </html>

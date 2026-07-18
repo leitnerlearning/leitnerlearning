@@ -578,7 +578,8 @@ html {
 
   .welcome-modal,
   .confirm-modal,
-  .about-modal {
+  .about-modal,
+  .goal-cap-modal {
     padding:
       max(1rem, env(safe-area-inset-top, 0px))
       max(1rem, env(safe-area-inset-right, 0px))
@@ -795,6 +796,115 @@ main {
   min-width: 3.25rem;
   text-align: center;
   font-variant-numeric: tabular-nums;
+}
+
+.meta-chip--button {
+  cursor: pointer;
+  font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), transform 0.15s var(--ease);
+}
+
+.meta-chip--button:hover {
+  border-color: var(--brand-ring);
+  color: var(--brand-deep);
+}
+
+.meta-chip--button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--brand-soft);
+  border-color: var(--brand-ring);
+}
+
+.goal-cap-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 215;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(18, 24, 38, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.goal-cap-modal.hidden {
+  display: none;
+}
+
+.goal-cap-card {
+  width: min(100%, 20rem);
+  padding: 0.85rem 1rem 1rem;
+  background: var(--surface-glass-strong);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+}
+
+.goal-cap-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.45rem;
+}
+
+.goal-cap-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.goal-cap-lead {
+  margin: 0 0 0.9rem;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.goal-cap-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.45rem;
+}
+
+.goal-cap-option {
+  min-height: 2.75rem;
+  padding: 0.5rem 0.25rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.goal-cap-option:hover {
+  border-color: var(--brand-ring);
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+}
+
+.goal-cap-option:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--brand-soft);
+  border-color: var(--brand-ring);
+}
+
+.goal-cap-option.is-selected {
+  border-color: var(--brand);
+  background: linear-gradient(135deg, rgba(91, 154, 255, 0.18), rgba(54, 95, 207, 0.1));
+  color: var(--brand-deep);
+  box-shadow: inset 0 0 0 1px rgba(54, 95, 207, 0.12);
 }
 
 .daily-progress {
