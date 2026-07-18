@@ -2939,8 +2939,9 @@ function getRelatedEntriesForReview(foreign, native, limit = 5) {
 }
 
 /**
- * Keyboard mash / nonsense detector. Conservative on short real words (styrke, fjell)
- * but catches runs like "soksdfjklsdflgo".
+ * Keyboard mash / nonsense detector.
+ * Avoid "any letters from the qwerty row" checks — those false-flag real words
+ * (skjorte, universitet) because that row includes vowels.
  */
 function wordLooksLikeGibberish(word) {
   if (!word || word.length < 5) return false;
@@ -2950,16 +2951,16 @@ function wordLooksLikeGibberish(word) {
 
   if (vowels === 0) return true;
 
-  // Same keyboard row runs (asdf…, qwer…, zxcv…)
+  // Explicit smash fragments (not "any subset of a keyboard row")
   if (
-    /[qwertyuiop]{4,}/i.test(word) ||
-    /[asdfghjkl]{4,}/i.test(word) ||
-    /[zxcvbnm]{4,}/i.test(word)
+    /asdf|sdfg|dfgh|fghj|ghjk|hjkl|qwer|werty|ertyu|rtyui|tyuio|yuiop|zxcv|xcvb|cvbn|vbnm/i.test(
+      word
+    )
   ) {
     return true;
   }
 
-  // Long mash with too few vowels (avoids flagging "strengths")
+  // Long mash with too few vowels (length gate avoids "strengths")
   if (word.length >= 10 && ratio < 0.28) return true;
   if (word.length >= 14 && ratio < 0.34) return true;
 
