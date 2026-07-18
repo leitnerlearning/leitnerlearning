@@ -3554,7 +3554,6 @@ function renderAddCardReviewContext({
     blocks.push(`
       <section class="review-context-block is-info">
         <h4 class="review-context-title">Related in your deck</h4>
-        <p class="review-context-copy">Fine to add this one too.</p>
         <ul class="review-context-list">${items}</ul>
       </section>`);
   }
