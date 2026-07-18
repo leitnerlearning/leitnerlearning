@@ -3078,14 +3078,7 @@ function wordLooksLikeGibberish(word) {
   if (word.length >= 8 && /([aeiouyæøåäöü]{2})\1{2,}/i.test(word)) return true;
   if (word.length >= 8 && /(..)\1{2,}/i.test(word)) return true;
 
-  // Second half is mostly vowels — "resume" + "keieie"
-  if (word.length >= 9) {
-    const tail = word.slice(Math.floor(word.length / 2));
-    const tailVowels = (tail.match(/[aeiouyæøåäöü]/gi) || []).length;
-    if (tail.length >= 4 && tailVowels / tail.length >= 0.72) return true;
-  }
-
-  // Last 5 letters are all (or nearly all) vowels — eieie, not poeia
+  // Last 5 letters all vowels — "…keieie" (not "…poeia" in onomatopoeia)
   if (word.length >= 9) {
     const tip = word.slice(-5);
     const tipVowels = (tip.match(/[aeiouyæøåäöü]/gi) || []).length;
