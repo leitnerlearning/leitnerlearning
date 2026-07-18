@@ -3287,8 +3287,10 @@ function shouldShowAddCardSuggestions() {
 
 function renderSuggestionOption(item, index) {
   const meta = item.meta ? `<span class="library-suggest-option-meta">${escapeHtml(item.meta)}</span>` : "";
-  const foreign = `<span class="library-suggest-option-foreign" lang="${getActiveCategory().foreignLang || "nb"}">${escapeHtml(item.foreign)}</span>`;
+  // English then Norwegian — same order as the form and review
   const native = `<span class="library-suggest-option-native">${escapeHtml(item.native)}</span>`;
+  const sep = `<span class="library-suggest-option-sep" aria-hidden="true">·</span>`;
+  const foreign = `<span class="library-suggest-option-foreign" lang="${getActiveCategory().foreignLang || "nb"}">${escapeHtml(item.foreign)}</span>`;
 
   if (item.selectable) {
     return `
@@ -3298,13 +3300,13 @@ function renderSuggestionOption(item, index) {
         data-suggest-index="${index}"
         role="option"
       >
-        ${meta}${foreign}${native}
+        ${meta}${native}${sep}${foreign}
       </button>`;
   }
 
   return `
     <div class="library-suggest-option is-info" role="listitem" aria-disabled="true">
-      ${meta}${foreign}${native}
+      ${meta}${native}${sep}${foreign}
     </div>`;
 }
 
@@ -3485,7 +3487,7 @@ function applyAddCardFormUI() {
   if (submitBtn) submitBtn.textContent = editing ? "Save" : "Add";
   if (modeLabel) modeLabel.classList.toggle("hidden", !editing);
   if (cancelEditBtn) cancelEditBtn.classList.toggle("hidden", !editing);
-  if (confirmBtn) confirmBtn.textContent = editing ? "Save changes" : "Add to library";
+  if (confirmBtn) confirmBtn.textContent = editing ? "Save" : "Add";
 }
 
 function getRelatedEntriesForReview(foreign, native, limit = 5) {
@@ -3879,14 +3881,10 @@ function getAddCardConfirmLabel(translation) {
   const differs = translation && !translation.matches;
 
   if (!differs) {
-    return editing ? "Save changes" : "Add to library";
+    return editing ? "Save" : "Add";
   }
 
-  if (!translation.targetField) {
-    return editing ? "Save anyway" : "Add anyway";
-  }
-
-  return editing ? "Save anyway" : "Add to library anyway";
+  return editing ? "Save anyway" : "Add anyway";
 }
 
 function renderAddCardReviewContext({
@@ -3984,7 +3982,7 @@ function renderAddCardReviewContext({
   if (duplicate) {
     if (confirmBtn) {
       confirmBtn.disabled = true;
-      confirmBtn.textContent = editingCardId ? "Save changes" : "Add to library";
+      confirmBtn.textContent = editingCardId ? "Save" : "Add";
     }
     if (editExistingBtn) {
       editExistingBtn.classList.remove("hidden");

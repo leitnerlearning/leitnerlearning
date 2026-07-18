@@ -26,7 +26,7 @@
     <link rel="icon" href="brand/logo-icon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" sizes="180x180" href="brand/logo-icon.png" />
     <link rel="apple-touch-icon" sizes="360x360" href="brand/logo-icon-180@2x.png" />
-    <link rel="stylesheet" href="styles.css?v=107" />
+    <link rel="stylesheet" href="styles.css?v=108" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -312,25 +312,30 @@ Learn them all and the stories get much easier</p>
               <span id="add-card-mode-label" class="add-card-mode-label hidden">Editing card</span>
               <button type="button" id="add-card-cancel-edit" class="btn ghost small hidden">Cancel</button>
             </div>
-            <div class="form-row">
-              <div class="add-card-field">
+            <div class="form-row add-card-fields">
+              <div class="add-card-field add-card-field-en">
                 <label class="add-card-label" for="new-native" id="new-native-label">English</label>
                 <input
                   type="text"
                   id="new-native"
                   lang="en"
+                  placeholder="I like to eat"
                   autocomplete="off"
                   spellcheck="false"
                   required
                 />
                 <div id="native-suggestions" class="library-suggest hidden" role="list" aria-label="Suggestions"></div>
               </div>
-              <div class="add-card-field">
+              <div class="add-card-field-join" aria-hidden="true">
+                <span class="add-card-field-join-mark">→</span>
+              </div>
+              <div class="add-card-field add-card-field-nb">
                 <label class="add-card-label" for="new-foreign" id="new-foreign-label">Norwegian</label>
                 <input
                   type="text"
                   id="new-foreign"
                   lang="nb"
+                  placeholder="Jeg liker å spise"
                   autocomplete="off"
                   spellcheck="false"
                   required
@@ -354,20 +359,21 @@ Learn them all and the stories get much easier</p>
 
           <div id="add-card-review" class="add-card-review hidden" role="dialog" aria-label="Review card">
             <div class="add-card-review-pair">
-              <div class="add-card-review-side">
+              <div class="add-card-review-side is-en">
                 <span class="add-card-review-label" id="add-card-review-native-label">English</span>
                 <p class="add-card-review-value" id="review-native" lang="en"></p>
               </div>
-              <div class="add-card-review-side">
+              <span class="add-card-review-join" aria-hidden="true">→</span>
+              <div class="add-card-review-side is-nb">
                 <span class="add-card-review-label" id="add-card-review-foreign-label">Norwegian</span>
                 <p class="add-card-review-value" id="review-foreign" lang="nb"></p>
               </div>
             </div>
             <div id="add-card-review-context" class="add-card-review-context" role="status"></div>
             <div class="add-card-review-actions">
-              <button type="button" class="btn ghost hidden" id="add-card-edit-existing">Edit existing card</button>
+              <button type="button" class="btn ghost hidden" id="add-card-edit-existing">Edit existing</button>
               <button type="button" class="btn ghost" id="add-card-edit-review">Edit</button>
-              <button type="button" class="btn primary" id="add-card-confirm">Add to library</button>
+              <button type="button" class="btn primary" id="add-card-confirm">Add</button>
             </div>
           </div>
 
@@ -600,6 +606,6 @@ Learn them all and the stories get much easier</p>
     <script src="learning-categories.js?v=36"></script>
     <script src="read-stories.js?v=9"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=167"></script>
+    <script src="app.js?v=168"></script>
   </body>
 </html>
