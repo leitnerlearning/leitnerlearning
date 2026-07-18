@@ -860,17 +860,11 @@ main {
   line-height: 1.25;
 }
 
-.goal-cap-lead {
-  margin: 0 0 0.9rem;
-  font-size: 0.86rem;
-  line-height: 1.45;
-  color: var(--text-secondary);
-}
-
 .goal-cap-options {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 0.45rem;
+  margin-top: 0.35rem;
 }
 
 .goal-cap-option {
