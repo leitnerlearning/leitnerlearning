@@ -2090,7 +2090,7 @@ body.welcome-open .app {
 }
 
 .about-links li {
-  padding: 0.4rem 0.5rem;
+  padding: 0.35rem 0.5rem;
   border-radius: var(--radius-xs);
   transition: background 0.15s var(--ease);
 }
@@ -2120,14 +2120,6 @@ body.welcome-open .app {
   font-size: 0.72rem;
   font-weight: 500;
   opacity: 0.55;
-}
-
-.about-link-meta {
-  display: block;
-  margin-top: 0.08rem;
-  font-size: 0.74rem;
-  line-height: 1.3;
-  color: var(--text-tertiary);
 }
 
 .about-contact-line {
