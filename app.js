@@ -1960,11 +1960,13 @@ function getSpeechErrorMessage(errorCode) {
   switch (errorCode) {
     case "not-allowed":
     case "service-not-allowed":
-      return "Mic is blocked. Allow it for this site in browser settings, or type instead.";
+      return "Mic is blocked. Allow microphone for this site, then tap Speak again.";
     case "audio-capture":
       return "No mic found. Check permissions, or type instead.";
     case "network":
       return "Speech needs a network connection here. Type instead.";
+    case "language-not-supported":
+      return "This browser can't hear that language. Type instead.";
     case "no-speech":
       return "Didn't hear anything. Tap Speak and try again, or type.";
     default:
@@ -1981,57 +1983,36 @@ function isCoarsePointerDevice() {
   }
 }
 
-function initSpeech() {
-  const SpeechRecognition = getSpeechRecognitionCtor();
-  if (!SpeechRecognition) return null;
-
-  const rec = new SpeechRecognition();
-  rec.lang = getDirectionLabels().answerLang;
-  rec.interimResults = false;
-  rec.continuous = false;
-  rec.maxAlternatives = 1;
-  return rec;
-}
-
 /**
- * Ask for mic access inside a user tap (required on mobile Chrome).
- * Stops tracks immediately — SpeechRecognition uses the mic itself after.
+ * Tear down a recognition instance without bumping speakAttemptId.
+ * (Bumping is owned by clearSpeakScheduling / beginSpeakAttempt / stopActiveRecognition.)
  */
-async function ensureMicPermission() {
-  if (!navigator.mediaDevices?.getUserMedia) return true;
+function releaseRecognitionInstance(rec) {
+  if (!rec) return;
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    stream.getTracks().forEach((track) => {
-      try {
-        track.stop();
-      } catch {
-        /* ignore */
-      }
-    });
-    hideFeedback();
-    return true;
-  } catch (err) {
-    const name = String(err?.name || "");
-    if (name === "NotAllowedError" || name === "PermissionDeniedError") {
-      showFeedback(getSpeechErrorMessage("not-allowed"), "revealed", {
-        autoHideMs: 6000,
-      });
-      return false;
+    rec.onresult = null;
+    rec.onerror = null;
+    rec.onend = null;
+    rec.onspeechend = null;
+    rec.onnomatch = null;
+    rec.onstart = null;
+  } catch {
+    /* ignore */
+  }
+  try {
+    rec.stop();
+  } catch {
+    try {
+      rec.abort();
+    } catch {
+      /* ignore */
     }
-    if (name === "NotFoundError" || name === "DevicesNotFoundError") {
-      showFeedback(getSpeechErrorMessage("audio-capture"), "revealed", {
-        autoHideMs: 6000,
-      });
-      return false;
-    }
-    // Some browsers have recognition without getUserMedia — continue and try start().
-    return true;
   }
 }
 
 const SPEAK_CARD_DELAY_MS = 550;
 const SPEAK_RETRY_DELAY_MS = 3200;
-const SPEAK_ATTEMPT_MS = 10000;
+const SPEAK_ATTEMPT_MS = 12000;
 const SPEAK_ADVANCE_CORRECT_MS = 4000;
 const SPEAK_ADVANCE_WRONG_MS = 5000;
 const TYPING_ADVANCE_CORRECT_MS = 4500;
@@ -2086,21 +2067,9 @@ function setListeningUI(active) {
 
 function stopActiveRecognition() {
   speakAttemptId += 1;
-  if (!recognition) return;
   const rec = recognition;
   recognition = null;
-  rec.onresult = null;
-  rec.onerror = null;
-  rec.onend = null;
-  try {
-    rec.abort();
-  } catch {
-    try {
-      rec.stop();
-    } catch {
-      // ignore
-    }
-  }
+  releaseRecognitionInstance(rec);
 }
 
 function setSpeakMode(active) {
@@ -2117,14 +2086,18 @@ function setSpeakMode(active) {
   updateAnswerInputPlaceholder();
 }
 
-async function toggleSpeakMode() {
+/**
+ * Toggle speak mode. Recognition must start in the same synchronous turn as the
+ * tap on mobile Chrome — any await (e.g. getUserMedia) drops the user gesture
+ * and the mic stays blocked.
+ */
+function toggleSpeakMode() {
   if (speakModeActive) {
     setSpeakMode(false);
     hideFeedback();
     return;
   }
 
-  // Clear any previous blocked message so a fresh allow can succeed cleanly.
   hideFeedback();
 
   if (!window.isSecureContext || !speechRecognitionAvailable()) {
@@ -2132,15 +2105,15 @@ async function toggleSpeakMode() {
     return;
   }
 
-  // Mobile Chrome blocks recognition.start() if permission was never granted in a tap.
-  const allowed = await ensureMicPermission();
-  if (!allowed) return;
+  if (!currentCard) {
+    showFeedback("Start a review card first, then tap Speak.", "revealed", {
+      autoHideMs: 4500,
+    });
+    return;
+  }
 
   setSpeakMode(true);
-  if (currentCard) {
-    // Start now while still near the user gesture (delay loses mic permission on Android).
-    beginSpeakAttempt();
-  }
+  beginSpeakAttempt();
 }
 
 function ensureCardAttemptState() {
@@ -2200,67 +2173,119 @@ function beginSpeakAttempt() {
   if (!speakModeActive || !currentCard) return;
   if (!window.isSecureContext || !speechRecognitionAvailable()) {
     setSpeakMode(false);
-    showFeedback(getSpeechUnavailableMessage(), "revealed");
+    showFeedback(getSpeechUnavailableMessage(), "revealed", { autoHideMs: 6000 });
     return;
   }
 
-  stopActiveRecognition();
   clearSpeakAttemptTimer();
 
-  const attemptId = ++speakAttemptId;
-  recognition = initSpeech();
-  if (!recognition) {
+  // Stop previous session without an extra attempt-id bump (we set a new id below).
+  const prev = recognition;
+  recognition = null;
+  releaseRecognitionInstance(prev);
+
+  const SpeechRecognition = getSpeechRecognitionCtor();
+  if (!SpeechRecognition) {
     setSpeakMode(false);
-    showFeedback(getSpeechUnavailableMessage(), "revealed");
+    showFeedback(getSpeechUnavailableMessage(), "revealed", { autoHideMs: 6000 });
     return;
   }
+
+  const attemptId = ++speakAttemptId;
+  const rec = new SpeechRecognition();
+  recognition = rec;
+
+  // Interim results help Android Chrome, which often ends before a "final" result.
+  rec.lang = getDirectionLabels().answerLang || "en-US";
+  rec.interimResults = true;
+  rec.continuous = false;
+  rec.maxAlternatives = 3;
+
+  let settled = false;
+  let lastTranscript = "";
+
+  const finishWithTranscript = (transcript) => {
+    if (settled || attemptId !== speakAttemptId) return;
+    const text = String(transcript || "").trim();
+    if (!text) return;
+    settled = true;
+    clearSpeakAttemptTimer();
+    if (recognition === rec) recognition = null;
+    releaseRecognitionInstance(rec);
+    setListeningUI(false);
+    const input = document.getElementById("answer-input");
+    if (input) input.value = text;
+    submitAnswer({ fromSpeech: true });
+  };
 
   setListeningUI(true);
   hideFeedback();
 
-  recognition.onresult = (event) => {
+  rec.onstart = () => {
     if (attemptId !== speakAttemptId) return;
-    clearSpeakAttemptTimer();
-
-    const transcript = event.results?.[0]?.[0]?.transcript?.trim();
-    stopActiveRecognition();
-    setListeningUI(false);
-
-    if (!transcript) {
-      if (speakModeActive) handleSpeakAttemptTimeout();
-      return;
-    }
-
-    document.getElementById("answer-input").value = transcript;
-    submitAnswer({ fromSpeech: true });
+    setListeningUI(true);
   };
 
-  recognition.onerror = (event) => {
-    if (attemptId !== speakAttemptId) return;
+  rec.onresult = (event) => {
+    if (attemptId !== speakAttemptId || settled) return;
+
+    let finalText = "";
+    let interimText = "";
+    for (let i = event.resultIndex; i < event.results.length; i += 1) {
+      const piece = event.results[i]?.[0]?.transcript?.trim() || "";
+      if (!piece) continue;
+      if (event.results[i].isFinal) finalText = piece;
+      else interimText = piece;
+    }
+
+    const best = finalText || interimText;
+    if (best) {
+      lastTranscript = best;
+      const input = document.getElementById("answer-input");
+      if (input) input.value = best;
+    }
+
+    if (finalText) {
+      finishWithTranscript(finalText);
+    }
+  };
+
+  rec.onerror = (event) => {
+    if (attemptId !== speakAttemptId || settled) return;
+    const code = event.error || "";
+
+    // Benign: a new attempt replaced this one, or browser aborted on stop().
+    if (code === "aborted") return;
+
     clearSpeakAttemptTimer();
-    stopActiveRecognition();
+    if (recognition === rec) recognition = null;
+    releaseRecognitionInstance(rec);
     setListeningUI(false);
 
-    if (event.error === "aborted") return;
-
     if (
-      event.error === "not-allowed" ||
-      event.error === "service-not-allowed" ||
-      event.error === "audio-capture" ||
-      event.error === "network"
+      code === "not-allowed" ||
+      code === "service-not-allowed" ||
+      code === "audio-capture" ||
+      code === "network" ||
+      code === "language-not-supported"
     ) {
-      showFeedback(getSpeechErrorMessage(event.error), "revealed", {
-        autoHideMs: 6000,
-      });
+      settled = true;
+      showFeedback(getSpeechErrorMessage(code), "revealed", { autoHideMs: 7000 });
       setSpeakMode(false);
       return;
     }
 
-    if (event.error === "no-speech") {
-      if (speakModeActive) {
-        // Give another try without failing the card.
-        scheduleSpeakForCurrentCard(400);
+    if (code === "no-speech") {
+      // One quiet window — keep speak mode on and listen again after a short beat.
+      if (speakModeActive && currentCard) {
+        scheduleSpeakForCurrentCard(500);
       }
+      return;
+    }
+
+    // Prefer whatever we already heard over marking the card wrong.
+    if (lastTranscript) {
+      finishWithTranscript(lastTranscript);
       return;
     }
 
@@ -2274,32 +2299,46 @@ function beginSpeakAttempt() {
     });
   };
 
-  recognition.onend = () => {
-    if (attemptId !== speakAttemptId) return;
-    // Auto-restart helps Safari; on mobile Chrome it often throws and kills the session.
-    if (isCoarsePointerDevice()) return;
-    try {
-      recognition.start();
-    } catch {
-      // Already running or the attempt was cancelled — ignore.
+  rec.onend = () => {
+    if (attemptId !== speakAttemptId || settled) return;
+    setListeningUI(false);
+
+    // Android Chrome often ends the session with only interim text — accept it.
+    if (lastTranscript) {
+      finishWithTranscript(lastTranscript);
+      return;
+    }
+
+    // Desktop Safari: one quiet restart can help; skip on phones (unstable).
+    if (!isCoarsePointerDevice() && speakModeActive && currentCard) {
+      try {
+        rec.start();
+        setListeningUI(true);
+      } catch {
+        /* already finished */
+      }
     }
   };
 
   speakAttemptTimer = window.setTimeout(() => {
-    if (attemptId !== speakAttemptId) return;
+    if (attemptId !== speakAttemptId || settled) return;
+    if (lastTranscript) {
+      finishWithTranscript(lastTranscript);
+      return;
+    }
     handleSpeakAttemptTimeout();
   }, SPEAK_ATTEMPT_MS);
 
   try {
-    recognition.start();
+    rec.start();
   } catch (err) {
+    settled = true;
     clearSpeakAttemptTimer();
-    stopActiveRecognition();
+    if (recognition === rec) recognition = null;
+    releaseRecognitionInstance(rec);
     setListeningUI(false);
-    if (speakModeActive) {
-      setSpeakMode(false);
-    }
-    showFeedback(getSpeechUnavailableMessage(), "revealed");
+    setSpeakMode(false);
+    showFeedback(getSpeechUnavailableMessage(), "revealed", { autoHideMs: 6000 });
   }
 }
 
