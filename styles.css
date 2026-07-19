@@ -512,7 +512,6 @@ main,
 
   .library-jump {
     top: 0.35rem;
-    max-width: 100%;
   }
 
   .card-group {
@@ -2945,24 +2944,25 @@ body.welcome-open .app {
 }
 
 /* Library section jump — sticky index for long decks.
-   Desktop: tight packed pill (hugs chips), full labels, no side-scroll.
-   Mobile: full-width row + horizontal swipe when needed. */
+   Full-width bar (matches search / cards). Chips share the row evenly.
+   Inner padding keeps the blue active bubble fully inside the white bar. */
 .library-jump {
   position: sticky;
   top: 0.45rem;
   z-index: 20;
-  /* Hug the chips — do not stretch empty space across the page width */
-  width: fit-content;
+  width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   margin: 0 0 1rem;
-  padding: 0.32rem 0.4rem;
+  /* Inset so hover/active pills never kiss the rounded outer edge */
+  padding: 0.35rem 0.4rem;
   background: var(--surface-glass-strong);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
+  overflow: hidden; /* clip only to bar radius; chips sit inside via padding */
 }
 
 .library-jump.hidden {
@@ -2973,8 +2973,9 @@ body.welcome-open .app {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.22rem;
+  justify-content: space-between;
+  gap: 0.2rem;
+  width: 100%;
   max-width: 100%;
   box-sizing: border-box;
   overflow: visible;
@@ -2986,22 +2987,26 @@ body.welcome-open .app {
 }
 
 .library-jump-chip {
-  flex: 0 0 auto;
+  /* Equal share of the bar — even visual spacing Essentials → Yours */
+  flex: 1 1 0;
+  min-width: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 1.9rem;
-  padding: 0.32rem 0.58rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.2rem;
   border: 1px solid transparent;
   border-radius: var(--chip-radius);
   background: transparent;
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 0.76rem;
+  font-size: clamp(0.62rem, 1.05vw, 0.76rem);
   font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: var(--lh-tight);
+  letter-spacing: -0.015em;
+  line-height: 1.15;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
   touch-action: manipulation;
   transition:
@@ -3025,39 +3030,20 @@ body.welcome-open .app {
   box-shadow: none;
 }
 
-/* Phone: bar can use full width; swipe if chips overflow */
+/* Phone: same full-width even layout; slightly taller touch targets */
 @media (max-width: 720px) {
   .library-jump {
-    width: 100%;
-    max-width: 100%;
-    padding: 0.3rem 0.35rem;
+    padding: 0.3rem 0.32rem;
   }
 
   .library-jump-track {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    /* Tiny end pad so active Yours bubble isn’t clipped when scrolled to end */
-    padding-inline-end: 0.2rem;
-  }
-
-  .library-jump-track::-webkit-scrollbar {
-    display: none;
-  }
-
-  .library-jump-track::after {
-    display: block;
-    content: "";
-    flex: 0 0 0.25rem;
-    width: 0.25rem;
-    min-width: 0.25rem;
+    gap: 0.12rem;
   }
 
   .library-jump-chip {
-    min-height: 2rem;
-    padding: 0.35rem 0.55rem;
-    font-size: 0.74rem;
+    min-height: 2.15rem;
+    padding: 0.28rem 0.12rem;
+    font-size: clamp(0.58rem, 2.6vw, 0.7rem);
   }
 }
 
