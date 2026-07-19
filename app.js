@@ -32,17 +32,7 @@ const BAND_LABELS = {
   phrase: "Phrases",
 };
 
-/** Shorter names for the sticky jump bar so desktop fits without side-scroll. */
-const BAND_JUMP_LABELS = {
-  A: "Essentials",
-  B: "Core",
-  C: "Daily",
-  D: "Expanded",
-  E: "Campus",
-  F: "Reading",
-  G: "Wider",
-  phrase: "Phrases",
-};
+
 
 const NORWEGIAN_LOOKUP_SUFFIXES = [
   "elsene",
@@ -5308,26 +5298,16 @@ function renderLibraryJumpNav(sections) {
       const key = librarySectionKey(band);
       const range = LIBRARY_JUMP_RANGE[key];
       const yoursCount = key === "yours" ? cards.length : 0;
-      const chipLabel =
-        key === "yours" ? "Yours" : BAND_JUMP_LABELS[key] || label;
-      // Hover: full section name + range (or Yours count).
-      let tip = "";
-      if (key === "yours") {
-        tip =
-          yoursCount > 0
-            ? yoursCount === 1
-              ? "Yours · 1 card"
-              : `Yours · ${yoursCount} cards`
-            : "Yours";
-      } else {
-        const full = BAND_LABELS[key] || label;
-        tip = range ? `${full} · ${range}` : full;
+      // Chip shows the name; hover adds range or Yours count (no name repeat).
+      let tip = range || "";
+      if (key === "yours" && yoursCount > 0) {
+        tip = yoursCount === 1 ? "1 card" : `${yoursCount} cards`;
       }
       const titleAttr = tip ? ` title="${escapeAttr(tip)}"` : "";
-      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}"${titleAttr}>${escapeHtml(chipLabel)}</button>`;
+      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}"${titleAttr}>${escapeHtml(label)}</button>`;
     })
     .join("");
-  // Inner track scrolls horizontally; outer nav stays sticky while the page scrolls.
+  // Inner track = horizontal scroll on mobile only; outer nav stays sticky.
   nav.innerHTML = `<div class="library-jump-track">${chips}</div>`;
 
   observeLibraryJumpSections(sections);

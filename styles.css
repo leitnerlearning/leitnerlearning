@@ -2945,21 +2945,23 @@ body.welcome-open .app {
 }
 
 /* Library section jump — sticky index for long decks.
-   Desktop: compact single row (short labels), all chips visible, no side-scroll.
-   Mobile: same compact chips, horizontal swipe when needed. */
+   Desktop: tight packed pill (hugs chips), full labels, no side-scroll.
+   Mobile: full-width row + horizontal swipe when needed. */
 .library-jump {
   position: sticky;
   top: 0.45rem;
   z-index: 20;
+  /* Hug the chips — do not stretch empty space across the page width */
+  width: fit-content;
   max-width: 100%;
   box-sizing: border-box;
   margin: 0 0 1rem;
-  padding: 0.3rem 0.35rem;
+  padding: 0.32rem 0.4rem;
   background: var(--surface-glass-strong);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -2969,12 +2971,10 @@ body.welcome-open .app {
 
 .library-jump-track {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-start;
-  align-content: flex-start;
-  /* Tight packing — not “spread across the bar” */
-  gap: 0.15rem;
+  gap: 0.22rem;
   max-width: 100%;
   box-sizing: border-box;
   overflow: visible;
@@ -2990,17 +2990,17 @@ body.welcome-open .app {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 1.75rem;
-  padding: 0.22rem 0.48rem;
+  min-height: 1.9rem;
+  padding: 0.32rem 0.58rem;
   border: 1px solid transparent;
   border-radius: var(--chip-radius);
   background: transparent;
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 1.2;
+  letter-spacing: -0.01em;
+  line-height: var(--lh-tight);
   white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
@@ -3025,21 +3025,21 @@ body.welcome-open .app {
   box-shadow: none;
 }
 
-/* Phone: swipe the row if it still overflows */
+/* Phone: bar can use full width; swipe if chips overflow */
 @media (max-width: 720px) {
   .library-jump {
-    border-radius: 999px;
-    padding: 0.28rem 0.32rem;
+    width: 100%;
+    max-width: 100%;
+    padding: 0.3rem 0.35rem;
   }
 
   .library-jump-track {
-    flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-x: contain;
     scrollbar-width: none;
-    padding-inline-end: 0.35rem;
-    scroll-padding-inline: 0.4rem;
+    /* Tiny end pad so active Yours bubble isn’t clipped when scrolled to end */
+    padding-inline-end: 0.2rem;
   }
 
   .library-jump-track::-webkit-scrollbar {
@@ -3049,14 +3049,15 @@ body.welcome-open .app {
   .library-jump-track::after {
     display: block;
     content: "";
-    flex: 0 0 0.35rem;
-    width: 0.35rem;
-    min-width: 0.35rem;
+    flex: 0 0 0.25rem;
+    width: 0.25rem;
+    min-width: 0.25rem;
   }
 
   .library-jump-chip {
     min-height: 2rem;
-    padding: 0.32rem 0.52rem;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.74rem;
   }
 }
 
