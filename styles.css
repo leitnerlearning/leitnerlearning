@@ -3952,6 +3952,100 @@ body.welcome-open .app {
   }
 }
 
+/*
+ * Tablet soft band (iPad portrait / small landscape).
+ * Same desktop structure; only fix real mid-width pain: touch targets,
+ * Progress 4-up density, Read options wrap, Library jump label density.
+ */
+@media (min-width: 721px) and (max-width: 1024px) {
+  .app {
+    padding:
+      calc(1.5rem + env(safe-area-inset-top, 0px))
+      calc(1.25rem + env(safe-area-inset-right, 0px))
+      calc(1.5rem + env(safe-area-inset-bottom, 0px))
+      calc(1.25rem + env(safe-area-inset-left, 0px));
+  }
+
+  /* Tabs: comfortable touch without looking like phone */
+  .tab {
+    min-height: 2.55rem;
+    padding: 0.5rem 1rem;
+  }
+
+  /* Review: larger hit areas on chrome + actions */
+  .practice-card-top .direction-toggle {
+    min-height: 2.55rem;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.7rem;
+  }
+
+  .answer-actions .btn {
+    min-height: 2.85rem;
+  }
+
+  /* Read: allow options to wrap cleanly instead of overflowing */
+  .read-footer {
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+  }
+
+  .read-options {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    width: 100%;
+    min-height: 0;
+    gap: 0.4rem;
+  }
+
+  .read-options .btn.small,
+  .read-options .read-toggle-en {
+    min-height: 2.55rem;
+  }
+
+  .read-nav-btn {
+    min-height: 2.55rem;
+  }
+
+  .read-trail-btn,
+  .read-story-select {
+    min-height: 2.75rem;
+  }
+
+  /* Progress: 2×2 stats — 4-up is cramped at ~768 content width */
+  .stats-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .stat-card {
+    padding: 1.2rem 0.85rem 1.05rem;
+  }
+
+  .stat-card--action,
+  .stat-card--action:hover {
+    transform: none; /* touch: no hover-lift dependency */
+  }
+
+  .category-picker--progress .category-picker-btn {
+    min-height: 2.65rem;
+  }
+
+  /* Library: equal filters already; denser jump chips + full touch height */
+  .filter-chip {
+    min-height: 2.65rem;
+  }
+
+  .library-jump-chip {
+    min-height: 2.55rem;
+    padding: 0.35rem 0.32rem;
+    font-size: 0.72rem;
+  }
+
+  .card-item-actions .btn {
+    min-height: 2.55rem;
+  }
+}
+
 @media (max-width: 720px) {
   .stats-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));

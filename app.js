@@ -5343,10 +5343,11 @@ const BAND_JUMP_LABELS_COMPACT = {
 };
 
 function isCompactLibraryJump() {
+  // Phone + tablet: shorter jump labels so the bar stays tappable.
   return (
     typeof window !== "undefined" &&
     typeof window.matchMedia === "function" &&
-    window.matchMedia("(max-width: 720px)").matches
+    window.matchMedia("(max-width: 1024px)").matches
   );
 }
 
