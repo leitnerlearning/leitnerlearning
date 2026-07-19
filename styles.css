@@ -4108,23 +4108,22 @@ body.welcome-open .app {
     min-height: 2.85rem;
   }
 
-  /* Read: allow options to wrap cleanly instead of overflowing */
-  .read-footer {
+  /* Read: status above; tools can wrap on mid widths without crowding nav */
+  .read-footer-bar {
     flex-wrap: wrap;
-    gap: 0.75rem 1rem;
+    gap: 0.65rem 0.85rem;
   }
 
   .read-options {
     flex-wrap: wrap;
     justify-content: flex-end;
-    width: 100%;
-    min-height: 0;
     gap: 0.4rem;
   }
 
   .read-options .btn.small,
   .read-options .read-toggle-en {
     min-height: 2.55rem;
+    min-width: 6.5rem;
   }
 
   .read-nav-btn {
@@ -5149,7 +5148,19 @@ body.welcome-open .app {
 
 .read-footer {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
   margin-top: 0.65rem;
+}
+
+/* Nav + tools on one bar; status sits above when present */
+.read-footer-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
 }
 
 .read-controls {
@@ -5188,18 +5199,22 @@ body.welcome-open .app {
   justify-content: center;
   align-items: center;
   min-height: 2.75rem;
-  margin-top: 0.5rem;
 }
 
 .read-story-status {
   display: inline-flex;
   align-items: center;
+  align-self: center;
   gap: 0.3rem;
   min-height: var(--chip-min-h);
   padding: 0.2rem 0.2rem 0.2rem 0.55rem;
   border: 1px solid var(--border-strong);
   border-radius: var(--chip-radius);
   background: var(--surface-glass-strong);
+}
+
+.read-story-status.hidden {
+  display: none;
 }
 
 .read-story-status-label {
@@ -5209,6 +5224,11 @@ body.welcome-open .app {
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.read-story-status:has(.read-story-status-label--finished) {
+  border-color: rgba(47, 133, 90, 0.28);
+  background: rgba(240, 253, 244, 0.88);
 }
 
 .read-story-status-label--finished {
@@ -5318,13 +5338,29 @@ body.welcome-open .app {
   }
 
   .read-footer {
+    gap: 0.55rem;
+    margin-top: 0.95rem;
+    padding-top: 0.15rem;
+  }
+
+  /* Status above tools — not a 4th button in the action row */
+  .read-story-status {
+    align-self: flex-end;
+    min-height: 2.1rem;
+    padding: 0.15rem 0.15rem 0.15rem 0.6rem;
+  }
+
+  .read-story-status-label {
+    font-size: 0.78rem;
+  }
+
+  .read-footer-bar {
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: nowrap;
-    margin-top: 0.95rem;
-    padding-top: 0.15rem;
   }
 
   .read-controls {
@@ -5343,30 +5379,27 @@ body.welcome-open .app {
     font-size: 0.9rem;
   }
 
-  /* Options: single neat row, right-aligned — no wrap pile */
+  /* Three equal tools, right-aligned — no status mixed in */
   .read-options {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     display: flex;
     flex-wrap: nowrap;
     justify-content: flex-end;
-    align-items: center;
-    gap: 0.45rem;
+    align-items: stretch;
+    gap: 0.4rem;
     margin-top: 0;
-    min-height: 2.55rem;
+    min-height: 0;
   }
 
   .read-options .btn.small,
   .read-options .read-toggle-en {
-    min-height: 2.35rem;
-    padding: 0.4rem 0.75rem;
+    min-height: 2.5rem;
+    min-width: 7.25rem;
+    padding: 0.4rem 0.7rem;
     font-size: 0.8rem;
     font-weight: 600;
     white-space: nowrap;
-  }
-
-  .read-story-status {
-    min-height: 2.35rem;
-    flex-shrink: 0;
+    justify-content: center;
   }
 
   .read-menu {
@@ -5466,12 +5499,24 @@ body.welcome-open .app {
   }
 
   .read-footer {
+    gap: 0.5rem;
+    margin-top: 0.65rem;
+    padding-top: 0;
+  }
+
+  .read-story-status {
+    align-self: stretch;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 2.5rem;
+  }
+
+  .read-footer-bar {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 0.55rem;
-    margin-top: 0.65rem;
-    padding-top: 0;
+    gap: 0.5rem;
   }
 
   /* Nav: equal prev/next thumbs, counter centered */
@@ -5514,6 +5559,7 @@ body.welcome-open .app {
   .read-options .btn.small,
   .read-options .read-toggle-en {
     width: 100%;
+    min-width: 0;
     min-height: 48px;
     justify-content: center;
     padding: 0.35rem 0.25rem;
@@ -5522,14 +5568,6 @@ body.welcome-open .app {
     line-height: 1.15;
     white-space: normal;
     text-align: center;
-  }
-
-  .read-story-status {
-    grid-column: 1 / -1;
-    justify-content: center;
-    width: 100%;
-    box-sizing: border-box;
-    min-height: 2.5rem;
   }
 
   .read-menu {

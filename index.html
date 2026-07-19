@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=156" />
+    <link rel="stylesheet" href="styles.css?v=157" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -294,49 +294,52 @@
             </article>
 
             <div class="read-footer">
-              <div class="read-controls">
-                <button type="button" class="btn ghost read-nav-btn" id="read-prev-btn" aria-label="Previous sentence">
-                  ←
-                </button>
-                <span class="read-progress" id="read-progress">1 / 1</span>
-                <button type="button" class="btn ghost read-nav-btn" id="read-next-btn" aria-label="Next sentence">
-                  →
+              <div class="read-story-status hidden" id="read-story-status">
+                <span class="read-story-status-label" id="read-story-status-label"></span>
+                <button
+                  type="button"
+                  class="read-reset-btn"
+                  id="read-reset-btn"
+                  aria-label="Read again from the start"
+                  title="Read again from the start"
+                >
+                  ↺
                 </button>
               </div>
 
-              <div class="read-options">
-                <div class="read-story-status hidden" id="read-story-status">
-                  <span class="read-story-status-label" id="read-story-status-label"></span>
-                  <button
-                    type="button"
-                    class="read-reset-btn"
-                    id="read-reset-btn"
-                    aria-label="Read again from the start"
-                    title="Read again from the start"
-                  >
-                    ↺
+              <div class="read-footer-bar">
+                <div class="read-controls">
+                  <button type="button" class="btn ghost read-nav-btn" id="read-prev-btn" aria-label="Previous sentence">
+                    ←
+                  </button>
+                  <span class="read-progress" id="read-progress">1 / 1</span>
+                  <button type="button" class="btn ghost read-nav-btn" id="read-next-btn" aria-label="Next sentence">
+                    →
                   </button>
                 </div>
-                <button
-                  type="button"
-                  class="btn ghost small read-toggle-en"
-                  id="read-toggle-en"
-                  aria-pressed="false"
-                >
-                  Show English
-                </button>
-                <button type="button" class="btn ghost small" id="read-hear-sentence" title="Hear this sentence">
-                  Hear sentence
-                </button>
-                <button
-                  type="button"
-                  class="btn ghost small"
-                  data-voice-gender-btn
-                  id="voice-gender-btn-read"
-                  title="Norwegian voice: Female. Tap to switch"
-                >
-                  Voice · Female
-                </button>
+
+                <div class="read-options">
+                  <button
+                    type="button"
+                    class="btn ghost small read-toggle-en"
+                    id="read-toggle-en"
+                    aria-pressed="false"
+                  >
+                    Show English
+                  </button>
+                  <button type="button" class="btn ghost small" id="read-hear-sentence" title="Hear this sentence">
+                    Hear sentence
+                  </button>
+                  <button
+                    type="button"
+                    class="btn ghost small"
+                    data-voice-gender-btn
+                    id="voice-gender-btn-read"
+                    title="Norwegian voice: Female. Tap to switch"
+                  >
+                    Voice · Female
+                  </button>
+                </div>
               </div>
             </div>
 
