@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=158" />
+    <link rel="stylesheet" href="styles.css?v=159" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -184,15 +184,6 @@
                 Norwegian → English
               </button>
               <span class="category-chip" id="prompt-category"></span>
-              <button
-                type="button"
-                class="direction-toggle card-label"
-                data-voice-gender-btn
-                id="voice-gender-btn"
-                title="Norwegian voice: Female. Tap to switch"
-              >
-                Voice · Female
-              </button>
             </div>
             <div class="prompt norwegian" id="prompt-text" lang="nb">—</div>
             <p class="prompt-hint hidden" id="prompt-hint"></p>
@@ -328,15 +319,6 @@
                 </button>
                 <button type="button" class="btn ghost small" id="read-hear-sentence" title="Hear this sentence">
                   Hear sentence
-                </button>
-                <button
-                  type="button"
-                  class="btn ghost small"
-                  data-voice-gender-btn
-                  id="voice-gender-btn-read"
-                  title="Norwegian voice: Female. Tap to switch"
-                >
-                  Voice · Female
                 </button>
               </div>
             </div>
@@ -476,6 +458,35 @@
               ></div>
             </div>
           </div>
+
+          <section class="progress-section progress-section--voice" aria-labelledby="progress-voice-title">
+            <h3 class="progress-section-title" id="progress-voice-title">Norwegian voice</h3>
+            <div
+              class="voice-gender-control"
+              id="voice-gender-control"
+              role="group"
+              aria-label="Norwegian voice"
+            >
+              <button
+                type="button"
+                class="voice-gender-option"
+                data-voice-gender="female"
+                aria-pressed="true"
+              >
+                Female
+              </button>
+              <button
+                type="button"
+                class="voice-gender-option"
+                data-voice-gender="male"
+                aria-pressed="false"
+              >
+                Male
+              </button>
+            </div>
+            <p class="voice-gender-hint">Used when you Hear words and sentences in Review and Read.</p>
+          </section>
+
           <section class="progress-section" aria-labelledby="progress-levels-title">
             <h3 class="progress-section-title" id="progress-levels-title">Leitner levels</h3>
             <div class="box-stats" id="box-stats"></div>
@@ -650,6 +661,6 @@
     <script src="learning-categories.js?v=37"></script>
     <script src="read-stories.js?v=13"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=221"></script>
+    <script src="app.js?v=222"></script>
   </body>
 </html>

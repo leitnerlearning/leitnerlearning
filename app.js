@@ -2566,10 +2566,15 @@ function saveVoiceGender(gender) {
   updateVoiceGenderUI();
 }
 
-function toggleVoiceGender() {
+function setVoiceGender(gender) {
+  const next = VOICE_GENDERS.includes(gender) ? gender : "female";
   unlockAudioPipeline();
-  saveVoiceGender(preferredVoiceGender === "female" ? "male" : "female");
-  // Isolated preview — separate from Hear so it cannot stick in a queue/timer
+  if (next !== preferredVoiceGender) {
+    saveVoiceGender(next);
+  } else {
+    updateVoiceGenderUI();
+  }
+  /* Isolated preview — separate from Hear so it cannot stick in a queue/timer */
   playVoiceGenderPreview();
 }
 
@@ -2579,12 +2584,14 @@ function voiceGenderLabel(gender = preferredVoiceGender) {
 
 function updateVoiceGenderUI() {
   const label = voiceGenderLabel();
-  const title = `Norwegian voice: ${label}. Tap to switch`;
-  document.querySelectorAll("[data-voice-gender-btn]").forEach((btn) => {
-    btn.textContent = `Voice · ${label}`;
-    btn.title = title;
-    btn.setAttribute("aria-label", title);
-    btn.dataset.voiceGender = preferredVoiceGender;
+  const control = document.getElementById("voice-gender-control");
+  if (control) {
+    control.dataset.voiceGender = preferredVoiceGender;
+    control.setAttribute("aria-label", `Norwegian voice: ${label}`);
+  }
+  document.querySelectorAll("[data-voice-gender]").forEach((btn) => {
+    const on = btn.dataset.voiceGender === preferredVoiceGender;
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
   });
 }
 
@@ -7028,8 +7035,10 @@ function initEventListeners() {
     }
   });
 
-  document.querySelectorAll("[data-voice-gender-btn]").forEach((btn) => {
-    btn.addEventListener("click", () => toggleVoiceGender());
+  document.getElementById("voice-gender-control")?.addEventListener("click", (e) => {
+    const option = e.target.closest("[data-voice-gender]");
+    if (!option || !document.getElementById("voice-gender-control")?.contains(option)) return;
+    setVoiceGender(option.dataset.voiceGender);
   });
 
   document.getElementById("add-card-form")?.addEventListener("submit", (e) => {
