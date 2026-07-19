@@ -488,34 +488,40 @@ main,
     padding-inline: 0.65rem;
   }
 
+  /* Library filters: three equal segments — easy thumbs, no side-scroll */
   .filter-chips {
-    flex-wrap: nowrap;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
     max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    padding-bottom: 0.15rem;
-    /* No negative margins — those widen the page and enable sideways bounce. */
     margin: 0;
-  }
-
-  .filter-chips::-webkit-scrollbar {
-    display: none;
+    overflow: visible;
   }
 
   .filter-chip {
-    flex: 0 0 auto;
-    min-height: 40px;
+    width: 100%;
+    min-height: 42px;
+    padding-inline: 0.45rem;
+    font-size: 0.8rem;
     touch-action: manipulation;
   }
 
+  .library-controls {
+    gap: 0.65rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .library-search {
+    font-size: 16px; /* avoids iOS zoom on focus */
+    padding: 0.78rem 0.95rem;
+  }
+
   .library-jump {
-    top: 0.35rem;
+    top: 0.3rem;
   }
 
   .card-group {
-    scroll-margin-top: 3.75rem;
+    scroll-margin-top: 3.5rem;
   }
 
   .page-float-top {
@@ -3028,20 +3034,43 @@ body.welcome-open .app {
   box-shadow: none;
 }
 
-/* Phone: keep full-width bar; slightly smaller type so all labels fit */
+/* Phone: swipeable jump strip (don’t crush 7 labels into equal columns) */
 @media (max-width: 720px) {
   .library-jump {
-    padding: 0.32rem 0.35rem;
+    padding: 0.28rem 0.3rem;
+    border-radius: 999px;
   }
 
   .library-jump-track {
-    gap: 0.1rem;
+    justify-content: flex-start;
+    gap: 0.2rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding-inline-end: 0.25rem;
+    scroll-padding-inline: 0.4rem;
+  }
+
+  .library-jump-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .library-jump-track::after {
+    display: block;
+    content: "";
+    flex: 0 0 0.3rem;
+    width: 0.3rem;
+    min-width: 0.3rem;
   }
 
   .library-jump-chip {
-    min-height: 2.1rem;
-    padding: 0.3rem 0.28rem;
-    font-size: 0.66rem;
+    flex: 0 0 auto;
+    min-height: 2.05rem;
+    padding: 0.32rem 0.55rem;
+    font-size: 0.74rem;
+    overflow: visible;
+    text-overflow: unset;
   }
 }
 

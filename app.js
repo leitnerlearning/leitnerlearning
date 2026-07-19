@@ -5331,6 +5331,25 @@ function isLibraryJumpBand(band) {
   return typeof band === "string" && /^[A-G]$/.test(band);
 }
 
+/** Shorter jump labels on narrow screens so chips stay tappable. */
+const BAND_JUMP_LABELS_COMPACT = {
+  A: "Essentials",
+  B: "Core",
+  C: "Daily",
+  D: "Expanded",
+  E: "Campus",
+  F: "Reading",
+  G: "Wider",
+};
+
+function isCompactLibraryJump() {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(max-width: 720px)").matches
+  );
+}
+
 function renderLibraryJumpNav(sections) {
   const nav = document.getElementById("library-jump");
   if (!nav) return;
@@ -5341,14 +5360,20 @@ function renderLibraryJumpNav(sections) {
     return;
   }
 
+  const compact = isCompactLibraryJump();
   nav.classList.remove("hidden");
   const chips = jumpSections
     .map(({ band, label }) => {
       const key = librarySectionKey(band);
       const range = LIBRARY_JUMP_RANGE[key];
-      // Chip shows the name; hover adds rank range only.
-      const titleAttr = range ? ` title="${escapeAttr(range)}"` : "";
-      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}"${titleAttr}>${escapeHtml(label)}</button>`;
+      const full = BAND_LABELS[key] || label;
+      const chipLabel = compact
+        ? BAND_JUMP_LABELS_COMPACT[key] || full
+        : full;
+      // Full name + range on long-press / hover.
+      const tip = range ? `${full} · ${range}` : full;
+      const titleAttr = tip ? ` title="${escapeAttr(tip)}"` : "";
+      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}"${titleAttr}>${escapeHtml(chipLabel)}</button>`;
     })
     .join("");
   // Inner track = horizontal scroll on mobile only; outer nav stays sticky.
