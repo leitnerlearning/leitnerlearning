@@ -4599,21 +4599,147 @@ body.welcome-open .app {
 }
 
 @media (min-width: 721px) {
+  /* —— Desktop Read: sentence is hero; chrome stays calm and aligned —— */
   .app.read-focus {
-    padding-top: 1.85rem;
+    padding-top: 1.5rem;
+  }
+
+  .app.read-focus .header {
+    margin-bottom: 1.15rem;
+  }
+
+  .app.read-focus .brand {
+    margin-bottom: 0.55rem;
+  }
+
+  .app.read-focus .brand-logo {
+    width: min(188px, 26vw);
+  }
+
+  .read-shell {
+    width: min(100%, 40rem);
+    margin-inline: auto;
+    padding: 1.35rem 1.5rem 1.2rem;
+  }
+
+  .read-header {
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .read-title-row {
+    gap: 0.6rem;
+  }
+
+  .read-trail-btn {
+    min-width: 2.6rem;
+    min-height: 2.6rem;
+    padding: 0 0.65rem 0 0.55rem;
+  }
+
+  .read-story-select {
+    min-height: 2.6rem;
+    padding: 0.5rem 0.85rem;
+  }
+
+  .read-story-select-title {
+    font-size: 1.02rem;
+  }
+
+  .read-progress-bar {
+    height: 4px;
+  }
+
+  .read-context--before {
+    height: 2rem;
+    margin-bottom: 0.55rem;
+    padding: 0 0.65rem;
+  }
+
+  .read-context-track {
+    font-size: 0.92rem;
+  }
+
+  /* Sentence stage — more air, clearer focal card */
+  .read-focus {
+    padding: 1.35rem 1.5rem 1.2rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .read-focus-nb {
+    min-height: clamp(8.5rem, 18vh, 11rem);
+    font-size: clamp(1.45rem, 2.1vw, 1.85rem);
+    line-height: 1.5;
+    padding: 0.35rem 0.25rem;
+  }
+
+  .read-gloss-slot {
+    margin-top: 0.35rem;
   }
 
   .read-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    gap: 1rem;
+    flex-wrap: nowrap;
+    margin-top: 0.95rem;
+    padding-top: 0.15rem;
   }
 
+  .read-controls {
+    flex: 0 0 auto;
+    gap: 0.85rem;
+  }
+
+  .read-nav-btn {
+    min-width: 3.25rem;
+    min-height: 2.55rem;
+    font-size: 1.15rem;
+  }
+
+  .read-progress {
+    min-width: 4.75rem;
+    font-size: 0.9rem;
+  }
+
+  /* Options: single neat row, right-aligned — no wrap pile */
   .read-options {
-    margin-top: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: nowrap;
     justify-content: flex-end;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0;
+    min-height: 2.55rem;
+  }
+
+  .read-options .btn.small,
+  .read-options .read-toggle-en {
+    min-height: 2.35rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .read-story-status {
+    min-height: 2.35rem;
+    flex-shrink: 0;
+  }
+
+  .read-menu {
+    max-height: min(18rem, 48vh);
+    padding: 0.4rem;
+  }
+
+  .read-menu-option {
+    padding: 0.7rem 0.75rem;
+  }
+
+  .read-menu-option-title {
+    font-size: 0.92rem;
   }
 }
 
