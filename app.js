@@ -5291,7 +5291,7 @@ function renderLibraryJumpNav(sections) {
   }
 
   nav.classList.remove("hidden");
-  nav.innerHTML = sections
+  const chips = sections
     .map(({ band, label, cards }) => {
       const key = librarySectionKey(band);
       const range = LIBRARY_JUMP_RANGE[key];
@@ -5305,6 +5305,8 @@ function renderLibraryJumpNav(sections) {
       return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}"${titleAttr}>${escapeHtml(label)}</button>`;
     })
     .join("");
+  // Inner track scrolls horizontally; outer nav stays sticky while the page scrolls.
+  nav.innerHTML = `<div class="library-jump-track">${chips}</div>`;
 
   observeLibraryJumpSections(sections);
 }

@@ -68,10 +68,10 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
-  /* Keep the page on a single vertical track (no sideways bounce on mobile). */
+  /* clip (not hidden) avoids killing position:sticky on Library jump chips */
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
   overscroll-behavior-x: none;
 }
 
@@ -91,7 +91,7 @@ body {
   line-height: 1.47059;
   letter-spacing: -0.022em;
   position: relative;
-  overflow-x: hidden;
+  overflow-x: clip;
   overscroll-behavior-x: none;
 }
 
@@ -145,7 +145,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow-x: clip;
+  /* Do not set overflow-x here — it breaks sticky Library jump chips. */
   box-sizing: border-box;
 }
 
@@ -515,6 +515,9 @@ main,
     max-width: 100%;
     border-radius: var(--radius-sm);
     padding: 0.35rem;
+  }
+
+  .library-jump-track {
     overscroll-behavior-x: contain;
   }
 
@@ -2953,22 +2956,15 @@ body.welcome-open .app {
   transition: background 0.35s var(--ease), color 0.35s var(--ease);
 }
 
-/* Library section jump — sticky index for long decks */
+/* Library section jump — sticky index for long decks.
+   Outer sticky shell must NOT set overflow-x (that kills stickiness).
+   Inner track scrolls chips horizontally. */
 .library-jump {
   position: sticky;
   top: 0.45rem;
-  z-index: 6;
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 0.28rem;
+  z-index: 20;
   max-width: 100%;
   box-sizing: border-box;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  /* Horizontal chip scroll stays in the pill — does not drag the whole page. */
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
   margin: 0 0 1rem;
   padding: 0.35rem 0.4rem;
   background: var(--surface-glass-strong);
@@ -2977,20 +2973,31 @@ body.welcome-open .app {
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   box-shadow: var(--shadow-sm);
-  /* Let the last chip (Yours) fully enter the pill when scrolled */
-  scroll-padding-inline: 0.4rem;
 }
 
 .library-jump.hidden {
   display: none;
 }
 
-.library-jump::-webkit-scrollbar {
+.library-jump-track {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.28rem;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  scroll-padding-inline: 0.4rem;
+}
+
+.library-jump-track::-webkit-scrollbar {
   display: none;
 }
 
 /* Trailing spacer so horizontal scroll can park the last chip inside the bubble */
-.library-jump::after {
+.library-jump-track::after {
   content: "";
   flex: 0 0 0.15rem;
 }
