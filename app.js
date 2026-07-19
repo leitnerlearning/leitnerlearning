@@ -5192,7 +5192,53 @@ function setActiveLibraryJump(key) {
   });
 }
 
+function setLibraryFilterChip(filter) {
+  libraryFilter = filter;
+  document.querySelectorAll(".filter-chip").forEach((el) => {
+    el.classList.toggle("active", el.dataset.band === filter);
+  });
+}
+
+/** Deck-band sections for the jump bar (always A–G that have cards). */
+function getLibraryBandJumpSectionsFromDeck() {
+  return ["A", "B", "C", "D", "E", "F", "G"]
+    .map((band) => ({
+      band,
+      label: BAND_LABELS[band],
+      cards: deck.filter((card) => card.band === band),
+    }))
+    .filter((section) => section.cards.length > 0);
+}
+
 function scrollToLibrarySection(key) {
+  // Phrases / Yours / search hide band sections — switch back to All, then jump.
+  const needsAllView =
+    libraryFilter === "phrase" ||
+    libraryFilter === "yours" ||
+    Boolean(librarySearch.trim());
+
+  if (needsAllView) {
+    librarySearch = "";
+    const searchInput = document.getElementById("library-search");
+    if (searchInput) searchInput.value = "";
+    setLibraryFilterChip("all");
+    renderCardList();
+
+    const tryScroll = (attempts = 0) => {
+      const target = document.getElementById(`library-section-${key}`);
+      if (target) {
+        setActiveLibraryJump(key);
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      if (attempts < 48) {
+        requestAnimationFrame(() => tryScroll(attempts + 1));
+      }
+    };
+    requestAnimationFrame(() => tryScroll());
+    return;
+  }
+
   const target = document.getElementById(`library-section-${key}`);
   if (!target) return;
   setActiveLibraryJump(key);
@@ -5429,14 +5475,27 @@ function renderCardList() {
   if (searching) filtered = dedupeLibraryCards(filtered);
 
   if (!filtered.length) {
-    clearLibraryJumpNav();
+    // Keep band jumps available even when this filter has no cards.
+    if (!searching) {
+      renderLibraryJumpNav(getLibraryBandJumpSectionsFromDeck());
+      setActiveLibraryJump(null);
+    } else {
+      clearLibraryJumpNav();
+    }
     list.innerHTML = `<div class="library-empty">No matches</div>`;
     updateLibraryScrollTopVisibility();
     return;
   }
 
+  // Phrases / Yours / search: flat list, but keep Essentials→Wider jump bar
+  // so those filters don’t strip deck navigation.
   if (searching || libraryFilter === "phrase" || libraryFilter === "yours") {
-    clearLibraryJumpNav();
+    if (searching) {
+      clearLibraryJumpNav();
+    } else {
+      renderLibraryJumpNav(getLibraryBandJumpSectionsFromDeck());
+      setActiveLibraryJump(null);
+    }
     list.innerHTML = `<div class="card-group-list"></div>`;
     renderCardsInBatches(filtered, list.querySelector(".card-group-list"), token, () => {
       if (token === libraryRenderToken) bindCardListListeners(list);
@@ -7048,9 +7107,7 @@ function initEventListeners() {
 
   document.querySelectorAll(".filter-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
-      document.querySelectorAll(".filter-chip").forEach((el) => el.classList.remove("active"));
-      chip.classList.add("active");
-      libraryFilter = chip.dataset.band;
+      setLibraryFilterChip(chip.dataset.band);
       renderCardList();
     });
   });
