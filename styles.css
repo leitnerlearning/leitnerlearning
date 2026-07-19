@@ -235,13 +235,6 @@ main,
   margin: 0 0 0.35rem;
 }
 
-.category-picker--welcome,
-.category-picker--progress {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .category-picker--welcome {
   display: flex;
   flex-direction: column;
@@ -253,32 +246,92 @@ main,
   z-index: 210;
 }
 
-/* Language + voice: quiet prefs under stats, not hero sections */
+/*
+ * Progress prefs bar: language left · voice right, above stats.
+ * Set-and-forget chrome — quiet glass, shared height, never compete with numbers.
+ */
 .progress-prefs {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.55rem;
-  margin-bottom: 1.15rem;
+  justify-content: space-between;
+  gap: 0.55rem 0.75rem;
+  width: 100%;
+  margin: 0 0 1rem;
+  box-sizing: border-box;
 }
 
 .progress-language {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
+  margin: 0;
+}
+
+.category-picker--progress {
+  position: relative;
   width: 100%;
-  margin-bottom: 0;
+  max-width: 100%;
+  margin: 0;
+  display: block;
+}
+
+.category-picker--progress .category-picker-btn {
+  width: 100%;
+  max-width: 100%;
+  min-height: 2.05rem;
+  padding: 0.32rem 0.7rem 0.32rem 0.8rem;
+  justify-content: space-between;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--text-secondary);
+  background: var(--surface-glass-strong);
+  border: 1px solid var(--border-strong);
+  box-shadow: none;
+}
+
+.category-picker--progress .category-picker-btn:hover,
+.category-picker--progress .category-picker-btn[aria-expanded="true"] {
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-color: var(--brand-ring);
+  box-shadow: none;
+}
+
+.category-picker--progress [data-category-picker-label] {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.category-picker--progress .category-picker-menu {
+  left: 0;
+  right: auto;
+  transform: none;
+  min-width: min(100%, 16rem);
+  width: max-content;
+  max-width: min(20rem, 92vw);
 }
 
 .progress-voice {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.55rem;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  min-width: 0;
 }
 
 .progress-voice-label {
   flex-shrink: 0;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -286,16 +339,16 @@ main,
   line-height: 1;
 }
 
-/* Chip-scale segmented control — secondary to stats / levels */
+/* Same visual family as language pill — chip scale */
 .voice-gender-control {
   display: inline-grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.15rem;
+  gap: 0.12rem;
   width: auto;
-  min-width: 9.5rem;
-  padding: 0.15rem;
+  min-width: 8.75rem;
+  padding: 0.14rem;
   border-radius: 999px;
-  background: var(--surface-glass);
+  background: var(--surface-glass-strong);
   border: 1px solid var(--border-strong);
   box-sizing: border-box;
 }
@@ -304,14 +357,14 @@ main,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 1.85rem;
-  padding: 0.22rem 0.7rem;
+  min-height: 1.75rem;
+  padding: 0.2rem 0.55rem;
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   cursor: pointer;
@@ -716,8 +769,7 @@ main,
     padding: 1.5rem 1.15rem 1.25rem;
   }
 
-  .category-picker--welcome,
-  .category-picker--progress {
+  .category-picker--welcome {
     width: 100%;
     max-width: 16rem;
   }
@@ -4019,28 +4071,24 @@ body.welcome-open .app {
   }
 
   .progress-prefs {
-    gap: 0.6rem;
-    margin-bottom: 1.35rem;
+    gap: 0.85rem;
+    margin-bottom: 1.15rem;
   }
 
   .category-picker--progress .category-picker-btn {
-    min-height: 2.35rem;
-    padding: 0.45rem 1.1rem;
-    font-size: 0.8rem;
-  }
-
-  .progress-voice-label {
-    font-size: 0.7rem;
+    min-height: 2.15rem;
+    padding: 0.35rem 0.85rem 0.35rem 0.9rem;
+    font-size: 0.78rem;
   }
 
   .voice-gender-control {
-    min-width: 10rem;
+    min-width: 9.25rem;
   }
 
   .voice-gender-option {
-    min-height: 1.95rem;
-    padding: 0.25rem 0.8rem;
-    font-size: 0.78rem;
+    min-height: 1.85rem;
+    padding: 0.22rem 0.65rem;
+    font-size: 0.76rem;
   }
 
   .progress-coverage {
@@ -4226,10 +4274,6 @@ body.welcome-open .app {
     transform: none; /* touch: no hover-lift dependency */
   }
 
-  .category-picker--progress .category-picker-btn {
-    min-height: 2.65rem;
-  }
-
   /* Library: equal filters already; denser jump chips + full touch height */
   .filter-chip {
     min-height: 2.65rem;
@@ -4284,31 +4328,37 @@ body.welcome-open .app {
   }
 
   .progress-prefs {
-    gap: 0.5rem;
-    margin-bottom: 0.95rem;
-  }
-
-  .category-picker--progress {
-    width: 100%;
-    max-width: none;
+    gap: 0.45rem;
+    margin-bottom: 0.85rem;
   }
 
   .category-picker--progress .category-picker-btn {
-    width: 100%;
-    justify-content: center;
-    min-height: 44px;
-    padding: 0.5rem 0.95rem;
-    font-size: 0.76rem;
+    min-height: 2.1rem;
+    padding: 0.32rem 0.6rem 0.32rem 0.7rem;
+    font-size: 0.7rem;
   }
 
-  .progress-voice {
-    gap: 0.5rem;
+  .progress-voice-label {
+    /* On narrow screens the segment labels are enough */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .voice-gender-control {
+    min-width: 8.25rem;
   }
 
   .voice-gender-option {
-    min-height: 2rem;
-    padding: 0.28rem 0.75rem;
-    font-size: 0.78rem;
+    min-height: 1.85rem;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
   }
 
   .progress-section {

@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=160" />
+    <link rel="stylesheet" href="styles.css?v=161" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -437,8 +437,8 @@
         </section>
 
         <section id="stats-panel" class="panel" role="tabpanel" hidden>
-          <div class="stats-summary" id="stats-summary"></div>
-          <div class="progress-prefs">
+          <!-- Set-and-forget prefs: language left, voice right — above progress content -->
+          <div class="progress-prefs" role="group" aria-label="Learning preferences">
             <div class="progress-language">
               <div class="category-picker category-picker--progress">
                 <button
@@ -487,6 +487,8 @@
               </div>
             </div>
           </div>
+
+          <div class="stats-summary" id="stats-summary"></div>
 
           <section class="progress-section" aria-labelledby="progress-levels-title">
             <h3 class="progress-section-title" id="progress-levels-title">Leitner levels</h3>
