@@ -2966,7 +2966,8 @@ body.welcome-open .app {
   max-width: 100%;
   box-sizing: border-box;
   margin: 0 0 1rem;
-  padding: 0.35rem 0.4rem;
+  /* Extra right padding so the last chip (Yours) sits inside the rounded shell */
+  padding: 0.35rem 0.55rem 0.35rem 0.4rem;
   background: var(--surface-glass-strong);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -2985,23 +2986,27 @@ body.welcome-open .app {
   align-items: center;
   gap: 0.28rem;
   max-width: 100%;
-  /* Room for active chip border + glow so Yours is not clipped on the right */
-  padding: 0.12rem 0.2rem;
+  box-sizing: border-box;
+  /* Scrollport padding keeps active/hover borders fully paintable */
+  padding-block: 2px;
+  padding-inline: 2px 10px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
-  scroll-padding-inline: 0.55rem;
+  scroll-padding-inline: 0.65rem;
 }
 
 .library-jump-track::-webkit-scrollbar {
   display: none;
 }
 
-/* Trailing spacer so the last chip (Yours) + its blue bubble fully clear the edge */
+/* End spacer — last chip + bubble clear of the clip edge */
 .library-jump-track::after {
   content: "";
-  flex: 0 0 0.55rem;
+  flex: 0 0 12px;
+  width: 12px;
+  min-width: 12px;
 }
 
 .library-jump-chip {
@@ -3010,7 +3015,7 @@ body.welcome-open .app {
   align-items: center;
   justify-content: center;
   min-height: var(--chip-min-h);
-  padding: var(--chip-pad-y) 0.65rem;
+  padding: var(--chip-pad-y) 0.7rem;
   border: 1px solid transparent;
   border-radius: var(--chip-radius);
   background: transparent;
@@ -3023,12 +3028,10 @@ body.welcome-open .app {
   white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
-  /* Keep glow inside the scroll paint area instead of hard-clipping */
   transition:
     color 0.2s var(--ease),
     background 0.2s var(--ease),
-    border-color 0.2s var(--ease),
-    box-shadow 0.2s var(--ease);
+    border-color 0.2s var(--ease);
 }
 
 .library-jump-chip:hover,
@@ -3043,8 +3046,8 @@ body.welcome-open .app {
   color: #fff;
   background: var(--brand-gradient);
   border-color: transparent;
-  /* Slightly tighter shadow so the pill doesn’t paint outside the track */
-  box-shadow: 0 4px 14px rgba(54, 95, 207, 0.28);
+  /* No outer box-shadow — scroll tracks clip shadows and cut off Yours */
+  box-shadow: none;
 }
 
 /* Shared Top control for long Library / Progress pages */
