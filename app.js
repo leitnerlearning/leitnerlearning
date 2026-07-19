@@ -3620,7 +3620,6 @@ function isWordBand(band) {
 }
 
 function matchesLibraryFilter(card) {
-  if (libraryFilter === "words" && !isWordBand(card.band)) return false;
   if (libraryFilter === "phrase" && card.band !== "phrase") return false;
   if (libraryFilter === "yours" && card.band) return false;
 
@@ -5159,11 +5158,9 @@ function updateDeckCount() {
 }
 
 function getLibraryBandGroups() {
+  // All = full library (bands + phrases + yours). Phrases / Yours are filters only.
   if (libraryFilter === "all") {
     return ["A", "B", "C", "D", "E", "F", "G", "phrase", null];
-  }
-  if (libraryFilter === "words") {
-    return ["A", "B", "C", "D", "E", "F", "G"];
   }
   if (libraryFilter === "yours") {
     return [null];
