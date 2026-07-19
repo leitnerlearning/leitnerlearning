@@ -4108,9 +4108,12 @@ body.welcome-open .app {
     min-height: 2.85rem;
   }
 
-  /* Read: status above; tools can wrap on mid widths without crowding nav */
-  .read-footer-bar {
+  /* Read: footer can wrap on mid widths without crowding */
+  .read-footer {
     flex-wrap: wrap;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     gap: 0.65rem 0.85rem;
   }
 
@@ -4766,11 +4769,21 @@ body.welcome-open .app {
   opacity: 0.7;
 }
 
+/* Bar + fixed reset slot — never grows/shrinks the footer when you advance */
+.read-progress-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 1.75rem;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.75rem;
+}
+
 .read-progress-bar {
   height: 3px;
   border-radius: 999px;
   background: rgba(54, 95, 207, 0.1);
   overflow: hidden;
+  min-width: 0;
 }
 
 .read-progress-fill {
@@ -4778,7 +4791,40 @@ body.welcome-open .app {
   width: 0%;
   border-radius: inherit;
   background: var(--brand-gradient);
-  transition: width 0.35s var(--ease);
+  transition: width 0.35s var(--ease), background 0.35s var(--ease);
+}
+
+.read-progress-bar.is-complete .read-progress-fill {
+  background: linear-gradient(90deg, #3db87a, #2f855a);
+}
+
+.read-progress-row .read-reset-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: var(--text-tertiary);
+  opacity: 1;
+  transition:
+    opacity 0.2s var(--ease),
+    color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    border-color 0.15s var(--ease);
+}
+
+.read-progress-row .read-reset-btn.is-idle {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.read-progress-row .read-reset-btn:not(.is-idle):hover {
+  border-color: var(--brand-ring);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.read-progress-bar.is-complete ~ .read-reset-btn:not(.is-idle) {
+  color: #2f855a;
 }
 
 .read-menu {
@@ -5155,14 +5201,6 @@ body.welcome-open .app {
   margin-top: 0.65rem;
 }
 
-/* Nav + tools on one bar; status sits above when present */
-.read-footer-bar {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.5rem;
-}
-
 .read-controls {
   display: flex;
   align-items: center;
@@ -5201,40 +5239,6 @@ body.welcome-open .app {
   min-height: 2.75rem;
 }
 
-.read-story-status {
-  display: inline-flex;
-  align-items: center;
-  align-self: center;
-  gap: 0.3rem;
-  min-height: var(--chip-min-h);
-  padding: 0.2rem 0.2rem 0.2rem 0.55rem;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--chip-radius);
-  background: var(--surface-glass-strong);
-}
-
-.read-story-status.hidden {
-  display: none;
-}
-
-.read-story-status-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  line-height: var(--lh-tight);
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.read-story-status:has(.read-story-status-label--finished) {
-  border-color: rgba(47, 133, 90, 0.28);
-  background: rgba(240, 253, 244, 0.88);
-}
-
-.read-story-status-label--finished {
-  color: #2f855a;
-}
-
 .read-reset-btn {
   display: inline-flex;
   align-items: center;
@@ -5253,9 +5257,13 @@ body.welcome-open .app {
   transition: background 0.15s var(--ease), color 0.15s var(--ease);
 }
 
-.read-reset-btn:hover {
+.read-reset-btn:hover:not(:disabled) {
   background: var(--brand-soft);
   color: var(--brand);
+}
+
+.read-reset-btn:disabled {
+  cursor: default;
 }
 
 @media (min-width: 721px) {
@@ -5306,6 +5314,11 @@ body.welcome-open .app {
     font-size: 1.02rem;
   }
 
+  .read-progress-row {
+    min-height: 1.85rem;
+    gap: 0.45rem;
+  }
+
   .read-progress-bar {
     height: 4px;
   }
@@ -5338,29 +5351,14 @@ body.welcome-open .app {
   }
 
   .read-footer {
-    gap: 0.55rem;
-    margin-top: 0.95rem;
-    padding-top: 0.15rem;
-  }
-
-  /* Status above tools — not a 4th button in the action row */
-  .read-story-status {
-    align-self: flex-end;
-    min-height: 2.1rem;
-    padding: 0.15rem 0.15rem 0.15rem 0.6rem;
-  }
-
-  .read-story-status-label {
-    font-size: 0.78rem;
-  }
-
-  .read-footer-bar {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: nowrap;
+    margin-top: 0.95rem;
+    padding-top: 0.15rem;
   }
 
   .read-controls {
@@ -5379,7 +5377,7 @@ body.welcome-open .app {
     font-size: 0.9rem;
   }
 
-  /* Three equal tools, right-aligned — no status mixed in */
+  /* Three equal tools, right-aligned — layout never shifts with progress */
   .read-options {
     flex: 0 1 auto;
     display: flex;
@@ -5498,25 +5496,23 @@ body.welcome-open .app {
     font-size: 0.95rem;
   }
 
+  .read-progress-row {
+    min-height: 2rem;
+    grid-template-columns: minmax(0, 1fr) 2rem;
+  }
+
+  .read-progress-row .read-reset-btn {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1.05rem;
+  }
+
   .read-footer {
-    gap: 0.5rem;
-    margin-top: 0.65rem;
-    padding-top: 0;
-  }
-
-  .read-story-status {
-    align-self: stretch;
-    justify-content: center;
-    width: 100%;
-    box-sizing: border-box;
-    min-height: 2.5rem;
-  }
-
-  .read-footer-bar {
-    display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 0.5rem;
+    margin-top: 0.65rem;
+    padding-top: 0;
   }
 
   /* Nav: equal prev/next thumbs, counter centered */

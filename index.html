@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=157" />
+    <link rel="stylesheet" href="styles.css?v=158" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -265,15 +265,28 @@
                   </span>
                 </button>
               </div>
-              <div
-                class="read-progress-bar"
-                id="read-progress-bar"
-                role="progressbar"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-valuenow="0"
-              >
-                <div class="read-progress-fill" id="read-progress-fill"></div>
+              <div class="read-progress-row">
+                <div
+                  class="read-progress-bar"
+                  id="read-progress-bar"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                >
+                  <div class="read-progress-fill" id="read-progress-fill"></div>
+                </div>
+                <button
+                  type="button"
+                  class="read-reset-btn is-idle"
+                  id="read-reset-btn"
+                  aria-label="Read again from the start"
+                  title="Read again from the start"
+                  disabled
+                  aria-hidden="true"
+                >
+                  ↺
+                </button>
               </div>
               <p class="read-story-source" id="read-story-source" hidden></p>
               <div class="read-menu hidden" id="read-menu" role="listbox" aria-label="Stories"></div>
@@ -294,52 +307,37 @@
             </article>
 
             <div class="read-footer">
-              <div class="read-story-status hidden" id="read-story-status">
-                <span class="read-story-status-label" id="read-story-status-label"></span>
-                <button
-                  type="button"
-                  class="read-reset-btn"
-                  id="read-reset-btn"
-                  aria-label="Read again from the start"
-                  title="Read again from the start"
-                >
-                  ↺
+              <div class="read-controls">
+                <button type="button" class="btn ghost read-nav-btn" id="read-prev-btn" aria-label="Previous sentence">
+                  ←
+                </button>
+                <span class="read-progress" id="read-progress">1 / 1</span>
+                <button type="button" class="btn ghost read-nav-btn" id="read-next-btn" aria-label="Next sentence">
+                  →
                 </button>
               </div>
 
-              <div class="read-footer-bar">
-                <div class="read-controls">
-                  <button type="button" class="btn ghost read-nav-btn" id="read-prev-btn" aria-label="Previous sentence">
-                    ←
-                  </button>
-                  <span class="read-progress" id="read-progress">1 / 1</span>
-                  <button type="button" class="btn ghost read-nav-btn" id="read-next-btn" aria-label="Next sentence">
-                    →
-                  </button>
-                </div>
-
-                <div class="read-options">
-                  <button
-                    type="button"
-                    class="btn ghost small read-toggle-en"
-                    id="read-toggle-en"
-                    aria-pressed="false"
-                  >
-                    Show English
-                  </button>
-                  <button type="button" class="btn ghost small" id="read-hear-sentence" title="Hear this sentence">
-                    Hear sentence
-                  </button>
-                  <button
-                    type="button"
-                    class="btn ghost small"
-                    data-voice-gender-btn
-                    id="voice-gender-btn-read"
-                    title="Norwegian voice: Female. Tap to switch"
-                  >
-                    Voice · Female
-                  </button>
-                </div>
+              <div class="read-options">
+                <button
+                  type="button"
+                  class="btn ghost small read-toggle-en"
+                  id="read-toggle-en"
+                  aria-pressed="false"
+                >
+                  Show English
+                </button>
+                <button type="button" class="btn ghost small" id="read-hear-sentence" title="Hear this sentence">
+                  Hear sentence
+                </button>
+                <button
+                  type="button"
+                  class="btn ghost small"
+                  data-voice-gender-btn
+                  id="voice-gender-btn-read"
+                  title="Norwegian voice: Female. Tap to switch"
+                >
+                  Voice · Female
+                </button>
               </div>
             </div>
 
@@ -652,6 +650,6 @@
     <script src="learning-categories.js?v=37"></script>
     <script src="read-stories.js?v=13"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=220"></script>
+    <script src="app.js?v=221"></script>
   </body>
 </html>

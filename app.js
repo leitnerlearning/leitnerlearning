@@ -6354,22 +6354,25 @@ function renderReadMenu() {
 }
 
 function updateReadStoryStatus(story) {
-  const statusEl = document.getElementById("read-story-status");
-  const labelEl = document.getElementById("read-story-status-label");
-  if (!statusEl || !labelEl || !story) return;
+  const resetBtn = document.getElementById("read-reset-btn");
+  const progressBar = document.getElementById("read-progress-bar");
+  if (!story) return;
 
-  if (!storyHasReadProgress(story.id)) {
-    statusEl.classList.add("hidden");
-    return;
+  const hasProgress = storyHasReadProgress(story.id);
+  const pos = getStoryPosition(story.id);
+  const finished = hasProgress && isStoryComplete(story, pos.furthest);
+
+  /* Footer stays fixed: progress is the bar; reset is a stable header slot. */
+  if (resetBtn) {
+    resetBtn.disabled = !hasProgress;
+    resetBtn.classList.toggle("is-idle", !hasProgress);
+    resetBtn.setAttribute("aria-hidden", hasProgress ? "false" : "true");
+    resetBtn.tabIndex = hasProgress ? 0 : -1;
   }
 
-  const pos = getStoryPosition(story.id);
-  const progressLabel = formatStoryProgressCount(story, pos.furthest);
-  const finished = isStoryComplete(story, pos.furthest);
-
-  labelEl.textContent = progressLabel;
-  labelEl.classList.toggle("read-story-status-label--finished", finished);
-  statusEl.classList.remove("hidden");
+  if (progressBar) {
+    progressBar.classList.toggle("is-complete", finished);
+  }
 }
 
 function renderReadHeader(story) {
@@ -6401,7 +6404,10 @@ function renderReadHeader(story) {
 
   if (progressBar && progressFill) {
     progressBar.setAttribute("aria-valuenow", String(pct));
-    progressBar.setAttribute("aria-label", `${pct}% read`);
+    progressBar.setAttribute(
+      "aria-label",
+      pct >= 100 ? "Story finished" : `${pct}% read`
+    );
     progressFill.style.width = `${pct}%`;
   }
 
