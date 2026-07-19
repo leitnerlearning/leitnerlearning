@@ -579,53 +579,9 @@ main,
     box-sizing: border-box;
   }
 
-  /* Library filters: three equal segments — easy thumbs, no side-scroll */
-  .filter-chips {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.35rem;
-    max-width: 100%;
-    margin: 0;
-    overflow: visible;
-  }
-
-  .filter-chip {
-    width: 100%;
-    min-height: 42px;
-    padding-inline: 0.45rem;
-    font-size: 0.8rem;
-    touch-action: manipulation;
-  }
-
-  .library-controls {
-    gap: 0.65rem;
-    margin-bottom: 0.85rem;
-  }
-
-  .library-search {
-    font-size: 16px; /* avoids iOS zoom on focus */
-    padding: 0.78rem 0.95rem;
-  }
-
-  .library-jump {
-    top: 0.3rem;
-  }
-
-  .card-group {
-    scroll-margin-top: 3.5rem;
-  }
-
   .page-float-top {
     right: max(0.85rem, env(safe-area-inset-right, 0px));
     bottom: max(0.95rem, env(safe-area-inset-bottom, 0px));
-  }
-
-  .library-header .btn {
-    min-height: 44px;
-  }
-
-  .add-card-form {
-    margin-bottom: 0.85rem;
   }
 
   .header {
@@ -691,22 +647,6 @@ main,
     min-width: 0;
     box-sizing: border-box;
   }
-
-  .library-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .library-header .panel-title {
-    justify-content: center;
-  }
-
-  .library-header .btn {
-    width: 100%;
-    max-width: 12rem;
-  }
-
 }
 
 /* Tabs — pill segment, brand-active */
@@ -3363,10 +3303,149 @@ body.welcome-open .app {
   }
 }
 
-/* Phone: swipeable jump strip (don’t crush 7 labels into equal columns) */
+/* —— Mobile Library: must follow base library + card-item so overrides win —— */
 @media (max-width: 720px) {
+  #cards-panel.active {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Header: title + reset on one row — less vertical waste */
+  .library-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    gap: 0.65rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .library-header .panel-title {
+    justify-content: flex-start;
+    font-size: 1.2rem;
+  }
+
+  .library-header .btn {
+    width: auto;
+    max-width: none;
+    min-height: 44px;
+    padding-inline: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  /* Add form: stacked fields, full-width primary action */
+  .add-card-form {
+    padding: 0.95rem 0.9rem 0.9rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .form-row.add-card-fields {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+  }
+
+  .add-card-field-join {
+    display: none;
+  }
+
+  .add-card-form input {
+    font-size: 16px; /* prevent iOS focus zoom */
+    min-height: 48px;
+    padding: 0.7rem 0.95rem;
+  }
+
+  .add-card-form-actions {
+    margin-top: 0.7rem;
+    gap: 0.45rem;
+  }
+
+  .add-card-form-actions .btn {
+    min-height: 48px;
+    padding-inline: 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .add-card-form-actions .btn.primary {
+    flex: 1 1 auto;
+  }
+
+  .library-suggest-option {
+    min-height: 44px;
+    padding: 0.55rem 0.65rem;
+    align-items: center;
+  }
+
+  /* Confirm pair: full-width action row */
+  .add-card-review {
+    padding: 0.9rem 0.85rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .add-card-review-join {
+    display: none;
+  }
+
+  .add-card-review-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.7rem;
+    justify-content: stretch;
+  }
+
+  .add-card-review-actions .btn {
+    flex: 1 1 calc(50% - 0.2rem);
+    min-width: calc(50% - 0.2rem);
+    width: auto;
+    min-height: 48px;
+    justify-content: center;
+    font-weight: 600;
+  }
+
+  .add-card-review-actions .btn.primary {
+    flex: 1 1 100%;
+  }
+
+  .add-card-review-actions .btn.hidden {
+    display: none;
+  }
+
+  /* Search + filters */
+  .library-controls {
+    gap: 0.55rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .library-search {
+    font-size: 16px; /* prevent iOS focus zoom */
+    min-height: 48px;
+    padding: 0.8rem 1rem;
+  }
+
+  .filter-chips {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.4rem;
+    max-width: 100%;
+    margin: 0;
+    overflow: visible;
+  }
+
+  .filter-chip {
+    width: 100%;
+    min-height: 48px;
+    padding-inline: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    touch-action: manipulation;
+  }
+
+  /* Swipeable jump strip — don’t crush band labels into equal columns */
   .library-jump {
-    padding: 0.28rem 0.3rem;
+    top: 0.3rem;
+    padding: 0.3rem 0.35rem;
+    margin-bottom: 0.85rem;
     border-radius: 999px;
   }
 
@@ -3395,11 +3474,79 @@ body.welcome-open .app {
 
   .library-jump-chip {
     flex: 0 0 auto;
-    min-height: 2.05rem;
-    padding: 0.32rem 0.55rem;
-    font-size: 0.74rem;
+    min-height: 44px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.78rem;
     overflow: visible;
     text-overflow: unset;
+  }
+
+  .card-group {
+    scroll-margin-top: 3.75rem;
+  }
+
+  .card-list {
+    gap: 1.35rem;
+  }
+
+  .card-group-title {
+    margin-bottom: 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .card-group-list {
+    gap: 0.45rem;
+  }
+
+  /*
+   * Card rows: stretch text (no zigzag). Actions = equal 3-up like Review.
+   * align-items: stretch must beat base align-items: center.
+   */
+  .card-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.7rem;
+    padding: 0.95rem 0.9rem 0.85rem;
+  }
+
+  .card-item-text {
+    width: 100%;
+    flex: none;
+  }
+
+  .card-item-foreign {
+    font-size: 1.08rem;
+  }
+
+  .card-item-native {
+    font-size: 0.9rem;
+    margin-top: 0.15rem;
+  }
+
+  .card-item-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.4rem;
+    width: 100%;
+  }
+
+  .card-item-actions .btn {
+    min-height: 48px;
+    width: 100%;
+    touch-action: manipulation;
+    padding-inline: 0.3rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .library-empty {
+    padding: 2rem 1.15rem;
+  }
+
+  .page-float-top-btn {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 0.6rem 1.05rem;
   }
 }
 
@@ -3549,37 +3696,6 @@ body.welcome-open .app {
   margin-top: 0.2rem;
   line-height: 1.35;
   text-align: left;
-}
-
-/*
- * Mobile library list: must come AFTER base .card-item so align-items: stretch
- * wins over align-items: center. Otherwise each card shrink-wraps its text and
- * centers it — short vs long words zigzag left/right while scrolling.
- */
-@media (max-width: 720px) {
-  .card-item {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
-  }
-
-  .card-item-text {
-    width: 100%;
-    flex: none;
-  }
-
-  .card-item-actions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.5rem;
-    width: 100%;
-  }
-
-  .card-item-actions .btn {
-    min-height: 44px;
-    width: 100%;
-    touch-action: manipulation;
-  }
 }
 
 /* Progress tab */
@@ -4269,11 +4385,6 @@ body.welcome-open .app {
     padding: var(--chip-pad-y) 0.7rem;
     max-width: 100%;
     box-sizing: border-box;
-  }
-
-  .filter-chip {
-    font-size: var(--chip-font);
-    padding: var(--chip-pad-y) 0.7rem;
   }
 
   .count-badge {
