@@ -418,37 +418,39 @@ main,
     margin-bottom: 0.15rem;
   }
 
+  /* —— Mobile Review only: hero word, clear input, equal actions —— */
   .app.practice-focus .header {
-    margin-bottom: 0.65rem;
-  }
-
-  .app.practice-focus .brand {
     margin-bottom: 0.55rem;
   }
 
+  .app.practice-focus .brand {
+    margin-bottom: 0.4rem;
+  }
+
   .app.practice-focus .brand-logo {
-    width: min(160px, 48vw);
+    width: min(140px, 42vw);
   }
 
   .app.practice-focus .practice-card {
-    padding: 1.35rem 1rem 1.1rem;
+    padding: 1.15rem 0.9rem 1.05rem;
   }
 
   .app.practice-focus .prompt,
   .app.practice-focus .prompt.norwegian {
-    font-size: clamp(1.75rem, 8vw, 2.35rem);
-    margin-bottom: 0.85rem;
+    font-size: clamp(1.85rem, 8.5vw, 2.45rem);
+    margin-bottom: 0.65rem;
   }
 
   .feedback-slot {
-    height: 2.85rem;
-    margin-bottom: 0.3rem;
+    min-height: 2.6rem;
+    height: auto;
+    margin-bottom: 0.35rem;
   }
 
   .feedback {
-    max-height: 2.85rem;
-    padding: 0.32rem 0.75rem;
-    font-size: clamp(1rem, 3.6vw, 1.35rem);
+    max-height: none;
+    padding: 0.35rem 0.7rem;
+    font-size: clamp(0.95rem, 3.5vw, 1.2rem);
   }
 
   .practice-meta {
@@ -456,46 +458,83 @@ main,
     justify-content: center;
     flex-wrap: wrap;
     gap: 0.4rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .app.practice-focus .practice-meta {
+    margin-bottom: 0.5rem;
+  }
+
+  .daily-progress {
+    max-width: 100%;
+    margin: 0 auto 0.75rem;
+    height: 0.35rem;
+  }
+
+  .app.practice-focus .daily-progress {
     margin-bottom: 0.75rem;
   }
 
   .meta-chip {
     font-size: var(--chip-font);
     padding: var(--chip-pad-y) 0.75rem;
+    min-height: 40px;
   }
 
   .practice-card {
-    padding: 1.35rem 1rem 1.15rem;
+    padding: 1.15rem 0.9rem 1.05rem;
   }
 
+  /* Direction + voice side by side; category full-width under */
   .practice-card-top {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.4rem;
-    margin-bottom: 0.95rem;
+    margin-bottom: 0.85rem;
   }
 
   .practice-card-top .category-chip {
     grid-column: 1 / -1;
     justify-self: center;
+    min-height: 1.85rem;
   }
 
   .practice-card-top .direction-toggle {
     width: 100%;
     justify-content: center;
-    min-height: 40px;
-    padding-inline: 0.4rem;
-    font-size: 0.62rem;
-    letter-spacing: 0.03em;
+    min-height: 44px;
+    padding-inline: 0.35rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+  }
+
+  .practice-card-top:has(.category-chip.hidden) {
+    grid-template-columns: 1fr 1fr;
   }
 
   .prompt {
-    font-size: clamp(1.85rem, 8.5vw, 2.55rem);
+    font-size: clamp(1.9rem, 8.8vw, 2.6rem);
+    margin-bottom: 0.75rem;
+  }
+
+  .prompt.norwegian {
+    min-height: 1.35em;
+  }
+
+  .prompt-hint {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .answer-form {
+    max-width: none;
+    width: 100%;
   }
 
   .answer-form input[type="text"] {
-    font-size: 16px;
+    font-size: 16px; /* prevent iOS focus zoom */
     padding: 0.95rem 1rem;
+    margin-bottom: 0.4rem;
   }
 
   .answer-actions {
@@ -506,11 +545,38 @@ main,
   }
 
   .answer-actions .btn {
-    min-height: 44px;
+    min-height: 48px;
     width: 100%;
     touch-action: manipulation;
-    padding-inline: 0.4rem;
-    font-size: 0.82rem;
+    padding-inline: 0.35rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  /* Empty Review: full-width actions, less dead air */
+  #practice-panel.active #practice-empty:not(.hidden) {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .empty-state {
+    padding: 1.75rem 1.1rem 1.5rem;
+  }
+
+  .empty-state--actions {
+    padding: 1.35rem 1rem 1.25rem;
+  }
+
+  .empty-actions {
+    width: 100%;
+    max-width: none;
+  }
+
+  .empty-actions .btn,
+  .read-bridge-btn {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
   }
 
   /* Library filters: three equal segments — easy thumbs, no side-scroll */
