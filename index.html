@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=159" />
+    <link rel="stylesheet" href="styles.css?v=160" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -438,54 +438,55 @@
 
         <section id="stats-panel" class="panel" role="tabpanel" hidden>
           <div class="stats-summary" id="stats-summary"></div>
-          <div class="progress-language">
-            <div class="category-picker category-picker--progress">
-              <button
-                type="button"
-                class="category-picker-btn"
-                aria-haspopup="listbox"
-                aria-expanded="false"
-                aria-controls="progress-category-picker-menu"
-              >
-                <span data-category-picker-label>Norwegian · Bokmål</span>
-                <span class="category-picker-chevron" aria-hidden="true"></span>
-              </button>
+          <div class="progress-prefs">
+            <div class="progress-language">
+              <div class="category-picker category-picker--progress">
+                <button
+                  type="button"
+                  class="category-picker-btn"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="progress-category-picker-menu"
+                >
+                  <span data-category-picker-label>Norwegian · Bokmål</span>
+                  <span class="category-picker-chevron" aria-hidden="true"></span>
+                </button>
+                <div
+                  class="category-picker-menu hidden"
+                  id="progress-category-picker-menu"
+                  role="listbox"
+                  aria-label="Choose what to learn"
+                ></div>
+              </div>
+            </div>
+
+            <div class="progress-voice" aria-labelledby="progress-voice-title">
+              <span class="progress-voice-label" id="progress-voice-title">Voice</span>
               <div
-                class="category-picker-menu hidden"
-                id="progress-category-picker-menu"
-                role="listbox"
-                aria-label="Choose what to learn"
-              ></div>
+                class="voice-gender-control"
+                id="voice-gender-control"
+                role="group"
+                aria-label="Voice"
+              >
+                <button
+                  type="button"
+                  class="voice-gender-option"
+                  data-voice-gender="female"
+                  aria-pressed="true"
+                >
+                  Female
+                </button>
+                <button
+                  type="button"
+                  class="voice-gender-option"
+                  data-voice-gender="male"
+                  aria-pressed="false"
+                >
+                  Male
+                </button>
+              </div>
             </div>
           </div>
-
-          <section class="progress-section progress-section--voice" aria-labelledby="progress-voice-title">
-            <h3 class="progress-section-title" id="progress-voice-title">Norwegian voice</h3>
-            <div
-              class="voice-gender-control"
-              id="voice-gender-control"
-              role="group"
-              aria-label="Norwegian voice"
-            >
-              <button
-                type="button"
-                class="voice-gender-option"
-                data-voice-gender="female"
-                aria-pressed="true"
-              >
-                Female
-              </button>
-              <button
-                type="button"
-                class="voice-gender-option"
-                data-voice-gender="male"
-                aria-pressed="false"
-              >
-                Male
-              </button>
-            </div>
-            <p class="voice-gender-hint">Used when you Hear words and sentences in Review and Read.</p>
-          </section>
 
           <section class="progress-section" aria-labelledby="progress-levels-title">
             <h3 class="progress-section-title" id="progress-levels-title">Leitner levels</h3>
@@ -661,6 +662,6 @@
     <script src="learning-categories.js?v=37"></script>
     <script src="read-stories.js?v=13"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=222"></script>
+    <script src="app.js?v=223"></script>
   </body>
 </html>

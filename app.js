@@ -2587,7 +2587,7 @@ function updateVoiceGenderUI() {
   const control = document.getElementById("voice-gender-control");
   if (control) {
     control.dataset.voiceGender = preferredVoiceGender;
-    control.setAttribute("aria-label", `Norwegian voice: ${label}`);
+    control.setAttribute("aria-label", `Voice: ${label}`);
   }
   document.querySelectorAll("[data-voice-gender]").forEach((btn) => {
     const on = btn.dataset.voiceGender === preferredVoiceGender;
