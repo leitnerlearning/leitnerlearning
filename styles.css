@@ -2985,21 +2985,23 @@ body.welcome-open .app {
   align-items: center;
   gap: 0.28rem;
   max-width: 100%;
+  /* Room for active chip border + glow so Yours is not clipped on the right */
+  padding: 0.12rem 0.2rem;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
-  scroll-padding-inline: 0.4rem;
+  scroll-padding-inline: 0.55rem;
 }
 
 .library-jump-track::-webkit-scrollbar {
   display: none;
 }
 
-/* Trailing spacer so horizontal scroll can park the last chip inside the bubble */
+/* Trailing spacer so the last chip (Yours) + its blue bubble fully clear the edge */
 .library-jump-track::after {
   content: "";
-  flex: 0 0 0.15rem;
+  flex: 0 0 0.55rem;
 }
 
 .library-jump-chip {
@@ -3021,6 +3023,7 @@ body.welcome-open .app {
   white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
+  /* Keep glow inside the scroll paint area instead of hard-clipping */
   transition:
     color 0.2s var(--ease),
     background 0.2s var(--ease),
@@ -3040,7 +3043,8 @@ body.welcome-open .app {
   color: #fff;
   background: var(--brand-gradient);
   border-color: transparent;
-  box-shadow: var(--shadow-brand);
+  /* Slightly tighter shadow so the pill doesn’t paint outside the track */
+  box-shadow: 0 4px 14px rgba(54, 95, 207, 0.28);
 }
 
 /* Shared Top control for long Library / Progress pages */
