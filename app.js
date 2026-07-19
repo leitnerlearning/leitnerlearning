@@ -5283,34 +5283,35 @@ function observeLibraryJumpSections(sections) {
   targets.forEach((el) => libraryJumpObserver.observe(el));
 }
 
+function isLibraryJumpBand(band) {
+  // Jump bar = deck bands only. Phrases / Yours are filters above, not jumps.
+  return typeof band === "string" && /^[A-G]$/.test(band);
+}
+
 function renderLibraryJumpNav(sections) {
   const nav = document.getElementById("library-jump");
   if (!nav) return;
 
-  if (sections.length < 2) {
+  const jumpSections = sections.filter(({ band }) => isLibraryJumpBand(band));
+  if (jumpSections.length < 2) {
     clearLibraryJumpNav();
     return;
   }
 
   nav.classList.remove("hidden");
-  const chips = sections
-    .map(({ band, label, cards }) => {
+  const chips = jumpSections
+    .map(({ band, label }) => {
       const key = librarySectionKey(band);
       const range = LIBRARY_JUMP_RANGE[key];
-      const yoursCount = key === "yours" ? cards.length : 0;
-      // Chip shows the name; hover adds range or Yours count (no name repeat).
-      let tip = range || "";
-      if (key === "yours" && yoursCount > 0) {
-        tip = yoursCount === 1 ? "1 card" : `${yoursCount} cards`;
-      }
-      const titleAttr = tip ? ` title="${escapeAttr(tip)}"` : "";
+      // Chip shows the name; hover adds rank range only.
+      const titleAttr = range ? ` title="${escapeAttr(range)}"` : "";
       return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}"${titleAttr}>${escapeHtml(label)}</button>`;
     })
     .join("");
   // Inner track = horizontal scroll on mobile only; outer nav stays sticky.
   nav.innerHTML = `<div class="library-jump-track">${chips}</div>`;
 
-  observeLibraryJumpSections(sections);
+  observeLibraryJumpSections(jumpSections);
 }
 
 function bindCardListListeners(list) {
@@ -5449,8 +5450,8 @@ function renderCardList() {
     const cards = filtered.filter((card) =>
       band === null ? !card.band : card.band === band
     );
-    // Always keep Yours in the jump bar (and as a section) on full library view,
-    // so layout does not jump when the first personal card is added.
+    // Keep empty Yours section on full library so the list layout stays stable
+    // when the first personal card is added (Yours itself is a filter, not a jump chip).
     const alwaysShowYours =
       band === null && libraryFilter === "all" && !searching;
     if (!cards.length && !alwaysShowYours) continue;
