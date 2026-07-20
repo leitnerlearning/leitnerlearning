@@ -1016,7 +1016,9 @@ main,
 
   .daily-goal-chip {
     min-height: 2.35rem;
-    padding: 0.35rem 0.85rem 0.35rem 0.7rem;
+    min-width: 3.5rem;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.9rem;
   }
 
   .daily-progress {
@@ -2094,12 +2096,9 @@ main {
 
   .daily-goal-chip {
     min-height: 2.25rem;
-    padding: 0.36rem 0.95rem 0.36rem 0.8rem;
-    font-size: 0.82rem;
-  }
-
-  .daily-goal-chip__label {
-    font-size: 0.7rem;
+    min-width: 3.65rem;
+    padding: 0.36rem 0.95rem;
+    font-size: 0.92rem;
   }
 
   .daily-progress {
@@ -2523,22 +2522,33 @@ main {
   line-height: 1.25;
 }
 
-/* Short action cue under the power logo — counts live in home stats below */
+/*
+ * Power cue under the logo:
+ *  Sentence case ("Start review") — not a headline, not ALL CAPS
+ *  Actionable: brand weight · Idle/done: quiet tertiary
+ */
 .power-on-hint {
   margin: 0;
   max-width: 14rem;
   padding: 0 0.35rem;
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   color: var(--text-secondary);
   line-height: 1.25;
   text-align: center;
+  text-transform: none;
+}
+
+.power-on-hint--action {
+  color: var(--brand-deep);
+  font-weight: 650;
 }
 
 .power-on-hint--idle {
   color: var(--text-tertiary);
   font-weight: 550;
+  font-size: 0.86rem;
 }
 
 .power-on-streak {
