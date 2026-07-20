@@ -246,6 +246,49 @@ main,
   z-index: 210;
 }
 
+/* Brief confirmation when switching language / learning track */
+.track-switch-toast {
+  position: fixed;
+  top: max(0.85rem, env(safe-area-inset-top, 0px));
+  left: 50%;
+  z-index: 300;
+  transform: translateX(-50%) translateY(-0.35rem);
+  max-width: min(92vw, 22rem);
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-glass-strong);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-md, var(--shadow-sm));
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 0.2s var(--ease, ease),
+    transform 0.22s var(--ease, ease);
+}
+
+.track-switch-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.track-switch-toast.hidden {
+  display: none;
+}
+
+.category-picker--progress .category-picker-btn.track-switch-flash {
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-color: transparent;
+}
+
 /*
  * Progress prefs: [ Language · Basics ] ………… [ Voice F | M ]
  * Language + Basics = tight pair. Voice = separate group. Shared control height.

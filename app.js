@@ -3160,6 +3160,69 @@ function celebrateGoalComplete() {
   triggerGoalHaptic();
 }
 
+/** Soft single tick — quieter than goal chime; confirms track switch. */
+function playTrackSwitchTick() {
+  const ctx = getGoalAudioContext();
+  if (!ctx) return;
+  if (ctx.state === "suspended") {
+    ctx.resume().catch(() => {});
+  }
+  const now = ctx.currentTime;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.055, now + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+  gain.connect(ctx.destination);
+  const oscillator = ctx.createOscillator();
+  oscillator.type = "sine";
+  oscillator.frequency.value = 660;
+  oscillator.connect(gain);
+  oscillator.start(now);
+  oscillator.stop(now + 0.16);
+}
+
+let trackSwitchToastTimer = null;
+
+function showTrackSwitchToast(label) {
+  const el = document.getElementById("track-switch-toast");
+  if (!el) return;
+  const text = String(label || "").trim();
+  if (!text) return;
+
+  if (trackSwitchToastTimer) {
+    window.clearTimeout(trackSwitchToastTimer);
+    trackSwitchToastTimer = null;
+  }
+
+  el.textContent = text;
+  el.classList.remove("hidden");
+  // Force reflow so the enter transition runs even on rapid switches.
+  void el.offsetWidth;
+  el.classList.add("is-visible");
+
+  document.querySelectorAll(".category-picker--progress .category-picker-btn").forEach((btn) => {
+    btn.classList.add("track-switch-flash");
+    window.setTimeout(() => btn.classList.remove("track-switch-flash"), 480);
+  });
+
+  trackSwitchToastTimer = window.setTimeout(() => {
+    trackSwitchToastTimer = null;
+    el.classList.remove("is-visible");
+    window.setTimeout(() => {
+      if (!el.classList.contains("is-visible")) el.classList.add("hidden");
+    }, 220);
+  }, 1500);
+}
+
+function announceTrackSwitch(category = getActiveCategory()) {
+  const label = category?.label || category?.learningLanguageName || "Language";
+  showTrackSwitchToast(label);
+  playTrackSwitchTick();
+  if (typeof navigator.vibrate === "function") {
+    navigator.vibrate(12);
+  }
+}
+
 function speakPromptForCard(card) {
   const labels = getDirectionLabels();
   speakText(getPromptDisplayText(card), labels.promptSpeechLang);
@@ -6880,6 +6943,7 @@ function switchCategory(nextCategoryId) {
   ensureReadState(true);
   startPractice();
   renderAll();
+  announceTrackSwitch(nextCategory);
 }
 
 function renderAll() {
