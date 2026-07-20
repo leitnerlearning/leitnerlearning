@@ -265,14 +265,17 @@ main,
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
+  align-items: center;
   justify-content: flex-start;
+  gap: 0.4rem;
   margin: 0;
 }
 
 .category-picker--progress {
   position: relative;
-  width: 100%;
-  max-width: 100%;
+  flex: 0 1 auto;
+  width: auto;
+  max-width: min(13.5rem, 52vw);
   margin: 0;
   display: block;
 }
@@ -292,14 +295,21 @@ main,
   background: var(--surface-glass-strong);
   border: 1px solid var(--border-strong);
   box-shadow: none;
+  transition:
+    color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
 }
 
 .category-picker--progress .category-picker-btn:hover,
+.category-picker--progress .category-picker-btn:focus-visible,
 .category-picker--progress .category-picker-btn[aria-expanded="true"] {
   color: var(--brand-deep);
   background: var(--brand-soft);
-  border-color: var(--brand-ring);
+  border-color: transparent;
   box-shadow: none;
+  outline: none;
 }
 
 .category-picker--progress [data-category-picker-label] {
@@ -318,6 +328,47 @@ main,
   min-width: min(100%, 16rem);
   width: max-content;
   max-width: min(20rem, 92vw);
+}
+
+/* Rest: clear on blue ambient. Hover: same soft blue as Voice Female/Male */
+.progress-basics-btn {
+  appearance: none;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.05rem;
+  padding: 0.32rem 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-glass-strong);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none;
+  transition:
+    color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease),
+    transform 0.12s ease;
+}
+
+.progress-basics-btn:hover,
+.progress-basics-btn:focus-visible {
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-color: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.progress-basics-btn:active {
+  transform: scale(0.98);
 }
 
 .progress-voice {
@@ -2447,6 +2498,151 @@ body.welcome-open .app {
 .about-contact-line a:focus-visible {
   text-decoration: underline;
   text-underline-offset: 0.15em;
+  outline: none;
+}
+
+/* Basics — same modal shell as About, roomier body for sound guide */
+.basics-card {
+  width: min(100%, 28rem);
+}
+
+.basics-modal-title {
+  margin: 0;
+  margin-right: auto;
+  padding-left: 0.35rem;
+  min-width: 0;
+  font-size: var(--text-sm, 0.9rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.basics-hint {
+  margin: 0 0 0.85rem;
+  font-size: var(--text-xs, 0.8rem);
+  line-height: var(--lh-tight);
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.basics-sound-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.basics-sound-list--compact {
+  gap: 0.45rem;
+}
+
+.basics-sound-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.55rem 0.6rem;
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.basics-glyph {
+  appearance: none;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--brand-ring);
+  border-radius: var(--radius-xs);
+  background: var(--brand-soft);
+  color: var(--brand-deep);
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.basics-glyph--sm {
+  min-width: 2.4rem;
+  min-height: 2.4rem;
+  font-size: 1.25rem;
+}
+
+.basics-glyph--pair {
+  min-width: 2.85rem;
+  font-size: 1.1rem;
+  letter-spacing: 0.02em;
+}
+
+.basics-glyph:hover,
+.basics-glyph:focus-visible {
+  background: color-mix(in srgb, var(--brand) 18%, white);
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+
+.basics-glyph:active {
+  transform: scale(0.96);
+}
+
+.basics-sound-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.basics-sound-approx {
+  margin: 0.1rem 0 0.25rem !important;
+  font-size: var(--text-sm) !important;
+  line-height: var(--lh-body) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Letter callouts: avoid italic r/) merge in “not English r” */
+.basics-letter {
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0 0.06em;
+}
+
+.basics-sound-examples {
+  margin: 0 !important;
+  font-size: var(--text-xs, 0.8rem) !important;
+  line-height: 1.45 !important;
+  color: var(--text-tertiary) !important;
+}
+
+.basics-word {
+  appearance: none;
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--brand-deep);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--brand) 35%, transparent);
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+.basics-word:hover,
+.basics-word:focus-visible {
+  color: var(--brand);
+  text-decoration-color: var(--brand);
   outline: none;
 }
 

@@ -7190,6 +7190,19 @@ function initEventListeners() {
     if (e.target.id === "about-modal") closeAboutModal();
   });
 
+  document.getElementById("progress-basics-btn")?.addEventListener("click", () =>
+    openBasicsModal("progress-basics-btn")
+  );
+  document.getElementById("basics-close-btn")?.addEventListener("click", () => closeBasicsModal());
+  document.getElementById("basics-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "basics-modal") closeBasicsModal();
+    const speakBtn = e.target.closest("[data-speak]");
+    if (speakBtn && e.currentTarget.contains(speakBtn)) {
+      e.preventDefault();
+      speakForeign(speakBtn.getAttribute("data-speak"));
+    }
+  });
+
   document.getElementById("daily-goal-chip")?.addEventListener("click", () => openGoalCapModal());
   document.getElementById("goal-cap-close-btn")?.addEventListener("click", () => closeGoalCapModal());
   document.getElementById("goal-cap-modal")?.addEventListener("click", (e) => {
@@ -7203,6 +7216,11 @@ function initEventListeners() {
 
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
+      const basics = document.getElementById("basics-modal");
+      if (basics && !basics.classList.contains("hidden")) {
+        closeBasicsModal();
+        return;
+      }
       const welcome = document.getElementById("welcome-modal");
       if (welcome && !welcome.classList.contains("hidden")) return;
       if (isGoalCapOpen()) {
@@ -7423,6 +7441,7 @@ function closeGoalCapModal() {
 
 function openAboutModal() {
   if (isWelcomeOpen()) return;
+  closeBasicsModal({ restoreFocus: false });
   const modal = document.getElementById("about-modal");
   if (!modal) return;
   // Language only — no "free" claim (pricing may change later).
@@ -7436,15 +7455,60 @@ function openAboutModal() {
   document.getElementById("about-close-btn")?.focus({ preventScroll: true });
 }
 
-function closeAboutModal() {
+function closeAboutModal(options = {}) {
+  const { restoreFocus = true } = options;
   const modal = document.getElementById("about-modal");
   if (!modal) return;
+  const wasOpen = !modal.classList.contains("hidden");
   modal.classList.add("hidden");
-  if (!isWelcomeOpen()) {
+  if (!isWelcomeOpen() && !isBasicsOpen()) {
     const confirmOpen = !document.getElementById("confirm-modal")?.classList.contains("hidden");
     if (!confirmOpen) document.body.classList.remove("modal-open");
   }
-  document.getElementById("about-open-btn")?.focus({ preventScroll: true });
+  if (restoreFocus && wasOpen) {
+    document.getElementById("about-open-btn")?.focus({ preventScroll: true });
+  }
+}
+
+/** @type {string | null} */
+let basicsReturnFocusId = null;
+
+function isBasicsOpen() {
+  const modal = document.getElementById("basics-modal");
+  return Boolean(modal && !modal.classList.contains("hidden"));
+}
+
+function openBasicsModal(returnFocusId) {
+  if (isWelcomeOpen()) return;
+  closeAboutModal({ restoreFocus: false });
+  const modal = document.getElementById("basics-modal");
+  if (!modal) return;
+  basicsReturnFocusId = returnFocusId || "progress-basics-btn";
+  const title = document.getElementById("basics-title");
+  if (title) {
+    title.textContent = getActiveCategory()?.label || "Norwegian · Bokmål";
+  }
+  modal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+  document.getElementById("basics-close-btn")?.focus({ preventScroll: true });
+}
+
+function closeBasicsModal(options = {}) {
+  const { restoreFocus = true } = options;
+  const modal = document.getElementById("basics-modal");
+  if (!modal || modal.classList.contains("hidden")) return;
+  modal.classList.add("hidden");
+  stopAllSpeech();
+  if (!isWelcomeOpen()) {
+    const aboutOpen = !document.getElementById("about-modal")?.classList.contains("hidden");
+    const confirmOpen = !document.getElementById("confirm-modal")?.classList.contains("hidden");
+    if (!aboutOpen && !confirmOpen) document.body.classList.remove("modal-open");
+  }
+  if (restoreFocus) {
+    const focusId = basicsReturnFocusId || "progress-basics-btn";
+    document.getElementById(focusId)?.focus({ preventScroll: true });
+  }
+  basicsReturnFocusId = null;
 }
 
 function showWelcomeModal() {

@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=161" />
+    <link rel="stylesheet" href="styles.css?v=170" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -458,6 +458,16 @@
                   aria-label="Choose what to learn"
                 ></div>
               </div>
+              <button
+                type="button"
+                class="progress-basics-btn"
+                id="progress-basics-btn"
+                aria-haspopup="dialog"
+                aria-controls="basics-modal"
+                aria-label="Language basics"
+              >
+                Basics
+              </button>
             </div>
 
             <div class="progress-voice" aria-labelledby="progress-voice-title">
@@ -659,11 +669,187 @@
       </div>
     </div>
 
+    <div
+      class="about-modal hidden"
+      id="basics-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="basics-title"
+    >
+      <div class="about-card basics-card">
+        <div class="about-card-head">
+          <h2 class="basics-modal-title" id="basics-title">Norwegian · Bokmål</h2>
+          <button type="button" class="btn ghost small" id="basics-close-btn">Close</button>
+        </div>
+        <div class="about-body">
+          <p class="basics-hint">Tap blue to hear.</p>
+
+          <section class="about-section" aria-labelledby="basics-special-title">
+            <h3 class="about-section-title" id="basics-special-title">Special letters</h3>
+            <ul class="basics-sound-list">
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph" data-speak="æ" aria-label="Hear æ">æ</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx"><strong>a</strong> in <em>cat</em></p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="ære">ære</button>
+                    honor ·
+                    <button type="button" class="basics-word" data-speak="være">være</button>
+                    be
+                  </p>
+                </div>
+              </li>
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph" data-speak="ø" aria-label="Hear ø">ø</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx"><strong>uh</strong>, lips rounded</p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="øl">øl</button>
+                    beer ·
+                    <button type="button" class="basics-word" data-speak="søster">søster</button>
+                    sister
+                  </p>
+                </div>
+              </li>
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph" data-speak="å" aria-label="Hear å">å</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx"><strong>o</strong> in <em>or</em></p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="år">år</button>
+                    year ·
+                    <button type="button" class="basics-word" data-speak="gå">gå</button>
+                    go
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section class="about-section" aria-labelledby="basics-lookalike-title">
+            <h3 class="about-section-title" id="basics-lookalike-title">Same shape, different sound</h3>
+            <ul class="basics-sound-list basics-sound-list--compact">
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph basics-glyph--sm" data-speak="j" aria-label="Hear j">j</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx"><strong>y</strong> in <em>yes</em></p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="ja">ja</button>
+                    yes ·
+                    <button type="button" class="basics-word" data-speak="jeg">jeg</button>
+                    I
+                  </p>
+                </div>
+              </li>
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph basics-glyph--sm" data-speak="y" aria-label="Hear y">y</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx"><strong>ee</strong> in <em>see</em>, lips rounded</p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="by">by</button>
+                    town ·
+                    <button type="button" class="basics-word" data-speak="syk">syk</button>
+                    sick
+                  </p>
+                </div>
+              </li>
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph basics-glyph--sm" data-speak="r" aria-label="Hear r">r</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx">Tapped or rolled · not English <span class="basics-letter">r</span></p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="rød">rød</button>
+                    red ·
+                    <button type="button" class="basics-word" data-speak="bra">bra</button>
+                    good
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section class="about-section" aria-labelledby="basics-pairs-title">
+            <h3 class="about-section-title" id="basics-pairs-title">Letter pairs</h3>
+            <ul class="basics-sound-list basics-sound-list--compact">
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph basics-glyph--pair" data-speak="kj" aria-label="Hear kj">kj</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx">Soft <strong>h</strong> in <em>huge</em> (<em>hyuge</em>)</p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="kjøpe">kjøpe</button>
+                    buy ·
+                    <button type="button" class="basics-word" data-speak="kjøkken">kjøkken</button>
+                    kitchen
+                  </p>
+                </div>
+              </li>
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph basics-glyph--pair" data-speak="skje" aria-label="Hear skje">skj</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx"><strong>sh</strong> · same for <em>ski</em>, <em>sky</em></p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="skje">skje</button>
+                    spoon ·
+                    <button type="button" class="basics-word" data-speak="ski">ski</button>
+                    ·
+                    <button type="button" class="basics-word" data-speak="sky">sky</button>
+                    cloud
+                  </p>
+                </div>
+              </li>
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph basics-glyph--pair" data-speak="skole" aria-label="Hear skole">sk</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx">Hard <strong>sk</strong> before a/o/u</p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="skole">skole</button>
+                    school ·
+                    <button type="button" class="basics-word" data-speak="skatt">skatt</button>
+                    tax
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <section class="about-section" aria-labelledby="basics-glides-title">
+            <h3 class="about-section-title" id="basics-glides-title">Two-letter vowels</h3>
+            <ul class="basics-sound-list basics-sound-list--compact">
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph basics-glyph--pair" data-speak="ei" aria-label="Hear ei">ei</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx">Like <strong>ay</strong> in <em>say</em></p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="nei">nei</button>
+                    no ·
+                    <button type="button" class="basics-word" data-speak="vei">vei</button>
+                    road
+                  </p>
+                </div>
+              </li>
+              <li class="basics-sound-row">
+                <button type="button" class="basics-glyph basics-glyph--pair" data-speak="øy" aria-label="Hear øy">øy</button>
+                <div class="basics-sound-copy">
+                  <p class="basics-sound-approx"><strong>ø</strong> then a quick <strong>y</strong> (yes-sound)</p>
+                  <p class="basics-sound-examples">
+                    <button type="button" class="basics-word" data-speak="høy">høy</button>
+                    high ·
+                    <button type="button" class="basics-word" data-speak="øy">øy</button>
+                    island
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </div>
+
     <script src="norwegian-frequency-deck.js?v=25"></script>
     <script src="norwegian-reading-vocab.js?v=6"></script>
     <script src="learning-categories.js?v=37"></script>
     <script src="read-stories.js?v=13"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=223"></script>
+    <script src="app.js?v=232"></script>
   </body>
 </html>
