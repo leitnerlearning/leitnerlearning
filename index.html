@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=202" />
+    <link rel="stylesheet" href="styles.css?v=203" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -256,6 +256,24 @@
         </section>
 
         <section id="read-panel" class="panel" role="tabpanel" hidden>
+          <!-- Shown when this language has no stories (or none loadable) -->
+          <div class="read-empty hidden" id="read-empty" hidden>
+            <div class="read-empty-card">
+              <span class="read-empty-flag" data-read-empty-flag aria-hidden="true">🇳🇴</span>
+              <h2 class="read-empty-title" id="read-empty-title">No stories yet</h2>
+              <p class="read-empty-copy" id="read-empty-copy">
+                Reading for this language is still being prepared.
+              </p>
+              <button
+                type="button"
+                class="btn secondary read-empty-browse hidden"
+                id="read-empty-browse"
+              >
+                Browse stories
+              </button>
+            </div>
+          </div>
+
           <div class="read-shell">
             <header class="read-header">
               <!-- One segmented bar: difficulty | flag + story (language switch stays on Progress) -->
@@ -759,6 +777,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=263"></script>
+    <script src="app.js?v=264"></script>
   </body>
 </html>

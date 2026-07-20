@@ -3343,6 +3343,9 @@ function updateReadLanguageIndicator(category = getActiveCategory()) {
   document.querySelectorAll("[data-read-language-label]").forEach((node) => {
     node.textContent = label;
   });
+  document.querySelectorAll("[data-read-empty-flag]").forEach((node) => {
+    node.textContent = flag;
+  });
 
   const storyBtn = document.getElementById("read-story-select");
   const titleEl = document.getElementById("read-story-title");
@@ -3355,6 +3358,15 @@ function updateReadLanguageIndicator(category = getActiveCategory()) {
         : `Choose ${label} story`
     );
     storyBtn.title = `${label} stories`;
+  }
+
+  // Keep empty-state copy in sync if Read is open with no stories
+  const empty = document.getElementById("read-empty");
+  if (empty && !empty.hidden) {
+    const copyEl = document.getElementById("read-empty-copy");
+    if (copyEl && !getStoriesForCategory().length) {
+      copyEl.textContent = `Reading for ${label} is still being prepared.`;
+    }
   }
 }
 
@@ -6785,19 +6797,56 @@ function renderReadHeader(story) {
   updateReadStoryStatus(story);
 }
 
+function setReadEmptyVisible(show, { title = "", copy = "", showBrowse = false } = {}) {
+  const empty = document.getElementById("read-empty");
+  const shell = document.querySelector(".read-shell");
+  if (!empty) return;
+
+  empty.classList.toggle("hidden", !show);
+  empty.hidden = !show;
+  if (shell) shell.classList.toggle("hidden", show);
+
+  if (!show) return;
+
+  const category = getActiveCategory();
+  const flagEl = empty.querySelector("[data-read-empty-flag]");
+  const titleEl = document.getElementById("read-empty-title");
+  const copyEl = document.getElementById("read-empty-copy");
+  const browseBtn = document.getElementById("read-empty-browse");
+
+  if (flagEl) flagEl.textContent = category?.flag || "🏳️";
+  if (titleEl) titleEl.textContent = title || "No stories yet";
+  if (copyEl) {
+    copyEl.textContent =
+      copy ||
+      `Reading for ${category?.label || "this language"} is still being prepared.`;
+  }
+  if (browseBtn) {
+    browseBtn.classList.toggle("hidden", !showBrowse);
+  }
+}
+
 function renderReadPanel() {
   const panel = document.getElementById("read-panel");
   if (!panel) return;
 
   ensureReadState();
+  const stories = getStoriesForCategory();
   const story = getActiveReadStory();
   const shell = panel.querySelector(".read-shell");
 
-  if (!story) {
+  // No pack stories (or broken story) — calm empty, not a blank panel
+  if (!stories.length || !story?.sentences?.length) {
     closeReadMenu();
-    if (shell) shell.classList.add("hidden");
+    setReadEmptyVisible(true, {
+      title: "No stories yet",
+      copy: `Reading for ${getActiveCategory()?.label || "this language"} is still being prepared.`,
+      showBrowse: false,
+    });
     return;
   }
+
+  setReadEmptyVisible(false);
 
   if (shell) shell.classList.remove("hidden");
 
@@ -7735,6 +7784,21 @@ function initEventListeners() {
     readShowEnglish = !readShowEnglish;
     updateReadEnglishToggle();
     saveReadProgress();
+  });
+
+  document.getElementById("read-empty-browse")?.addEventListener("click", () => {
+    const stories = getStoriesForCategory();
+    if (!stories.length) return;
+    // Prefer a real story view if one can load
+    ensureReadState(true);
+    const story = getActiveReadStory();
+    if (story?.sentences?.length) {
+      setReadEmptyVisible(false);
+      renderReadPanel();
+      openReadMenu(true);
+      return;
+    }
+    openReadMenu(true);
   });
 
   document.getElementById("read-hear-sentence")?.addEventListener("click", () => {
