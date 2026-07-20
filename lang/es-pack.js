@@ -1,0 +1,1833 @@
+(function () {
+  const id = "es";
+  window.STARTER_DECKS = window.STARTER_DECKS || {};
+  window.STARTER_DECKS[id] = [
+    { foreign: 'de', native: 'of / from', rank: 1, category: 'preposition', band: 'A' },
+    { foreign: 'que', native: 'that / than / what', rank: 2, category: 'pronoun', band: 'A' },
+    { foreign: 'no', native: 'no / not', rank: 3, category: 'particle', band: 'A' },
+    { foreign: 'a', native: 'to / at', rank: 4, category: 'preposition', band: 'A' },
+    { foreign: 'la', native: 'the (fem.) / her / it', rank: 5, category: 'pronoun', band: 'A' },
+    { foreign: 'el', native: 'the (masc.)', rank: 6, category: 'pronoun', band: 'A' },
+    { foreign: 'y', native: 'and', rank: 7, category: 'connector', band: 'A' },
+    { foreign: 'es', native: 'is', rank: 8, category: 'verb', band: 'A' },
+    { foreign: 'en', native: 'in / on / at', rank: 9, category: 'preposition', band: 'A' },
+    { foreign: 'lo', native: 'it / him (obj.)', rank: 10, category: 'pronoun', band: 'A' },
+    { foreign: 'un', native: 'a / one (masc.)', rank: 11, category: 'number', band: 'A' },
+    { foreign: 'por', native: 'for / by / through', rank: 12, category: 'preposition', band: 'A' },
+    { foreign: 'qué', native: 'what', rank: 13, category: 'question', band: 'A' },
+    { foreign: 'me', native: 'me', rank: 14, category: 'pronoun', band: 'A' },
+    { foreign: 'una', native: 'a / one (fem.)', rank: 15, category: 'number', band: 'A' },
+    { foreign: 'los', native: 'the (masc. pl.) / them', rank: 16, category: 'pronoun', band: 'A' },
+    { foreign: 'se', native: 'oneself', rank: 17, category: 'pronoun', band: 'A' },
+    { foreign: 'te', native: 'you (obj.)', rank: 18, category: 'pronoun', band: 'A' },
+    { foreign: 'con', native: 'with', rank: 19, category: 'preposition', band: 'A' },
+    { foreign: 'para', native: 'for / in order to', rank: 20, category: 'preposition', band: 'A' },
+    { foreign: 'está', native: 'is (location/state)', rank: 21, category: 'verb', band: 'A' },
+    { foreign: 'mi', native: 'my', rank: 22, category: 'pronoun', band: 'A' },
+    { foreign: 'pero', native: 'but', rank: 23, category: 'connector', band: 'A' },
+    { foreign: 'sí', native: 'yes', rank: 24, category: 'pronoun', band: 'A' },
+    { foreign: 'si', native: 'if', rank: 25, category: 'connector', band: 'A' },
+    { foreign: 'bien', native: 'well / good', rank: 26, category: 'adverb', band: 'A' },
+    { foreign: 'eso', native: 'that (neuter)', rank: 27, category: 'pronoun', band: 'A' },
+    { foreign: 'su', native: 'his / her / your / their', rank: 28, category: 'pronoun', band: 'A' },
+    { foreign: 'las', native: 'the (fem. pl.) / them', rank: 29, category: 'pronoun', band: 'A' },
+    { foreign: 'yo', native: 'I', rank: 30, category: 'pronoun', band: 'A' },
+    { foreign: 'del', native: 'of the', rank: 31, category: 'pronoun', band: 'A' },
+    { foreign: 'como', native: 'like / as / how', rank: 32, category: 'connector', band: 'A' },
+    { foreign: 'aquí', native: 'here', rank: 33, category: 'adverb', band: 'A' },
+    { foreign: 'tu', native: 'your', rank: 34, category: 'pronoun', band: 'A' },
+    { foreign: 'al', native: 'to the', rank: 35, category: 'pronoun', band: 'A' },
+    { foreign: 'más', native: 'more', rank: 36, category: 'adverb', band: 'A' },
+    { foreign: 'le', native: 'to him / her / you', rank: 37, category: 'pronoun', band: 'A' },
+    { foreign: 'esto', native: 'this (neuter)', rank: 38, category: 'pronoun', band: 'A' },
+    { foreign: 'todo', native: 'all / everything', rank: 39, category: 'pronoun', band: 'A' },
+    { foreign: 'ya', native: 'already / now', rank: 40, category: 'connector', band: 'A' },
+    { foreign: 'estoy', native: 'I am (state/location)', rank: 41, category: 'verb', band: 'A' },
+    { foreign: 'ahora', native: 'now', rank: 42, category: 'adverb', band: 'A' },
+    { foreign: 'muy', native: 'very', rank: 43, category: 'adverb', band: 'A' },
+    { foreign: 'ha', native: 'has', rank: 44, category: 'verb', band: 'A' },
+    { foreign: 'esta', native: 'this (fem.)', rank: 45, category: 'pronoun', band: 'A' },
+    { foreign: 'así', native: 'like this / so', rank: 46, category: 'connector', band: 'A' },
+    { foreign: 'algo', native: 'something', rank: 47, category: 'pronoun', band: 'A' },
+    { foreign: 'hay', native: 'there is / there are', rank: 48, category: 'noun', band: 'A' },
+    { foreign: 'bueno', native: 'good', rank: 49, category: 'particle', band: 'A' },
+    { foreign: 'tengo', native: 'I have', rank: 50, category: 'verb', band: 'A' },
+    { foreign: 'él', native: 'he', rank: 51, category: 'pronoun', band: 'A' },
+    { foreign: 'cuando', native: 'when', rank: 52, category: 'connector', band: 'A' },
+    { foreign: 'estás', native: 'you are (state)', rank: 53, category: 'verb', band: 'A' },
+    { foreign: 'sé', native: 'I know', rank: 54, category: 'verb', band: 'A' },
+    { foreign: 'tú', native: 'you', rank: 55, category: 'pronoun', band: 'A' },
+    { foreign: 'nos', native: 'us', rank: 56, category: 'pronoun', band: 'A' },
+    { foreign: 'nada', native: 'nothing', rank: 57, category: 'pronoun', band: 'A' },
+    { foreign: 'cómo', native: 'how', rank: 58, category: 'question', band: 'A' },
+    { foreign: 'este', native: 'this (masc.)', rank: 59, category: 'pronoun', band: 'A' },
+    { foreign: 'o', native: 'or', rank: 60, category: 'connector', band: 'A' },
+    { foreign: 'he', native: 'I have (aux.)', rank: 61, category: 'verb', band: 'A' },
+    { foreign: 'ser', native: 'to be (essence)', rank: 62, category: 'verb', band: 'A' },
+    { foreign: 'tiene', native: 'has', rank: 63, category: 'verb', band: 'A' },
+    { foreign: 'puedo', native: 'I can', rank: 64, category: 'verb', band: 'A' },
+    { foreign: 'ella', native: 'she', rank: 65, category: 'pronoun', band: 'A' },
+    { foreign: 'quiero', native: 'I want', rank: 66, category: 'verb', band: 'A' },
+    { foreign: 'hacer', native: 'to do / to make', rank: 67, category: 'verb', band: 'A' },
+    { foreign: 'fue', native: 'was / went', rank: 68, category: 'verb', band: 'A' },
+    { foreign: 'gracias', native: 'thank you', rank: 69, category: 'noun', band: 'A' },
+    { foreign: 'vez', native: 'time (occasion)', rank: 70, category: 'noun', band: 'A' },
+    { foreign: 'era', native: 'was', rank: 71, category: 'verb', band: 'A' },
+    { foreign: 'soy', native: 'I am', rank: 72, category: 'verb', band: 'A' },
+    { foreign: 'sólo', native: 'only', rank: 73, category: 'adverb', band: 'A' },
+    { foreign: 'todos', native: 'all / everyone', rank: 74, category: 'pronoun', band: 'A' },
+    { foreign: 'porque', native: 'because', rank: 75, category: 'connector', band: 'A' },
+    { foreign: 'son', native: 'are', rank: 76, category: 'verb', band: 'A' },
+    { foreign: 'tienes', native: 'you have', rank: 77, category: 'verb', band: 'A' },
+    { foreign: 'creo', native: 'I believe / I think', rank: 78, category: 'verb', band: 'A' },
+    { foreign: 'voy', native: 'I go', rank: 79, category: 'verb', band: 'A' },
+    { foreign: 'sabes', native: 'you know', rank: 80, category: 'verb', band: 'A' },
+    { foreign: 'estaba', native: 'was (state)', rank: 81, category: 'verb', band: 'A' },
+    { foreign: 'puede', native: 'can', rank: 82, category: 'verb', band: 'A' },
+    { foreign: 'eres', native: 'you are', rank: 83, category: 'verb', band: 'A' },
+    { foreign: 'ese', native: 'that (masc.)', rank: 84, category: 'pronoun', band: 'A' },
+    { foreign: 'usted', native: 'you (formal)', rank: 85, category: 'pronoun', band: 'A' },
+    { foreign: 'entonces', native: 'then / so', rank: 86, category: 'connector', band: 'A' },
+    { foreign: 'hola', native: 'hello', rank: 87, category: 'noun', band: 'A' },
+    { foreign: 'solo', native: 'alone / only', rank: 88, category: 'adverb', band: 'A' },
+    { foreign: 'verdad', native: 'truth / right?', rank: 89, category: 'adjective', band: 'A' },
+    { foreign: 'casa', native: 'house / home', rank: 90, category: 'noun', band: 'A' },
+    { foreign: 'tan', native: 'so', rank: 91, category: 'noun', band: 'A' },
+    { foreign: 'quién', native: 'who', rank: 92, category: 'question', band: 'A' },
+    { foreign: 'sus', native: 'his / her / their (pl.)', rank: 93, category: 'pronoun', band: 'A' },
+    { foreign: 'tiempo', native: 'time / weather', rank: 94, category: 'noun', band: 'A' },
+    { foreign: 'dos', native: 'two', rank: 95, category: 'number', band: 'A' },
+    { foreign: 'esa', native: 'that (fem.)', rank: 96, category: 'pronoun', band: 'A' },
+    { foreign: 'nunca', native: 'never', rank: 97, category: 'adverb', band: 'A' },
+    { foreign: 'dónde', native: 'where', rank: 98, category: 'question', band: 'A' },
+    { foreign: 'va', native: 'goes', rank: 99, category: 'verb', band: 'A' },
+    { foreign: 'favor', native: 'favor / please', rank: 100, category: 'noun', band: 'A' },
+    { foreign: 'mucho', native: 'a lot / much', rank: 101, category: 'adverb', band: 'B' },
+    { foreign: 'mí', native: 'me (after prep.)', rank: 102, category: 'pronoun', band: 'B' },
+    { foreign: 'quieres', native: 'you want', rank: 103, category: 'verb', band: 'B' },
+    { foreign: 'señor', native: 'sir / mister', rank: 104, category: 'noun', band: 'B' },
+    { foreign: 'mejor', native: 'better', rank: 105, category: 'adverb', band: 'B' },
+    { foreign: 'hace', native: 'does / makes / ago', rank: 106, category: 'verb', band: 'B' },
+    { foreign: 'has', native: 'you have (aux.)', rank: 107, category: 'verb', band: 'B' },
+    { foreign: 'decir', native: 'to say', rank: 108, category: 'verb', band: 'B' },
+    { foreign: 'también', native: 'also', rank: 109, category: 'connector', band: 'B' },
+    { foreign: 'sobre', native: 'on / about', rank: 110, category: 'preposition', band: 'B' },
+    { foreign: 'dios', native: 'God', rank: 111, category: 'noun', band: 'B' },
+    { foreign: 'sin', native: 'without', rank: 112, category: 'preposition', band: 'B' },
+    { foreign: 'tenemos', native: 'we have', rank: 113, category: 'verb', band: 'B' },
+    { foreign: 'están', native: 'are (location/state)', rank: 114, category: 'verb', band: 'B' },
+    { foreign: 'ti', native: 'you (after prep.)', rank: 115, category: 'pronoun', band: 'B' },
+    { foreign: 'puedes', native: 'you can', rank: 116, category: 'verb', band: 'B' },
+    { foreign: 'ver', native: 'to see', rank: 117, category: 'verb', band: 'B' },
+    { foreign: 'hombre', native: 'man', rank: 118, category: 'noun', band: 'B' },
+    { foreign: 'vida', native: 'life', rank: 119, category: 'noun', band: 'B' },
+    { foreign: 'alguien', native: 'someone', rank: 120, category: 'pronoun', band: 'B' },
+    { foreign: 'cosas', native: 'things', rank: 121, category: 'noun', band: 'B' },
+    { foreign: 'siempre', native: 'always', rank: 122, category: 'adverb', band: 'B' },
+    { foreign: 'hasta', native: 'until / even', rank: 123, category: 'preposition', band: 'B' },
+    { foreign: 'ahí', native: 'there', rank: 124, category: 'adverb', band: 'B' },
+    { foreign: 'ir', native: 'to go', rank: 125, category: 'verb', band: 'B' },
+    { foreign: 'años', native: 'years', rank: 126, category: 'noun', band: 'B' },
+    { foreign: 'antes', native: 'before', rank: 127, category: 'adverb', band: 'B' },
+    { foreign: 'estar', native: 'to be (state/location)', rank: 128, category: 'verb', band: 'B' },
+    { foreign: 'ni', native: 'nor / not even', rank: 129, category: 'connector', band: 'B' },
+    { foreign: 'poco', native: 'little', rank: 130, category: 'adverb', band: 'B' },
+    { foreign: 'día', native: 'day', rank: 131, category: 'noun', band: 'B' },
+    { foreign: 'uno', native: 'one', rank: 132, category: 'number', band: 'B' },
+    { foreign: 'noche', native: 'night', rank: 133, category: 'noun', band: 'B' },
+    { foreign: 'hecho', native: 'done / fact', rank: 134, category: 'verb', band: 'B' },
+    { foreign: 'mis', native: 'my (pl.)', rank: 135, category: 'pronoun', band: 'B' },
+    { foreign: 'estamos', native: 'we are (state)', rank: 136, category: 'verb', band: 'B' },
+    { foreign: 'otra', native: 'other (fem.)', rank: 137, category: 'pronoun', band: 'B' },
+    { foreign: 'acuerdo', native: 'agreement', rank: 138, category: 'noun', band: 'B' },
+    { foreign: 'trabajo', native: 'work / job', rank: 139, category: 'verb', band: 'B' },
+    { foreign: 'nosotros', native: 'we', rank: 140, category: 'pronoun', band: 'B' },
+    { foreign: 'parece', native: 'seems', rank: 141, category: 'verb', band: 'B' },
+    { foreign: 'gente', native: 'people', rank: 142, category: 'adjective', band: 'B' },
+    { foreign: 'sea', native: 'be (subjunctive)', rank: 143, category: 'verb', band: 'B' },
+    { foreign: 'padre', native: 'father', rank: 144, category: 'noun', band: 'B' },
+    { foreign: 'mira', native: 'look', rank: 145, category: 'verb', band: 'B' },
+    { foreign: 'mismo', native: 'same', rank: 146, category: 'pronoun', band: 'B' },
+    { foreign: 'dijo', native: 'said', rank: 147, category: 'verb', band: 'B' },
+    { foreign: 'nadie', native: 'nobody', rank: 148, category: 'pronoun', band: 'B' },
+    { foreign: 'quiere', native: 'wants', rank: 149, category: 'verb', band: 'B' },
+    { foreign: 'podría', native: 'could', rank: 150, category: 'verb', band: 'B' },
+    { foreign: 'hablar', native: 'to speak', rank: 151, category: 'verb', band: 'B' },
+    { foreign: 'vas', native: 'you go', rank: 152, category: 'verb', band: 'B' },
+    { foreign: 'ellos', native: 'they', rank: 153, category: 'pronoun', band: 'B' },
+    { foreign: 'tal', native: 'such', rank: 154, category: 'noun', band: 'B' },
+    { foreign: 'pasa', native: 'happens / passes', rank: 155, category: 'verb', band: 'B' },
+    { foreign: 'fuera', native: 'outside', rank: 156, category: 'adverb', band: 'B' },
+    { foreign: 'después', native: 'after', rank: 157, category: 'adverb', band: 'B' },
+    { foreign: 'han', native: 'they have (aux.)', rank: 158, category: 'verb', band: 'B' },
+    { foreign: 'desde', native: 'from / since', rank: 159, category: 'preposition', band: 'B' },
+    { foreign: 'dinero', native: 'money', rank: 160, category: 'noun', band: 'B' },
+    { foreign: 'mundo', native: 'world', rank: 161, category: 'noun', band: 'B' },
+    { foreign: 'claro', native: 'clear / of course', rank: 162, category: 'particle', band: 'B' },
+    { foreign: 'momento', native: 'moment', rank: 163, category: 'noun', band: 'B' },
+    { foreign: 'les', native: 'to them / you pl.', rank: 164, category: 'pronoun', band: 'B' },
+    { foreign: 'tener', native: 'to have', rank: 165, category: 'verb', band: 'B' },
+    { foreign: 'estado', native: 'been / state', rank: 166, category: 'verb', band: 'B' },
+    { foreign: 'otro', native: 'other', rank: 167, category: 'pronoun', band: 'B' },
+    { foreign: 'había', native: 'there was / had', rank: 168, category: 'verb', band: 'B' },
+    { foreign: 'mañana', native: 'tomorrow / morning', rank: 169, category: 'adverb', band: 'B' },
+    { foreign: 'tenía', native: 'had', rank: 170, category: 'verb', band: 'B' },
+    { foreign: 'madre', native: 'mother', rank: 171, category: 'noun', band: 'B' },
+    { foreign: 'vale', native: 'okay', rank: 172, category: 'particle', band: 'B' },
+    { foreign: 'lugar', native: 'place', rank: 173, category: 'noun', band: 'B' },
+    { foreign: 'haciendo', native: 'doing', rank: 174, category: 'noun', band: 'B' },
+    { foreign: 'donde', native: 'where (relative)', rank: 175, category: 'noun', band: 'B' },
+    { foreign: 'seguro', native: 'safe / insurance', rank: 176, category: 'noun', band: 'B' },
+    { foreign: 'sabe', native: 'knows', rank: 177, category: 'verb', band: 'B' },
+    { foreign: 'podemos', native: 'we can', rank: 178, category: 'verb', band: 'B' },
+    { foreign: 'tus', native: 'your (pl.)', rank: 179, category: 'pronoun', band: 'B' },
+    { foreign: 'espera', native: 'wait', rank: 180, category: 'verb', band: 'B' },
+    { foreign: 'nuevo', native: 'new', rank: 181, category: 'adjective', band: 'B' },
+    { foreign: 'sido', native: 'been', rank: 182, category: 'verb', band: 'B' },
+    { foreign: 'cosa', native: 'thing', rank: 183, category: 'adjective', band: 'B' },
+    { foreign: 'hijo', native: 'son / child', rank: 184, category: 'noun', band: 'B' },
+    { foreign: 'allí', native: 'there', rank: 185, category: 'adverb', band: 'B' },
+    { foreign: 'menos', native: 'less', rank: 186, category: 'adverb', band: 'B' },
+    { foreign: 'tipo', native: 'type / guy', rank: 187, category: 'noun', band: 'B' },
+    { foreign: 'amigo', native: 'friend', rank: 188, category: 'noun', band: 'B' },
+    { foreign: 'gran', native: 'great / big', rank: 189, category: 'adjective', band: 'B' },
+    { foreign: 'nuestro', native: 'our', rank: 190, category: 'pronoun', band: 'B' },
+    { foreign: 'mujer', native: 'woman', rank: 191, category: 'noun', band: 'B' },
+    { foreign: 'mamá', native: 'mom', rank: 192, category: 'noun', band: 'B' },
+    { foreign: 'luego', native: 'later', rank: 193, category: 'connector', band: 'B' },
+    { foreign: 'papá', native: 'dad', rank: 194, category: 'noun', band: 'B' },
+    { foreign: 'días', native: 'days', rank: 195, category: 'noun', band: 'B' },
+    { foreign: 'dice', native: 'says', rank: 196, category: 'verb', band: 'B' },
+    { foreign: 'hoy', native: 'today', rank: 197, category: 'adverb', band: 'B' },
+    { foreign: 'tres', native: 'three', rank: 198, category: 'number', band: 'B' },
+    { foreign: 'necesito', native: 'I need', rank: 199, category: 'verb', band: 'B' },
+    { foreign: 'oye', native: 'hey / listen', rank: 200, category: 'verb', band: 'B' },
+    { foreign: 'parte', native: 'part', rank: 201, category: 'noun', band: 'C' },
+    { foreign: 'todas', native: 'all (fem. pl.)', rank: 202, category: 'pronoun', band: 'C' },
+    { foreign: 'conmigo', native: 'with me', rank: 203, category: 'pronoun', band: 'C' },
+    { foreign: 'nuestra', native: 'our (fem.)', rank: 204, category: 'pronoun', band: 'C' },
+    { foreign: 'mal', native: 'badly / bad', rank: 205, category: 'adverb', band: 'C' },
+    { foreign: 'realmente', native: 'really', rank: 206, category: 'adverb', band: 'C' },
+    { foreign: 'aún', native: 'still / yet', rank: 207, category: 'adverb', band: 'C' },
+    { foreign: 'mío', native: 'mine', rank: 208, category: 'pronoun', band: 'C' },
+    { foreign: 'toda', native: 'all (fem.)', rank: 209, category: 'pronoun', band: 'C' },
+    { foreign: 'hacerlo', native: 'to do it', rank: 210, category: 'verb', band: 'C' },
+    { foreign: 'cada', native: 'each', rank: 211, category: 'noun', band: 'C' },
+    { foreign: 'visto', native: 'seen', rank: 212, category: 'verb', band: 'C' },
+    { foreign: 'contigo', native: 'with you', rank: 213, category: 'pronoun', band: 'C' },
+    { foreign: 'razón', native: 'reason', rank: 214, category: 'noun', band: 'C' },
+    { foreign: 'alguna', native: 'some (fem.)', rank: 215, category: 'pronoun', band: 'C' },
+    { foreign: 'tanto', native: 'so much', rank: 216, category: 'noun', band: 'C' },
+    { foreign: 'saber', native: 'to know (fact)', rank: 217, category: 'verb', band: 'C' },
+    { foreign: 'serio', native: 'serious', rank: 218, category: 'noun', band: 'C' },
+    { foreign: 'idea', native: 'idea', rank: 219, category: 'noun', band: 'C' },
+    { foreign: 'tarde', native: 'afternoon / late', rank: 220, category: 'adverb', band: 'C' },
+    { foreign: 'problema', native: 'problem', rank: 221, category: 'noun', band: 'C' },
+    { foreign: 'hora', native: 'hour', rank: 222, category: 'noun', band: 'C' },
+    { foreign: 'cierto', native: 'true / certain', rank: 223, category: 'adjective', band: 'C' },
+    { foreign: 'dicho', native: 'said', rank: 224, category: 'verb', band: 'C' },
+    { foreign: 'demasiado', native: 'too much', rank: 225, category: 'adverb', band: 'C' },
+    { foreign: 'amor', native: 'love', rank: 226, category: 'noun', band: 'C' },
+    { foreign: 'entre', native: 'between', rank: 227, category: 'preposition', band: 'C' },
+    { foreign: 'familia', native: 'family', rank: 228, category: 'noun', band: 'C' },
+    { foreign: 'policía', native: 'police', rank: 229, category: 'noun', band: 'C' },
+    { foreign: 'ustedes', native: 'you all', rank: 230, category: 'pronoun', band: 'C' },
+    { foreign: 'cuenta', native: 'bill / account', rank: 231, category: 'verb', band: 'C' },
+    { foreign: 'todavía', native: 'still', rank: 232, category: 'adverb', band: 'C' },
+    { foreign: 'salir', native: 'to leave / go out', rank: 233, category: 'verb', band: 'C' },
+    { foreign: 'hermano', native: 'brother', rank: 234, category: 'noun', band: 'C' },
+    { foreign: 'sabía', native: 'knew', rank: 235, category: 'verb', band: 'C' },
+    { foreign: 'cabeza', native: 'head', rank: 236, category: 'noun', band: 'C' },
+    { foreign: 'cualquier', native: 'any', rank: 237, category: 'noun', band: 'C' },
+    { foreign: 'forma', native: 'form / way', rank: 238, category: 'noun', band: 'C' },
+    { foreign: 'mientras', native: 'while', rank: 239, category: 'connector', band: 'C' },
+    { foreign: 'lado', native: 'side', rank: 240, category: 'noun', band: 'C' },
+    { foreign: 'caso', native: 'case', rank: 241, category: 'noun', band: 'C' },
+    { foreign: 'pues', native: 'well / since', rank: 242, category: 'connector', band: 'C' },
+    { foreign: 'adiós', native: 'goodbye', rank: 243, category: 'noun', band: 'C' },
+    { foreign: 'señora', native: 'mrs.', rank: 244, category: 'noun', band: 'C' },
+    { foreign: 'volver', native: 'to return', rank: 245, category: 'verb', band: 'C' },
+    { foreign: 'contra', native: 'against', rank: 246, category: 'preposition', band: 'C' },
+    { foreign: 'durante', native: 'during', rank: 247, category: 'preposition', band: 'C' },
+    { foreign: 'manera', native: 'way', rank: 248, category: 'noun', band: 'C' },
+    { foreign: 'persona', native: 'person', rank: 249, category: 'noun', band: 'C' },
+    { foreign: 'cuál', native: 'which', rank: 250, category: 'question', band: 'C' },
+    { foreign: 'ayuda', native: 'help', rank: 251, category: 'verb', band: 'C' },
+    { foreign: 'historia', native: 'story / history', rank: 252, category: 'noun', band: 'C' },
+    { foreign: 'dentro', native: 'inside', rank: 253, category: 'adverb', band: 'C' },
+    { foreign: 'casi', native: 'almost', rank: 254, category: 'adverb', band: 'C' },
+    { foreign: 'puerta', native: 'door', rank: 255, category: 'noun', band: 'C' },
+    { foreign: 'pasar', native: 'to happen / pass', rank: 256, category: 'verb', band: 'C' },
+    { foreign: 'primero', native: 'first', rank: 257, category: 'number', band: 'C' },
+    { foreign: 'semana', native: 'week', rank: 258, category: 'noun', band: 'C' },
+    { foreign: 'hacia', native: 'toward', rank: 259, category: 'preposition', band: 'C' },
+    { foreign: 'juntos', native: 'together', rank: 260, category: 'adverb', band: 'C' },
+    { foreign: 'año', native: 'year', rank: 261, category: 'noun', band: 'C' },
+    { foreign: 'pronto', native: 'soon', rank: 262, category: 'adverb', band: 'C' },
+    { foreign: 'tío', native: 'uncle', rank: 263, category: 'noun', band: 'C' },
+    { foreign: 'ciudad', native: 'city', rank: 264, category: 'noun', band: 'C' },
+    { foreign: 'feliz', native: 'happy', rank: 265, category: 'adjective', band: 'C' },
+    { foreign: 'hija', native: 'daughter', rank: 266, category: 'noun', band: 'C' },
+    { foreign: 'cuánto', native: 'how much', rank: 267, category: 'question', band: 'C' },
+    { foreign: 'dejar', native: 'to leave / let', rank: 268, category: 'verb', band: 'C' },
+    { foreign: 'realidad', native: 'reality', rank: 269, category: 'noun', band: 'C' },
+    { foreign: 'importante', native: 'important', rank: 270, category: 'adjective', band: 'C' },
+    { foreign: 'corazón', native: 'heart', rank: 271, category: 'noun', band: 'C' },
+    { foreign: 'miedo', native: 'fear', rank: 272, category: 'noun', band: 'C' },
+    { foreign: 'jefe', native: 'boss', rank: 273, category: 'noun', band: 'C' },
+    { foreign: 'agua', native: 'water', rank: 274, category: 'noun', band: 'C' },
+    { foreign: 'poder', native: 'can / to be able', rank: 275, category: 'verb', band: 'C' },
+    { foreign: 'esposa', native: 'wife', rank: 276, category: 'adjective', band: 'C' },
+    { foreign: 'venga', native: 'come on', rank: 277, category: 'verb', band: 'C' },
+    { foreign: 'nuestros', native: 'our (pl.)', rank: 278, category: 'noun', band: 'C' },
+    { foreign: 'ojos', native: 'eyes', rank: 279, category: 'noun', band: 'C' },
+    { foreign: 'encontrar', native: 'to find', rank: 280, category: 'verb', band: 'C' },
+    { foreign: 'mano', native: 'hand', rank: 281, category: 'noun', band: 'C' },
+    { foreign: 'cinco', native: 'five', rank: 282, category: 'number', band: 'C' },
+    { foreign: 'niño', native: 'child / boy', rank: 283, category: 'noun', band: 'C' },
+    { foreign: 'ninguna', native: 'none (fem.)', rank: 284, category: 'pronoun', band: 'C' },
+    { foreign: 'otros', native: 'others', rank: 285, category: 'pronoun', band: 'C' },
+    { foreign: 'cara', native: 'face', rank: 286, category: 'noun', band: 'C' },
+    { foreign: 'cuidado', native: 'careful', rank: 287, category: 'noun', band: 'C' },
+    { foreign: 'bajo', native: 'under / short', rank: 288, category: 'preposition', band: 'C' },
+    { foreign: 'cerca', native: 'near', rank: 289, category: 'adverb', band: 'C' },
+    { foreign: 'viejo', native: 'old', rank: 290, category: 'adjective', band: 'C' },
+    { foreign: 'bastante', native: 'enough / quite', rank: 291, category: 'adverb', band: 'C' },
+    { foreign: 'tomar', native: 'to take', rank: 292, category: 'verb', band: 'C' },
+    { foreign: 'misma', native: 'same (fem.)', rank: 293, category: 'pronoun', band: 'C' },
+    { foreign: 'cuándo', native: 'when (question)', rank: 294, category: 'question', band: 'C' },
+    { foreign: 'equipo', native: 'team', rank: 295, category: 'noun', band: 'C' },
+    { foreign: 'grande', native: 'big', rank: 296, category: 'adjective', band: 'C' },
+    { foreign: 'llegar', native: 'to arrive', rank: 297, category: 'verb', band: 'C' },
+    { foreign: 'incluso', native: 'even', rank: 298, category: 'connector', band: 'C' },
+    { foreign: 'algunos', native: 'some (pl.)', rank: 299, category: 'noun', band: 'C' },
+    { foreign: 'doctor', native: 'doctor', rank: 300, category: 'noun', band: 'C' },
+    { foreign: 'difícil', native: 'difficult', rank: 301, category: 'noun', band: 'C' },
+    { foreign: 'aunque', native: 'although', rank: 302, category: 'connector', band: 'C' },
+    { foreign: 'coche', native: 'car', rank: 303, category: 'noun', band: 'C' },
+    { foreign: 'clase', native: 'class', rank: 304, category: 'noun', band: 'C' },
+    { foreign: 'cuatro', native: 'four', rank: 305, category: 'number', band: 'C' },
+    { foreign: 'pequeño', native: 'small', rank: 306, category: 'adjective', band: 'C' },
+    { foreign: 'allá', native: 'over there', rank: 307, category: 'adverb', band: 'C' },
+    { foreign: 'arriba', native: 'up / upstairs', rank: 308, category: 'adverb', band: 'C' },
+    { foreign: 'tierra', native: 'earth / land', rank: 309, category: 'noun', band: 'C' },
+    { foreign: 'guerra', native: 'war', rank: 310, category: 'noun', band: 'C' },
+    { foreign: 'pensar', native: 'to think', rank: 311, category: 'verb', band: 'C' },
+    { foreign: 'igual', native: 'equal / same', rank: 312, category: 'adjective', band: 'C' },
+    { foreign: 'sangre', native: 'blood', rank: 313, category: 'noun', band: 'C' },
+    { foreign: 'vuelta', native: 'return', rank: 314, category: 'noun', band: 'C' },
+    { foreign: 'cuerpo', native: 'body', rank: 315, category: 'noun', band: 'C' },
+    { foreign: 'entrar', native: 'to enter', rank: 316, category: 'verb', band: 'C' },
+    { foreign: 'teléfono', native: 'phone', rank: 317, category: 'noun', band: 'C' },
+    { foreign: 'listo', native: 'ready / smart', rank: 318, category: 'adjective', band: 'C' },
+    { foreign: 'fiesta', native: 'party', rank: 319, category: 'noun', band: 'C' },
+    { foreign: 'muchos', native: 'many', rank: 320, category: 'noun', band: 'C' },
+    { foreign: 'auto', native: 'car', rank: 321, category: 'noun', band: 'C' },
+    { foreign: 'dar', native: 'to give', rank: 322, category: 'verb', band: 'C' },
+    { foreign: 'vivir', native: 'to live', rank: 323, category: 'verb', band: 'C' },
+    { foreign: 'posible', native: 'possible', rank: 324, category: 'adjective', band: 'C' },
+    { foreign: 'hermana', native: 'sister', rank: 325, category: 'noun', band: 'C' },
+    { foreign: 'exactamente', native: 'exactly', rank: 326, category: 'adjective', band: 'C' },
+    { foreign: 'abajo', native: 'down / downstairs', rank: 327, category: 'adverb', band: 'C' },
+    { foreign: 'escuela', native: 'school', rank: 328, category: 'noun', band: 'C' },
+    { foreign: 'ido', native: 'gone', rank: 329, category: 'verb', band: 'C' },
+    { foreign: 'fuerte', native: 'strong', rank: 330, category: 'adjective', band: 'C' },
+    { foreign: 'pregunta', native: 'question', rank: 331, category: 'verb', band: 'C' },
+    { foreign: 'bebé', native: 'baby', rank: 332, category: 'noun', band: 'C' },
+    { foreign: 'segundo', native: 'second', rank: 333, category: 'number', band: 'C' },
+    { foreign: 'comida', native: 'lunch / meal', rank: 334, category: 'noun', band: 'C' },
+    { foreign: 'morir', native: 'to die', rank: 335, category: 'verb', band: 'C' },
+    { foreign: 'fácil', native: 'easy', rank: 336, category: 'adjective', band: 'C' },
+    { foreign: 'comer', native: 'to eat', rank: 337, category: 'verb', band: 'C' },
+    { foreign: 'vino', native: 'wine', rank: 338, category: 'verb', band: 'C' },
+    { foreign: 'probablemente', native: 'probably', rank: 339, category: 'adjective', band: 'C' },
+    { foreign: 'habitación', native: 'room', rank: 340, category: 'noun', band: 'C' },
+    { foreign: 'creer', native: 'to believe', rank: 341, category: 'verb', band: 'C' },
+    { foreign: 'tampoco', native: 'neither', rank: 342, category: 'adverb', band: 'C' },
+    { foreign: 'joven', native: 'young', rank: 343, category: 'adjective', band: 'C' },
+    { foreign: 'par', native: 'pair', rank: 344, category: 'noun', band: 'C' },
+    { foreign: 'seguir', native: 'to follow / continue', rank: 345, category: 'verb', band: 'C' },
+    { foreign: 'medio', native: 'half / middle', rank: 346, category: 'noun', band: 'C' },
+    { foreign: 'esperar', native: 'to wait / hope', rank: 347, category: 'verb', band: 'C' },
+    { foreign: 'lejos', native: 'far', rank: 348, category: 'adverb', band: 'C' },
+    { foreign: 'alto', native: 'tall / high', rank: 349, category: 'adjective', band: 'C' },
+    { foreign: 'seis', native: 'six', rank: 350, category: 'number', band: 'C' },
+    { foreign: 'seguridad', native: 'safety', rank: 351, category: 'noun', band: 'D' },
+    { foreign: 'palabra', native: 'word', rank: 352, category: 'noun', band: 'D' },
+    { foreign: 'oficina', native: 'office', rank: 353, category: 'noun', band: 'D' },
+    { foreign: 'matar', native: 'to kill', rank: 354, category: 'verb', band: 'D' },
+    { foreign: 'cama', native: 'bed', rank: 355, category: 'noun', band: 'D' },
+    { foreign: 'además', native: 'besides / also', rank: 356, category: 'connector', band: 'D' },
+    { foreign: 'último', native: 'last', rank: 357, category: 'noun', band: 'D' },
+    { foreign: 'luz', native: 'light', rank: 358, category: 'noun', band: 'D' },
+    { foreign: 'correcto', native: 'correct', rank: 359, category: 'noun', band: 'D' },
+    { foreign: 'nuestras', native: 'our (fem. pl.)', rank: 360, category: 'noun', band: 'D' },
+    { foreign: 'dormir', native: 'to sleep', rank: 361, category: 'verb', band: 'D' },
+    { foreign: 'ayudar', native: 'to help', rank: 362, category: 'verb', band: 'D' },
+    { foreign: 'conseguir', native: 'to get / achieve', rank: 363, category: 'verb', band: 'D' },
+    { foreign: 'marido', native: 'husband', rank: 364, category: 'noun', band: 'D' },
+    { foreign: 'paz', native: 'peace', rank: 365, category: 'noun', band: 'D' },
+    { foreign: 'plan', native: 'plan', rank: 366, category: 'noun', band: 'D' },
+    { foreign: 'peor', native: 'worse', rank: 367, category: 'adverb', band: 'D' },
+    { foreign: 'pueblo', native: 'town / people', rank: 368, category: 'noun', band: 'D' },
+    { foreign: 'venido', native: 'come', rank: 369, category: 'verb', band: 'D' },
+    { foreign: 'música', native: 'music', rank: 370, category: 'noun', band: 'D' },
+    { foreign: 'minuto', native: 'minute', rank: 371, category: 'noun', band: 'D' },
+    { foreign: 'país', native: 'country', rank: 372, category: 'noun', band: 'D' },
+    { foreign: 'rey', native: 'king', rank: 373, category: 'noun', band: 'D' },
+    { foreign: 'perdón', native: 'pardon / sorry', rank: 374, category: 'noun', band: 'D' },
+    { foreign: 'mucha', native: 'much (fem.)', rank: 375, category: 'noun', band: 'D' },
+    { foreign: 'niña', native: 'girl', rank: 376, category: 'noun', band: 'D' },
+    { foreign: 'señorita', native: 'miss', rank: 377, category: 'noun', band: 'D' },
+    { foreign: 'diez', native: 'ten', rank: 378, category: 'number', band: 'D' },
+    { foreign: 'hospital', native: 'hospital', rank: 379, category: 'noun', band: 'D' },
+    { foreign: 'otras', native: 'others (fem.)', rank: 380, category: 'pronoun', band: 'D' },
+    { foreign: 'llevar', native: 'to carry / wear', rank: 381, category: 'verb', band: 'D' },
+    { foreign: 'fuego', native: 'fire', rank: 382, category: 'noun', band: 'D' },
+    { foreign: 'poner', native: 'to put', rank: 383, category: 'verb', band: 'D' },
+    { foreign: 'calle', native: 'street', rank: 384, category: 'noun', band: 'D' },
+    { foreign: 'prueba', native: 'test', rank: 385, category: 'noun', band: 'D' },
+    { foreign: 'libro', native: 'book', rank: 386, category: 'noun', band: 'D' },
+    { foreign: 'especial', native: 'special', rank: 387, category: 'adjective', band: 'D' },
+    { foreign: 'mía', native: 'mine (fem.)', rank: 388, category: 'pronoun', band: 'D' },
+    { foreign: 'café', native: 'coffee', rank: 389, category: 'noun', band: 'D' },
+    { foreign: 'empezar', native: 'to start', rank: 390, category: 'verb', band: 'D' },
+    { foreign: 'perro', native: 'dog', rank: 391, category: 'noun', band: 'D' },
+    { foreign: 'cielo', native: 'sky', rank: 392, category: 'noun', band: 'D' },
+    { foreign: 'puesto', native: 'put', rank: 393, category: 'verb', band: 'D' },
+    { foreign: 'viaje', native: 'trip', rank: 394, category: 'noun', band: 'D' },
+    { foreign: 'detrás', native: 'behind', rank: 395, category: 'noun', band: 'D' },
+    { foreign: 'cuarto', native: 'quarter / room', rank: 396, category: 'noun', band: 'D' },
+    { foreign: 'libre', native: 'free', rank: 397, category: 'adjective', band: 'D' },
+    { foreign: 'buscar', native: 'to look for', rank: 398, category: 'verb', band: 'D' },
+    { foreign: 'jugar', native: 'to play', rank: 399, category: 'verb', band: 'D' },
+    { foreign: 'película', native: 'movie', rank: 400, category: 'noun', band: 'D' },
+    { foreign: 'llamada', native: 'call', rank: 401, category: 'noun', band: 'D' },
+    { foreign: 'extraño', native: 'strange', rank: 402, category: 'adjective', band: 'D' },
+    { foreign: 'presidente', native: 'president', rank: 403, category: 'adjective', band: 'D' },
+    { foreign: 'ropa', native: 'clothes', rank: 404, category: 'noun', band: 'D' },
+    { foreign: 'perder', native: 'to lose', rank: 405, category: 'verb', band: 'D' },
+    { foreign: 'raro', native: 'weird / rare', rank: 406, category: 'noun', band: 'D' },
+    { foreign: 'usar', native: 'to use', rank: 407, category: 'verb', band: 'D' },
+    { foreign: 'derecho', native: 'right / law', rank: 408, category: 'adjective', band: 'D' },
+    { foreign: 'ayer', native: 'yesterday', rank: 409, category: 'adverb', band: 'D' },
+    { foreign: 'demás', native: 'the rest', rank: 410, category: 'pronoun', band: 'D' },
+    { foreign: 'odio', native: 'hate', rank: 411, category: 'noun', band: 'D' },
+    { foreign: 'divertido', native: 'fun', rank: 412, category: 'noun', band: 'D' },
+    { foreign: 'amiga', native: 'friend (fem.)', rank: 413, category: 'noun', band: 'D' },
+    { foreign: 'grupo', native: 'group', rank: 414, category: 'noun', band: 'D' },
+    { foreign: 'asunto', native: 'matter', rank: 415, category: 'noun', band: 'D' },
+    { foreign: 'mensaje', native: 'message', rank: 416, category: 'noun', band: 'D' },
+    { foreign: 'encima', native: 'on top', rank: 417, category: 'noun', band: 'D' },
+    { foreign: 'atención', native: 'attention', rank: 418, category: 'noun', band: 'D' },
+    { foreign: 'diferente', native: 'different', rank: 419, category: 'adjective', band: 'D' },
+    { foreign: 'cambiar', native: 'to change', rank: 420, category: 'verb', band: 'D' },
+    { foreign: 'siguiente', native: 'following', rank: 421, category: 'adjective', band: 'D' },
+    { foreign: 'sino', native: 'but rather', rank: 422, category: 'connector', band: 'D' },
+    { foreign: 'médico', native: 'doctor', rank: 423, category: 'noun', band: 'D' },
+    { foreign: 'boca', native: 'mouth', rank: 424, category: 'noun', band: 'D' },
+    { foreign: 'jamás', native: 'never', rank: 425, category: 'adverb', band: 'D' },
+    { foreign: 'largo', native: 'long', rank: 426, category: 'adjective', band: 'D' },
+    { foreign: 'baño', native: 'bathroom', rank: 427, category: 'noun', band: 'D' },
+    { foreign: 'mil', native: 'thousand', rank: 428, category: 'number', band: 'D' },
+    { foreign: 'novia', native: 'girlfriend', rank: 429, category: 'noun', band: 'D' },
+    { foreign: 'ambos', native: 'both', rank: 430, category: 'noun', band: 'D' },
+    { foreign: 'dolor', native: 'pain', rank: 431, category: 'noun', band: 'D' },
+    { foreign: 'pie', native: 'foot', rank: 432, category: 'noun', band: 'D' },
+    { foreign: 'negro', native: 'black', rank: 433, category: 'noun', band: 'D' },
+    { foreign: 'ganar', native: 'to win / earn', rank: 434, category: 'verb', band: 'D' },
+    { foreign: 'aire', native: 'air', rank: 435, category: 'noun', band: 'D' },
+    { foreign: 'adónde', native: 'where to', rank: 436, category: 'question', band: 'D' },
+    { foreign: 'disculpe', native: 'excuse me', rank: 437, category: 'noun', band: 'D' },
+    { foreign: 'negocio', native: 'business', rank: 438, category: 'noun', band: 'D' },
+    { foreign: 'tuyo', native: 'yours', rank: 439, category: 'pronoun', band: 'D' },
+    { foreign: 'campo', native: 'countryside / field', rank: 440, category: 'noun', band: 'D' },
+    { foreign: 'situación', native: 'situation', rank: 441, category: 'noun', band: 'D' },
+    { foreign: 'tras', native: 'after', rank: 442, category: 'preposition', band: 'D' },
+    { foreign: 'hotel', native: 'hotel', rank: 443, category: 'noun', band: 'D' },
+    { foreign: 'vosotros', native: 'you all (Spain)', rank: 444, category: 'pronoun', band: 'D' },
+    { foreign: 'foto', native: 'photo', rank: 445, category: 'noun', band: 'D' },
+    { foreign: 'propio', native: 'own', rank: 446, category: 'noun', band: 'D' },
+    { foreign: 'alrededor', native: 'around', rank: 447, category: 'noun', band: 'D' },
+    { foreign: 'pagar', native: 'to pay', rank: 448, category: 'verb', band: 'D' },
+    { foreign: 'mitad', native: 'half', rank: 449, category: 'noun', band: 'D' },
+    { foreign: 'pelo', native: 'hair', rank: 450, category: 'noun', band: 'D' },
+    { foreign: 'cena', native: 'dinner', rank: 451, category: 'noun', band: 'D' },
+    { foreign: 'accidente', native: 'accident', rank: 452, category: 'adjective', band: 'D' },
+    { foreign: 'ellas', native: 'they (fem.)', rank: 453, category: 'pronoun', band: 'D' },
+    { foreign: 'tranquilo', native: 'calm', rank: 454, category: 'noun', band: 'D' },
+    { foreign: 'bonito', native: 'pretty', rank: 455, category: 'noun', band: 'D' },
+    { foreign: 'tienda', native: 'shop', rank: 456, category: 'noun', band: 'D' },
+    { foreign: 'comprar', native: 'to buy', rank: 457, category: 'verb', band: 'D' },
+    { foreign: 'centro', native: 'center', rank: 458, category: 'noun', band: 'D' },
+    { foreign: 'mes', native: 'month', rank: 459, category: 'noun', band: 'D' },
+    { foreign: 'sol', native: 'sun', rank: 460, category: 'noun', band: 'D' },
+    { foreign: 'mesa', native: 'table', rank: 461, category: 'noun', band: 'D' },
+    { foreign: 'respuesta', native: 'answer', rank: 462, category: 'noun', band: 'D' },
+    { foreign: 'completamente', native: 'completely', rank: 463, category: 'adjective', band: 'D' },
+    { foreign: 'carta', native: 'menu / letter', rank: 464, category: 'noun', band: 'D' },
+    { foreign: 'totalmente', native: 'totally', rank: 465, category: 'adjective', band: 'D' },
+    { foreign: 'imposible', native: 'impossible', rank: 466, category: 'adjective', band: 'D' },
+    { foreign: 'novio', native: 'boyfriend', rank: 467, category: 'noun', band: 'D' },
+    { foreign: 'normal', native: 'normal', rank: 468, category: 'adjective', band: 'D' },
+    { foreign: 'siete', native: 'seven', rank: 469, category: 'number', band: 'D' },
+    { foreign: 'barco', native: 'boat', rank: 470, category: 'noun', band: 'D' },
+    { foreign: 'blanco', native: 'white', rank: 471, category: 'noun', band: 'D' },
+    { foreign: 'profesor', native: 'teacher', rank: 472, category: 'noun', band: 'D' },
+    { foreign: 'ley', native: 'law', rank: 473, category: 'noun', band: 'D' },
+    { foreign: 'quisiera', native: 'I would like', rank: 474, category: 'noun', band: 'D' },
+    { foreign: 'carrera', native: 'degree program', rank: 475, category: 'noun', band: 'D' },
+    { foreign: 'cumpleaños', native: 'birthday', rank: 476, category: 'noun', band: 'D' },
+    { foreign: 'universidad', native: 'university', rank: 477, category: 'noun', band: 'D' },
+    { foreign: 'boda', native: 'wedding', rank: 478, category: 'noun', band: 'D' },
+    { foreign: 'cualquiera', native: 'anyone / any', rank: 479, category: 'pronoun', band: 'D' },
+    { foreign: 'sala', native: 'living room', rank: 480, category: 'noun', band: 'D' },
+    { foreign: 'sal', native: 'salt', rank: 481, category: 'noun', band: 'D' },
+    { foreign: 'interesante', native: 'interesting', rank: 482, category: 'adjective', band: 'D' },
+    { foreign: 'escuchar', native: 'to listen', rank: 483, category: 'verb', band: 'D' },
+    { foreign: 'abuela', native: 'grandmother', rank: 484, category: 'noun', band: 'D' },
+    { foreign: 'suelo', native: 'floor', rank: 485, category: 'noun', band: 'D' },
+    { foreign: 'terminar', native: 'to finish', rank: 486, category: 'verb', band: 'D' },
+    { foreign: 'gobierno', native: 'government', rank: 487, category: 'noun', band: 'D' },
+    { foreign: 'cámara', native: 'camera', rank: 488, category: 'noun', band: 'D' },
+    { foreign: 'regalo', native: 'gift', rank: 489, category: 'noun', band: 'D' },
+    { foreign: 'amable', native: 'kind', rank: 490, category: 'adjective', band: 'D' },
+    { foreign: 'dulce', native: 'sweet', rank: 491, category: 'noun', band: 'D' },
+    { foreign: 'navidad', native: 'Christmas', rank: 492, category: 'noun', band: 'D' },
+    { foreign: 'ocho', native: 'eight', rank: 493, category: 'number', band: 'D' },
+    { foreign: 'avión', native: 'plane', rank: 494, category: 'noun', band: 'D' },
+    { foreign: 'investigación', native: 'research', rank: 495, category: 'noun', band: 'D' },
+    { foreign: 'papel', native: 'paper', rank: 496, category: 'noun', band: 'D' },
+    { foreign: 'gracioso', native: 'funny', rank: 497, category: 'adjective', band: 'D' },
+    { foreign: 'delante', native: 'in front', rank: 498, category: 'adjective', band: 'D' },
+    { foreign: 'basura', native: 'trash', rank: 499, category: 'noun', band: 'D' },
+    { foreign: 'esposo', native: 'husband', rank: 500, category: 'adjective', band: 'D' },
+    { foreign: 'tren', native: 'train', rank: 501, category: 'noun', band: 'E' },
+    { foreign: 'verdadero', native: 'true', rank: 502, category: 'adjective', band: 'E' },
+    { foreign: 'tuya', native: 'yours (fem.)', rank: 503, category: 'pronoun', band: 'E' },
+    { foreign: 'disculpa', native: 'sorry (informal)', rank: 504, category: 'noun', band: 'E' },
+    { foreign: 'junto', native: 'together / next to', rank: 505, category: 'noun', band: 'E' },
+    { foreign: 'anda', native: 'come on / wow', rank: 506, category: 'verb', band: 'E' },
+    { foreign: 'peligro', native: 'danger', rank: 507, category: 'noun', band: 'E' },
+    { foreign: 'libertad', native: 'freedom', rank: 508, category: 'noun', band: 'E' },
+    { foreign: 'derecha', native: 'right', rank: 509, category: 'adjective', band: 'E' },
+    { foreign: 'espacio', native: 'space', rank: 510, category: 'noun', band: 'E' },
+    { foreign: 'rato', native: 'while / bit', rank: 511, category: 'noun', band: 'E' },
+    { foreign: 'abuelo', native: 'grandfather', rank: 512, category: 'noun', band: 'E' },
+    { foreign: 'salud', native: 'health', rank: 513, category: 'noun', band: 'E' },
+    { foreign: 'sorpresa', native: 'surprise', rank: 514, category: 'noun', band: 'E' },
+    { foreign: 'ninguno', native: 'none', rank: 515, category: 'pronoun', band: 'E' },
+    { foreign: 'triste', native: 'sad', rank: 516, category: 'adjective', band: 'E' },
+    { foreign: 'maestro', native: 'teacher', rank: 517, category: 'noun', band: 'E' },
+    { foreign: 'según', native: 'according to', rank: 518, category: 'preposition', band: 'E' },
+    { foreign: 'tía', native: 'aunt', rank: 519, category: 'noun', band: 'E' },
+    { foreign: 'conocido', native: 'acquaintance', rank: 520, category: 'verb', band: 'E' },
+    { foreign: 'ante', native: 'before', rank: 521, category: 'preposition', band: 'E' },
+    { foreign: 'iglesia', native: 'church', rank: 522, category: 'noun', band: 'E' },
+    { foreign: 'piso', native: 'apartment / floor', rank: 523, category: 'noun', band: 'E' },
+    { foreign: 'cocina', native: 'kitchen', rank: 524, category: 'noun', band: 'E' },
+    { foreign: 'vestido', native: 'dress', rank: 525, category: 'noun', band: 'E' },
+    { foreign: 'caballo', native: 'horse', rank: 526, category: 'noun', band: 'E' },
+    { foreign: 'bar', native: 'bar', rank: 527, category: 'noun', band: 'E' },
+    { foreign: 'enseguida', native: 'right away', rank: 528, category: 'adjective', band: 'E' },
+    { foreign: 'carne', native: 'meat', rank: 529, category: 'noun', band: 'E' },
+    { foreign: 'mar', native: 'sea', rank: 530, category: 'noun', band: 'E' },
+    { foreign: 'duda', native: 'doubt', rank: 531, category: 'noun', band: 'E' },
+    { foreign: 'edificio', native: 'building', rank: 532, category: 'noun', band: 'E' },
+    { foreign: 'conocer', native: 'to know (someone)', rank: 533, category: 'verb', band: 'E' },
+    { foreign: 'luna', native: 'moon', rank: 534, category: 'noun', band: 'E' },
+    { foreign: 'energía', native: 'energy', rank: 535, category: 'noun', band: 'E' },
+    { foreign: 'frío', native: 'cold', rank: 536, category: 'adjective', band: 'E' },
+    { foreign: 'izquierda', native: 'left', rank: 537, category: 'noun', band: 'E' },
+    { foreign: 'beber', native: 'to drink', rank: 538, category: 'verb', band: 'E' },
+    { foreign: 'finalmente', native: 'finally', rank: 539, category: 'adjective', band: 'E' },
+    { foreign: 'simple', native: 'simple', rank: 540, category: 'noun', band: 'E' },
+    { foreign: 'regresar', native: 'to return', rank: 541, category: 'verb', band: 'E' },
+    { foreign: 'entender', native: 'to understand', rank: 542, category: 'verb', band: 'E' },
+    { foreign: 'mirar', native: 'to look', rank: 543, category: 'verb', band: 'E' },
+    { foreign: 'sacar', native: 'to take out', rank: 544, category: 'verb', band: 'E' },
+    { foreign: 'hermoso', native: 'beautiful', rank: 545, category: 'adjective', band: 'E' },
+    { foreign: 'opinión', native: 'opinion', rank: 546, category: 'noun', band: 'E' },
+    { foreign: 'linda', native: 'pretty', rank: 547, category: 'noun', band: 'E' },
+    { foreign: 'apenas', native: 'barely', rank: 548, category: 'adverb', band: 'E' },
+    { foreign: 'cerveza', native: 'beer', rank: 549, category: 'noun', band: 'E' },
+    { foreign: 'oír', native: 'to hear', rank: 550, category: 'verb', band: 'E' },
+    { foreign: 'cuántos', native: 'how many', rank: 551, category: 'question', band: 'E' },
+    { foreign: 'reina', native: 'queen', rank: 552, category: 'noun', band: 'E' },
+    { foreign: 'temprano', native: 'early', rank: 553, category: 'adverb', band: 'E' },
+    { foreign: 'tema', native: 'topic', rank: 554, category: 'noun', band: 'E' },
+    { foreign: 'público', native: 'audience', rank: 555, category: 'noun', band: 'E' },
+    { foreign: 'salvar', native: 'to save', rank: 556, category: 'verb', band: 'E' },
+    { foreign: 'partido', native: 'party / match', rank: 557, category: 'noun', band: 'E' },
+    { foreign: 'causa', native: 'cause', rank: 558, category: 'noun', band: 'E' },
+    { foreign: 'caliente', native: 'hot', rank: 559, category: 'adjective', band: 'E' },
+    { foreign: 'cenar', native: 'to have dinner', rank: 560, category: 'verb', band: 'E' },
+    { foreign: 'compañero', native: 'companion / classmate', rank: 561, category: 'noun', band: 'E' },
+    { foreign: 'banco', native: 'bank', rank: 562, category: 'noun', band: 'E' },
+    { foreign: 'cliente', native: 'client', rank: 563, category: 'adjective', band: 'E' },
+    { foreign: 'norte', native: 'north', rank: 564, category: 'noun', band: 'E' },
+    { foreign: 'té', native: 'tea', rank: 565, category: 'noun', band: 'E' },
+    { foreign: 'llave', native: 'key', rank: 566, category: 'noun', band: 'E' },
+    { foreign: 'espalda', native: 'back', rank: 567, category: 'noun', band: 'E' },
+    { foreign: 'ventana', native: 'window seat side', rank: 568, category: 'noun', band: 'E' },
+    { foreign: 'pedir', native: 'to ask for', rank: 569, category: 'verb', band: 'E' },
+    { foreign: 'ejemplo', native: 'example', rank: 570, category: 'noun', band: 'E' },
+    { foreign: 'radio', native: 'radio', rank: 571, category: 'noun', band: 'E' },
+    { foreign: 'hogar', native: 'home', rank: 572, category: 'noun', band: 'E' },
+    { foreign: 'planeta', native: 'planet', rank: 573, category: 'noun', band: 'E' },
+    { foreign: 'leer', native: 'to read', rank: 574, category: 'verb', band: 'E' },
+    { foreign: 'parar', native: 'to stop', rank: 575, category: 'verb', band: 'E' },
+    { foreign: 'lleno', native: 'full', rank: 576, category: 'adjective', band: 'E' },
+    { foreign: 'respeto', native: 'respect', rank: 577, category: 'noun', band: 'E' },
+    { foreign: 'debajo', native: 'underneath', rank: 578, category: 'noun', band: 'E' },
+    { foreign: 'escribir', native: 'to write', rank: 579, category: 'verb', band: 'E' },
+    { foreign: 'estación', native: 'season / station', rank: 580, category: 'noun', band: 'E' },
+    { foreign: 'estrella', native: 'star', rank: 581, category: 'noun', band: 'E' },
+    { foreign: 'enfermo', native: 'sick', rank: 582, category: 'noun', band: 'E' },
+    { foreign: 'ocupado', native: 'busy', rank: 583, category: 'adjective', band: 'E' },
+    { foreign: 'salida', native: 'departure / exit', rank: 584, category: 'noun', band: 'E' },
+    { foreign: 'zapatos', native: 'shoes', rank: 585, category: 'noun', band: 'E' },
+    { foreign: 'color', native: 'color', rank: 586, category: 'noun', band: 'E' },
+    { foreign: 'tratar', native: 'to try / treat', rank: 587, category: 'verb', band: 'E' },
+    { foreign: 'parecer', native: 'to seem', rank: 588, category: 'verb', band: 'E' },
+    { foreign: 'próximo', native: 'next', rank: 589, category: 'noun', band: 'E' },
+    { foreign: 'paciente', native: 'patient', rank: 590, category: 'adjective', band: 'E' },
+    { foreign: 'bailar', native: 'to dance', rank: 591, category: 'verb', band: 'E' },
+    { foreign: 'sur', native: 'south', rank: 592, category: 'noun', band: 'E' },
+    { foreign: 'aprender', native: 'to learn', rank: 593, category: 'verb', band: 'E' },
+    { foreign: 'precio', native: 'price', rank: 594, category: 'noun', band: 'E' },
+    { foreign: 'ojo', native: 'eye', rank: 595, category: 'noun', band: 'E' },
+    { foreign: 'azul', native: 'blue', rank: 596, category: 'noun', band: 'E' },
+    { foreign: 'esperanza', native: 'hope', rank: 597, category: 'noun', band: 'E' },
+    { foreign: 'río', native: 'river', rank: 598, category: 'noun', band: 'E' },
+    { foreign: 'abrir', native: 'to open', rank: 599, category: 'verb', band: 'E' },
+    { foreign: 'tocar', native: 'to touch / play (instrument)', rank: 600, category: 'verb', band: 'E' },
+    { foreign: 'contar', native: 'to count', rank: 601, category: 'verb', band: 'E' },
+    { foreign: 'interior', native: 'interior', rank: 602, category: 'noun', band: 'E' },
+    { foreign: 'apartamento', native: 'apartment', rank: 603, category: 'noun', band: 'E' },
+    { foreign: 'nueve', native: 'nine', rank: 604, category: 'number', band: 'E' },
+    { foreign: 'quedar', native: 'to remain / meet', rank: 605, category: 'verb', band: 'E' },
+    { foreign: 'probar', native: 'to taste / try', rank: 606, category: 'verb', band: 'E' },
+    { foreign: 'traer', native: 'to bring', rank: 607, category: 'verb', band: 'E' },
+    { foreign: 'común', native: 'common', rank: 608, category: 'adjective', band: 'E' },
+    { foreign: 'nota', native: 'grade / note', rank: 609, category: 'noun', band: 'E' },
+    { foreign: 'valor', native: 'value', rank: 610, category: 'noun', band: 'E' },
+    { foreign: 'suyo', native: 'his / hers / yours', rank: 611, category: 'pronoun', band: 'E' },
+    { foreign: 'objetivo', native: 'goal', rank: 612, category: 'adjective', band: 'E' },
+    { foreign: 'rojo', native: 'red', rank: 613, category: 'noun', band: 'E' },
+    { foreign: 'entrada', native: 'starter / entrance', rank: 614, category: 'noun', band: 'E' },
+    { foreign: 'evitar', native: 'to avoid', rank: 615, category: 'verb', band: 'E' },
+    { foreign: 'máquina', native: 'machine', rank: 616, category: 'noun', band: 'E' },
+    { foreign: 'cuello', native: 'neck', rank: 617, category: 'noun', band: 'E' },
+    { foreign: 'pareja', native: 'couple', rank: 618, category: 'noun', band: 'E' },
+    { foreign: 'verano', native: 'summer', rank: 619, category: 'noun', band: 'E' },
+    { foreign: 'tarjeta', native: 'card', rank: 620, category: 'noun', band: 'E' },
+    { foreign: 'correr', native: 'to run', rank: 621, category: 'verb', band: 'E' },
+    { foreign: 'preparado', native: 'prepared', rank: 622, category: 'noun', band: 'E' },
+    { foreign: 'intentar', native: 'to try', rank: 623, category: 'verb', band: 'E' },
+    { foreign: 'isla', native: 'island', rank: 624, category: 'noun', band: 'E' },
+    { foreign: 'piel', native: 'skin', rank: 625, category: 'noun', band: 'E' },
+    { foreign: 'justicia', native: 'justice', rank: 626, category: 'noun', band: 'E' },
+    { foreign: 'obviamente', native: 'obviously', rank: 627, category: 'adjective', band: 'E' },
+    { foreign: 'calor', native: 'heat', rank: 628, category: 'noun', band: 'E' },
+    { foreign: 'brazo', native: 'arm', rank: 629, category: 'noun', band: 'E' },
+    { foreign: 'absolutamente', native: 'absolutely', rank: 630, category: 'adjective', band: 'E' },
+    { foreign: 'recordar', native: 'to remember', rank: 631, category: 'verb', band: 'E' },
+    { foreign: 'bosque', native: 'forest', rank: 632, category: 'noun', band: 'E' },
+    { foreign: 'visita', native: 'visit', rank: 633, category: 'noun', band: 'E' },
+    { foreign: 'rico', native: 'tasty / rich', rank: 634, category: 'adjective', band: 'E' },
+    { foreign: 'vacaciones', native: 'vacation', rank: 635, category: 'noun', band: 'E' },
+    { foreign: 'mismos', native: 'same (pl.)', rank: 636, category: 'adjective', band: 'E' },
+    { foreign: 'cine', native: 'cinema', rank: 637, category: 'noun', band: 'E' },
+    { foreign: 'confianza', native: 'trust', rank: 638, category: 'noun', band: 'E' },
+    { foreign: 'especialmente', native: 'especially', rank: 639, category: 'adjective', band: 'E' },
+    { foreign: 'inmediatamente', native: 'immediately', rank: 640, category: 'adjective', band: 'E' },
+    { foreign: 'inglés', native: 'English', rank: 641, category: 'noun', band: 'E' },
+    { foreign: 'acabar', native: 'to finish', rank: 642, category: 'verb', band: 'E' },
+    { foreign: 'noticia', native: 'news', rank: 643, category: 'noun', band: 'E' },
+    { foreign: 'vuestro', native: 'your (pl. Spain)', rank: 644, category: 'pronoun', band: 'E' },
+    { foreign: 'empresa', native: 'company', rank: 645, category: 'noun', band: 'E' },
+    { foreign: 'laboratorio', native: 'lab', rank: 646, category: 'noun', band: 'E' },
+    { foreign: 'elección', native: 'election', rank: 647, category: 'noun', band: 'E' },
+    { foreign: 'cansado', native: 'tired', rank: 648, category: 'noun', band: 'E' },
+    { foreign: 'fe', native: 'faith', rank: 649, category: 'noun', band: 'E' },
+    { foreign: 'subir', native: 'to go up', rank: 650, category: 'verb', band: 'E' },
+    { foreign: 'preocupado', native: 'worried', rank: 651, category: 'noun', band: 'E' },
+    { foreign: 'restaurante', native: 'restaurant', rank: 652, category: 'adjective', band: 'E' },
+    { foreign: 'caer', native: 'to fall', rank: 653, category: 'verb', band: 'E' },
+    { foreign: 'leche', native: 'milk', rank: 654, category: 'noun', band: 'E' },
+    { foreign: 'solamente', native: 'only', rank: 655, category: 'adverb', band: 'E' },
+    { foreign: 'taxi', native: 'taxi', rank: 656, category: 'noun', band: 'E' },
+    { foreign: 'anillo', native: 'ring', rank: 657, category: 'noun', band: 'E' },
+    { foreign: 'preguntar', native: 'to ask', rank: 658, category: 'verb', band: 'E' },
+    { foreign: 'quiénes', native: 'who (pl.)', rank: 659, category: 'question', band: 'E' },
+    { foreign: 'árbol', native: 'tree', rank: 660, category: 'noun', band: 'E' },
+    { foreign: 'dientes', native: 'teeth', rank: 661, category: 'noun', band: 'E' },
+    { foreign: 'encantado', native: 'delighted / nice to meet you', rank: 662, category: 'noun', band: 'E' },
+    { foreign: 'vender', native: 'to sell', rank: 663, category: 'verb', band: 'E' },
+    { foreign: 'reloj', native: 'watch / clock', rank: 664, category: 'noun', band: 'E' },
+    { foreign: 'gato', native: 'cat', rank: 665, category: 'noun', band: 'E' },
+    { foreign: 'volar', native: 'to fly', rank: 666, category: 'verb', band: 'E' },
+    { foreign: 'colegio', native: 'school', rank: 667, category: 'noun', band: 'E' },
+    { foreign: 'alguno', native: 'some', rank: 668, category: 'pronoun', band: 'E' },
+    { foreign: 'pan', native: 'bread', rank: 669, category: 'noun', band: 'E' },
+    { foreign: 'millón', native: 'million', rank: 670, category: 'number', band: 'E' },
+    { foreign: 'querer', native: 'to want / love', rank: 671, category: 'verb', band: 'E' },
+    { foreign: 'caminar', native: 'to walk', rank: 672, category: 'verb', band: 'E' },
+    { foreign: 'televisión', native: 'television', rank: 673, category: 'noun', band: 'E' },
+    { foreign: 'asiento', native: 'seat', rank: 674, category: 'noun', band: 'E' },
+    { foreign: 'seguramente', native: 'surely', rank: 675, category: 'adjective', band: 'E' },
+    { foreign: 'proyecto', native: 'project', rank: 676, category: 'noun', band: 'E' },
+    { foreign: 'pared', native: 'wall', rank: 677, category: 'noun', band: 'E' },
+    { foreign: 'naturaleza', native: 'nature', rank: 678, category: 'noun', band: 'E' },
+    { foreign: 'silla', native: 'chair', rank: 679, category: 'noun', band: 'E' },
+    { foreign: 'arreglar', native: 'to fix', rank: 680, category: 'verb', band: 'E' },
+    { foreign: 'llorar', native: 'to cry', rank: 681, category: 'verb', band: 'E' },
+    { foreign: 'colega', native: 'colleague', rank: 682, category: 'noun', band: 'E' },
+    { foreign: 'verde', native: 'green', rank: 683, category: 'noun', band: 'E' },
+    { foreign: 'bajar', native: 'to go down', rank: 684, category: 'verb', band: 'E' },
+    { foreign: 'nervioso', native: 'nervous', rank: 685, category: 'adjective', band: 'E' },
+    { foreign: 'playa', native: 'beach', rank: 686, category: 'noun', band: 'E' },
+    { foreign: 'cantar', native: 'to sing', rank: 687, category: 'verb', band: 'E' },
+    { foreign: 'cabello', native: 'hair', rank: 688, category: 'noun', band: 'E' },
+    { foreign: 'parque', native: 'park', rank: 689, category: 'noun', band: 'E' },
+    { foreign: 'viento', native: 'wind', rank: 690, category: 'noun', band: 'E' },
+    { foreign: 'puente', native: 'bridge', rank: 691, category: 'adjective', band: 'E' },
+    { foreign: 'pelear', native: 'to fight', rank: 692, category: 'verb', band: 'E' },
+    { foreign: 'pierna', native: 'leg', rank: 693, category: 'noun', band: 'E' },
+    { foreign: 'orgulloso', native: 'proud', rank: 694, category: 'adjective', band: 'E' },
+    { foreign: 'nacional', native: 'national', rank: 695, category: 'adjective', band: 'E' },
+    { foreign: 'universo', native: 'universe', rank: 696, category: 'noun', band: 'E' },
+    { foreign: 'necesitar', native: 'to need', rank: 697, category: 'verb', band: 'E' },
+    { foreign: 'nariz', native: 'nose', rank: 698, category: 'noun', band: 'E' },
+    { foreign: 'vergüenza', native: 'shame', rank: 699, category: 'noun', band: 'E' },
+    { foreign: 'autobús', native: 'bus', rank: 700, category: 'noun', band: 'E' },
+    { foreign: 'pocos', native: 'few', rank: 701, category: 'noun', band: 'F' },
+    { foreign: 'abierto', native: 'open', rank: 702, category: 'verb', band: 'F' },
+    { foreign: 'ministro', native: 'minister', rank: 703, category: 'noun', band: 'F' },
+    { foreign: 'conducir', native: 'to drive', rank: 704, category: 'verb', band: 'F' },
+    { foreign: 'aceptar', native: 'to accept', rank: 705, category: 'verb', band: 'F' },
+    { foreign: 'animal', native: 'animal', rank: 706, category: 'noun', band: 'F' },
+    { foreign: 'viernes', native: 'Friday', rank: 707, category: 'noun', band: 'F' },
+    { foreign: 'oferta', native: 'offer', rank: 708, category: 'noun', band: 'F' },
+    { foreign: 'proteger', native: 'to protect', rank: 709, category: 'verb', band: 'F' },
+    { foreign: 'recibir', native: 'to receive', rank: 710, category: 'verb', band: 'F' },
+    { foreign: 'enamorado', native: 'in love', rank: 711, category: 'noun', band: 'F' },
+    { foreign: 'oeste', native: 'west', rank: 712, category: 'noun', band: 'F' },
+    { foreign: 'herida', native: 'wound', rank: 713, category: 'noun', band: 'F' },
+    { foreign: 'oscuro', native: 'dark', rank: 714, category: 'noun', band: 'F' },
+    { foreign: 'mercado', native: 'market', rank: 715, category: 'noun', band: 'F' },
+    { foreign: 'cerdo', native: 'pig', rank: 716, category: 'noun', band: 'F' },
+    { foreign: 'piedra', native: 'stone', rank: 717, category: 'noun', band: 'F' },
+    { foreign: 'cerrar', native: 'to close', rank: 718, category: 'verb', band: 'F' },
+    { foreign: 'peso', native: 'peso / weight', rank: 719, category: 'noun', band: 'F' },
+    { foreign: 'contento', native: 'glad', rank: 720, category: 'noun', band: 'F' },
+    { foreign: 'privado', native: 'private', rank: 721, category: 'adjective', band: 'F' },
+    { foreign: 'romper', native: 'to break', rank: 722, category: 'verb', band: 'F' },
+    { foreign: 'jardín', native: 'garden', rank: 723, category: 'noun', band: 'F' },
+    { foreign: 'gratis', native: 'free', rank: 724, category: 'adjective', band: 'F' },
+    { foreign: 'comenzar', native: 'to begin', rank: 725, category: 'verb', band: 'F' },
+    { foreign: 'medicina', native: 'medicine', rank: 726, category: 'noun', band: 'F' },
+    { foreign: 'pollo', native: 'chicken', rank: 727, category: 'noun', band: 'F' },
+    { foreign: 'varios', native: 'several', rank: 728, category: 'noun', band: 'F' },
+    { foreign: 'efecto', native: 'effect', rank: 729, category: 'noun', band: 'F' },
+    { foreign: 'resultado', native: 'result', rank: 730, category: 'noun', band: 'F' },
+    { foreign: 'sombrero', native: 'hat', rank: 731, category: 'noun', band: 'F' },
+    { foreign: 'limpio', native: 'clean', rank: 732, category: 'adjective', band: 'F' },
+    { foreign: 'correo', native: 'mail', rank: 733, category: 'noun', band: 'F' },
+    { foreign: 'video', native: 'video', rank: 734, category: 'noun', band: 'F' },
+    { foreign: 'teatro', native: 'theater', rank: 735, category: 'noun', band: 'F' },
+    { foreign: 'local', native: 'local', rank: 736, category: 'adjective', band: 'F' },
+    { foreign: 'responsabilidad', native: 'responsibility', rank: 737, category: 'noun', band: 'F' },
+    { foreign: 'dedo', native: 'finger', rank: 738, category: 'noun', band: 'F' },
+    { foreign: 'elegir', native: 'to choose', rank: 739, category: 'verb', band: 'F' },
+    { foreign: 'almuerzo', native: 'lunch', rank: 740, category: 'noun', band: 'F' },
+    { foreign: 'cien', native: 'hundred', rank: 741, category: 'number', band: 'F' },
+    { foreign: 'pago', native: 'payment', rank: 742, category: 'verb', band: 'F' },
+    { foreign: 'pastel', native: 'cake', rank: 743, category: 'noun', band: 'F' },
+    { foreign: 'costa', native: 'coast', rank: 744, category: 'noun', band: 'F' },
+    { foreign: 'cerrado', native: 'closed', rank: 745, category: 'verb', band: 'F' },
+    { foreign: 'enfermera', native: 'nurse', rank: 746, category: 'noun', band: 'F' },
+    { foreign: 'cuento', native: 'tale', rank: 747, category: 'verb', band: 'F' },
+    { foreign: 'desayuno', native: 'breakfast', rank: 748, category: 'noun', band: 'F' },
+    { foreign: 'débil', native: 'weak', rank: 749, category: 'adjective', band: 'F' },
+    { foreign: 'deber', native: 'duty', rank: 750, category: 'verb', band: 'F' },
+    { foreign: 'pecho', native: 'chest', rank: 751, category: 'noun', band: 'F' },
+    { foreign: 'periódico', native: 'newspaper', rank: 752, category: 'noun', band: 'F' },
+    { foreign: 'limpiar', native: 'to clean', rank: 753, category: 'verb', band: 'F' },
+    { foreign: 'crear', native: 'to create', rank: 754, category: 'verb', band: 'F' },
+    { foreign: 'explicar', native: 'to explain', rank: 755, category: 'verb', band: 'F' },
+    { foreign: 'resolver', native: 'to solve', rank: 756, category: 'verb', band: 'F' },
+    { foreign: 'guapo', native: 'handsome', rank: 757, category: 'noun', band: 'F' },
+    { foreign: 'continuar', native: 'to continue', rank: 758, category: 'verb', band: 'F' },
+    { foreign: 'funcionar', native: 'to work (function)', rank: 759, category: 'verb', band: 'F' },
+    { foreign: 'primo', native: 'cousin', rank: 760, category: 'noun', band: 'F' },
+    { foreign: 'manejar', native: 'to drive', rank: 761, category: 'verb', band: 'F' },
+    { foreign: 'internet', native: 'internet', rank: 762, category: 'noun', band: 'F' },
+    { foreign: 'domingo', native: 'Sunday', rank: 763, category: 'noun', band: 'F' },
+    { foreign: 'asustado', native: 'scared', rank: 764, category: 'noun', band: 'F' },
+    { foreign: 'lengua', native: 'tongue', rank: 765, category: 'noun', band: 'F' },
+    { foreign: 'examen', native: 'exam', rank: 766, category: 'noun', band: 'F' },
+    { foreign: 'montaña', native: 'mountain', rank: 767, category: 'noun', band: 'F' },
+    { foreign: 'queso', native: 'cheese', rank: 768, category: 'noun', band: 'F' },
+    { foreign: 'sábado', native: 'Saturday', rank: 769, category: 'noun', band: 'F' },
+    { foreign: 'descubrir', native: 'to discover', rank: 770, category: 'verb', band: 'F' },
+    { foreign: 'gordo', native: 'fat', rank: 771, category: 'noun', band: 'F' },
+    { foreign: 'claramente', native: 'clearly', rank: 772, category: 'adjective', band: 'F' },
+    { foreign: 'gas', native: 'gas', rank: 773, category: 'noun', band: 'F' },
+    { foreign: 'aeropuerto', native: 'airport', rank: 774, category: 'noun', band: 'F' },
+    { foreign: 'olvidar', native: 'to forget', rank: 775, category: 'verb', band: 'F' },
+    { foreign: 'francés', native: 'French', rank: 776, category: 'noun', band: 'F' },
+    { foreign: 'techo', native: 'ceiling / roof', rank: 777, category: 'noun', band: 'F' },
+    { foreign: 'camisa', native: 'shirt', rank: 778, category: 'noun', band: 'F' },
+    { foreign: 'rosa', native: 'pink', rank: 779, category: 'adjective', band: 'F' },
+    { foreign: 'tormenta', native: 'storm', rank: 780, category: 'noun', band: 'F' },
+    { foreign: 'chocolate', native: 'chocolate', rank: 781, category: 'noun', band: 'F' },
+    { foreign: 'ciencia', native: 'science', rank: 782, category: 'noun', band: 'F' },
+    { foreign: 'sucio', native: 'dirty', rank: 783, category: 'adjective', band: 'F' },
+    { foreign: 'bebida', native: 'drink', rank: 784, category: 'noun', band: 'F' },
+    { foreign: 'lluvia', native: 'rain', rank: 785, category: 'noun', band: 'F' },
+    { foreign: 'complicado', native: 'complicated', rank: 786, category: 'noun', band: 'F' },
+    { foreign: 'curso', native: 'course', rank: 787, category: 'noun', band: 'F' },
+    { foreign: 'precioso', native: 'gorgeous', rank: 788, category: 'adjective', band: 'F' },
+    { foreign: 'lago', native: 'lake', rank: 789, category: 'noun', band: 'F' },
+    { foreign: 'parecido', native: 'similar', rank: 790, category: 'noun', band: 'F' },
+    { foreign: 'lunes', native: 'Monday', rank: 791, category: 'noun', band: 'F' },
+    { foreign: 'efectivo', native: 'cash', rank: 792, category: 'adjective', band: 'F' },
+    { foreign: 'falso', native: 'false', rank: 793, category: 'adjective', band: 'F' },
+    { foreign: 'corto', native: 'short', rank: 794, category: 'adjective', band: 'F' },
+    { foreign: 'destruir', native: 'to destroy', rank: 795, category: 'verb', band: 'F' },
+    { foreign: 'helado', native: 'ice cream', rank: 796, category: 'noun', band: 'F' },
+    { foreign: 'mapa', native: 'map', rank: 797, category: 'noun', band: 'F' },
+    { foreign: 'tarea', native: 'homework', rank: 798, category: 'noun', band: 'F' },
+    { foreign: 'móvil', native: 'mobile phone', rank: 799, category: 'noun', band: 'F' },
+    { foreign: 'responder', native: 'to answer', rank: 800, category: 'verb', band: 'F' },
+    { foreign: 'vacío', native: 'empty', rank: 801, category: 'adjective', band: 'F' },
+    { foreign: 'computadora', native: 'computer', rank: 802, category: 'noun', band: 'F' },
+    { foreign: 'estudiante', native: 'student', rank: 803, category: 'adjective', band: 'F' },
+    { foreign: 'construir', native: 'to build', rank: 804, category: 'verb', band: 'F' },
+    { foreign: 'solución', native: 'solution', rank: 805, category: 'noun', band: 'F' },
+    { foreign: 'tecnología', native: 'technology', rank: 806, category: 'noun', band: 'F' },
+    { foreign: 'nieve', native: 'snow', rank: 807, category: 'noun', band: 'F' },
+    { foreign: 'violencia', native: 'violence', rank: 808, category: 'noun', band: 'F' },
+    { foreign: 'siglo', native: 'century', rank: 809, category: 'noun', band: 'F' },
+    { foreign: 'cortar', native: 'to cut', rank: 810, category: 'verb', band: 'F' },
+    { foreign: 'imaginar', native: 'to imagine', rank: 811, category: 'verb', band: 'F' },
+    { foreign: 'cero', native: 'zero', rank: 812, category: 'number', band: 'F' },
+    { foreign: 'estómago', native: 'stomach', rank: 813, category: 'noun', band: 'F' },
+    { foreign: 'alegría', native: 'joy', rank: 814, category: 'noun', band: 'F' },
+    { foreign: 'barrio', native: 'neighborhood', rank: 815, category: 'noun', band: 'F' },
+    { foreign: 'empleo', native: 'employment', rank: 816, category: 'noun', band: 'F' },
+    { foreign: 'mostrar', native: 'to show', rank: 817, category: 'verb', band: 'F' },
+    { foreign: 'piloto', native: 'pilot', rank: 818, category: 'noun', band: 'F' },
+    { foreign: 'bolso', native: 'handbag', rank: 819, category: 'noun', band: 'F' },
+    { foreign: 'planta', native: 'plant', rank: 820, category: 'noun', band: 'F' },
+    { foreign: 'mono', native: 'monkey', rank: 821, category: 'noun', band: 'F' },
+    { foreign: 'aburrido', native: 'boring', rank: 822, category: 'noun', band: 'F' },
+    { foreign: 'castillo', native: 'castle', rank: 823, category: 'noun', band: 'F' },
+    { foreign: 'carro', native: 'car', rank: 824, category: 'noun', band: 'F' },
+    { foreign: 'ira', native: 'anger', rank: 825, category: 'noun', band: 'F' },
+    { foreign: 'cuáles', native: 'which ones', rank: 826, category: 'question', band: 'F' },
+    { foreign: 'lección', native: 'lesson', rank: 827, category: 'noun', band: 'F' },
+    { foreign: 'enojado', native: 'angry', rank: 828, category: 'noun', band: 'F' },
+    { foreign: 'andar', native: 'to walk', rank: 829, category: 'verb', band: 'F' },
+    { foreign: 'chaqueta', native: 'jacket', rank: 830, category: 'noun', band: 'F' },
+    { foreign: 'pescado', native: 'fish', rank: 831, category: 'noun', band: 'F' },
+    { foreign: 'abrigo', native: 'coat', rank: 832, category: 'noun', band: 'F' },
+    { foreign: 'estudiar', native: 'to study', rank: 833, category: 'verb', band: 'F' },
+    { foreign: 'celular', native: 'cell phone', rank: 834, category: 'noun', band: 'F' },
+    { foreign: 'veinte', native: 'twenty', rank: 835, category: 'number', band: 'F' },
+    { foreign: 'palacio', native: 'palace', rank: 836, category: 'noun', band: 'F' },
+    { foreign: 'viajar', native: 'to travel', rank: 837, category: 'verb', band: 'F' },
+    { foreign: 'fábrica', native: 'factory', rank: 838, category: 'noun', band: 'F' },
+    { foreign: 'meter', native: 'to put in', rank: 839, category: 'verb', band: 'F' },
+    { foreign: 'educación', native: 'education / manners', rank: 840, category: 'noun', band: 'F' },
+    { foreign: 'madera', native: 'wood', rank: 841, category: 'noun', band: 'F' },
+    { foreign: 'anterior', native: 'previous', rank: 842, category: 'noun', band: 'F' },
+    { foreign: 'decidir', native: 'to decide', rank: 843, category: 'verb', band: 'F' },
+    { foreign: 'parada', native: 'stop', rank: 844, category: 'noun', band: 'F' },
+    { foreign: 'ambulancia', native: 'ambulance', rank: 845, category: 'noun', band: 'F' },
+    { foreign: 'traducción', native: 'translation', rank: 846, category: 'noun', band: 'F' },
+    { foreign: 'ciertamente', native: 'certainly', rank: 847, category: 'adjective', band: 'F' },
+    { foreign: 'permitir', native: 'to allow', rank: 848, category: 'verb', band: 'F' },
+    { foreign: 'ciento', native: 'hundred (before noun)', rank: 849, category: 'number', band: 'F' },
+    { foreign: 'invierno', native: 'winter', rank: 850, category: 'noun', band: 'F' },
+    { foreign: 'consigo', native: 'with him/her/them', rank: 851, category: 'pronoun', band: 'G' },
+    { foreign: 'conductor', native: 'driver', rank: 852, category: 'noun', band: 'G' },
+    { foreign: 'arena', native: 'sand', rank: 853, category: 'noun', band: 'G' },
+    { foreign: 'azúcar', native: 'sugar', rank: 854, category: 'noun', band: 'G' },
+    { foreign: 'sótano', native: 'basement', rank: 855, category: 'noun', band: 'G' },
+    { foreign: 'suceder', native: 'to happen', rank: 856, category: 'verb', band: 'G' },
+    { foreign: 'sopa', native: 'soup', rank: 857, category: 'noun', band: 'G' },
+    { foreign: 'alemán', native: 'German', rank: 858, category: 'noun', band: 'G' },
+    { foreign: 'frontera', native: 'border', rank: 859, category: 'noun', band: 'G' },
+    { foreign: 'revista', native: 'magazine', rank: 860, category: 'noun', band: 'G' },
+    { foreign: 'desierto', native: 'desert', rank: 861, category: 'noun', band: 'G' },
+    { foreign: 'oso', native: 'bear', rank: 862, category: 'adjective', band: 'G' },
+    { foreign: 'pez', native: 'fish', rank: 863, category: 'noun', band: 'G' },
+    { foreign: 'pasillo', native: 'aisle', rank: 864, category: 'noun', band: 'G' },
+    { foreign: 'servir', native: 'to serve', rank: 865, category: 'verb', band: 'G' },
+    { foreign: 'orgullo', native: 'pride', rank: 866, category: 'noun', band: 'G' },
+    { foreign: 'enfadado', native: 'angry', rank: 867, category: 'noun', band: 'G' },
+    { foreign: 'gritar', native: 'to shout', rank: 868, category: 'verb', band: 'G' },
+    { foreign: 'concierto', native: 'concert', rank: 869, category: 'noun', band: 'G' },
+    { foreign: 'sofá', native: 'sofa', rank: 870, category: 'noun', band: 'G' },
+    { foreign: 'sombra', native: 'shade', rank: 871, category: 'noun', band: 'G' },
+    { foreign: 'pájaro', native: 'bird', rank: 872, category: 'noun', band: 'G' },
+    { foreign: 'condición', native: 'condition', rank: 873, category: 'noun', band: 'G' },
+    { foreign: 'doce', native: 'twelve', rank: 874, category: 'number', band: 'G' },
+    { foreign: 'voto', native: 'vote', rank: 875, category: 'noun', band: 'G' },
+    { foreign: 'amar', native: 'to love', rank: 876, category: 'verb', band: 'G' },
+    { foreign: 'fresco', native: 'fresh / cool', rank: 877, category: 'noun', band: 'G' },
+    { foreign: 'jueves', native: 'Thursday', rank: 878, category: 'noun', band: 'G' },
+    { foreign: 'medianoche', native: 'midnight', rank: 879, category: 'noun', band: 'G' },
+    { foreign: 'primavera', native: 'spring', rank: 880, category: 'noun', band: 'G' },
+    { foreign: 'martes', native: 'Tuesday', rank: 881, category: 'noun', band: 'G' },
+    { foreign: 'feo', native: 'ugly', rank: 882, category: 'adjective', band: 'G' },
+    { foreign: 'socorro', native: 'help', rank: 883, category: 'noun', band: 'G' },
+    { foreign: 'nación', native: 'nation', rank: 884, category: 'noun', band: 'G' },
+    { foreign: 'biblioteca', native: 'library', rank: 885, category: 'noun', band: 'G' },
+    { foreign: 'puerto', native: 'port', rank: 886, category: 'noun', band: 'G' },
+    { foreign: 'julio', native: 'July', rank: 887, category: 'noun', band: 'G' },
+    { foreign: 'lograr', native: 'to achieve', rank: 888, category: 'verb', band: 'G' },
+    { foreign: 'desaparecer', native: 'to disappear', rank: 889, category: 'verb', band: 'G' },
+    { foreign: 'título', native: 'degree / title', rank: 890, category: 'noun', band: 'G' },
+    { foreign: 'exterior', native: 'exterior', rank: 891, category: 'noun', band: 'G' },
+    { foreign: 'preparar', native: 'to prepare', rank: 892, category: 'verb', band: 'G' },
+    { foreign: 'caro', native: 'expensive', rank: 893, category: 'noun', band: 'G' },
+    { foreign: 'océano', native: 'ocean', rank: 894, category: 'noun', band: 'G' },
+    { foreign: 'escalera', native: 'stairs', rank: 895, category: 'noun', band: 'G' },
+    { foreign: 'hierba', native: 'grass', rank: 896, category: 'noun', band: 'G' },
+    { foreign: 'crecer', native: 'to grow', rank: 897, category: 'verb', band: 'G' },
+    { foreign: 'chino', native: 'Chinese', rank: 898, category: 'noun', band: 'G' },
+    { foreign: 'meta', native: 'goal', rank: 899, category: 'noun', band: 'G' },
+    { foreign: 'pasta', native: 'pasta', rank: 900, category: 'noun', band: 'G' },
+    { foreign: 'clínica', native: 'clinic', rank: 901, category: 'noun', band: 'G' },
+    { foreign: 'fiebre', native: 'fever', rank: 902, category: 'noun', band: 'G' },
+    { foreign: 'cocinar', native: 'to cook', rank: 903, category: 'verb', band: 'G' },
+    { foreign: 'delicioso', native: 'delicious', rank: 904, category: 'adjective', band: 'G' },
+    { foreign: 'nadar', native: 'to swim', rank: 905, category: 'verb', band: 'G' },
+    { foreign: 'templo', native: 'temple', rank: 906, category: 'noun', band: 'G' },
+    { foreign: 'flor', native: 'flower', rank: 907, category: 'noun', band: 'G' },
+    { foreign: 'guía', native: 'guide', rank: 908, category: 'noun', band: 'G' },
+    { foreign: 'enseñar', native: 'to teach', rank: 909, category: 'verb', band: 'G' },
+    { foreign: 'atacar', native: 'to attack', rank: 910, category: 'verb', band: 'G' },
+    { foreign: 'museo', native: 'museum', rank: 911, category: 'noun', band: 'G' },
+    { foreign: 'huevo', native: 'egg', rank: 912, category: 'noun', band: 'G' },
+    { foreign: 'ordenador', native: 'computer', rank: 913, category: 'noun', band: 'G' },
+    { foreign: 'maleta', native: 'suitcase', rank: 914, category: 'noun', band: 'G' },
+    { foreign: 'metro', native: 'subway', rank: 915, category: 'noun', band: 'G' },
+    { foreign: 'español', native: 'Spanish', rank: 916, category: 'noun', band: 'G' },
+    { foreign: 'chef', native: 'chef', rank: 917, category: 'noun', band: 'G' },
+    { foreign: 'mediante', native: 'by means of', rank: 918, category: 'preposition', band: 'G' },
+    { foreign: 'por qué', native: 'why', rank: 919, category: 'phrase', band: 'phrase' },
+    { foreign: 'cuyo', native: 'whose', rank: 920, category: 'pronoun', band: 'G' },
+    { foreign: 'cuya', native: 'whose (fem.)', rank: 921, category: 'pronoun', band: 'G' },
+    { foreign: 'cada uno', native: 'each one', rank: 922, category: 'phrase', band: 'phrase' },
+    { foreign: 'demasiada', native: 'too much (fem.)', rank: 923, category: 'noun', band: 'G' },
+    { foreign: 'únicamente', native: 'only', rank: 924, category: 'adjective', band: 'G' },
+    { foreign: 'particularmente', native: 'particularly', rank: 925, category: 'adjective', band: 'G' },
+    { foreign: 'verdaderamente', native: 'truly', rank: 926, category: 'adjective', band: 'G' },
+    { foreign: 'posiblemente', native: 'possibly', rank: 927, category: 'adjective', band: 'G' },
+    { foreign: 'aproximadamente', native: 'approximately', rank: 928, category: 'adjective', band: 'G' },
+    { foreign: 'separado', native: 'separated', rank: 929, category: 'noun', band: 'G' },
+    { foreign: 'recto', native: 'straight', rank: 930, category: 'noun', band: 'G' },
+    { foreign: 'pasado mañana', native: 'day after tomorrow', rank: 931, category: 'phrase', band: 'phrase' },
+    { foreign: 'anteayer', native: 'day before yesterday', rank: 932, category: 'noun', band: 'G' },
+    { foreign: 'a veces', native: 'sometimes', rank: 933, category: 'phrase', band: 'phrase' },
+    { foreign: 'a menudo', native: 'often', rank: 934, category: 'phrase', band: 'phrase' },
+    { foreign: 'frecuentemente', native: 'frequently', rank: 935, category: 'adjective', band: 'G' },
+    { foreign: 'raramente', native: 'rarely', rank: 936, category: 'adjective', band: 'G' },
+    { foreign: 'ya no', native: 'no longer', rank: 937, category: 'phrase', band: 'phrase' },
+    { foreign: 'todavía no', native: 'not yet', rank: 938, category: 'phrase', band: 'phrase' },
+    { foreign: 'de repente', native: 'suddenly', rank: 939, category: 'phrase', band: 'phrase' },
+    { foreign: 'de pronto', native: 'suddenly', rank: 940, category: 'phrase', band: 'phrase' },
+    { foreign: 'por fin', native: 'at last', rank: 941, category: 'phrase', band: 'phrase' },
+    { foreign: 'mientras tanto', native: 'meanwhile', rank: 942, category: 'phrase', band: 'phrase' },
+    { foreign: 'al mismo tiempo', native: 'at the same time', rank: 943, category: 'phrase', band: 'phrase' },
+    { foreign: 'tercero', native: 'third', rank: 944, category: 'number', band: 'G' },
+    { foreign: 'once', native: 'eleven', rank: 945, category: 'number', band: 'G' },
+    { foreign: 'trece', native: 'thirteen', rank: 946, category: 'number', band: 'G' },
+    { foreign: 'catorce', native: 'fourteen', rank: 947, category: 'number', band: 'G' },
+    { foreign: 'buenos días', native: 'good morning', rank: 948, category: 'phrase', band: 'phrase' },
+    { foreign: 'buenas tardes', native: 'good afternoon', rank: 949, category: 'phrase', band: 'phrase' },
+    { foreign: 'buenas noches', native: 'good evening / night', rank: 950, category: 'phrase', band: 'phrase' },
+    { foreign: 'hasta luego', native: 'see you later', rank: 951, category: 'phrase', band: 'phrase' },
+    { foreign: 'hasta pronto', native: 'see you soon', rank: 952, category: 'phrase', band: 'phrase' },
+    { foreign: 'hasta mañana', native: 'see you tomorrow', rank: 953, category: 'phrase', band: 'phrase' },
+    { foreign: 'por favor', native: 'please', rank: 954, category: 'phrase', band: 'phrase' },
+    { foreign: 'mucho gusto', native: 'nice to meet you', rank: 955, category: 'phrase', band: 'phrase' },
+    { foreign: 'me llamo', native: 'my name is', rank: 956, category: 'phrase', band: 'phrase' },
+    { foreign: 'cómo estás', native: 'how are you', rank: 957, category: 'phrase', band: 'phrase' },
+    { foreign: 'hablas inglés', native: 'do you speak English', rank: 958, category: 'phrase', band: 'phrase' },
+    { foreign: 'dónde está', native: 'where is', rank: 959, category: 'phrase', band: 'phrase' },
+    { foreign: 'cuánto cuesta', native: 'how much does it cost', rank: 960, category: 'phrase', band: 'phrase' },
+    { foreign: 'me gustaría', native: 'I would like', rank: 961, category: 'phrase', band: 'phrase' },
+    { foreign: 'con permiso', native: 'excuse me', rank: 962, category: 'phrase', band: 'phrase' },
+    { foreign: 'por supuesto', native: 'of course', rank: 963, category: 'phrase', band: 'phrase' },
+    { foreign: 'no pasa nada', native: 'no problem', rank: 964, category: 'phrase', band: 'phrase' },
+    { foreign: 'no hay problema', native: 'no problem', rank: 965, category: 'phrase', band: 'phrase' },
+    { foreign: 'sin embargo', native: 'however', rank: 966, category: 'phrase', band: 'phrase' },
+    { foreign: 'a pesar de', native: 'despite', rank: 967, category: 'phrase', band: 'phrase' },
+    { foreign: 'en lugar de', native: 'instead of', rank: 968, category: 'phrase', band: 'phrase' },
+    { foreign: 'tener hambre', native: 'to be hungry', rank: 969, category: 'phrase', band: 'phrase' },
+    { foreign: 'tener sed', native: 'to be thirsty', rank: 970, category: 'phrase', band: 'phrase' },
+    { foreign: 'tener sueño', native: 'to be sleepy', rank: 971, category: 'phrase', band: 'phrase' },
+    { foreign: 'tener prisa', native: 'to be in a hurry', rank: 972, category: 'phrase', band: 'phrase' },
+    { foreign: 'tener miedo', native: 'to be afraid', rank: 973, category: 'phrase', band: 'phrase' },
+    { foreign: 'hacer falta', native: 'to be needed', rank: 974, category: 'phrase', band: 'phrase' },
+    { foreign: 'valer la pena', native: 'to be worth it', rank: 975, category: 'phrase', band: 'phrase' },
+    { foreign: 'nos vemos', native: 'see you', rank: 976, category: 'phrase', band: 'phrase' },
+    { foreign: 'más despacio', native: 'more slowly', rank: 977, category: 'phrase', band: 'phrase' },
+    { foreign: 'cómo se dice', native: 'how do you say', rank: 978, category: 'phrase', band: 'phrase' },
+    { foreign: 'qué significa', native: 'what does it mean', rank: 979, category: 'phrase', band: 'phrase' },
+    { foreign: 'dónde están los baños', native: 'where is the bathroom', rank: 980, category: 'phrase', band: 'phrase' },
+    { foreign: 'la cuenta por favor', native: 'the bill, please', rank: 981, category: 'phrase', band: 'phrase' },
+    { foreign: 'estoy perdido', native: 'I am lost', rank: 982, category: 'phrase', band: 'phrase' },
+    { foreign: 'puede ayudarme', native: 'can you help me', rank: 983, category: 'phrase', band: 'phrase' },
+    { foreign: 'a la izquierda', native: 'to the left', rank: 984, category: 'phrase', band: 'phrase' },
+    { foreign: 'a la derecha', native: 'to the right', rank: 985, category: 'phrase', band: 'phrase' },
+    { foreign: 'todo recto', native: 'straight ahead', rank: 986, category: 'phrase', band: 'phrase' },
+    { foreign: 'cerca de aquí', native: 'near here', rank: 987, category: 'phrase', band: 'phrase' },
+    { foreign: 'lejos de aquí', native: 'far from here', rank: 988, category: 'phrase', band: 'phrase' },
+    { foreign: 'buenas', native: 'hello (informal)', rank: 989, category: 'phrase', band: 'phrase' },
+    { foreign: 'quince', native: 'fifteen', rank: 990, category: 'number', band: 'G' },
+    { foreign: 'es-extra-991', native: 'extra term 991', rank: 991, category: 'noun', band: 'G' },
+    { foreign: 'es-extra-992', native: 'extra term 992', rank: 992, category: 'noun', band: 'G' },
+    { foreign: 'es-extra-993', native: 'extra term 993', rank: 993, category: 'noun', band: 'G' },
+    { foreign: 'es-extra-994', native: 'extra term 994', rank: 994, category: 'noun', band: 'G' },
+    { foreign: 'es-extra-995', native: 'extra term 995', rank: 995, category: 'noun', band: 'G' },
+    { foreign: 'es-extra-996', native: 'extra term 996', rank: 996, category: 'noun', band: 'G' },
+    { foreign: 'es-extra-997', native: 'extra term 997', rank: 997, category: 'noun', band: 'G' },
+    { foreign: 'es-extra-998', native: 'extra term 998', rank: 998, category: 'noun', band: 'G' },
+    { foreign: 'es-extra-999', native: 'extra term 999', rank: 999, category: 'noun', band: 'G' },
+    { foreign: 'es-extra-1000', native: 'extra term 1000', rank: 1000, category: 'noun', band: 'G' },
+  ];
+  window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
+  window.LANGUAGE_BASICS[id] = {
+    "sections": [
+      {
+        "title": "Special letters",
+        "items": [
+          {
+            "glyph": "ñ",
+            "speak": "ñ",
+            "glyphClass": "",
+            "approxHtml": "<strong>ny</strong> in <em>canyon</em>",
+            "examples": [
+              {
+                "speak": "español",
+                "text": "español",
+                "gloss": "Spanish"
+              },
+              {
+                "speak": "año",
+                "text": "año",
+                "gloss": "year"
+              }
+            ]
+          },
+          {
+            "glyph": "á é í ó ú",
+            "speak": "café",
+            "glyphClass": "basics-glyph--pair",
+            "approxHtml": "accent marks stress · same vowel sound, louder syllable",
+            "examples": [
+              {
+                "speak": "café",
+                "text": "café",
+                "gloss": "coffee"
+              },
+              {
+                "speak": "está",
+                "text": "está",
+                "gloss": "is"
+              },
+              {
+                "speak": "sí",
+                "text": "sí",
+                "gloss": "yes"
+              }
+            ]
+          },
+          {
+            "glyph": "ü",
+            "speak": "vergüenza",
+            "glyphClass": "basics-glyph--sm",
+            "approxHtml": "in <em>güe/güi</em> the <strong>u</strong> is pronounced",
+            "examples": [
+              {
+                "speak": "vergüenza",
+                "text": "vergüenza",
+                "gloss": "shame"
+              },
+              {
+                "speak": "pingüino",
+                "text": "pingüino",
+                "gloss": "penguin"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Sounds that differ",
+        "items": [
+          {
+            "glyph": "j",
+            "speak": "j",
+            "glyphClass": "basics-glyph--sm",
+            "approxHtml": "harsh <strong>h</strong> (like Scottish <em>loch</em>)",
+            "examples": [
+              {
+                "speak": "jugar",
+                "text": "jugar",
+                "gloss": "to play"
+              },
+              {
+                "speak": "hijo",
+                "text": "hijo",
+                "gloss": "son"
+              }
+            ]
+          },
+          {
+            "glyph": "g + e/i",
+            "speak": "gente",
+            "glyphClass": "basics-glyph--pair",
+            "approxHtml": "same harsh <strong>h</strong> before e/i · hard <em>g</em> before a/o/u",
+            "examples": [
+              {
+                "speak": "gente",
+                "text": "gente",
+                "gloss": "people"
+              },
+              {
+                "speak": "gato",
+                "text": "gato",
+                "gloss": "cat"
+              }
+            ]
+          },
+          {
+            "glyph": "rr",
+            "speak": "perro",
+            "glyphClass": "basics-glyph--pair",
+            "approxHtml": "trilled <strong>r</strong> · single <em>r</em> is a tap",
+            "examples": [
+              {
+                "speak": "perro",
+                "text": "perro",
+                "gloss": "dog"
+              },
+              {
+                "speak": "pero",
+                "text": "pero",
+                "gloss": "but"
+              }
+            ]
+          },
+          {
+            "glyph": "ll / y",
+            "speak": "llamar",
+            "glyphClass": "basics-glyph--pair",
+            "approxHtml": "often like <strong>y</strong> in <em>yes</em> (varies by region)",
+            "examples": [
+              {
+                "speak": "llamar",
+                "text": "llamar",
+                "gloss": "to call"
+              },
+              {
+                "speak": "yo",
+                "text": "yo",
+                "gloss": "I"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Question marks",
+        "items": [
+          {
+            "glyph": "¿ ?",
+            "speak": "cómo",
+            "glyphClass": "basics-glyph--pair",
+            "approxHtml": "Spanish opens questions with <strong>¿</strong>",
+            "examples": [
+              {
+                "speak": "¿cómo estás?",
+                "text": "¿cómo estás?",
+                "gloss": "how are you?"
+              },
+              {
+                "speak": "¿dónde está?",
+                "text": "¿dónde está?",
+                "gloss": "where is it?"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  };
+  window.EXTRA_READ_STORIES = window.EXTRA_READ_STORIES || [];
+  window.EXTRA_READ_STORIES.push({
+      "id": "es-hola",
+      "categoryId": "es",
+      "title": "Buenos días en Madrid",
+      "subtitle": "A first morning",
+      "trail": "green-circle",
+      "sentences": [
+        {
+          "foreign": "Buenos días.",
+          "en": "Good morning."
+        },
+        {
+          "foreign": "Me llamo Alex.",
+          "en": "My name is Alex."
+        },
+        {
+          "foreign": "Estoy en Madrid hoy.",
+          "en": "I am in Madrid today."
+        },
+        {
+          "foreign": "Hace buen tiempo.",
+          "en": "The weather is nice."
+        },
+        {
+          "foreign": "Quiero un café, por favor.",
+          "en": "I want a coffee, please."
+        },
+        {
+          "foreign": "Muchas gracias.",
+          "en": "Thank you very much."
+        },
+        {
+          "foreign": "¿Dónde está el metro?",
+          "en": "Where is the metro?"
+        },
+        {
+          "foreign": "Está por allí.",
+          "en": "It's that way."
+        },
+        {
+          "foreign": "No entiendo todo.",
+          "en": "I don't understand everything."
+        },
+        {
+          "foreign": "Pero está bien.",
+          "en": "But it's fine."
+        }
+      ],
+      "glosses": {
+        "metro": "subway"
+      }
+    },
+    {
+      "id": "es-cafe",
+      "categoryId": "es",
+      "title": "En el café",
+      "subtitle": "Ordering a drink",
+      "trail": "green-circle",
+      "sentences": [
+        {
+          "foreign": "¡Hola! Un café con leche, por favor.",
+          "en": "Hi! A coffee with milk, please."
+        },
+        {
+          "foreign": "¿Quiere algo de comer?",
+          "en": "Do you want something to eat?"
+        },
+        {
+          "foreign": "Sí, una tostada, por favor.",
+          "en": "Yes, a toast, please."
+        },
+        {
+          "foreign": "¿Con tomate?",
+          "en": "With tomato?"
+        },
+        {
+          "foreign": "Sí, con tomate y aceite.",
+          "en": "Yes, with tomato and oil."
+        },
+        {
+          "foreign": "Son cuatro euros.",
+          "en": "That's four euros."
+        },
+        {
+          "foreign": "Pago con tarjeta.",
+          "en": "I'll pay by card."
+        },
+        {
+          "foreign": "Perfecto. Aquí tiene.",
+          "en": "Perfect. Here you go."
+        },
+        {
+          "foreign": "Gracias. ¡Que tenga un buen día!",
+          "en": "Thanks. Have a nice day!"
+        },
+        {
+          "foreign": "Adiós. Hasta luego.",
+          "en": "Goodbye. See you later."
+        }
+      ],
+      "glosses": {
+        "tostada": "toast",
+        "tarjeta": "card"
+      }
+    },
+    {
+      "id": "es-tren",
+      "categoryId": "es",
+      "title": "En la estación",
+      "subtitle": "Buying a ticket",
+      "trail": "green-circle",
+      "sentences": [
+        {
+          "foreign": "Perdone, ¿este tren va a Sevilla?",
+          "en": "Excuse me, does this train go to Seville?"
+        },
+        {
+          "foreign": "Sí. Sale en quince minutos.",
+          "en": "Yes. It leaves in fifteen minutes."
+        },
+        {
+          "foreign": "¿Dónde puedo comprar un billete?",
+          "en": "Where can I buy a ticket?"
+        },
+        {
+          "foreign": "En la máquina o en la app.",
+          "en": "At the machine or in the app."
+        },
+        {
+          "foreign": "Un billete de ida, por favor.",
+          "en": "One one-way ticket, please."
+        },
+        {
+          "foreign": "¿Ventana o pasillo?",
+          "en": "Window or aisle?"
+        },
+        {
+          "foreign": "Ventana, gracias. ¿Cuánto tarda?",
+          "en": "Window, thanks. How long does it take?"
+        },
+        {
+          "foreign": "Unas dos horas y media.",
+          "en": "About two and a half hours."
+        },
+        {
+          "foreign": "Muchas gracias por su ayuda.",
+          "en": "Thank you very much for your help."
+        },
+        {
+          "foreign": "¡Buen viaje!",
+          "en": "Have a good trip!"
+        }
+      ],
+      "glosses": {
+        "ida": "one-way",
+        "pasillo": "aisle"
+      }
+    },
+    {
+      "id": "es-mercado",
+      "categoryId": "es",
+      "title": "En el mercado",
+      "subtitle": "Food shopping",
+      "trail": "green-circle",
+      "sentences": [
+        {
+          "foreign": "Buenos días. Quisiera naranjas, por favor.",
+          "en": "Good morning. I would like oranges, please."
+        },
+        {
+          "foreign": "¿Cuántos kilos?",
+          "en": "How many kilos?"
+        },
+        {
+          "foreign": "Un kilo está bien.",
+          "en": "One kilo is fine."
+        },
+        {
+          "foreign": "¿Y un poco de jamón?",
+          "en": "And a little ham?"
+        },
+        {
+          "foreign": "Sí, cien gramos de jamón serrano.",
+          "en": "Yes, one hundred grams of Serrano ham."
+        },
+        {
+          "foreign": "¿Algo más?",
+          "en": "Anything else?"
+        },
+        {
+          "foreign": "No, eso es todo. ¿Cuánto es?",
+          "en": "No, that's all. How much is it?"
+        },
+        {
+          "foreign": "Seis euros con cincuenta.",
+          "en": "Six euros fifty."
+        },
+        {
+          "foreign": "Aquí tiene diez.",
+          "en": "Here's ten."
+        },
+        {
+          "foreign": "Gracias. ¡Hasta luego!",
+          "en": "Thanks. See you later!"
+        }
+      ],
+      "glosses": {
+        "jamón": "ham",
+        "serrano": "Serrano (cured)"
+      }
+    },
+    {
+      "id": "es-piso",
+      "categoryId": "es",
+      "title": "Buscar un piso",
+      "subtitle": "Looking for a flat",
+      "trail": "blue-square",
+      "sentences": [
+        {
+          "foreign": "Busco un piso cerca de la universidad.",
+          "en": "I'm looking for a flat near the university."
+        },
+        {
+          "foreign": "¿Cuántas habitaciones necesita?",
+          "en": "How many rooms do you need?"
+        },
+        {
+          "foreign": "Con una habitación y cocina me basta.",
+          "en": "One bedroom and a kitchen is enough for me."
+        },
+        {
+          "foreign": "El alquiler es de setecientos euros al mes.",
+          "en": "The rent is seven hundred euros a month."
+        },
+        {
+          "foreign": "¿Incluye los gastos?",
+          "en": "Does it include utilities?"
+        },
+        {
+          "foreign": "El agua sí; la luz no.",
+          "en": "Water yes; electricity no."
+        },
+        {
+          "foreign": "¿Puedo verlo esta tarde?",
+          "en": "Can I see it this afternoon?"
+        },
+        {
+          "foreign": "Claro. Le envío la dirección.",
+          "en": "Of course. I'll send you the address."
+        },
+        {
+          "foreign": "Perfecto. Hasta luego.",
+          "en": "Perfect. See you later."
+        }
+      ],
+      "glosses": {
+        "alquiler": "rent",
+        "gastos": "utilities / expenses"
+      }
+    },
+    {
+      "id": "es-medico",
+      "categoryId": "es",
+      "title": "En el médico",
+      "subtitle": "At the doctor's",
+      "trail": "blue-square",
+      "sentences": [
+        {
+          "foreign": "Buenos días, doctor. No me siento bien.",
+          "en": "Good morning, doctor. I don't feel well."
+        },
+        {
+          "foreign": "¿Qué síntomas tiene?",
+          "en": "What symptoms do you have?"
+        },
+        {
+          "foreign": "Me duele la cabeza y tengo un poco de fiebre.",
+          "en": "My head hurts and I have a bit of fever."
+        },
+        {
+          "foreign": "¿Desde cuándo?",
+          "en": "Since when?"
+        },
+        {
+          "foreign": "Desde hace dos días.",
+          "en": "For two days."
+        },
+        {
+          "foreign": "Voy a examinarle.",
+          "en": "I'm going to examine you."
+        },
+        {
+          "foreign": "No es grave, pero debe descansar.",
+          "en": "It's not serious, but you should rest."
+        },
+        {
+          "foreign": "Aquí tiene una receta para la farmacia.",
+          "en": "Here's a prescription for the pharmacy."
+        },
+        {
+          "foreign": "Muchas gracias, doctor.",
+          "en": "Thank you very much, doctor."
+        },
+        {
+          "foreign": "Que se mejore. Hasta pronto.",
+          "en": "Get well soon. See you soon."
+        }
+      ],
+      "glosses": {
+        "síntomas": "symptoms",
+        "receta": "prescription"
+      }
+    },
+    {
+      "id": "es-trabajo",
+      "categoryId": "es",
+      "title": "Primer día de trabajo",
+      "subtitle": "First day at work",
+      "trail": "blue-square",
+      "sentences": [
+        {
+          "foreign": "Hoy es mi primer día en la empresa.",
+          "en": "Today is my first day at the company."
+        },
+        {
+          "foreign": "Mi compañera me presenta al equipo.",
+          "en": "My colleague introduces me to the team."
+        },
+        {
+          "foreign": "La oficina está en el segundo piso.",
+          "en": "The office is on the second floor."
+        },
+        {
+          "foreign": "Hay una reunión a las once.",
+          "en": "There is a meeting at eleven."
+        },
+        {
+          "foreign": "Tomo notas durante la presentación.",
+          "en": "I take notes during the presentation."
+        },
+        {
+          "foreign": "Al mediodía comemos en la cafetería.",
+          "en": "At midday we eat in the cafeteria."
+        },
+        {
+          "foreign": "Por la tarde aprendo a usar el programa.",
+          "en": "In the afternoon I learn to use the program."
+        },
+        {
+          "foreign": "El trabajo es interesante, pero hay mucho que recordar.",
+          "en": "The work is interesting, but there's a lot to remember."
+        },
+        {
+          "foreign": "Esta noche estoy cansado, pero contento.",
+          "en": "Tonight I'm tired, but glad."
+        }
+      ],
+      "glosses": {
+        "empresa": "company",
+        "programa": "program / software"
+      }
+    },
+    {
+      "id": "es-viaje",
+      "categoryId": "es",
+      "title": "Fin de semana en Andalucía",
+      "subtitle": "A weekend trip",
+      "trail": "blue-square",
+      "sentences": [
+        {
+          "foreign": "Salimos en tren hacia Andalucía.",
+          "en": "We leave by train for Andalusia."
+        },
+        {
+          "foreign": "El paisaje es hermoso: olivos, colinas y pueblos blancos.",
+          "en": "The landscape is beautiful: olive trees, hills, and white villages."
+        },
+        {
+          "foreign": "El sábado por la mañana visitamos un mercado.",
+          "en": "Saturday morning we visit a market."
+        },
+        {
+          "foreign": "Compro aceite de oliva y un abanico.",
+          "en": "I buy olive oil and a fan."
+        },
+        {
+          "foreign": "Por la tarde caminamos hasta el alcázar.",
+          "en": "In the afternoon we walk to the fortress."
+        },
+        {
+          "foreign": "Por la noche cenamos en una terraza.",
+          "en": "At night we have dinner on a terrace."
+        },
+        {
+          "foreign": "La comida es excelente y la conversación larga.",
+          "en": "The food is excellent and the conversation long."
+        },
+        {
+          "foreign": "El domingo ya hay que volver.",
+          "en": "On Sunday we already have to go back."
+        },
+        {
+          "foreign": "Volveré pronto.",
+          "en": "I'll come back soon."
+        }
+      ],
+      "glosses": {
+        "olivos": "olive trees",
+        "abanico": "fan",
+        "alcázar": "fortress / palace"
+      }
+    },
+    {
+      "id": "es-debate",
+      "categoryId": "es",
+      "title": "Un debate en clase",
+      "subtitle": "A classroom debate",
+      "trail": "black-diamond",
+      "sentences": [
+        {
+          "foreign": "Hoy la clase debate el futuro de las ciudades.",
+          "en": "Today the class debates the future of cities."
+        },
+        {
+          "foreign": "Algunos creen que los coches deberían prohibirse en el centro.",
+          "en": "Some believe cars should be banned from the center."
+        },
+        {
+          "foreign": "Otros dicen que es imposible para los comercios.",
+          "en": "Others say it's impossible for businesses."
+        },
+        {
+          "foreign": "El profesor pide argumentos concretos.",
+          "en": "The teacher asks for concrete arguments."
+        },
+        {
+          "foreign": "María explica que la contaminación afecta a la salud de los niños.",
+          "en": "María explains that pollution affects children's health."
+        },
+        {
+          "foreign": "Pablo responde que el transporte público aún no basta.",
+          "en": "Pablo replies that public transport is still not enough."
+        },
+        {
+          "foreign": "Después de una hora, nadie ha cambiado del todo de opinión.",
+          "en": "After an hour, no one has fully changed their mind."
+        },
+        {
+          "foreign": "Sin embargo, todos entienden mejor el problema.",
+          "en": "However, everyone better understands the problem."
+        },
+        {
+          "foreign": "Eso ya es un avance.",
+          "en": "That's already progress."
+        }
+      ],
+      "glosses": {
+        "prohibirse": "to be banned",
+        "contaminación": "pollution",
+        "avance": "progress"
+      }
+    },
+    {
+      "id": "es-carta",
+      "categoryId": "es",
+      "title": "Una carta importante",
+      "subtitle": "An important letter",
+      "trail": "black-diamond",
+      "sentences": [
+        {
+          "foreign": "Esta mañana recibí una carta de la administración.",
+          "en": "This morning I received a letter from the administration."
+        },
+        {
+          "foreign": "Pide varios documentos antes de fin de mes.",
+          "en": "It asks for several documents before the end of the month."
+        },
+        {
+          "foreign": "Debo demostrar mi dirección y mi condición de estudiante.",
+          "en": "I must prove my address and my student status."
+        },
+        {
+          "foreign": "Sin esos papeles, el expediente quedará incompleto.",
+          "en": "Without those papers, the file will be incomplete."
+        },
+        {
+          "foreign": "Paso la tarde reuniendo las copias.",
+          "en": "I spend the afternoon gathering the copies."
+        },
+        {
+          "foreign": "La biblioteca me ayuda a imprimir los formularios.",
+          "en": "The library helps me print the forms."
+        },
+        {
+          "foreign": "Mañana enviaré todo por correo certificado.",
+          "en": "Tomorrow I'll send everything by registered mail."
+        },
+        {
+          "foreign": "Espero que sea suficiente.",
+          "en": "I hope it will be enough."
+        }
+      ],
+      "glosses": {
+        "expediente": "file",
+        "certificado": "registered / certified"
+      }
+    },
+    {
+      "id": "es-tormenta",
+      "categoryId": "es",
+      "title": "Noche de tormenta",
+      "subtitle": "A stormy night",
+      "trail": "black-diamond",
+      "sentences": [
+        {
+          "foreign": "El viento se levantó justo después de la cena.",
+          "en": "The wind picked up just after dinner."
+        },
+        {
+          "foreign": "Nubes negras cubrieron la luna.",
+          "en": "Black clouds covered the moon."
+        },
+        {
+          "foreign": "De repente, un rayo iluminó la calle.",
+          "en": "Suddenly, lightning lit up the street."
+        },
+        {
+          "foreign": "El trueno llegó muy cerca.",
+          "en": "The thunder arrived very close."
+        },
+        {
+          "foreign": "La lluvia empezó a golpear las ventanas.",
+          "en": "The rain began to hit the windows."
+        },
+        {
+          "foreign": "Me levanté para cerrar las persianas.",
+          "en": "I got up to close the blinds."
+        },
+        {
+          "foreign": "Afuera, los árboles se doblaban con el viento.",
+          "en": "Outside, the trees bent with the wind."
+        },
+        {
+          "foreign": "Hacia medianoche, la tormenta se calmó.",
+          "en": "Around midnight, the storm calmed down."
+        },
+        {
+          "foreign": "Por la mañana, el aire olía a tierra mojada.",
+          "en": "In the morning, the air smelled of wet earth."
+        }
+      ],
+      "glosses": {
+        "rayo": "lightning",
+        "trueno": "thunder",
+        "persianas": "blinds"
+      }
+    },
+    {
+      "id": "es-novela",
+      "categoryId": "es",
+      "title": "El libro viejo",
+      "subtitle": "A found novel",
+      "trail": "double-black-diamond",
+      "sentences": [
+        {
+          "foreign": "En una caja olvidada del desván encontré una novela sin portada.",
+          "en": "In a forgotten box in the attic I found a novel with no cover."
+        },
+        {
+          "foreign": "Las páginas estaban amarillas, pero la letra se leía bien.",
+          "en": "The pages were yellow, but the writing was still readable."
+        },
+        {
+          "foreign": "La historia hablaba de una mujer que cruzaba España a pie después de la guerra.",
+          "en": "The story was about a woman who crossed Spain on foot after the war."
+        },
+        {
+          "foreign": "Buscaba a su hermano, desaparecido desde hacía meses.",
+          "en": "She was looking for her brother, missing for months."
+        },
+        {
+          "foreign": "Cada capítulo ocurría en una ciudad distinta.",
+          "en": "Each chapter took place in a different city."
+        },
+        {
+          "foreign": "A veces la esperanza parecía perdida; a veces una carta reabría el camino.",
+          "en": "Sometimes hope seemed lost; sometimes a letter reopened the road."
+        },
+        {
+          "foreign": "Leí hasta el amanecer, sin poder parar.",
+          "en": "I read until dawn, unable to stop."
+        },
+        {
+          "foreign": "En la última página, el nombre de mi abuelo estaba escrito a lápiz.",
+          "en": "On the last page, my grandfather's name was written in pencil."
+        },
+        {
+          "foreign": "El libro no era solo una historia: era una herencia.",
+          "en": "The book was not only a story: it was an inheritance."
+        }
+      ],
+      "glosses": {
+        "desván": "attic",
+        "portada": "cover",
+        "herencia": "inheritance"
+      }
+    },
+    {
+      "id": "es-tesis",
+      "categoryId": "es",
+      "title": "La defensa de la tesis",
+      "subtitle": "Defending a thesis",
+      "trail": "double-black-diamond",
+      "sentences": [
+        {
+          "foreign": "Después de cuatro años de investigación, llegó el día de la defensa.",
+          "en": "After four years of research, the day of the defense arrived."
+        },
+        {
+          "foreign": "La sala estaba llena de profesores, compañeros y mi familia.",
+          "en": "The room was full of professors, colleagues, and my family."
+        },
+        {
+          "foreign": "Presenté mis resultados sobre el clima urbano durante cuarenta minutos.",
+          "en": "I presented my results on urban climate for forty minutes."
+        },
+        {
+          "foreign": "Las preguntas fueron duras, pero justas.",
+          "en": "The questions were hard, but fair."
+        },
+        {
+          "foreign": "Un miembro del tribunal cuestionó mi método; lo defendí con datos.",
+          "en": "A committee member questioned my method; I defended it with data."
+        },
+        {
+          "foreign": "Cuando me pidieron salir, el corazón me latía demasiado fuerte.",
+          "en": "When they asked me to step out, my heart was beating too hard."
+        },
+        {
+          "foreign": "Al volver, el presidente sonrió y dijo: «Felicidades, doctor».",
+          "en": "Coming back, the chair smiled and said: “Congratulations, doctor.”"
+        },
+        {
+          "foreign": "Apenas oí el resto: solo la alegría.",
+          "en": "I barely heard the rest: only the joy."
+        },
+        {
+          "foreign": "Afuera, el sol de junio iluminaba por fin el final de un largo camino.",
+          "en": "Outside, the June sun finally lit the end of a long path."
+        }
+      ],
+      "glosses": {
+        "defensa": "defense",
+        "tribunal": "committee",
+        "cuestionó": "questioned / challenged"
+      }
+    });
+})();

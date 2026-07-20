@@ -64,12 +64,23 @@ Or double-click `index.html` — review works; speech may need the local server.
 - **Content marketplace** — user-created story packs; revenue share with contributors.
 - **Grants** — Innovation Norway, regional innovation funds, or EU mobility/education programmes for open educational resources.
 
+## Languages
+
+| Track | Status |
+|-------|--------|
+| Norwegian · Bokmål | Full (1,000 cards, 17 stories, full Basics) |
+| Swedish, Danish, German, French, Spanish, Italian | v1 (1,000 cards, 12+ stories, Basics) |
+
+Language packs live in `lang/*-pack.js`. Progress is stored per language in the browser.
+
 ## What's next (technical)
 
+- Quality pass on non-Norwegian decks (native review)
 - CSV deck import/export
 - Norwegian speech recognition for reverse cards
 - PWA / offline install
 - Nynorsk track
+- More world languages (e.g. East Asian) after EU set is polished
 
 ## Content sources
 

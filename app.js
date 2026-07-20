@@ -144,12 +144,39 @@ function getDeckStorageKey(categoryId = activeCategoryId) {
 }
 
 function getStarterDeckEntries(category = getActiveCategory()) {
-  if (category.id !== "nb-bokmal") return [];
-  const entries = [...NORWEGIAN_FREQUENCY_DECK];
-  if (typeof NORWEGIAN_READING_VOCAB !== "undefined" && Array.isArray(NORWEGIAN_READING_VOCAB)) {
-    entries.push(...NORWEGIAN_READING_VOCAB);
+  if (category.id === "nb-bokmal") {
+    const entries = [...NORWEGIAN_FREQUENCY_DECK];
+    if (typeof NORWEGIAN_READING_VOCAB !== "undefined" && Array.isArray(NORWEGIAN_READING_VOCAB)) {
+      entries.push(...NORWEGIAN_READING_VOCAB);
+    }
+    return entries;
   }
-  return entries;
+  const packs = typeof window !== "undefined" ? window.STARTER_DECKS : null;
+  const entries = packs?.[category.id];
+  return Array.isArray(entries) ? entries : [];
+}
+
+/** Foreign text on a Read sentence (packs may use foreign; Norwegian uses nb). */
+function sentenceForeignText(s) {
+  if (!s) return "";
+  return s.foreign || s.nb || s.text || "";
+}
+
+function getLookupSuffixes(category = getActiveCategory()) {
+  if (category.id === "nb-bokmal") return NORWEGIAN_LOOKUP_SUFFIXES;
+  return Array.isArray(category.lookupSuffixes) ? category.lookupSuffixes : [];
+}
+
+function hasLanguageBasics(categoryId = activeCategoryId) {
+  const data =
+    typeof window !== "undefined" ? window.LANGUAGE_BASICS?.[categoryId] : null;
+  return Boolean(data?.sections?.length);
+}
+
+function updateBasicsButtonVisibility(categoryId = activeCategoryId) {
+  const btn = document.getElementById("progress-basics-btn");
+  if (!btn) return;
+  btn.classList.toggle("hidden", !hasLanguageBasics(categoryId));
 }
 
 function buildStarterDeck(category = getActiveCategory()) {
@@ -5672,8 +5699,13 @@ function saveReadProgress() {
 }
 
 function getStoriesForCategory(categoryId = activeCategoryId) {
-  if (typeof READ_STORIES === "undefined" || !Array.isArray(READ_STORIES)) return [];
-  const stories = READ_STORIES.filter((story) => story.categoryId === categoryId);
+  const base =
+    typeof READ_STORIES !== "undefined" && Array.isArray(READ_STORIES) ? READ_STORIES : [];
+  const extra =
+    typeof window !== "undefined" && Array.isArray(window.EXTRA_READ_STORIES)
+      ? window.EXTRA_READ_STORIES
+      : [];
+  const stories = [...base, ...extra].filter((story) => story.categoryId === categoryId);
   return typeof sortStoriesByTrail === "function" ? sortStoriesByTrail(stories) : stories;
 }
 
@@ -5847,16 +5879,21 @@ function buildDeckLookup() {
   return map;
 }
 
-function generateNorwegianLookupVariants(word) {
+function generateLookupVariants(word, category = getActiveCategory()) {
   const base = normalizeAnswer(word);
   if (!base) return [];
   const variants = new Set([base]);
-  for (const suffix of NORWEGIAN_LOOKUP_SUFFIXES) {
+  for (const suffix of getLookupSuffixes(category)) {
     if (base.length > suffix.length + 2 && base.endsWith(suffix)) {
       variants.add(base.slice(0, -suffix.length));
     }
   }
   return [...variants];
+}
+
+/** @deprecated use generateLookupVariants */
+function generateNorwegianLookupVariants(word) {
+  return generateLookupVariants(word);
 }
 
 function addReadVocabEntry(map, foreign, native, source) {
@@ -5872,14 +5909,19 @@ function rebuildReadVocabIndex() {
     addReadVocabEntry(map, card.foreign, card.native, "deck");
   });
 
+  const storyPools = [];
   if (typeof READ_STORIES !== "undefined" && Array.isArray(READ_STORIES)) {
-    READ_STORIES.forEach((story) => {
-      if (!story?.glosses) return;
-      Object.entries(story.glosses).forEach(([foreign, native]) => {
-        addReadVocabEntry(map, foreign, native, "gloss");
-      });
-    });
+    storyPools.push(...READ_STORIES);
   }
+  if (typeof window !== "undefined" && Array.isArray(window.EXTRA_READ_STORIES)) {
+    storyPools.push(...window.EXTRA_READ_STORIES);
+  }
+  storyPools.forEach((story) => {
+    if (!story?.glosses) return;
+    Object.entries(story.glosses).forEach(([foreign, native]) => {
+      addReadVocabEntry(map, foreign, native, "gloss");
+    });
+  });
 
   readVocabIndex = map;
   return map;
@@ -5892,7 +5934,7 @@ function getReadVocabIndex() {
 
 function lookupReadVocabEntry(token, story) {
   const index = getReadVocabIndex();
-  const variants = generateNorwegianLookupVariants(token);
+  const variants = generateLookupVariants(token);
 
   for (const variant of variants) {
     const hit = index.get(variant);
@@ -5943,10 +5985,14 @@ function parseReadSentence(text, phrases) {
     const restLower = rest.toLowerCase();
     let matched = null;
 
+    // Letters for Western European target languages (nb/sv/da/de/fr/es/it).
+    const isWordChar = (c) =>
+      /[a-zA-ZæøåäöüÆØÅÄÖÜáàâãéèêëíìîïóòôõúùûñçÁÀÂÃÉÈÊËÍÌÎÏÓÒÔÕÚÙÛÑÇß']/.test(c);
+
     for (const phrase of phrases) {
       if (!restLower.startsWith(phrase)) continue;
       const end = i + phrase.length;
-      if (end < text.length && /[a-zæøåA-ZÆØÅ]/.test(text[end])) continue;
+      if (end < text.length && isWordChar(text[end])) continue;
       matched = text.slice(i, end);
       i = end;
       break;
@@ -5958,7 +6004,7 @@ function parseReadSentence(text, phrases) {
     }
 
     let word = "";
-    while (i < text.length && /[a-zæøåA-ZÆØÅ]/.test(text[i])) {
+    while (i < text.length && isWordChar(text[i])) {
       word += text[i];
       i += 1;
     }
@@ -5984,7 +6030,7 @@ function lookupReadWord(token, deckMap, story) {
     return { source: "deck", foreign: card.foreign, native: card.native, card };
   }
 
-  for (const variant of generateNorwegianLookupVariants(token)) {
+  for (const variant of generateLookupVariants(token)) {
     const variantCard = deckMap.get(variant);
     if (variantCard) {
       return {
@@ -6451,7 +6497,12 @@ function renderReadPanel() {
   const contextBefore = document.getElementById("read-context-before");
 
   if (focusNb) {
-    focusNb.innerHTML = renderReadSentenceMarkup(sentence.nb, story, deckMap, true);
+    focusNb.innerHTML = renderReadSentenceMarkup(
+      sentenceForeignText(sentence),
+      story,
+      deckMap,
+      true
+    );
   }
   if (focusEn) {
     focusEn.textContent = sentence.en;
@@ -6461,7 +6512,10 @@ function renderReadPanel() {
       contextBefore.innerHTML = '<div class="read-context-anchor" aria-hidden="true"></div>';
     } else {
       const chunks = priorSentences
-        .map((entry) => `<span class="read-context-sentence">${escapeHtml(entry.nb)}</span>`)
+        .map(
+          (entry) =>
+            `<span class="read-context-sentence">${escapeHtml(sentenceForeignText(entry))}</span>`
+        )
         .join('<span class="read-context-gap" aria-hidden="true"> </span>');
       contextBefore.innerHTML = `<div class="read-context-anchor"><div class="read-context-track">${chunks}</div></div>`;
       alignReadContextTrack(contextBefore);
@@ -6648,6 +6702,7 @@ function applyCategoryUI() {
 
   applyAddCardFormUI();
   applyPracticeDirectionUI();
+  updateBasicsButtonVisibility(category.id);
 
   document.title = "Leitner Learning";
 }
@@ -6663,9 +6718,11 @@ function applyPracticeDirectionUI() {
   if (directionBtn) {
     directionBtn.textContent = labels.promptLabel;
     directionBtn.setAttribute("aria-pressed", String(isReversePractice()));
+    const learningName =
+      category.learningLanguageName || category.label.split(" · ")[0] || "the language";
     directionBtn.title = isReversePractice()
-      ? "Tap to review Norwegian → English"
-      : "Tap to review English → Norwegian";
+      ? `Tap to review ${learningName} → English`
+      : `Tap to review English → ${learningName}`;
   }
 
   if (answerInput) {
@@ -7268,7 +7325,7 @@ function initEventListeners() {
   document.getElementById("read-hear-sentence")?.addEventListener("click", () => {
     const story = getActiveReadStory();
     if (!story) return;
-    speakForeign(story.sentences[readSentenceIndex]?.nb);
+    speakForeign(sentenceForeignText(story.sentences[readSentenceIndex]));
   });
 
   document.getElementById("read-trail-btn")?.addEventListener("click", (e) => {
@@ -7478,16 +7535,87 @@ function isBasicsOpen() {
   return Boolean(modal && !modal.classList.contains("hidden"));
 }
 
+function renderLanguageBasics(category = getActiveCategory()) {
+  const body = document.getElementById("basics-body");
+  if (!body) return;
+
+  const data =
+    typeof window !== "undefined" ? window.LANGUAGE_BASICS?.[category.id] : null;
+  if (!data?.sections?.length) {
+    body.innerHTML = `<p class="basics-empty">Basics coming soon for ${escapeHtml(
+      category.label || "this language"
+    )}.</p>`;
+    return;
+  }
+
+  const sectionsHtml = data.sections
+    .map((section, sectionIndex) => {
+      const titleId = `basics-section-${sectionIndex}`;
+      const listClass = section.compact
+        ? "basics-sound-list basics-sound-list--compact"
+        : "basics-sound-list";
+      const items = (section.items || [])
+        .map((item) => {
+          const speak = item.speak || item.glyph || "";
+          const sizeClass =
+            item.glyphSize === "sm"
+              ? " basics-glyph--sm"
+              : item.glyphSize === "pair"
+                ? " basics-glyph--pair"
+                : "";
+          const examples = (item.examples || [])
+            .map((ex, i) => {
+              const word = ex.text || ex.speak || "";
+              const gloss = ex.gloss != null ? String(ex.gloss) : "";
+              const sep = i === 0 ? "" : " · ";
+              const glossHtml = gloss ? ` ${escapeHtml(gloss)}` : "";
+              return `${sep}<button type="button" class="basics-word" data-speak="${escapeAttr(
+                ex.speak || word
+              )}">${escapeHtml(word)}</button>${glossHtml}`;
+            })
+            .join("");
+          return `
+            <li class="basics-sound-row">
+              <button type="button" class="basics-glyph${sizeClass}" data-speak="${escapeAttr(
+                speak
+              )}" aria-label="Hear ${escapeAttr(item.glyph || speak)}">${escapeHtml(
+                item.glyph || speak
+              )}</button>
+              <div class="basics-sound-copy">
+                <p class="basics-sound-approx">${item.approxHtml || ""}</p>
+                ${
+                  examples
+                    ? `<p class="basics-sound-examples">${examples}</p>`
+                    : ""
+                }
+              </div>
+            </li>`;
+        })
+        .join("");
+      return `
+        <section class="about-section" aria-labelledby="${titleId}">
+          <h3 class="about-section-title" id="${titleId}">${escapeHtml(section.title || "")}</h3>
+          <ul class="${listClass}">${items}</ul>
+        </section>`;
+    })
+    .join("");
+
+  body.innerHTML = `<p class="basics-hint">Tap blue to hear.</p>${sectionsHtml}`;
+}
+
 function openBasicsModal(returnFocusId) {
   if (isWelcomeOpen()) return;
+  if (!hasLanguageBasics()) return;
   closeAboutModal({ restoreFocus: false });
   const modal = document.getElementById("basics-modal");
   if (!modal) return;
   basicsReturnFocusId = returnFocusId || "progress-basics-btn";
+  const category = getActiveCategory();
   const title = document.getElementById("basics-title");
   if (title) {
-    title.textContent = getActiveCategory()?.label || "Norwegian · Bokmål";
+    title.textContent = category?.label || "Basics";
   }
+  renderLanguageBasics(category);
   modal.classList.remove("hidden");
   document.body.classList.add("modal-open");
   document.getElementById("basics-close-btn")?.focus({ preventScroll: true });
@@ -7547,10 +7675,11 @@ function maybeShowWelcome() {
 
 function bootApp() {
   try {
-    if (typeof NORWEGIAN_FREQUENCY_DECK === "undefined") {
+    const category = getActiveCategory();
+    if (category.id === "nb-bokmal" && typeof NORWEGIAN_FREQUENCY_DECK === "undefined") {
       throw new Error("Deck data did not load. Check your network connection and refresh.");
     }
-    const starterEntries = getStarterDeckEntries();
+    const starterEntries = getStarterDeckEntries(category);
     if (!starterEntries.length) {
       throw new Error("The deck is empty.");
     }
