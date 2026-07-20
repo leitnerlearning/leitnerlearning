@@ -3220,6 +3220,23 @@ function updateProgressLevelsLanguage(category = getActiveCategory(), { flash = 
   }, 900);
 }
 
+/** Read-only language chip on the Read title bar (not a switcher). */
+function updateReadLanguageIndicator(category = getActiveCategory()) {
+  const el = document.getElementById("read-language");
+  if (!el) return;
+  const label =
+    category?.label || category?.learningLanguageName || "Language";
+  const flag = category?.flag || "🏳️";
+  el.querySelectorAll("[data-read-language-flag]").forEach((node) => {
+    node.textContent = flag;
+  });
+  el.querySelectorAll("[data-read-language-label]").forEach((node) => {
+    node.textContent = label;
+  });
+  el.setAttribute("aria-label", `Active language: ${label}`);
+  el.title = label;
+}
+
 function showTrackSwitchOverlay(label) {
   const el = document.getElementById("track-switch-overlay");
   const nameEl = document.getElementById("track-switch-overlay-name");
@@ -6812,6 +6829,7 @@ function applyCategoryUI() {
   applyPracticeDirectionUI();
   updateBasicsButtonVisibility(category.id);
   updateProgressLevelsLanguage(category, { flash: false });
+  updateReadLanguageIndicator(category);
 
   document.title = "Leitner Learning";
 }

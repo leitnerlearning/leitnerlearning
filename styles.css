@@ -4746,6 +4746,7 @@ body.welcome-open .app {
     min-height: 2.55rem;
   }
 
+  .read-language,
   .read-trail-btn,
   .read-story-select {
     min-height: 2.75rem;
@@ -5268,8 +5269,43 @@ body.welcome-open .app {
 .read-title-row {
   display: flex;
   align-items: stretch;
-  gap: 0.5rem;
+  gap: 0.45rem;
   min-width: 0;
+}
+
+/* Read-only language chip — flag + name; switch stays on Progress */
+.read-language {
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  max-width: 8.5rem;
+  min-height: 2.35rem;
+  padding: 0 0.55rem 0 0.45rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--surface-glass-strong);
+  color: var(--text-secondary);
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+.read-language-flag {
+  flex-shrink: 0;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.read-language-label {
+  min-width: 0;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .read-trail-btn {
@@ -5915,7 +5951,17 @@ body.welcome-open .app {
   }
 
   .read-title-row {
-    gap: 0.6rem;
+    gap: 0.55rem;
+  }
+
+  .read-language {
+    min-height: 2.6rem;
+    max-width: 9.5rem;
+    padding: 0 0.6rem 0 0.5rem;
+  }
+
+  .read-language-label {
+    font-size: 0.76rem;
   }
 
   .read-trail-btn {
@@ -6057,7 +6103,17 @@ body.welcome-open .app {
   }
 
   .read-title-row {
-    gap: 0.4rem;
+    gap: 0.35rem;
+  }
+
+  .read-language {
+    min-height: 44px;
+    max-width: 7.25rem;
+    padding: 0 0.5rem 0 0.4rem;
+  }
+
+  .read-language-flag {
+    font-size: 1.1rem;
   }
 
   .read-trail-btn {
