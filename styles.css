@@ -226,20 +226,53 @@ main,
 }
 
 /*
- * Progress language control:
- *  Desktop — flag + written name (stable source of truth on the prefs row)
- *  Mobile  — flag + chevron only (fixed width; full names live in the menu)
+ * Progress prefs row — one visual system
+ *  Desktop: [ 🇳🇴 Norwegian ▾ ] [ Basics æ ø å ] ··· [ Female|Male ] [ About ]
+ *  Mobile:  [ 🇳🇴 ▾ ] [ Basics æ ø å ] ··· [ Female|Male ] [ About ]
+ * Shared: pill height, border, surface, type scale, hover/focus.
  */
+.progress-prefs {
+  --prefs-h: 2.35rem;
+  --prefs-pad-x: 0.72rem;
+  --prefs-font: 0.76rem;
+  --prefs-gap: 0.4rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--prefs-gap);
+  width: 100%;
+  margin: 0 0 1.05rem;
+  box-sizing: border-box;
+}
+
+.category-picker--progress {
+  position: relative;
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.category-picker--progress .category-picker-menu {
+  left: 0;
+  right: auto;
+  transform: none;
+  min-width: 12.5rem;
+  max-width: min(18rem, 92vw);
+  z-index: 40;
+}
+
+/* Language — primary control (flag + name on desktop) */
 .category-picker-btn--progress {
   min-width: 0;
-  min-height: 2.25rem;
-  max-width: min(11.5rem, 42vw);
-  padding: 0.28rem 0.55rem 0.28rem 0.5rem;
+  min-height: var(--prefs-h);
+  height: var(--prefs-h);
+  max-width: min(11.25rem, 40vw);
+  padding: 0 0.55rem 0 0.5rem;
   gap: 0.35rem;
   justify-content: flex-start;
   text-transform: none;
   letter-spacing: -0.01em;
-  font-size: 0.8rem;
+  font-size: var(--prefs-font);
   font-weight: 650;
   line-height: 1;
   color: var(--text-secondary);
@@ -247,10 +280,10 @@ main,
   border: 1px solid var(--border-strong);
   box-shadow: none;
   transition:
-    color 0.2s var(--ease, ease),
-    background 0.2s var(--ease, ease),
-    border-color 0.2s var(--ease, ease),
-    box-shadow 0.2s var(--ease, ease);
+    color 0.15s var(--ease, ease),
+    background 0.15s var(--ease, ease),
+    border-color 0.15s var(--ease, ease),
+    box-shadow 0.15s var(--ease, ease);
 }
 
 .category-picker-btn--progress:hover,
@@ -262,6 +295,10 @@ main,
   outline: none;
 }
 
+.category-picker-btn--progress:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
 .category-picker-btn--progress.is-flashing {
   color: var(--brand-deep);
   background: var(--brand-soft);
@@ -270,7 +307,7 @@ main,
 }
 
 .category-picker-btn--progress .category-flag {
-  font-size: 1.15rem;
+  font-size: 1.12rem;
 }
 
 .category-picker-lang {
@@ -284,7 +321,7 @@ main,
 
 .category-picker-btn--progress .category-picker-chevron {
   flex-shrink: 0;
-  opacity: 0.65;
+  opacity: 0.55;
 }
 
 .category-flag {
@@ -321,40 +358,7 @@ main,
   border: 0;
 }
 
-/*
- * Progress prefs (under tabs · above stat bubbles):
- *  [ 🇳🇴 Norwegian ▾ ] [ Basics ] …… [ Voice F|M ] [ About ]
- */
-.progress-prefs {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 0.45rem 0.55rem;
-  width: 100%;
-  margin: 0 0 1rem;
-  box-sizing: border-box;
-}
-
-.category-picker--progress {
-  position: relative;
-  flex: 0 0 auto;
-  margin: 0;
-}
-
-.category-picker--progress .category-picker-menu {
-  left: 0;
-  right: auto;
-  transform: none;
-  min-width: 12.5rem;
-  max-width: min(18rem, 92vw);
-  z-index: 40;
-}
-
-/*
- * Basics + About — same secondary chip family.
- * Basics shows "Basics" + signature characters (æ ø å, etc.).
- */
+/* Basics + About — secondary twins */
 .progress-basics-btn,
 .progress-about-btn {
   appearance: none;
@@ -362,15 +366,16 @@ main,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  min-height: 2.25rem;
-  padding: 0.35rem 0.85rem;
+  gap: 0.38rem;
+  min-height: var(--prefs-h);
+  height: var(--prefs-h);
+  padding: 0 var(--prefs-pad-x);
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   background: var(--surface-glass-strong);
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 0.75rem;
+  font-size: var(--prefs-font);
   font-weight: 600;
   letter-spacing: -0.01em;
   text-transform: none;
@@ -384,31 +389,33 @@ main,
     color 0.15s var(--ease),
     background 0.15s var(--ease),
     border-color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease),
     transform 0.12s ease;
 }
 
 .progress-basics-btn {
-  padding: 0.32rem 0.7rem 0.32rem 0.75rem;
-  max-width: min(11rem, 46vw);
+  padding: 0 0.68rem 0 0.72rem;
+  max-width: min(12rem, 48vw);
 }
 
 .progress-basics-kicker {
   flex-shrink: 0;
-  font-size: 0.72rem;
+  font-size: inherit;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: inherit;
   color: inherit;
 }
 
 .progress-basics-glyphs {
   flex-shrink: 1;
   min-width: 0;
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: var(--brand-deep);
   overflow: hidden;
   text-overflow: ellipsis;
+  font-feature-settings: "kern" 1;
 }
 
 .progress-basics-btn:hover .progress-basics-glyphs,
@@ -426,17 +433,22 @@ main,
   outline: none;
 }
 
+.progress-basics-btn:focus-visible,
+.progress-about-btn:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
 .progress-basics-btn:active,
 .progress-about-btn:active {
   transform: scale(0.98);
 }
 
+/* Voice — same height as chips; pushed right as settings cluster */
 .progress-voice {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.4rem;
   min-width: 0;
   margin-left: auto;
 }
@@ -666,42 +678,37 @@ main,
   }
 }
 
-.progress-voice-label {
-  flex-shrink: 0;
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-  line-height: 1;
-}
-
-/* Same visual family as language pill — chip scale */
+/* Voice segment — matches prefs pill height */
+.progress-prefs .voice-gender-control,
 .voice-gender-control {
   display: inline-grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.12rem;
+  gap: 0.1rem;
   width: auto;
-  min-width: 8.5rem;
-  padding: 0.15rem;
+  min-width: 0;
+  min-height: var(--prefs-h, 2.35rem);
+  height: var(--prefs-h, 2.35rem);
+  padding: 0.14rem;
   border-radius: 999px;
   background: var(--surface-glass-strong);
   border: 1px solid var(--border-strong);
   box-sizing: border-box;
+  align-items: stretch;
 }
 
 .voice-gender-option {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 1.95rem;
-  padding: 0.22rem 0.6rem;
+  min-height: 0;
+  height: 100%;
+  padding: 0 0.65rem;
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   color: var(--text-secondary);
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: var(--prefs-font, 0.76rem);
   font-weight: 600;
   letter-spacing: -0.01em;
   cursor: pointer;
@@ -727,11 +734,11 @@ main,
 
 .voice-gender-option:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--brand-soft);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
 }
 
 .voice-gender-option[aria-pressed="true"]:focus-visible {
-  box-shadow: 0 0 0 3px var(--brand-soft);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
 }
 
 .category-picker-btn {
@@ -881,44 +888,27 @@ main,
     min-height: 44px;
   }
 
-  .progress-basics-btn,
-  .progress-about-btn {
-    min-height: 44px;
-  }
-
-  /* Phones: glyphs carry the meaning; "Basics" stays compact */
-  .progress-basics-btn {
-    max-width: none;
-    padding: 0.3rem 0.55rem 0.3rem 0.55rem;
-    gap: 0.28rem;
-  }
-
-  .progress-basics-kicker {
-    font-size: 0.65rem;
-  }
-
-  .progress-basics-glyphs {
-    font-size: 0.82rem;
-    letter-spacing: 0.03em;
-  }
-
   .progress-prefs {
-    gap: 0.3rem;
-    margin-bottom: 0.85rem;
+    --prefs-h: 2.5rem;
+    --prefs-pad-x: 0.6rem;
+    --prefs-font: 0.72rem;
+    --prefs-gap: 0.3rem;
+    margin-bottom: 0.9rem;
   }
 
   /*
-   * Mobile language control: fixed flag chip — never grows with "Norwegian".
-   * Name stays in aria-label + open menu (flag + full name per option).
+   * Mobile language: fixed flag chip — never grows with "Norwegian".
+   * Name lives in aria-label + open menu.
    */
   .category-picker-btn--progress {
     flex: 0 0 auto;
-    width: 2.85rem;
-    min-width: 2.85rem;
-    max-width: 2.85rem;
-    min-height: 2.25rem;
-    padding: 0 0.35rem;
-    gap: 0.15rem;
+    width: var(--prefs-h);
+    min-width: var(--prefs-h);
+    max-width: var(--prefs-h);
+    min-height: var(--prefs-h);
+    height: var(--prefs-h);
+    padding: 0;
+    gap: 0.12rem;
     justify-content: center;
   }
 
@@ -939,24 +929,32 @@ main,
   }
 
   .category-picker-btn--progress .category-picker-chevron {
-    width: 0.38rem;
-    height: 0.38rem;
+    width: 0.36rem;
+    height: 0.36rem;
   }
 
-  /* Compact voice segment — frees room for Basics / About */
+  .progress-basics-btn {
+    max-width: none;
+    gap: 0.28rem;
+    padding: 0 0.55rem;
+  }
+
+  .progress-basics-glyphs {
+    font-size: 0.86rem;
+    letter-spacing: 0.04em;
+  }
+
   .progress-prefs .voice-gender-control {
     min-width: 0;
     width: auto;
     max-width: none;
     gap: 0.08rem;
-    padding: 0.1rem;
+    padding: 0.12rem;
   }
 
   .progress-prefs .voice-gender-option {
-    min-height: 1.85rem;
-    min-width: 0;
-    padding: 0.18rem 0.38rem;
-    font-size: 0.65rem;
+    padding: 0 0.42rem;
+    font-size: 0.68rem;
   }
 
   .brand {

@@ -2687,7 +2687,9 @@ function updateVoiceGenderUI() {
   }
   document.querySelectorAll("[data-voice-gender]").forEach((btn) => {
     const on = btn.dataset.voiceGender === preferredVoiceGender;
+    const gender = btn.dataset.voiceGender === "male" ? "Male" : "Female";
     btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.setAttribute("aria-label", `${gender} voice${on ? ", selected" : ""}`);
   });
 }
 
