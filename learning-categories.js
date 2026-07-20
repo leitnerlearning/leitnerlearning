@@ -6,7 +6,7 @@
 const LEARNING_CATEGORIES = [
   {
     id: "nb-bokmal",
-    label: "Norwegian · Bokmål",
+    label: "Norwegian",
     available: true,
     foreignLang: "nb",
     speechLang: "nb-NO",

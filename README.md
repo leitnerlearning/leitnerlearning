@@ -68,7 +68,7 @@ Or double-click `index.html` — review works; speech may need the local server.
 
 | Track | Status |
 |-------|--------|
-| Norwegian · Bokmål | Full (1,000 cards, 17 stories, full Basics) |
+| Norwegian | Full (1,000 cards, 17 stories, full Basics) — Bokmål |
 | Swedish, Danish, German, French, Spanish, Italian | v1 (1,000 cards, 12+ stories, Basics) |
 
 Language packs live in `lang/*-pack.js`. Progress is stored per language in the browser.

@@ -7609,7 +7609,7 @@ function openAboutModal() {
   const lead = document.getElementById("about-lead");
   if (lead) {
     const category = getActiveCategory();
-    lead.textContent = category?.label || "Norwegian · Bokmål";
+    lead.textContent = category?.label || "Norwegian";
   }
   modal.classList.remove("hidden");
   document.body.classList.add("modal-open");
