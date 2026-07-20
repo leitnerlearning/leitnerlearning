@@ -3545,6 +3545,7 @@ function setEmptyStatePowerAction(
 /**
  * Short status under the logo power button.
  * Counts live in home stats (e.g. "15 left today") — don't repeat them here.
+ * Sentence case: action cue, not a headline.
  */
 function formatPowerHomeHint({
   mode = "start",
@@ -3691,21 +3692,15 @@ function renderEmptyState() {
         hint: formatPowerHomeHint({
           mode: "complete",
           extraDue,
-          sessionLine:
-            extraDue > 0
-              ? `${correct} · extras ready`
-              : `${correct} · done for today`,
+          sessionLine: correct,
         }),
         ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for today",
       });
     } else if (remainingToday > 0) {
       showPowerHome({
         mode: "continue",
-        hint: formatPowerHomeHint({
-          mode: "continue",
-          remaining: remainingToday,
-        }),
-        ariaLabel: "Continue today's review",
+        hint: formatPowerHomeHint({ mode: "continue" }),
+        ariaLabel: "Continue review",
       });
     } else {
       showPowerHome({
@@ -3713,7 +3708,6 @@ function renderEmptyState() {
         enabled: extraDue > 0,
         hint: formatPowerHomeHint({
           mode: extraDue > 0 ? "continue" : "complete",
-          remaining: extraDue,
           extraDue,
           sessionLine: correct,
         }),
@@ -3732,11 +3726,8 @@ function renderEmptyState() {
       mode: continuing ? "continue" : "start",
       hint: formatPowerHomeHint({
         mode: continuing ? "continue" : "start",
-        remaining: remainingToday,
       }),
-      ariaLabel: continuing
-        ? "Continue today's review"
-        : "Start today's review",
+      ariaLabel: continuing ? "Continue review" : "Start review",
     });
     return;
   }
