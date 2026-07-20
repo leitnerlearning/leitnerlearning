@@ -234,9 +234,7 @@ function updateBasicsButtonVisibility(categoryId = activeCategoryId) {
     glyphsEl.hidden = glyphs.length === 0;
   }
   const label =
-    glyphs.length > 0
-      ? `Letters and sounds: ${glyphs.join(", ")}`
-      : "Letters and sounds";
+    glyphs.length > 0 ? `Sounds: ${glyphs.join(", ")}` : "Sounds";
   btn.setAttribute("aria-label", label);
   btn.title = label;
 }

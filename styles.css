@@ -353,7 +353,7 @@ main,
 
 /*
  * Basics + About — same secondary chip family.
- * Basics shows "Letters" + signature characters (æ ø å, etc.).
+ * Basics shows "Sounds" + signature characters (æ ø å, etc.).
  */
 .progress-basics-btn,
 .progress-about-btn {
@@ -886,7 +886,7 @@ main,
     min-height: 44px;
   }
 
-  /* Phones: glyphs carry the meaning; "Letters" stays tiny */
+  /* Phones: glyphs carry the meaning; "Sounds" stays tiny */
   .progress-basics-btn {
     max-width: none;
     padding: 0.3rem 0.55rem 0.3rem 0.55rem;
