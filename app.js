@@ -7172,43 +7172,13 @@ function renderCategoryPicker() {
 
 /**
  * First-run: picking a language *is* entering the app (no Start button).
- * Light moment only — not the full Progress track-switch overlay.
- * Soft sound + haptic + short logo/name beat, then fade into Review.
+ * Straight into Review — no flourish here (Progress keeps the full language ceremony).
  */
-let welcomeExitTimer = null;
-
 function completeWelcomeWithLanguage(categoryId) {
   const nextCategory = getCategoryById(categoryId);
   if (!nextCategory?.available) return;
 
-  const modal = document.getElementById("welcome-modal");
-  if (!modal || modal.classList.contains("is-exiting")) return;
-
   closeCategoryMenu();
-  unlockAudioPipeline();
-
-  // Brief confirmation on the control: flag + name
-  const welcomeLabel = modal.querySelector("[data-welcome-language-label]");
-  if (welcomeLabel) {
-    welcomeLabel.textContent = `${nextCategory.flag || ""} ${nextCategory.label || ""}`.trim();
-  }
-  const welcomeBtn = document.getElementById("welcome-language-btn");
-  if (welcomeBtn) {
-    welcomeBtn.setAttribute(
-      "aria-label",
-      `Starting with ${nextCategory.label || "language"}`
-    );
-    welcomeBtn.disabled = true;
-  }
-
-  modal.classList.add("is-exiting");
-  modal.setAttribute("aria-busy", "true");
-
-  // Light sensory flourish (same soft tools as language switch, no full overlay)
-  if (!prefersReducedMotion()) {
-    triggerTrackSwitchHaptic();
-    playTrackSwitchSound();
-  }
 
   if (categoryId !== activeCategoryId) {
     applyCategorySwitch(categoryId, { announce: false });
@@ -7217,23 +7187,12 @@ function completeWelcomeWithLanguage(categoryId) {
     renderAll();
   }
 
+  closeWelcomeModal(true);
   try {
     switchTab("practice");
   } catch {
     /* keep safe */
   }
-
-  if (welcomeExitTimer) {
-    window.clearTimeout(welcomeExitTimer);
-    welcomeExitTimer = null;
-  }
-
-  const exitMs = prefersReducedMotion() ? 0 : 480;
-  welcomeExitTimer = window.setTimeout(() => {
-    welcomeExitTimer = null;
-    closeWelcomeModal(true);
-    if (welcomeBtn) welcomeBtn.disabled = false;
-  }, exitMs);
 }
 
 function openCategoryMenu(btn) {
