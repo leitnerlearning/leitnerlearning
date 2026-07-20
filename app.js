@@ -2593,11 +2593,20 @@ function saveVoiceGender(gender) {
   updateVoiceGenderUI();
 }
 
+function triggerVoiceGenderHaptic() {
+  // Short single tick — lighter than goal / language-switch patterns.
+  if (typeof navigator.vibrate === "function") {
+    navigator.vibrate(12);
+  }
+}
+
 function setVoiceGender(gender) {
   const next = VOICE_GENDERS.includes(gender) ? gender : "female";
   unlockAudioPipeline();
-  if (next !== preferredVoiceGender) {
+  const changed = next !== preferredVoiceGender;
+  if (changed) {
     saveVoiceGender(next);
+    triggerVoiceGenderHaptic();
   } else {
     updateVoiceGenderUI();
   }
