@@ -3561,7 +3561,7 @@ function formatPowerHomeHint({
   if (mode === "continue") return "Continue";
   // complete — button enabled only when extras exist
   if (extraDue > 0) return "Extras Ready";
-  return "Done for today";
+  return "Done for Today";
 }
 
 function renderHomeStatus() {
@@ -3698,7 +3698,7 @@ function renderEmptyState() {
           extraDue,
           sessionLine: correct,
         }),
-        ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for today",
+        ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for Today",
       });
     } else if (remainingToday > 0) {
       showPowerHome({
@@ -3715,7 +3715,7 @@ function renderEmptyState() {
           extraDue,
           sessionLine: correct,
         }),
-        ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for today",
+        ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for Today",
       });
     }
     return;
@@ -3741,7 +3741,7 @@ function renderEmptyState() {
       mode: "complete",
       enabled: extraDue > 0,
       hint: formatPowerHomeHint({ mode: "complete", extraDue }),
-      ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for today",
+      ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for Today",
     });
     return;
   }
@@ -3751,7 +3751,7 @@ function renderEmptyState() {
     mode: "complete",
     enabled: extraDue > 0,
     hint: formatPowerHomeHint({ mode: "complete", extraDue }),
-    ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for today",
+    ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for Today",
   });
 }
 
