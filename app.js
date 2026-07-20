@@ -7465,8 +7465,8 @@ function initEventListeners() {
   });
 
   document.getElementById("daily-goal-chip")?.addEventListener("click", () => openGoalCapModal());
-  document.getElementById("goal-cap-close-btn")?.addEventListener("click", () => closeGoalCapModal());
   document.getElementById("goal-cap-modal")?.addEventListener("click", (e) => {
+    // Backdrop dismiss — no Close button; pick a number or tap away / Escape.
     if (e.target.id === "goal-cap-modal") closeGoalCapModal();
   });
   document.getElementById("goal-cap-options")?.addEventListener("click", (e) => {
