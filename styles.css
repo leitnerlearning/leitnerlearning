@@ -218,7 +218,7 @@ main,
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 2rem;
+  margin-bottom: 0.65rem;
 }
 
 .brand-logo {
@@ -230,9 +230,73 @@ main,
   filter: drop-shadow(0 8px 24px rgba(54, 95, 207, 0.1));
 }
 
+/* Global language track — always visible above tabs */
+.header-track {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 1.15rem;
+}
+
 .category-picker {
   position: relative;
   margin: 0 0 0.35rem;
+}
+
+.category-picker--header {
+  position: relative;
+  margin: 0;
+  max-width: min(16rem, 88vw);
+}
+
+.category-picker--header .category-picker-btn {
+  min-height: 2.15rem;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.35rem 0.85rem 0.35rem 0.95rem;
+  justify-content: space-between;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--text-secondary);
+  background: var(--surface-glass-strong);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
+  transition:
+    color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
+}
+
+.category-picker--header .category-picker-btn:hover,
+.category-picker--header .category-picker-btn:focus-visible,
+.category-picker--header .category-picker-btn[aria-expanded="true"] {
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-color: transparent;
+  box-shadow: var(--shadow-sm);
+  outline: none;
+}
+
+.category-picker--header [data-category-picker-label] {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.category-picker--header .category-picker-menu {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  min-width: min(100%, 16rem);
+  width: max-content;
+  max-width: min(20rem, 92vw);
+  z-index: 80;
 }
 
 .category-picker--welcome {
@@ -491,8 +555,8 @@ main,
 }
 
 /*
- * Progress prefs: [ Language · Basics ] ………… [ Voice F | M ]
- * Language + Basics = tight pair. Voice = separate group. Shared control height.
+ * Progress prefs: Basics ······ Voice [ F | M ]
+ * Language lives in the global header on every page.
  */
 .progress-prefs {
   display: flex;
@@ -500,84 +564,12 @@ main,
   flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.85rem;
+  gap: 0.75rem;
   width: 100%;
   margin: 0 0 1rem;
   box-sizing: border-box;
 }
 
-/* Pair: language picker + Basics sit close together */
-.progress-language {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.35rem;
-  margin: 0;
-}
-
-.category-picker--progress {
-  position: relative;
-  flex: 1 1 auto;
-  width: auto;
-  min-width: 0;
-  max-width: 16rem;
-  margin: 0;
-  display: block;
-}
-
-.category-picker--progress .category-picker-btn {
-  width: 100%;
-  max-width: 100%;
-  min-height: 2.25rem;
-  padding: 0.35rem 0.7rem 0.35rem 0.8rem;
-  justify-content: space-between;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  text-transform: none;
-  color: var(--text-secondary);
-  background: var(--surface-glass-strong);
-  border: 1px solid var(--border-strong);
-  box-shadow: none;
-  transition:
-    color 0.15s var(--ease),
-    background 0.15s var(--ease),
-    border-color 0.15s var(--ease),
-    box-shadow 0.15s var(--ease);
-}
-
-.category-picker--progress .category-picker-btn:hover,
-.category-picker--progress .category-picker-btn:focus-visible,
-.category-picker--progress .category-picker-btn[aria-expanded="true"] {
-  color: var(--brand-deep);
-  background: var(--brand-soft);
-  border-color: transparent;
-  box-shadow: none;
-  outline: none;
-}
-
-.category-picker--progress [data-category-picker-label] {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: left;
-}
-
-.category-picker--progress .category-picker-menu {
-  left: 0;
-  right: auto;
-  transform: none;
-  min-width: min(100%, 16rem);
-  width: max-content;
-  max-width: min(20rem, 92vw);
-}
-
-/* Rest: clear on blue ambient. Hover: same soft blue as Voice Female/Male */
 .progress-basics-btn {
   appearance: none;
   flex: 0 0 auto;
@@ -839,6 +831,19 @@ main,
     margin-bottom: 1rem;
   }
 
+  .header-track {
+    margin-bottom: 0.75rem;
+  }
+
+  .category-picker--header {
+    max-width: min(14rem, 86vw);
+  }
+
+  .category-picker--header .category-picker-btn {
+    min-height: 2.05rem;
+    font-size: 0.72rem;
+  }
+
   .site-footer {
     padding-top: 1.75rem;
   }
@@ -848,7 +853,7 @@ main,
   }
 
   .brand {
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.45rem;
     gap: 0.3rem;
   }
 
@@ -863,11 +868,21 @@ main,
   }
 
   .app.practice-focus .brand {
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.35rem;
   }
 
   .app.practice-focus .brand-logo {
     width: min(140px, 42vw);
+  }
+
+  .app.practice-focus .header-track {
+    margin-bottom: 0.55rem;
+  }
+
+  .app.practice-focus .category-picker--header .category-picker-btn {
+    min-height: 1.95rem;
+    padding: 0.28rem 0.7rem;
+    font-size: 0.72rem;
   }
 
   .app.practice-focus .practice-card {
@@ -1871,11 +1886,15 @@ main {
   }
 
   .app.practice-focus .brand {
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.55rem;
   }
 
   .app.practice-focus .brand-logo {
     width: min(200px, 28vw);
+  }
+
+  .app.practice-focus .header-track {
+    margin-bottom: 0.85rem;
   }
 
   .practice-meta {
@@ -2584,15 +2603,7 @@ body.welcome-open .app {
   padding: 0 1rem 0.95rem;
 }
 
-.about-lead {
-  margin: 0 0 0.95rem;
-  font-size: var(--text-base, 1rem);
-  font-weight: 600;
-  line-height: var(--lh-body);
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  text-align: center;
-}
+/* about-lead removed — language lives in the global header */
 
 .about-section {
   margin-bottom: 0.75rem;
@@ -4519,20 +4530,6 @@ body.welcome-open .app {
     margin-bottom: 1.15rem;
   }
 
-  .progress-language {
-    gap: 0.4rem;
-  }
-
-  .category-picker--progress {
-    max-width: 17.5rem;
-  }
-
-  .category-picker--progress .category-picker-btn {
-    min-height: 2.35rem;
-    padding: 0.38rem 0.85rem 0.38rem 0.9rem;
-    font-size: 0.78rem;
-  }
-
   .progress-basics-btn {
     min-height: 2.35rem;
     padding: 0.38rem 0.95rem;
@@ -4789,33 +4786,11 @@ body.welcome-open .app {
     text-wrap: balance;
   }
 
-  /*
-   * Mobile: one row — language · Basics · Voice.
-   * Language flexes/ellipses; Basics + Voice stay compact.
-   */
+  /* Mobile Progress: Basics + Voice on one row */
   .progress-prefs {
     flex-wrap: nowrap;
-    gap: 0.35rem;
+    gap: 0.45rem;
     margin-bottom: 0.9rem;
-  }
-
-  .progress-language {
-    flex: 1 1 auto;
-    min-width: 0;
-    gap: 0.3rem;
-  }
-
-  .category-picker--progress {
-    flex: 1 1 auto;
-    max-width: none;
-    min-width: 0;
-  }
-
-  .category-picker--progress .category-picker-btn {
-    min-height: 2.15rem;
-    padding: 0.3rem 0.5rem 0.3rem 0.55rem;
-    font-size: 0.68rem;
-    gap: 0.25rem;
   }
 
   .progress-basics-btn {
@@ -4828,7 +4803,7 @@ body.welcome-open .app {
 
   .progress-voice {
     flex: 0 0 auto;
-    margin-left: 0;
+    margin-left: auto;
     justify-content: flex-end;
     gap: 0;
   }
@@ -6356,11 +6331,6 @@ body.welcome-open .app {
 
   .about-body {
     padding-top: 0;
-  }
-
-  .about-lead {
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
   }
 
   .about-section {

@@ -3616,7 +3616,8 @@ function isOnProgressTab() {
 }
 
 function isCategoryPickerAvailable() {
-  return isWelcomeOpen() || isOnProgressTab();
+  // Global header control is always available; welcome has its own picker while gated.
+  return true;
 }
 
 function updateCategoryPickerAvailability() {
@@ -7605,12 +7606,6 @@ function openAboutModal() {
   closeBasicsModal({ restoreFocus: false });
   const modal = document.getElementById("about-modal");
   if (!modal) return;
-  // Language only — no "free" claim (pricing may change later).
-  const lead = document.getElementById("about-lead");
-  if (lead) {
-    const category = getActiveCategory();
-    lead.textContent = category?.label || "Norwegian";
-  }
   modal.classList.remove("hidden");
   document.body.classList.add("modal-open");
   document.getElementById("about-close-btn")?.focus({ preventScroll: true });
