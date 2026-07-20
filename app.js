@@ -3534,6 +3534,7 @@ function setEmptyStatePowerAction(
     startBtn.setAttribute("aria-disabled", enabled ? "false" : "true");
     startBtn.setAttribute("aria-label", ariaLabel || hint || "Review");
     if (hint) startBtn.title = hint;
+    else startBtn.removeAttribute("title");
   }
 
   if (powerEl) {
@@ -3548,8 +3549,8 @@ function setEmptyStatePowerAction(
 
 /**
  * Short status under the logo power button.
- * Counts live in home stats (e.g. "15 left today") — don't repeat them here.
- * Sentence case: action cue, not a headline.
+ * Counts live in home stats — don't repeat them here.
+ * Fully done (no extras): silence under the logo — complete logo is enough.
  */
 function formatPowerHomeHint({
   mode = "start",
@@ -3559,9 +3560,9 @@ function formatPowerHomeHint({
   if (sessionLine) return sessionLine;
   if (mode === "start") return "Start Review";
   if (mode === "continue") return "Continue";
-  // complete — button enabled only when extras exist
+  // complete — only speak when there's something left to do
   if (extraDue > 0) return "Extras Ready";
-  return "Done for Today";
+  return ""; // idle done: no caption under the logo
 }
 
 function renderHomeStatus() {
@@ -3660,16 +3661,21 @@ function renderEmptyState() {
       messageEl.classList.remove("hidden");
     }
     const resolvedHint =
-      hint ||
-      formatPowerHomeHint({
-        mode,
-        remaining: remainingToday,
-        extraDue,
-      });
+      hint !== undefined && hint !== null && String(hint).length
+        ? String(hint)
+        : formatPowerHomeHint({
+            mode,
+            extraDue,
+          });
+    // When fully done, keep aria on the button even if the caption is silent.
+    const resolvedAria =
+      ariaLabel ||
+      resolvedHint ||
+      (mode === "complete" && !enabled ? "Done for Today" : "Review");
     setEmptyStatePowerAction(powerEl, powerHintEl, {
       show: true,
       mode,
-      ariaLabel: ariaLabel || resolvedHint,
+      ariaLabel: resolvedAria,
       hint: resolvedHint,
       celebrate,
       enabled,
