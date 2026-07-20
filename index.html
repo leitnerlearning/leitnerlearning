@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=174" />
+    <link rel="stylesheet" href="styles.css?v=175" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -70,8 +70,20 @@
       aria-atomic="true"
       aria-hidden="true"
     >
+      <div class="track-switch-veil" aria-hidden="true"></div>
       <div class="track-switch-overlay-inner">
-        <p class="track-switch-overlay-kicker">Now learning</p>
+        <div class="track-switch-logo-wrap" aria-hidden="true">
+          <span class="track-switch-logo-ring"></span>
+          <span class="track-switch-logo-bloom"></span>
+          <img
+            class="track-switch-logo"
+            src="brand/logo-icon.svg"
+            alt=""
+            width="72"
+            height="98"
+            decoding="async"
+          />
+        </div>
         <p class="track-switch-overlay-name" id="track-switch-overlay-name"></p>
       </div>
     </div>
@@ -719,6 +731,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=236"></script>
+    <script src="app.js?v=237"></script>
   </body>
 </html>

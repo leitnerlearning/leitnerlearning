@@ -3161,8 +3161,8 @@ function celebrateGoalComplete() {
 }
 
 /**
- * Two-tone settle — longer than a UI tick, shorter than the goal chime.
- * Marks a real mental shift into another learning track.
+ * Three soft rising tones — a short “portal” into the new track.
+ * Distinct from the goal-complete chime; not a single UI tick.
  */
 function playTrackSwitchSound() {
   const ctx = getGoalAudioContext();
@@ -3171,21 +3171,27 @@ function playTrackSwitchSound() {
     ctx.resume().catch(() => {});
   }
   const now = ctx.currentTime;
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.09, now + 0.04);
-  gain.gain.exponentialRampToValueAtTime(0.05, now + 0.22);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
-  gain.connect(ctx.destination);
+  const master = ctx.createGain();
+  master.gain.setValueAtTime(0.0001, now);
+  master.gain.exponentialRampToValueAtTime(0.1, now + 0.05);
+  master.gain.exponentialRampToValueAtTime(0.04, now + 0.35);
+  master.gain.exponentialRampToValueAtTime(0.0001, now + 0.85);
+  master.connect(ctx.destination);
 
-  [494, 659].forEach((frequency, index) => {
+  // Low open → mid settle → high lift (C4 · E4 · G4-ish)
+  [261.63, 329.63, 392.0].forEach((frequency, index) => {
     const oscillator = ctx.createOscillator();
-    oscillator.type = "sine";
+    const voice = ctx.createGain();
+    oscillator.type = index === 0 ? "triangle" : "sine";
     oscillator.frequency.value = frequency;
-    oscillator.connect(gain);
-    const start = now + index * 0.14;
+    voice.gain.setValueAtTime(0.0001, now);
+    const start = now + index * 0.11;
+    voice.gain.exponentialRampToValueAtTime(0.7 - index * 0.12, start + 0.04);
+    voice.gain.exponentialRampToValueAtTime(0.0001, start + 0.42);
+    oscillator.connect(voice);
+    voice.connect(master);
     oscillator.start(start);
-    oscillator.stop(start + 0.38);
+    oscillator.stop(start + 0.48);
   });
 }
 
@@ -3240,10 +3246,10 @@ function showTrackSwitchOverlay(label) {
         el.classList.add("hidden");
         el.setAttribute("aria-hidden", "true");
       }
-    }, 240);
+    }, 280);
     // After the veil lifts, land attention on the durable language chip.
     updateProgressLevelsLanguage(getActiveCategory(), { flash: true });
-  }, 1100);
+  }, 1250);
 }
 
 function announceTrackSwitch(category = getActiveCategory()) {
