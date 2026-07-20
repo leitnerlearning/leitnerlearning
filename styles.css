@@ -2659,6 +2659,23 @@ body.welcome-open .app {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   pointer-events: auto;
+  opacity: 1;
+  transition: opacity 0.42s var(--ease, ease);
+}
+
+/* Light first-run exit: soft fade after language pick (not full switch overlay) */
+.welcome-modal.is-exiting {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.welcome-modal.is-exiting .welcome-card {
+  transform: scale(0.97) translateY(0.35rem);
+  opacity: 0.92;
+}
+
+.welcome-modal.is-exiting .welcome-logo {
+  animation: welcome-logo-confirm 0.45s cubic-bezier(0.2, 0.9, 0.25, 1) both;
 }
 
 .welcome-card {
@@ -2673,6 +2690,9 @@ body.welcome-open .app {
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
+  transition:
+    transform 0.42s cubic-bezier(0.2, 0.85, 0.25, 1),
+    opacity 0.35s ease;
 }
 
 .welcome-logo {
@@ -2682,6 +2702,29 @@ body.welcome-open .app {
   margin: 0 auto 1.15rem;
   object-fit: contain;
   filter: drop-shadow(0 8px 24px rgba(54, 95, 207, 0.1));
+}
+
+@keyframes welcome-logo-confirm {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-modal,
+  .welcome-card {
+    transition: none !important;
+  }
+
+  .welcome-modal.is-exiting .welcome-logo {
+    animation: none !important;
+  }
 }
 
 .category-picker--welcome {
