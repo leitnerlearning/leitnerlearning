@@ -3515,7 +3515,11 @@ function setEmptyStatePowerAction(
     const text = String(hint || "").trim();
     hintEl.textContent = text;
     hintEl.classList.toggle("hidden", !show || !text);
-    hintEl.classList.toggle("power-on-hint--idle", show && text && !enabled);
+    const actionable = show && text && enabled && mode !== "complete";
+    const completeActive = show && text && enabled && mode === "complete";
+    const idle = show && text && !enabled;
+    hintEl.classList.toggle("power-on-hint--action", actionable || completeActive);
+    hintEl.classList.toggle("power-on-hint--idle", idle);
   }
 
   const startBtn = document.getElementById("start-practice-btn");
@@ -3553,10 +3557,10 @@ function formatPowerHomeHint({
   sessionLine = "",
 } = {}) {
   if (sessionLine) return sessionLine;
-  if (mode === "start") return "Start review";
+  if (mode === "start") return "Start Review";
   if (mode === "continue") return "Continue";
   // complete — button enabled only when extras exist
-  if (extraDue > 0) return "Extras ready";
+  if (extraDue > 0) return "Extras Ready";
   return "Done for today";
 }
 
