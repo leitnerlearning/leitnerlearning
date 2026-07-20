@@ -3160,8 +3160,11 @@ function celebrateGoalComplete() {
   triggerGoalHaptic();
 }
 
-/** Soft single tick — quieter than goal chime; confirms track switch. */
-function playTrackSwitchTick() {
+/**
+ * Two-tone settle — longer than a UI tick, shorter than the goal chime.
+ * Marks a real mental shift into another learning track.
+ */
+function playTrackSwitchSound() {
   const ctx = getGoalAudioContext();
   if (!ctx) return;
   if (ctx.state === "suspended") {
@@ -3170,56 +3173,86 @@ function playTrackSwitchTick() {
   const now = ctx.currentTime;
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.055, now + 0.012);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+  gain.gain.exponentialRampToValueAtTime(0.09, now + 0.04);
+  gain.gain.exponentialRampToValueAtTime(0.05, now + 0.22);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
   gain.connect(ctx.destination);
-  const oscillator = ctx.createOscillator();
-  oscillator.type = "sine";
-  oscillator.frequency.value = 660;
-  oscillator.connect(gain);
-  oscillator.start(now);
-  oscillator.stop(now + 0.16);
+
+  [494, 659].forEach((frequency, index) => {
+    const oscillator = ctx.createOscillator();
+    oscillator.type = "sine";
+    oscillator.frequency.value = frequency;
+    oscillator.connect(gain);
+    const start = now + index * 0.14;
+    oscillator.start(start);
+    oscillator.stop(start + 0.38);
+  });
 }
 
-let trackSwitchToastTimer = null;
+let trackSwitchOverlayTimer = null;
+let trackSwitchLanguageFlashTimer = null;
 
-function showTrackSwitchToast(label) {
-  const el = document.getElementById("track-switch-toast");
+function updateProgressLevelsLanguage(category = getActiveCategory(), { flash = false } = {}) {
+  const el = document.getElementById("progress-levels-language");
   if (!el) return;
+  const label =
+    category?.label || category?.learningLanguageName || "Language";
+  el.textContent = label;
+  el.setAttribute("aria-label", `Active language: ${label}`);
+
+  if (!flash) return;
+  if (trackSwitchLanguageFlashTimer) {
+    window.clearTimeout(trackSwitchLanguageFlashTimer);
+    trackSwitchLanguageFlashTimer = null;
+  }
+  el.classList.remove("is-flashing");
+  void el.offsetWidth;
+  el.classList.add("is-flashing");
+  trackSwitchLanguageFlashTimer = window.setTimeout(() => {
+    trackSwitchLanguageFlashTimer = null;
+    el.classList.remove("is-flashing");
+  }, 900);
+}
+
+function showTrackSwitchOverlay(label) {
+  const el = document.getElementById("track-switch-overlay");
+  const nameEl = document.getElementById("track-switch-overlay-name");
+  if (!el || !nameEl) return;
   const text = String(label || "").trim();
   if (!text) return;
 
-  if (trackSwitchToastTimer) {
-    window.clearTimeout(trackSwitchToastTimer);
-    trackSwitchToastTimer = null;
+  if (trackSwitchOverlayTimer) {
+    window.clearTimeout(trackSwitchOverlayTimer);
+    trackSwitchOverlayTimer = null;
   }
 
-  el.textContent = text;
+  nameEl.textContent = text;
   el.classList.remove("hidden");
-  // Force reflow so the enter transition runs even on rapid switches.
+  el.setAttribute("aria-hidden", "false");
   void el.offsetWidth;
   el.classList.add("is-visible");
 
-  document.querySelectorAll(".category-picker--progress .category-picker-btn").forEach((btn) => {
-    btn.classList.add("track-switch-flash");
-    window.setTimeout(() => btn.classList.remove("track-switch-flash"), 480);
-  });
-
-  trackSwitchToastTimer = window.setTimeout(() => {
-    trackSwitchToastTimer = null;
+  trackSwitchOverlayTimer = window.setTimeout(() => {
+    trackSwitchOverlayTimer = null;
     el.classList.remove("is-visible");
     window.setTimeout(() => {
-      if (!el.classList.contains("is-visible")) el.classList.add("hidden");
-    }, 220);
-  }, 1500);
+      if (!el.classList.contains("is-visible")) {
+        el.classList.add("hidden");
+        el.setAttribute("aria-hidden", "true");
+      }
+    }, 240);
+    // After the veil lifts, land attention on the durable language chip.
+    updateProgressLevelsLanguage(getActiveCategory(), { flash: true });
+  }, 1100);
 }
 
 function announceTrackSwitch(category = getActiveCategory()) {
   const label = category?.label || category?.learningLanguageName || "Language";
-  showTrackSwitchToast(label);
-  playTrackSwitchTick();
+  updateProgressLevelsLanguage(category, { flash: false });
+  showTrackSwitchOverlay(label);
+  playTrackSwitchSound();
   if (typeof navigator.vibrate === "function") {
-    navigator.vibrate(12);
+    navigator.vibrate([18, 40, 22]);
   }
 }
 
@@ -6766,6 +6799,7 @@ function applyCategoryUI() {
   applyAddCardFormUI();
   applyPracticeDirectionUI();
   updateBasicsButtonVisibility(category.id);
+  updateProgressLevelsLanguage(category, { flash: false });
 
   document.title = "Leitner Learning";
 }

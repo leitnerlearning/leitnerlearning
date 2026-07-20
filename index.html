@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=173" />
+    <link rel="stylesheet" href="styles.css?v=174" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -63,12 +63,18 @@
     </div>
 
     <div
-      id="track-switch-toast"
-      class="track-switch-toast hidden"
+      id="track-switch-overlay"
+      class="track-switch-overlay hidden"
       role="status"
       aria-live="polite"
       aria-atomic="true"
-    ></div>
+      aria-hidden="true"
+    >
+      <div class="track-switch-overlay-inner">
+        <p class="track-switch-overlay-kicker">Now learning</p>
+        <p class="track-switch-overlay-name" id="track-switch-overlay-name"></p>
+      </div>
+    </div>
 
     <div class="app">
       <header class="header">
@@ -509,7 +515,14 @@
           <div class="stats-summary" id="stats-summary"></div>
 
           <section class="progress-section" aria-labelledby="progress-levels-title">
-            <h3 class="progress-section-title" id="progress-levels-title">Leitner levels</h3>
+            <div class="progress-section-head">
+              <h3 class="progress-section-title" id="progress-levels-title">Leitner levels</h3>
+              <span
+                class="progress-levels-language"
+                id="progress-levels-language"
+                aria-label="Active language"
+              >Norwegian · Bokmål</span>
+            </div>
             <div class="box-stats" id="box-stats"></div>
           </section>
           <section class="progress-section hidden" id="progress-read-section" aria-labelledby="progress-read-title">
@@ -706,6 +719,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=235"></script>
+    <script src="app.js?v=236"></script>
   </body>
 </html>

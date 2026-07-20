@@ -246,47 +246,99 @@ main,
   z-index: 210;
 }
 
-/* Brief confirmation when switching language / learning track */
-.track-switch-toast {
+/* Full-screen beat when switching language / learning track */
+.track-switch-overlay {
   position: fixed;
-  top: max(0.85rem, env(safe-area-inset-top, 0px));
-  left: 50%;
-  z-index: 300;
-  transform: translateX(-50%) translateY(-0.35rem);
-  max-width: min(92vw, 22rem);
-  padding: 0.55rem 1rem;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: var(--surface-glass-strong);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-md, var(--shadow-sm));
-  color: var(--ink);
-  font-size: 0.84rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-  text-align: center;
-  pointer-events: none;
+  inset: 0;
+  z-index: 10040;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(18, 24, 38, 0.52);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   opacity: 0;
-  transition:
-    opacity 0.2s var(--ease, ease),
-    transform 0.22s var(--ease, ease);
+  pointer-events: none;
+  transition: opacity 0.22s var(--ease, ease);
 }
 
-.track-switch-toast.is-visible {
+.track-switch-overlay.is-visible {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  pointer-events: none;
 }
 
-.track-switch-toast.hidden {
+.track-switch-overlay.hidden {
   display: none;
 }
 
-.category-picker--progress .category-picker-btn.track-switch-flash {
+.track-switch-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  width: min(100%, 22rem);
+  padding: 1.35rem 1.5rem 1.45rem;
+  border-radius: var(--radius-sm, 1rem);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-glass-strong);
+  box-shadow: var(--shadow-lg, var(--shadow-sm));
+  text-align: center;
+  transform: translateY(0.4rem) scale(0.98);
+  transition: transform 0.28s var(--ease, ease);
+}
+
+.track-switch-overlay.is-visible .track-switch-overlay-inner {
+  transform: translateY(0) scale(1);
+}
+
+.track-switch-overlay-kicker {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  line-height: 1.2;
+}
+
+.track-switch-overlay-name {
+  margin: 0;
+  font-size: clamp(1.25rem, 4.5vw, 1.65rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+/* Durable active-language chip next to Leitner levels */
+.progress-levels-language {
+  flex-shrink: 0;
+  max-width: min(52%, 12rem);
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-glass-strong);
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    color 0.2s var(--ease, ease),
+    background 0.2s var(--ease, ease),
+    border-color 0.2s var(--ease, ease),
+    box-shadow 0.2s var(--ease, ease);
+}
+
+.progress-levels-language.is-flashing {
   color: var(--brand-deep);
   background: var(--brand-soft);
   border-color: transparent;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
 /*
