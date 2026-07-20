@@ -4746,9 +4746,7 @@ body.welcome-open .app {
     min-height: 2.55rem;
   }
 
-  .read-language,
-  .read-trail-btn,
-  .read-story-select {
+  .read-title-row {
     min-height: 2.75rem;
   }
 
@@ -5266,136 +5264,157 @@ body.welcome-open .app {
   z-index: 30;
 }
 
+/*
+ * Segmented story bar — one shared shell:
+ *   [ 🟢 Beginner | 🇳🇴  Story title          ▼ ]
+ * Language is ambient (flag + small name under title), not a third control.
+ */
 .read-title-row {
   display: flex;
   align-items: stretch;
-  gap: 0.45rem;
+  gap: 0;
   min-width: 0;
-}
-
-/* Read-only language chip — flag + name; switch stays on Progress */
-.read-language {
-  flex: 0 1 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-width: 0;
-  max-width: 8.5rem;
-  min-height: 2.35rem;
-  padding: 0 0.55rem 0 0.45rem;
+  min-height: 2.5rem;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-xs);
   background: var(--surface-glass-strong);
-  color: var(--text-secondary);
-  line-height: 1;
-  user-select: none;
-  pointer-events: none;
-}
-
-.read-language-flag {
-  flex-shrink: 0;
-  font-size: 1.05rem;
-  line-height: 1;
-}
-
-.read-language-label {
-  min-width: 0;
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .read-trail-btn {
-  flex-shrink: 0;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
-  min-width: 2.35rem;
-  min-height: 2.35rem;
-  padding: 0 0.55rem 0 0.45rem;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-xs);
-  background: var(--surface-glass-strong);
+  gap: 0.38rem;
+  min-width: 2.5rem;
+  min-height: 100%;
+  padding: 0 0.7rem 0 0.65rem;
+  border: 0;
+  border-right: 1px solid var(--border-strong);
+  border-radius: 0;
+  background: transparent;
   cursor: pointer;
-  transition: border-color 0.15s var(--ease), background 0.15s var(--ease), box-shadow 0.15s var(--ease), transform 0.1s var(--ease);
+  transition: background 0.15s var(--ease), box-shadow 0.15s var(--ease);
   touch-action: manipulation;
 }
 
 .read-trail-btn__label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.045em;
   text-transform: uppercase;
   color: var(--text-secondary);
   white-space: nowrap;
 }
 
-.read-trail-btn:hover {
-  border-color: var(--brand-ring);
+.read-trail-btn:hover,
+.read-trail-btn:focus-visible {
   background: var(--brand-soft);
+  outline: none;
+}
+
+.read-trail-btn:focus-visible {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--brand) 55%, transparent);
 }
 
 .read-trail-btn.is-pressed {
-  border-color: var(--brand);
   background: linear-gradient(135deg, rgba(91, 154, 255, 0.16), rgba(54, 95, 207, 0.1));
   box-shadow: inset 0 2px 4px rgba(54, 95, 207, 0.12);
-  transform: translateY(1px);
 }
 
 .read-trail-btn .read-trail-symbol--green-circle,
 .read-trail-btn .read-trail-symbol--blue-square {
-  width: 0.95rem;
-  height: 0.95rem;
+  width: 0.9rem;
+  height: 0.9rem;
 }
 
 .read-trail-btn .read-trail-symbol--black-diamond {
-  width: 0.75rem;
-  height: 0.75rem;
+  width: 0.72rem;
+  height: 0.72rem;
 }
 
 .read-trail-btn .read-trail-symbol--double-black-diamond .read-trail-diamond {
-  width: 0.58rem;
-  height: 0.58rem;
+  width: 0.55rem;
+  height: 0.55rem;
 }
 
 .read-story-select {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.65rem;
+  gap: 0.55rem;
   min-width: 0;
-  min-height: 2.35rem;
-  padding: 0.45rem 0.7rem;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-xs);
-  background: var(--surface-glass-strong);
+  min-height: 100%;
+  padding: 0.35rem 0.7rem 0.35rem 0.65rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   font-family: inherit;
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+  transition: background 0.15s var(--ease);
   touch-action: manipulation;
 }
 
-.read-story-select:hover {
-  border-color: var(--brand-ring);
+.read-story-select:hover,
+.read-story-select:focus-visible {
   background: var(--brand-soft);
+  outline: none;
+}
+
+.read-story-select:focus-visible {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--brand) 55%, transparent);
 }
 
 .read-story-select[aria-expanded="true"] {
-  border-color: var(--brand);
   background: linear-gradient(135deg, rgba(91, 154, 255, 0.12), rgba(54, 95, 207, 0.06));
 }
 
+.read-story-select-lead {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.read-story-select-flag {
+  font-size: 1.15rem;
+  line-height: 1;
+  filter: drop-shadow(0 0.5px 0.5px rgba(15, 23, 42, 0.12));
+}
+
+.read-story-select-copy {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.08rem;
+  min-width: 0;
+}
+
 .read-story-select-title {
+  max-width: 100%;
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  line-height: 1.15;
   color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Quiet language name under the story title */
+.read-story-select-lang {
+  max-width: 100%;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  color: var(--text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -5406,6 +5425,7 @@ body.welcome-open .app {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  margin-left: auto;
 }
 
 .read-story-select-pct {
@@ -5951,32 +5971,28 @@ body.welcome-open .app {
   }
 
   .read-title-row {
-    gap: 0.55rem;
-  }
-
-  .read-language {
-    min-height: 2.6rem;
-    max-width: 9.5rem;
-    padding: 0 0.6rem 0 0.5rem;
-  }
-
-  .read-language-label {
-    font-size: 0.76rem;
+    min-height: 2.75rem;
   }
 
   .read-trail-btn {
-    min-width: 2.6rem;
-    min-height: 2.6rem;
-    padding: 0 0.65rem 0 0.55rem;
+    padding: 0 0.8rem 0 0.75rem;
   }
 
   .read-story-select {
-    min-height: 2.6rem;
-    padding: 0.5rem 0.85rem;
+    padding: 0.4rem 0.85rem 0.4rem 0.75rem;
+    gap: 0.65rem;
+  }
+
+  .read-story-select-flag {
+    font-size: 1.25rem;
   }
 
   .read-story-select-title {
     font-size: 1.02rem;
+  }
+
+  .read-story-select-lang {
+    font-size: 0.72rem;
   }
 
   .read-progress-row {
@@ -6103,32 +6119,34 @@ body.welcome-open .app {
   }
 
   .read-title-row {
-    gap: 0.35rem;
-  }
-
-  .read-language {
     min-height: 44px;
-    max-width: 7.25rem;
-    padding: 0 0.5rem 0 0.4rem;
-  }
-
-  .read-language-flag {
-    font-size: 1.1rem;
   }
 
   .read-trail-btn {
     min-width: 2.65rem;
-    min-height: 44px;
-    padding: 0 0.55rem 0 0.5rem;
+    padding: 0 0.55rem;
+  }
+
+  /* Trail text off on phones — symbol + full label in the menu is enough */
+  .read-trail-btn__label {
+    display: none;
   }
 
   .read-story-select {
-    min-height: 44px;
-    padding: 0.45rem 0.7rem;
+    padding: 0.35rem 0.65rem 0.35rem 0.55rem;
+    gap: 0.45rem;
+  }
+
+  .read-story-select-flag {
+    font-size: 1.2rem;
   }
 
   .read-story-select-title {
-    font-size: 0.95rem;
+    font-size: 0.92rem;
+  }
+
+  .read-story-select-lang {
+    font-size: 0.65rem;
   }
 
   .read-progress-bar {

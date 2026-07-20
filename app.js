@@ -3220,21 +3220,34 @@ function updateProgressLevelsLanguage(category = getActiveCategory(), { flash = 
   }, 900);
 }
 
-/** Read-only language chip on the Read title bar (not a switcher). */
+/**
+ * Language lives inside the Read story selector (flag + muted name).
+ * Read-only — switching languages stays on Progress.
+ */
 function updateReadLanguageIndicator(category = getActiveCategory()) {
-  const el = document.getElementById("read-language");
-  if (!el) return;
   const label =
     category?.label || category?.learningLanguageName || "Language";
   const flag = category?.flag || "🏳️";
-  el.querySelectorAll("[data-read-language-flag]").forEach((node) => {
+
+  document.querySelectorAll("[data-read-language-flag]").forEach((node) => {
     node.textContent = flag;
   });
-  el.querySelectorAll("[data-read-language-label]").forEach((node) => {
+  document.querySelectorAll("[data-read-language-label]").forEach((node) => {
     node.textContent = label;
   });
-  el.setAttribute("aria-label", `Active language: ${label}`);
-  el.title = label;
+
+  const storyBtn = document.getElementById("read-story-select");
+  const titleEl = document.getElementById("read-story-title");
+  if (storyBtn) {
+    const title = (titleEl?.textContent || "").trim();
+    storyBtn.setAttribute(
+      "aria-label",
+      title && title !== "—"
+        ? `${label} story: ${title}. Choose story`
+        : `Choose ${label} story`
+    );
+    storyBtn.title = `${label} stories`;
+  }
 }
 
 function showTrackSwitchOverlay(label) {
@@ -6559,6 +6572,9 @@ function renderReadHeader(story) {
   const trail = getReadTrailLevel(story.trail);
   const pos = getStoryPosition(story.id);
   const pct = getStoryProgressPercent(story, pos.furthest);
+  const category = getActiveCategory();
+  const langLabel =
+    category?.label || category?.learningLanguageName || "Language";
 
   if (trailBtn) {
     const trailLabel = trail?.label || "Beginner";
@@ -6568,6 +6584,15 @@ function renderReadHeader(story) {
   }
 
   if (titleEl) titleEl.textContent = story.title;
+
+  const storyBtn = document.getElementById("read-story-select");
+  if (storyBtn) {
+    storyBtn.setAttribute(
+      "aria-label",
+      `${langLabel} story: ${story.title}. Choose story`
+    );
+    storyBtn.title = `${langLabel} · ${story.title}`;
+  }
 
   const sourceEl = document.getElementById("read-story-source");
   if (sourceEl) {

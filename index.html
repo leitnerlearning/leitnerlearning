@@ -260,16 +260,8 @@
         <section id="read-panel" class="panel" role="tabpanel" hidden>
           <div class="read-shell">
             <header class="read-header">
-              <div class="read-title-row">
-                <!-- Language indicator only — switch lives on Progress -->
-                <span
-                  class="read-language"
-                  id="read-language"
-                  aria-label="Active language: Norwegian"
-                >
-                  <span class="read-language-flag" data-read-language-flag aria-hidden="true">🇳🇴</span>
-                  <span class="read-language-label" data-read-language-label>Norwegian</span>
-                </span>
+              <!-- One segmented bar: difficulty | flag + story (language switch stays on Progress) -->
+              <div class="read-title-row" role="group" aria-label="Story and difficulty">
                 <button
                   type="button"
                   class="read-trail-btn"
@@ -284,8 +276,15 @@
                   id="read-story-select"
                   aria-expanded="false"
                   aria-haspopup="listbox"
+                  aria-label="Choose story"
                 >
-                  <span class="read-story-select-title" id="read-story-title">—</span>
+                  <span class="read-story-select-lead" aria-hidden="true">
+                    <span class="read-story-select-flag" data-read-language-flag>🇳🇴</span>
+                  </span>
+                  <span class="read-story-select-copy">
+                    <span class="read-story-select-title" id="read-story-title">—</span>
+                    <span class="read-story-select-lang" data-read-language-label>Norwegian</span>
+                  </span>
                   <span class="read-story-select-meta">
                     <span class="read-story-select-chevron" aria-hidden="true"></span>
                   </span>
