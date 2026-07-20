@@ -7801,12 +7801,7 @@ function renderLanguageBasics(category = getActiveCategory()) {
     })
     .join("");
 
-  body.innerHTML = `
-    <p class="basics-hint">
-      <span class="basics-hint-dot" aria-hidden="true"></span>
-      Tap a letter or word to hear it
-    </p>
-    ${sectionsHtml}`;
+  body.innerHTML = sectionsHtml;
 }
 
 function openBasicsModal(returnFocusId) {
