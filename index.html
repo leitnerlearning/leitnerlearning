@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=190" />
+    <link rel="stylesheet" href="styles.css?v=191" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -200,14 +200,13 @@
             <div class="practice-card-top">
               <button
                 type="button"
-                class="direction-toggle card-label"
+                class="direction-toggle"
                 id="prompt-direction"
                 aria-pressed="false"
                 title="Tap to reverse review direction"
               >
                 Norwegian → English
               </button>
-              <span class="category-chip" id="prompt-category"></span>
             </div>
             <div class="prompt norwegian" id="prompt-text" lang="nb">—</div>
             <p class="prompt-hint hidden" id="prompt-hint"></p>
@@ -224,34 +223,34 @@
               <div class="feedback-slot" aria-live="polite">
                 <div id="feedback" class="feedback is-empty" role="status"></div>
               </div>
-              <div class="answer-actions">
-                <button type="button" id="hear-btn" class="btn ghost" title="Hear the Norwegian word">
+              <div class="answer-actions" role="group" aria-label="Card tools">
+                <button
+                  type="button"
+                  id="hear-btn"
+                  class="btn ghost answer-action answer-action--hear"
+                  title="Hear the prompt"
+                >
                   Hear
                 </button>
                 <button
                   type="button"
                   id="speak-btn"
-                  class="btn ghost"
+                  class="btn ghost answer-action answer-action--speak"
                   aria-pressed="false"
-                  title="Speak your answer in English"
+                  title="Speak your answer"
                 >
                   Speak
                 </button>
-                <button type="button" id="reveal-btn" class="btn ghost" title="Show the answer">Show</button>
+                <button
+                  type="button"
+                  id="reveal-btn"
+                  class="btn ghost answer-action answer-action--show"
+                  title="Show the answer"
+                >
+                  Show
+                </button>
               </div>
             </form>
-
-            <div class="level-indicator hidden" aria-hidden="true">
-              <span id="level-label">Level 1 · New</span>
-              <div class="levels" id="box-dots">
-                <span class="level-dot"></span>
-                <span class="level-dot"></span>
-                <span class="level-dot"></span>
-                <span class="level-dot"></span>
-                <span class="level-dot"></span>
-                <span class="level-dot"></span>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -751,6 +750,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=250"></script>
+    <script src="app.js?v=251"></script>
   </body>
 </html>

@@ -3898,12 +3898,6 @@ function renderPractice() {
   promptEl.lang = labels.promptLang;
   promptEl.className = "prompt norwegian";
 
-  const categoryChip = document.getElementById("prompt-category");
-  if (categoryChip) {
-    categoryChip.textContent = "";
-    categoryChip.classList.add("hidden");
-  }
-
   const promptHint = document.getElementById("prompt-hint");
   if (promptHint) {
     promptHint.textContent = "";
@@ -7030,15 +7024,18 @@ function applyPracticeDirectionUI() {
   const answerInput = document.getElementById("answer-input");
   const hearBtn = document.getElementById("hear-btn");
   const speakBtn = document.getElementById("speak-btn");
+  const revealBtn = document.getElementById("reveal-btn");
 
   if (directionBtn) {
     directionBtn.textContent = labels.promptLabel;
     directionBtn.setAttribute("aria-pressed", String(isReversePractice()));
     const learningName =
       category.learningLanguageName || category.label.split(" · ")[0] || "the language";
-    directionBtn.title = isReversePractice()
+    const dirTitle = isReversePractice()
       ? `Tap to review ${learningName} → English`
       : `Tap to review English → ${learningName}`;
+    directionBtn.title = dirTitle;
+    directionBtn.setAttribute("aria-label", `Review direction: ${labels.promptLabel}. ${dirTitle}`);
   }
 
   if (answerInput) {
@@ -7049,11 +7046,22 @@ function applyPracticeDirectionUI() {
   if (hearBtn) {
     hearBtn.textContent = category.hearLabel || "Hear";
     hearBtn.title = labels.hearTitle;
+    hearBtn.setAttribute("aria-label", labels.hearTitle || "Hear the prompt");
   }
 
   if (speakBtn) {
-    speakBtn.title = speakModeActive ? "Speak mode on. Tap to turn off" : labels.speakTitle;
+    const speakTitle = speakModeActive
+      ? "Speak mode on. Tap to turn off"
+      : labels.speakTitle;
+    speakBtn.title = speakTitle;
     speakBtn.setAttribute("aria-pressed", String(speakModeActive));
+    speakBtn.setAttribute("aria-label", speakTitle);
+    speakBtn.classList.toggle("is-active", Boolean(speakModeActive));
+  }
+
+  if (revealBtn) {
+    revealBtn.title = "Show the answer";
+    revealBtn.setAttribute("aria-label", "Show the answer");
   }
 }
 
