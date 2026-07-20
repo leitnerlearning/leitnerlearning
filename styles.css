@@ -161,9 +161,8 @@ main,
   text-align: center;
 }
 
-/* Compact About control (Progress prefs row) */
-.site-footer-btn,
-.progress-about-btn {
+/* Generic compact pill (legacy class name; Progress About uses the Basics twin below) */
+.site-footer-btn {
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -193,17 +192,14 @@ main,
 }
 
 .site-footer-btn:hover,
-.site-footer-btn:focus-visible,
-.progress-about-btn:hover,
-.progress-about-btn:focus-visible {
+.site-footer-btn:focus-visible {
   color: var(--brand-deep);
   background: var(--brand-soft);
   border-color: transparent;
   outline: none;
 }
 
-.site-footer-btn:active,
-.progress-about-btn:active {
+.site-footer-btn:active {
   transform: scale(0.98);
 }
 
@@ -354,7 +350,12 @@ main,
   z-index: 40;
 }
 
-.progress-basics-btn {
+/*
+ * Basics + About — same secondary chip family.
+ * Language stays primary (flag + name); these stay quiet twins.
+ */
+.progress-basics-btn,
+.progress-about-btn {
   appearance: none;
   flex: 0 0 auto;
   display: inline-flex;
@@ -366,12 +367,16 @@ main,
   border-radius: 999px;
   background: var(--surface-glass-strong);
   color: var(--text-secondary);
+  font-family: inherit;
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+  text-transform: none;
+  text-decoration: none;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
+  touch-action: manipulation;
   box-shadow: none;
   transition:
     color 0.15s var(--ease),
@@ -381,14 +386,17 @@ main,
 }
 
 .progress-basics-btn:hover,
-.progress-basics-btn:focus-visible {
+.progress-basics-btn:focus-visible,
+.progress-about-btn:hover,
+.progress-about-btn:focus-visible {
   color: var(--brand-deep);
   background: var(--brand-soft);
   border-color: transparent;
   outline: none;
 }
 
-.progress-basics-btn:active {
+.progress-basics-btn:active,
+.progress-about-btn:active {
   transform: scale(0.98);
 }
 
@@ -400,11 +408,6 @@ main,
   gap: 0.4rem;
   min-width: 0;
   margin-left: auto;
-}
-
-.progress-about-btn {
-  flex: 0 0 auto;
-  margin-left: 0;
 }
 
 .category-picker--welcome {
@@ -843,7 +846,11 @@ main,
     margin-bottom: 1rem;
   }
 
-  .site-footer-btn,
+  .site-footer-btn {
+    min-height: 44px;
+  }
+
+  .progress-basics-btn,
   .progress-about-btn {
     min-height: 44px;
   }
