@@ -3123,30 +3123,57 @@ function getGoalAudioContext() {
   return goalAudioContext;
 }
 
-function playGoalCompleteChime() {
+/**
+ * UI sounds (switch / goal) need a *running* AudioContext.
+ * Mobile Safari often stays suspended if we only fire-and-forget resume() —
+ * tones schedule against silence. Always await resume in the user-gesture chain.
+ * Returns null when audio cannot play; callers must treat that as fine.
+ */
+async function ensureUiAudioReady() {
+  unlockAudioPipeline();
   const ctx = getGoalAudioContext();
-  if (!ctx) return;
-
-  if (ctx.state === "suspended") {
-    ctx.resume().catch(() => {});
+  if (!ctx) return null;
+  try {
+    if (ctx.state === "suspended") {
+      await ctx.resume();
+    }
+  } catch {
+    return null;
   }
+  return ctx.state === "running" ? ctx : null;
+}
 
-  const now = ctx.currentTime;
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(0.11, now + 0.03);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
-  gain.connect(ctx.destination);
+function prefersReducedMotion() {
+  try {
+    return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
+  } catch {
+    return false;
+  }
+}
 
-  [523.25, 659.25, 783.99].forEach((frequency, index) => {
-    const oscillator = ctx.createOscillator();
-    oscillator.type = "sine";
-    oscillator.frequency.value = frequency;
-    oscillator.connect(gain);
-    const start = now + index * 0.11;
-    oscillator.start(start);
-    oscillator.stop(start + 0.42);
-  });
+function playGoalCompleteChime() {
+  void (async () => {
+    if (prefersReducedMotion()) return;
+    const ctx = await ensureUiAudioReady();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.11, now + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.1);
+    gain.connect(ctx.destination);
+
+    [523.25, 659.25, 783.99].forEach((frequency, index) => {
+      const oscillator = ctx.createOscillator();
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency;
+      oscillator.connect(gain);
+      const start = now + index * 0.11;
+      oscillator.start(start);
+      oscillator.stop(start + 0.42);
+    });
+  })();
 }
 
 function triggerGoalHaptic() {
@@ -3156,43 +3183,55 @@ function triggerGoalHaptic() {
 }
 
 function celebrateGoalComplete() {
-  playGoalCompleteChime();
+  // Haptic first on phones (reliable); chime is a bonus when audio is free.
   triggerGoalHaptic();
+  playGoalCompleteChime();
 }
 
 /**
- * Three soft rising tones — a short “portal” into the new track.
- * Distinct from the goal-complete chime; not a single UI tick.
+ * Soft rising triad — a short “portal” into the new language track.
+ * Flourish only: ceremony must still feel complete with visual + haptic alone.
+ * Distinct from the goal-complete chime (higher, brighter).
  */
 function playTrackSwitchSound() {
-  const ctx = getGoalAudioContext();
-  if (!ctx) return;
-  if (ctx.state === "suspended") {
-    ctx.resume().catch(() => {});
-  }
-  const now = ctx.currentTime;
-  const master = ctx.createGain();
-  master.gain.setValueAtTime(0.0001, now);
-  master.gain.exponentialRampToValueAtTime(0.1, now + 0.05);
-  master.gain.exponentialRampToValueAtTime(0.04, now + 0.35);
-  master.gain.exponentialRampToValueAtTime(0.0001, now + 0.85);
-  master.connect(ctx.destination);
+  void (async () => {
+    if (prefersReducedMotion()) return;
+    const ctx = await ensureUiAudioReady();
+    if (!ctx) return;
 
-  // Low open → mid settle → high lift (C4 · E4 · G4-ish)
-  [261.63, 329.63, 392.0].forEach((frequency, index) => {
-    const oscillator = ctx.createOscillator();
-    const voice = ctx.createGain();
-    oscillator.type = index === 0 ? "triangle" : "sine";
-    oscillator.frequency.value = frequency;
-    voice.gain.setValueAtTime(0.0001, now);
-    const start = now + index * 0.11;
-    voice.gain.exponentialRampToValueAtTime(0.7 - index * 0.12, start + 0.04);
-    voice.gain.exponentialRampToValueAtTime(0.0001, start + 0.42);
-    oscillator.connect(voice);
-    voice.connect(master);
-    oscillator.start(start);
-    oscillator.stop(start + 0.48);
-  });
+    const now = ctx.currentTime;
+    const master = ctx.createGain();
+    // Slightly quieter than goal chime — ambient, not a win fanfare.
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.07, now + 0.04);
+    master.gain.exponentialRampToValueAtTime(0.03, now + 0.32);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.78);
+    master.connect(ctx.destination);
+
+    // Low open → mid settle → high lift (C4 · E4 · G4-ish)
+    [261.63, 329.63, 392.0].forEach((frequency, index) => {
+      const oscillator = ctx.createOscillator();
+      const voice = ctx.createGain();
+      oscillator.type = index === 0 ? "triangle" : "sine";
+      oscillator.frequency.value = frequency;
+      voice.gain.setValueAtTime(0.0001, now);
+      const start = now + index * 0.1;
+      voice.gain.exponentialRampToValueAtTime(0.65 - index * 0.12, start + 0.035);
+      voice.gain.exponentialRampToValueAtTime(0.0001, start + 0.38);
+      oscillator.connect(voice);
+      voice.connect(master);
+      oscillator.start(start);
+      oscillator.stop(start + 0.44);
+    });
+  })();
+}
+
+/** Mobile confirmation for language switch — works with the silent switch off. */
+function triggerTrackSwitchHaptic() {
+  if (typeof navigator.vibrate === "function") {
+    // Short dual pulse: “leave · land”
+    navigator.vibrate([16, 32, 20]);
+  }
 }
 
 let trackSwitchOverlayTimer = null;
@@ -3282,14 +3321,23 @@ function showTrackSwitchOverlay(label) {
   }, 1250);
 }
 
+/**
+ * Language-switch ceremony stack (by reliability, not by flashiness):
+ *  1. Visual — logo + language name overlay (always; the real confirmation)
+ *  2. Haptic — dual pulse on phones (works even with hardware mute)
+ *  3. Sound  — soft rising triad only if Web Audio is actually running
+ *
+ * Sound is a flourish, never required. Mobile Safari used to stay silent
+ * because we scheduled oscillators before await resume() finished.
+ */
 function announceTrackSwitch(category = getActiveCategory()) {
   const label = category?.label || category?.learningLanguageName || "Language";
+  // Warm the audio pipeline in this same user-gesture turn (menu → pick).
+  unlockAudioPipeline();
   updateProgressLevelsLanguage(category, { flash: false });
   showTrackSwitchOverlay(label);
+  triggerTrackSwitchHaptic();
   playTrackSwitchSound();
-  if (typeof navigator.vibrate === "function") {
-    navigator.vibrate([18, 40, 22]);
-  }
 }
 
 function speakPromptForCard(card) {
@@ -6964,6 +7012,9 @@ function openCategoryMenu(btn) {
   const picker = btn?.closest(".category-picker");
   const menu = picker?.querySelector(".category-picker-menu");
   if (!btn || !menu) return;
+  // First half of the switch gesture — unlock audio so the pick can chime on mobile.
+  unlockAudioPipeline();
+  void ensureUiAudioReady();
   categoryMenuOpen = true;
   btn.setAttribute("aria-expanded", "true");
   menu.classList.remove("hidden");
