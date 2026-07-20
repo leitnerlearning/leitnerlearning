@@ -3503,7 +3503,7 @@ function setEmptyStatePowerAction(
   {
     show = false,
     mode = "start",
-    ariaLabel = "Start review",
+    ariaLabel = "Start Review",
     hint = "",
     celebrate = false,
     enabled = true,
@@ -3704,7 +3704,7 @@ function renderEmptyState() {
       showPowerHome({
         mode: "continue",
         hint: formatPowerHomeHint({ mode: "continue" }),
-        ariaLabel: "Continue review",
+        ariaLabel: "Continue",
       });
     } else {
       showPowerHome({
@@ -3731,7 +3731,7 @@ function renderEmptyState() {
       hint: formatPowerHomeHint({
         mode: continuing ? "continue" : "start",
       }),
-      ariaLabel: continuing ? "Continue review" : "Start review",
+      ariaLabel: continuing ? "Continue" : "Start Review",
     });
     return;
   }
