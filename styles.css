@@ -2679,28 +2679,48 @@ body.welcome-open .app {
   display: block;
   width: min(220px, 68vw);
   height: auto;
-  margin: 0 auto 0.85rem;
+  margin: 0 auto 1.15rem;
   object-fit: contain;
   filter: drop-shadow(0 8px 24px rgba(54, 95, 207, 0.1));
 }
 
 .category-picker--welcome {
   width: 100%;
-  margin-bottom: 1.1rem;
+  margin: 0.15rem 0 0;
 }
 
 .category-picker--welcome .category-picker-menu {
   z-index: 220;
-}
-
-.welcome-actions {
-  display: flex;
-  justify-content: center;
   width: 100%;
+  min-width: 100%;
+  left: 0;
+  right: 0;
+  transform: none;
 }
 
-.welcome-actions .btn {
-  min-width: 9.5rem;
+/* Primary door: large “Choose a Language” control */
+.category-picker-btn--welcome {
+  width: 100%;
+  min-height: 3rem;
+  justify-content: center;
+  padding: 0.75rem 1.1rem;
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  text-transform: none;
+  color: var(--brand-deep);
+  background: linear-gradient(135deg, rgba(91, 154, 255, 0.16), rgba(54, 95, 207, 0.1));
+  border: 1px solid var(--brand-ring);
+  box-shadow: var(--shadow-sm);
+}
+
+.category-picker-btn--welcome:hover,
+.category-picker-btn--welcome:focus-visible,
+.category-picker-btn--welcome[aria-expanded="true"] {
+  background: linear-gradient(135deg, rgba(91, 154, 255, 0.22), rgba(54, 95, 207, 0.14));
+  border-color: rgba(54, 95, 207, 0.32);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
 .confirm-modal {

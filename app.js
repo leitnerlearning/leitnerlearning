@@ -6992,10 +6992,14 @@ function renderStatsSummary() {
 
 function applyCategoryUI() {
   const category = getActiveCategory();
+  // Progress (and any non-welcome) pickers only — welcome stays "Choose a Language"
+  // until the user commits a pick and enters the app.
   document.querySelectorAll("[data-category-picker-label]").forEach((el) => {
+    if (el.closest(".category-picker--welcome")) return;
     el.textContent = category.label;
   });
   document.querySelectorAll("[data-category-picker-flag]").forEach((el) => {
+    if (el.closest(".category-picker--welcome")) return;
     el.textContent = category.flag || "🏳️";
   });
   const progressLangBtn = document.getElementById("progress-language-btn");
@@ -7062,8 +7066,30 @@ function applyPracticeDirectionUI() {
   }
 }
 
-function renderAvailableCategoryOption(category) {
-  const isActive = category.id === activeCategoryId;
+/**
+ * Menu / welcome order: most commonly learned first (among languages we ship).
+ * Spanish → French → German → Italian → Swedish → Norwegian → Danish.
+ */
+const LANGUAGE_DISPLAY_ORDER = [
+  "es",
+  "fr",
+  "de",
+  "it",
+  "sv",
+  "nb-bokmal",
+  "da",
+];
+
+function sortCategoriesForDisplay(categories) {
+  return [...categories].sort((a, b) => {
+    const ia = LANGUAGE_DISPLAY_ORDER.indexOf(a.id);
+    const ib = LANGUAGE_DISPLAY_ORDER.indexOf(b.id);
+    return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+  });
+}
+
+function renderAvailableCategoryOption(category, { showActive = true } = {}) {
+  const isActive = showActive && category.id === activeCategoryId;
   const flag = category.flag || "🏳️";
   return `
     <button
@@ -7094,13 +7120,23 @@ function renderUpcomingCategoryOption(category) {
     </button>`;
 }
 
-function buildCategoryPickerMenuMarkup() {
-  const available = LEARNING_CATEGORIES.filter((category) => category.available);
-  const upcoming = LEARNING_CATEGORIES.filter((category) => !category.available);
+function buildCategoryPickerMenuMarkup({ forWelcome = false } = {}) {
+  const available = sortCategoriesForDisplay(
+    LEARNING_CATEGORIES.filter((category) => category.available)
+  );
+  const upcoming = sortCategoriesForDisplay(
+    LEARNING_CATEGORIES.filter((category) => !category.available)
+  );
 
   const sections = [];
   if (available.length) {
-    sections.push(available.map(renderAvailableCategoryOption).join(""));
+    sections.push(
+      available
+        .map((category) =>
+          renderAvailableCategoryOption(category, { showActive: !forWelcome })
+        )
+        .join("")
+    );
   }
   if (upcoming.length) {
     sections.push(`
@@ -7111,22 +7147,54 @@ function buildCategoryPickerMenuMarkup() {
   return sections.join("");
 }
 
-function bindCategoryPickerMenu(menu) {
+function bindCategoryPickerMenu(menu, { forWelcome = false } = {}) {
   if (!menu) return;
   menu.querySelectorAll("[data-category-id]").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (btn.disabled) return;
-      switchCategory(btn.dataset.categoryId);
+      const id = btn.dataset.categoryId;
+      if (forWelcome || isWelcomeOpen()) {
+        completeWelcomeWithLanguage(id);
+        return;
+      }
+      switchCategory(id);
     });
   });
 }
 
 function renderCategoryPicker() {
-  const markup = buildCategoryPickerMenuMarkup();
   document.querySelectorAll(".category-picker-menu").forEach((menu) => {
-    menu.innerHTML = markup;
-    bindCategoryPickerMenu(menu);
+    const forWelcome = Boolean(menu.closest(".category-picker--welcome"));
+    menu.innerHTML = buildCategoryPickerMenuMarkup({ forWelcome });
+    bindCategoryPickerMenu(menu, { forWelcome });
   });
+}
+
+/**
+ * First-run: picking a language *is* entering the app (no Start button).
+ * Soft enter — no full track-switch overlay on first open (that stays for Progress switches).
+ */
+function completeWelcomeWithLanguage(categoryId) {
+  const nextCategory = getCategoryById(categoryId);
+  if (!nextCategory?.available) return;
+
+  closeCategoryMenu();
+
+  if (categoryId !== activeCategoryId) {
+    applyCategorySwitch(categoryId, { announce: false });
+  } else {
+    // Same as default in memory — still commit storage + refresh UI for a clean land.
+    setActiveCategoryId(categoryId);
+    renderAll();
+  }
+
+  closeWelcomeModal(true);
+  // Land on Review with a clear start cue.
+  try {
+    switchTab("practice");
+  } catch {
+    /* switchTab may not need catch — keep safe */
+  }
 }
 
 function openCategoryMenu(btn) {
@@ -7160,14 +7228,9 @@ function toggleCategoryMenu(btn) {
   if (!isOpen) openCategoryMenu(btn);
 }
 
-function switchCategory(nextCategoryId) {
-  if (nextCategoryId === activeCategoryId) {
-    closeCategoryMenu();
-    return;
-  }
-
+function applyCategorySwitch(nextCategoryId, { announce = true } = {}) {
   const nextCategory = getCategoryById(nextCategoryId);
-  if (!nextCategory.available) return;
+  if (!nextCategory?.available) return false;
 
   saveDeck();
   activeCategoryId = nextCategoryId;
@@ -7208,7 +7271,20 @@ function switchCategory(nextCategoryId) {
   ensureReadState(true);
   startPractice();
   renderAll();
-  announceTrackSwitch(nextCategory);
+  if (announce) announceTrackSwitch(nextCategory);
+  return true;
+}
+
+function switchCategory(nextCategoryId) {
+  if (isWelcomeOpen()) {
+    completeWelcomeWithLanguage(nextCategoryId);
+    return;
+  }
+  if (nextCategoryId === activeCategoryId) {
+    closeCategoryMenu();
+    return;
+  }
+  applyCategorySwitch(nextCategoryId, { announce: true });
 }
 
 function renderAll() {
@@ -7560,7 +7636,7 @@ function initEventListeners() {
     closeCategoryMenu();
   });
 
-  document.getElementById("welcome-start-btn")?.addEventListener("click", () => closeWelcomeModal());
+
 
   document.addEventListener("click", blockWelcomeBypass, true);
   document.addEventListener("touchend", blockWelcomeBypass, true);
@@ -7972,10 +8048,17 @@ function showWelcomeModal() {
   const modal = document.getElementById("welcome-modal");
   if (!modal) return;
   renderCategoryPicker();
+  // Never pre-fill — picking a language is the only way in.
+  const welcomeLabel = modal.querySelector("[data-welcome-language-label]");
+  if (welcomeLabel) welcomeLabel.textContent = "Choose a Language";
+  const welcomeBtn = document.getElementById("welcome-language-btn");
+  if (welcomeBtn) {
+    welcomeBtn.setAttribute("aria-label", "Choose a Language");
+  }
   modal.classList.remove("hidden");
   setWelcomeGateActive(true);
   updateCategoryPickerAvailability();
-  document.getElementById("welcome-start-btn")?.focus({ preventScroll: true });
+  welcomeBtn?.focus({ preventScroll: true });
 }
 
 function closeWelcomeModal(markSeen = true) {

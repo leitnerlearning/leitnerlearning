@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=196" />
+    <link rel="stylesheet" href="styles.css?v=197" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -592,26 +592,26 @@
           height="184"
           decoding="async"
         />
+        <!-- One door in: pick a language → enter the app (no Start button) -->
         <div class="category-picker category-picker--welcome">
           <button
             type="button"
-            class="category-picker-btn"
+            class="category-picker-btn category-picker-btn--welcome"
+            id="welcome-language-btn"
             aria-haspopup="listbox"
             aria-expanded="false"
             aria-controls="welcome-category-picker-menu"
+            aria-label="Choose a language"
           >
-            <span data-category-picker-label>Norwegian</span>
+            <span data-welcome-language-label>Choose a Language</span>
             <span class="category-picker-chevron" aria-hidden="true"></span>
           </button>
           <div
             class="category-picker-menu hidden"
             id="welcome-category-picker-menu"
             role="listbox"
-            aria-label="Choose language"
+            aria-label="Choose a language"
           ></div>
-        </div>
-        <div class="welcome-actions">
-          <button type="button" class="btn primary" id="welcome-start-btn">Start</button>
         </div>
       </div>
     </div>
@@ -740,7 +740,7 @@
 
     <script src="norwegian-frequency-deck.js?v=25"></script>
     <script src="norwegian-reading-vocab.js?v=6"></script>
-    <script src="learning-categories.js?v=40"></script>
+    <script src="learning-categories.js?v=41"></script>
     <script src="read-stories.js?v=13"></script>
     <script src="lang/registry.js?v=1"></script>
     <script src="lang/basics-data.js?v=2"></script>
@@ -751,6 +751,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=258"></script>
+    <script src="app.js?v=259"></script>
   </body>
 </html>

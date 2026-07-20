@@ -1,7 +1,10 @@
 /**
  * Learning tracks available in Leitner Learning.
  * Only categories with `available: true` can be selected today.
- * Order: closest to Norwegian first, then other Western European languages.
+ *
+ * Display order (menus / welcome) is set by LANGUAGE_DISPLAY_ORDER in app.js —
+ * most commonly learned first among the languages we ship, Nordics lower.
+ * Array order here is not the UI order.
  */
 const LEARNING_CATEGORIES = [
   {
