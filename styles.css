@@ -785,6 +785,12 @@ main,
   left: 50%;
   transform: translateX(-50%);
   min-width: min(18rem, 88vw);
+  max-height: min(16.5rem, 52dvh);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   background: var(--surface-glass-strong);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
@@ -2659,6 +2665,11 @@ body.welcome-open .app {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   pointer-events: auto;
+  /* Allow the gate itself to scroll on short screens */
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .welcome-card {
@@ -2673,6 +2684,9 @@ body.welcome-open .app {
   border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
+  /* Keep room below the card for the dropdown list */
+  margin-block: auto;
+  position: relative;
 }
 
 .welcome-logo {

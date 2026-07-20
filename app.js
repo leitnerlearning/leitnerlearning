@@ -3784,7 +3784,15 @@ function setWelcomeGateActive(active) {
 
 function blockWelcomeBypass(event) {
   if (!isWelcomeOpen()) return;
-  if (event.target.closest(".welcome-card")) return;
+  // Allow interaction anywhere inside the welcome card *or* its language menu
+  // (menu is portaled in layout as absolute and must stay scrollable / tappable).
+  if (
+    event.target.closest(".welcome-card") ||
+    event.target.closest(".category-picker--welcome") ||
+    event.target.closest("#welcome-category-picker-menu")
+  ) {
+    return;
+  }
   event.preventDefault();
   event.stopPropagation();
 }
