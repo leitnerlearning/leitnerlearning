@@ -6524,7 +6524,16 @@ function updateReadEnglishToggle() {
   if (!toggle || !englishSlot) return;
 
   toggle.setAttribute("aria-pressed", String(readShowEnglish));
-  toggle.textContent = readShowEnglish ? "Hide English" : "Show English";
+  toggle.classList.toggle("is-on", Boolean(readShowEnglish));
+  // Short label; pressed/on state carries the meaning.
+  toggle.textContent = "English";
+  toggle.title = readShowEnglish
+    ? "Hide English translation"
+    : "Show English translation";
+  toggle.setAttribute(
+    "aria-label",
+    readShowEnglish ? "Hide English translation" : "Show English translation"
+  );
   englishSlot.classList.toggle("is-collapsed", !readShowEnglish);
 }
 

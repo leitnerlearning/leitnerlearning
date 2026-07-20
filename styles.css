@@ -5151,15 +5151,19 @@ body.welcome-open .app {
   }
 
   .read-options {
-    flex-wrap: wrap;
+    display: flex;
+    flex-wrap: nowrap;
     justify-content: flex-end;
     gap: 0.4rem;
+    max-width: none;
+    width: auto;
+    margin-inline: 0;
   }
 
-  .read-options .btn.small,
-  .read-options .read-toggle-en {
+  .read-action {
     min-height: 2.55rem;
-    min-width: 6.5rem;
+    min-width: 5.5rem;
+    width: auto;
   }
 
   .read-nav-btn {
@@ -6271,28 +6275,36 @@ body.welcome-open .app {
   text-decoration-style: solid;
 }
 
+/*
+ * Read footer:
+ *  Nav (prev · count · next)  +  tools (Hear primary · English toggle quieter)
+ * Matches Review action hierarchy: short labels, clear primary tool.
+ */
 .read-footer {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.5rem;
-  margin-top: 0.65rem;
+  gap: 0.55rem;
+  margin-top: 0.75rem;
+  padding-top: 0.15rem;
 }
 
 .read-controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
 }
 
 .read-nav-btn {
-  min-width: 3rem;
-  min-height: 44px;
-  padding-inline: 0.85rem;
-  font-size: 1.1rem;
+  min-width: 2.85rem;
+  min-height: 2.55rem;
+  padding-inline: 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 600;
   touch-action: manipulation;
+  border-radius: 999px;
 }
 
 .read-nav-btn:disabled {
@@ -6301,21 +6313,70 @@ body.welcome-open .app {
 }
 
 .read-progress {
-  min-width: 4.5rem;
+  min-width: 4rem;
   text-align: center;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  line-height: var(--lh-tight);
+  font-size: 0.88rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
   color: var(--text-secondary);
 }
 
 .read-options {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 0.45rem;
-  justify-content: center;
-  align-items: center;
-  min-height: 2.75rem;
+  width: 100%;
+  max-width: 20rem;
+  margin-inline: auto;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.read-action {
+  min-height: 2.55rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border-radius: 999px;
+  touch-action: manipulation;
+}
+
+/* Hear = primary tool (same weight family as Review Hear) */
+.read-action--hear {
+  color: var(--text-secondary);
+}
+
+.read-action--hear:hover,
+.read-action--hear:focus-visible {
+  color: var(--brand-deep);
+}
+
+/* English = quieter toggle; on state uses brand soft */
+.read-action--english {
+  font-weight: 550;
+  font-size: 0.86rem;
+  color: var(--text-tertiary);
+  background: transparent;
+  border-color: color-mix(in srgb, var(--border-strong) 75%, transparent);
+}
+
+.read-action--english:hover,
+.read-action--english:focus-visible {
+  color: var(--text-secondary);
+  border-color: var(--border-strong);
+  background: var(--surface-glass);
+}
+
+.read-action--english.is-on,
+.read-action--english[aria-pressed="true"] {
+  color: var(--brand-deep);
+  border-color: transparent;
+  background: var(--brand-soft);
+  font-weight: 650;
 }
 
 .read-reset-btn {
@@ -6473,7 +6534,7 @@ body.welcome-open .app {
     font-size: 0.9rem;
   }
 
-  /* Show English + Hear — equal pair, right-aligned */
+  /* Hear primary · English quieter — right-aligned on desktop */
   .read-options {
     flex: 0 1 auto;
     display: flex;
@@ -6481,19 +6542,23 @@ body.welcome-open .app {
     justify-content: flex-end;
     align-items: stretch;
     gap: 0.45rem;
+    width: auto;
+    max-width: none;
+    margin-inline: 0;
     margin-top: 0;
-    min-height: 0;
   }
 
-  .read-options .btn.small,
-  .read-options .read-toggle-en {
-    min-height: 2.5rem;
-    min-width: 8.25rem;
-    padding: 0.4rem 0.85rem;
-    font-size: 0.82rem;
-    font-weight: 600;
-    white-space: nowrap;
-    justify-content: center;
+  .read-action {
+    min-height: 2.55rem;
+    min-width: 5.75rem;
+    width: auto;
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .read-action--english {
+    min-width: 5.5rem;
+    font-size: 0.86rem;
   }
 
   .read-menu {
@@ -6529,17 +6594,18 @@ body.welcome-open .app {
   }
 
   .read-header {
-    margin-bottom: 0.6rem;
-    gap: 0.4rem;
+    margin-bottom: 0.55rem;
+    gap: 0.32rem;
   }
 
   .read-title-row {
     min-height: 44px;
+    border-radius: 0.7rem;
   }
 
   .read-trail-btn {
-    min-width: 2.65rem;
-    padding: 0 0.55rem;
+    min-width: 2.7rem;
+    padding: 0 0.5rem;
   }
 
   /* Trail text off on phones — symbol + full label in the menu is enough */
@@ -6548,24 +6614,33 @@ body.welcome-open .app {
   }
 
   .read-story-select {
-    padding: 0.35rem 0.65rem 0.35rem 0.55rem;
-    gap: 0.45rem;
+    padding: 0.3rem 0.55rem 0.3rem 0.45rem;
+    gap: 0.4rem;
+  }
+
+  .read-story-select-lead {
+    width: 1.3rem;
   }
 
   .read-story-select-flag {
-    font-size: 1.2rem;
+    font-size: 1.08rem;
   }
 
   .read-story-select-title {
-    font-size: 0.92rem;
+    font-size: 0.94rem;
   }
 
+  /* Flag carries language on phones — free vertical room for the title */
   .read-story-select-lang {
-    font-size: 0.65rem;
+    display: none;
+  }
+
+  .read-progress-row {
+    min-height: 1.4rem;
   }
 
   .read-progress-bar {
-    height: 4px;
+    height: 3.5px;
   }
 
   .read-context--before {
@@ -6648,30 +6723,27 @@ body.welcome-open .app {
     font-variant-numeric: tabular-nums;
   }
 
-  /* Options: Show English + Hear — equal pair */
+  /* Hear + English — full-width pair on phones */
   .read-options {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr 1fr;
     gap: 0.4rem;
     width: 100%;
+    max-width: none;
+    margin-inline: 0;
     margin-top: 0;
-    min-height: 0;
-    justify-content: stretch;
   }
 
-  .read-options .btn,
-  .read-options .btn.small,
-  .read-options .read-toggle-en {
+  .read-action {
     width: 100%;
     min-width: 0;
     min-height: 48px;
-    justify-content: center;
     padding: 0.4rem 0.5rem;
+    font-size: 0.88rem;
+  }
+
+  .read-action--english {
     font-size: 0.84rem;
-    font-weight: 600;
-    line-height: 1.15;
-    white-space: nowrap;
-    text-align: center;
   }
 
   .read-menu {

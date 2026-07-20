@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=201" />
+    <link rel="stylesheet" href="styles.css?v=202" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -330,7 +330,7 @@
             </article>
 
             <div class="read-footer">
-              <div class="read-controls">
+              <div class="read-controls" role="group" aria-label="Sentence navigation">
                 <button type="button" class="btn ghost read-nav-btn" id="read-prev-btn" aria-label="Previous sentence">
                   ←
                 </button>
@@ -340,17 +340,25 @@
                 </button>
               </div>
 
-              <div class="read-options">
+              <div class="read-options" role="group" aria-label="Sentence tools">
                 <button
                   type="button"
-                  class="btn ghost small read-toggle-en"
+                  class="btn ghost read-action read-action--hear"
+                  id="read-hear-sentence"
+                  title="Hear this sentence"
+                  aria-label="Hear this sentence"
+                >
+                  Hear
+                </button>
+                <button
+                  type="button"
+                  class="btn ghost read-action read-action--english"
                   id="read-toggle-en"
                   aria-pressed="false"
+                  title="Show English translation"
+                  aria-label="Show English translation"
                 >
-                  Show English
-                </button>
-                <button type="button" class="btn ghost small" id="read-hear-sentence" title="Hear this sentence">
-                  Hear sentence
+                  English
                 </button>
               </div>
             </div>
@@ -751,6 +759,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=262"></script>
+    <script src="app.js?v=263"></script>
   </body>
 </html>
