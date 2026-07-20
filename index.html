@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=191" />
+    <link rel="stylesheet" href="styles.css?v=192" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -111,27 +111,29 @@
 
       <main>
         <section id="practice-panel" class="panel active" role="tabpanel">
-          <div class="practice-meta hidden" id="practice-meta">
+          <!-- Daily Goal strip: chip + bar (hidden in extra mode / no goal) -->
+          <div class="practice-goal-strip hidden" id="practice-meta">
             <button
               type="button"
-              class="meta-chip meta-chip--button hidden"
+              class="daily-goal-chip hidden"
               id="daily-goal-chip"
               aria-haspopup="dialog"
               aria-controls="goal-cap-modal"
             >
-              0/0
+              <span class="daily-goal-chip__label">Goal</span>
+              <span class="daily-goal-chip__count" id="daily-goal-count">0/0</span>
             </button>
-          </div>
-          <div
-            class="daily-progress hidden"
-            id="daily-progress"
-            role="progressbar"
-            aria-valuemin="0"
-            aria-valuenow="0"
-            aria-valuemax="0"
-            aria-label="Today's review progress"
-          >
-            <div class="daily-progress-fill" id="daily-progress-fill"></div>
+            <div
+              class="daily-progress hidden"
+              id="daily-progress"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuenow="0"
+              aria-valuemax="0"
+              aria-label="Today's review progress"
+            >
+              <div class="daily-progress-fill" id="daily-progress-fill"></div>
+            </div>
           </div>
 
           <div id="practice-empty" class="empty-state hidden">
@@ -750,6 +752,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=251"></script>
+    <script src="app.js?v=252"></script>
   </body>
 </html>

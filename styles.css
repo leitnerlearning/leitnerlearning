@@ -1002,32 +1002,26 @@ main,
     font-size: clamp(0.95rem, 3.5vw, 1.2rem);
   }
 
+  .practice-goal-strip,
   .practice-meta {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 0.55rem;
-  }
-
-  .app.practice-focus .practice-meta {
-    margin-bottom: 0.5rem;
-  }
-
-  .daily-progress {
-    max-width: 100%;
-    margin: 0 auto 0.75rem;
-    height: 0.35rem;
-  }
-
-  .app.practice-focus .daily-progress {
+    max-width: 14rem;
+    gap: 0.38rem;
     margin-bottom: 0.75rem;
   }
 
-  .meta-chip {
-    font-size: var(--chip-font);
-    padding: var(--chip-pad-y) 0.75rem;
-    min-height: 40px;
+  .app.practice-focus .practice-goal-strip,
+  .app.practice-focus .practice-meta {
+    margin-bottom: 0.65rem;
+  }
+
+  .daily-goal-chip {
+    min-height: 2.35rem;
+    padding: 0.35rem 0.85rem 0.35rem 0.7rem;
+  }
+
+  .daily-progress {
+    max-width: 10.5rem;
+    height: 0.34rem;
   }
 
   .practice-card {
@@ -1076,18 +1070,25 @@ main,
 
   .answer-actions {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr 1fr auto;
     gap: 0.4rem;
     width: 100%;
+    max-width: none;
   }
 
-  .answer-actions .btn {
+  .answer-actions .btn,
+  .answer-action {
     min-height: 48px;
     width: 100%;
     touch-action: manipulation;
-    padding-inline: 0.35rem;
+    padding-inline: 0.4rem;
     font-size: 0.88rem;
-    font-weight: 600;
+  }
+
+  .answer-action--show {
+    min-width: 4rem;
+    padding-inline: 0.55rem;
+    font-size: 0.82rem;
   }
 
   /* Empty Review: full-width actions, less dead air */
@@ -1303,15 +1304,109 @@ main {
   color: var(--text-secondary);
 }
 
-/* Practice meta */
+/*
+ * Daily Goal strip — chip + bar as one unit above home/card.
+ *  [ Goal  3/15 ]   then a short track under it
+ */
+.practice-goal-strip,
 .practice-meta {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 1.5rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  max-width: 16rem;
+  margin: 0 auto 1.15rem;
+  box-sizing: border-box;
 }
 
+.practice-goal-strip.hidden,
+.practice-meta.hidden {
+  display: none;
+}
+
+.daily-goal-chip {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.15rem;
+  padding: 0.32rem 0.85rem 0.32rem 0.7rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-glass-strong);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease),
+    transform 0.12s ease;
+}
+
+.daily-goal-chip__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.daily-goal-chip__count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: inherit;
+  min-width: 2.4rem;
+  text-align: center;
+}
+
+.daily-goal-chip:hover,
+.daily-goal-chip:focus-visible {
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-color: transparent;
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
+}
+
+.daily-goal-chip:active {
+  transform: scale(0.98);
+}
+
+.daily-goal-chip.is-live {
+  color: var(--brand-deep);
+  background: linear-gradient(135deg, rgba(91, 154, 255, 0.14), rgba(54, 95, 207, 0.08));
+  border-color: color-mix(in srgb, var(--brand) 28%, transparent);
+}
+
+.daily-goal-chip.is-live .daily-goal-chip__label {
+  color: color-mix(in srgb, var(--brand-deep) 75%, var(--text-tertiary));
+}
+
+.daily-goal-chip.goal-met {
+  color: #1f6b45;
+  background: linear-gradient(135deg, rgba(72, 187, 120, 0.16), rgba(56, 161, 105, 0.08));
+  border-color: rgba(56, 161, 105, 0.35);
+}
+
+.daily-goal-chip.goal-met .daily-goal-chip__label {
+  color: color-mix(in srgb, #1f6b45 70%, var(--text-tertiary));
+}
+
+/* Legacy class hooks still used in media queries */
 .meta-chip {
   display: inline-flex;
   align-items: center;
@@ -1321,51 +1416,9 @@ main {
   font-weight: 600;
   padding: var(--chip-pad-y) var(--chip-pad-x);
   background: var(--surface-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: var(--chip-radius);
   color: var(--text-secondary);
-  box-shadow: var(--shadow-sm);
-  letter-spacing: -0.01em;
-  line-height: var(--lh-tight);
-}
-
-.meta-chip.live {
-  color: var(--brand-deep);
-  background: linear-gradient(135deg, rgba(91, 154, 255, 0.14), rgba(54, 95, 207, 0.08));
-  border-color: var(--brand-ring);
-}
-
-.meta-chip.goal-met {
-  color: #1f6b45;
-  background: linear-gradient(135deg, rgba(72, 187, 120, 0.16), rgba(56, 161, 105, 0.08));
-  border-color: rgba(56, 161, 105, 0.35);
-}
-
-#daily-goal-chip {
-  min-width: 3.25rem;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.meta-chip--button {
-  cursor: pointer;
-  font-family: inherit;
-  appearance: none;
-  -webkit-appearance: none;
-  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), transform 0.15s var(--ease);
-}
-
-.meta-chip--button:hover {
-  border-color: var(--brand-ring);
-  color: var(--brand-deep);
-}
-
-.meta-chip--button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--brand-soft);
-  border-color: var(--brand-ring);
 }
 
 /* Daily goal picker — pick a number (or backdrop / Escape). No Close chrome. */
@@ -1473,12 +1526,17 @@ main {
 }
 
 .daily-progress {
-  max-width: 18rem;
-  height: 0.35rem;
-  margin: -0.85rem auto 1.35rem;
-  background: rgba(54, 95, 207, 0.1);
+  width: 100%;
+  max-width: 11rem;
+  height: 0.32rem;
+  margin: 0;
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
   border-radius: 999px;
   overflow: hidden;
+}
+
+.daily-progress.hidden {
+  display: none;
 }
 
 .daily-progress-fill {
@@ -1487,6 +1545,16 @@ main {
   border-radius: inherit;
   background: linear-gradient(90deg, var(--brand), #5b9aff);
   transition: width 0.35s var(--ease);
+}
+
+.daily-progress.is-complete,
+.practice-goal-strip.is-complete .daily-progress {
+  background: rgba(56, 161, 105, 0.16);
+}
+
+.daily-progress.is-complete .daily-progress-fill,
+.practice-goal-strip.is-complete .daily-progress-fill {
+  background: linear-gradient(90deg, #3a9e62, #48bb78);
 }
 
 .empty-state.goal-met .empty-icon--earned {
@@ -1508,12 +1576,10 @@ main {
   text-align: center;
 }
 
+.app.practice-focus .practice-goal-strip,
 .app.practice-focus .practice-meta {
-  margin-bottom: 1rem;
-}
-
-.app.practice-focus .daily-progress {
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
+  max-width: 14rem;
 }
 
 .practice-card-top {
@@ -2006,9 +2072,9 @@ main {
     padding-block: 0.5rem 1.25rem;
   }
 
-  #practice-panel.active:has(#practice-empty:not(.hidden)) .practice-meta,
-  #practice-panel.active:has(#practice-empty:not(.hidden)) .daily-progress {
-    width: min(100%, 26rem);
+  #practice-panel.active:has(#practice-empty:not(.hidden)) .practice-goal-strip,
+  #practice-panel.active:has(#practice-empty:not(.hidden)) .practice-meta {
+    width: min(100%, 16rem);
   }
 
   #practice-panel.active #practice-empty:not(.hidden) {
@@ -2036,39 +2102,41 @@ main {
     width: min(200px, 28vw);
   }
 
+  .practice-goal-strip,
   .practice-meta {
-    margin-bottom: 1.1rem;
-    gap: 0.55rem;
+    max-width: 15rem;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .daily-goal-chip {
+    min-height: 2.25rem;
+    padding: 0.36rem 0.95rem 0.36rem 0.8rem;
+    font-size: 0.82rem;
+  }
+
+  .daily-goal-chip__label {
+    font-size: 0.7rem;
   }
 
   .daily-progress {
-    max-width: 20rem;
-    height: 0.4rem;
-    margin: -0.55rem auto 1.45rem;
+    max-width: 11.5rem;
+    height: 0.36rem;
   }
 
+  .app.practice-focus .practice-goal-strip,
   .app.practice-focus .practice-meta {
-    margin-bottom: 0.95rem;
+    margin-bottom: 0.9rem;
   }
 
-  .app.practice-focus .daily-progress {
-    margin-bottom: 1.15rem;
-  }
-
-  /* Direction | category | voice — balanced three-zone toolbar */
   .practice-card-top {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 0.55rem 0.75rem;
-    margin-bottom: 1.45rem;
+    margin-bottom: 1.25rem;
   }
 
   .practice-card-top .direction-toggle {
-    min-height: 2.15rem;
-    padding: 0.4rem 0.95rem;
-    font-size: 0.72rem;
+    min-height: 2.2rem;
+    padding: 0.4rem 1.05rem;
+    font-size: 0.8rem;
   }
 
   .prompt {
@@ -2081,7 +2149,7 @@ main {
   }
 
   .prompt-hint {
-    margin-bottom: 1.65rem;
+    margin-bottom: 1.25rem;
   }
 
   .answer-form {
@@ -2099,22 +2167,20 @@ main {
     margin-bottom: 0.35rem;
   }
 
-  /* Hear / Speak / Show — equal, premium action row */
   .answer-actions {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.65rem;
-    width: 100%;
-    margin-top: 0.15rem;
+    max-width: 24rem;
+    gap: 0.55rem;
+    margin-top: 0.2rem;
   }
 
-  .answer-actions .btn {
-    min-width: 0;
-    width: 100%;
+  .answer-actions .btn,
+  .answer-action {
     min-height: 2.7rem;
-    padding-inline: 0.75rem;
     font-size: 0.92rem;
-    font-weight: 600;
+  }
+
+  .answer-action--show {
+    min-width: 4.5rem;
   }
 
   .empty-state h2 {

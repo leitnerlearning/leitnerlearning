@@ -3845,25 +3845,36 @@ function renderPractice() {
   const showGoal = daily.goal > 0 && !daily.extraMode;
   const practiceMeta = document.getElementById("practice-meta");
 
-  if (goalChip) {
-    goalChip.classList.toggle("hidden", !showGoal);
-    goalChip.classList.toggle("goal-met", daily.goalMet);
-    if (showGoal) {
-      goalChip.textContent = `${daily.reviewed}/${daily.goal}`;
-      goalChip.setAttribute(
-        "aria-label",
-        `Daily goal ${daily.reviewed} of ${daily.goal}. Tap to change daily target.`
-      );
-    }
-  }
-
   if (practiceMeta) {
     practiceMeta.classList.toggle("hidden", !showGoal);
+    practiceMeta.classList.toggle("is-complete", Boolean(showGoal && daily.goalMet));
+    practiceMeta.classList.toggle("is-active", Boolean(showGoal && !daily.goalMet && daily.reviewed > 0));
+  }
+
+  if (goalChip) {
+    goalChip.classList.toggle("hidden", !showGoal);
+    goalChip.classList.toggle("goal-met", Boolean(showGoal && daily.goalMet));
+    goalChip.classList.toggle("is-live", Boolean(showGoal && !daily.goalMet && daily.reviewed > 0));
+    if (showGoal) {
+      const countEl = document.getElementById("daily-goal-count");
+      const countText = `${daily.reviewed}/${daily.goal}`;
+      if (countEl) countEl.textContent = countText;
+      else goalChip.textContent = countText;
+      const status = daily.goalMet
+        ? "Goal complete"
+        : `Daily goal ${daily.reviewed} of ${daily.goal}`;
+      goalChip.setAttribute(
+        "aria-label",
+        `${status}. Tap to change daily target.`
+      );
+      goalChip.title = "Change daily goal";
+    }
   }
 
   if (progressBar && progressFill) {
     const showBar = daily.goal > 0 && !daily.extraMode;
     progressBar.classList.toggle("hidden", !showBar);
+    progressBar.classList.toggle("is-complete", Boolean(showBar && daily.goalMet));
     if (showBar) {
       const pct = Math.min(100, Math.round((daily.reviewed / daily.goal) * 100));
       progressFill.style.width = `${pct}%`;
@@ -3871,7 +3882,9 @@ function renderPractice() {
       progressBar.setAttribute("aria-valuemax", String(daily.goal));
       progressBar.setAttribute(
         "aria-label",
-        `${daily.reviewed} of ${daily.goal} cards reviewed today`
+        daily.goalMet
+          ? `Daily goal complete: ${daily.reviewed} of ${daily.goal}`
+          : `${daily.reviewed} of ${daily.goal} cards reviewed today`
       );
     }
   }
