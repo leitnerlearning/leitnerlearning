@@ -7762,14 +7762,17 @@ function renderLanguageBasics(category = getActiveCategory()) {
                 ? " basics-glyph--pair"
                 : "";
           const examples = (item.examples || [])
-            .map((ex, i) => {
+            .map((ex) => {
               const word = ex.text || ex.speak || "";
               const gloss = ex.gloss != null ? String(ex.gloss) : "";
-              const sep = i === 0 ? "" : " · ";
-              const glossHtml = gloss ? ` ${escapeHtml(gloss)}` : "";
-              return `${sep}<button type="button" class="basics-word" data-speak="${escapeAttr(
-                ex.speak || word
-              )}">${escapeHtml(word)}</button>${glossHtml}`;
+              const glossHtml = gloss
+                ? `<span class="basics-example-gloss">${escapeHtml(gloss)}</span>`
+                : "";
+              return `<span class="basics-example">
+                <button type="button" class="basics-word" data-speak="${escapeAttr(
+                  ex.speak || word
+                )}">${escapeHtml(word)}</button>${glossHtml}
+              </span>`;
             })
             .join("");
           return `
@@ -7783,7 +7786,7 @@ function renderLanguageBasics(category = getActiveCategory()) {
                 <p class="basics-sound-approx">${item.approxHtml || ""}</p>
                 ${
                   examples
-                    ? `<p class="basics-sound-examples">${examples}</p>`
+                    ? `<div class="basics-sound-examples">${examples}</div>`
                     : ""
                 }
               </div>
@@ -7791,14 +7794,19 @@ function renderLanguageBasics(category = getActiveCategory()) {
         })
         .join("");
       return `
-        <section class="about-section" aria-labelledby="${titleId}">
-          <h3 class="about-section-title" id="${titleId}">${escapeHtml(section.title || "")}</h3>
+        <section class="basics-section" aria-labelledby="${titleId}">
+          <h3 class="basics-section-title" id="${titleId}">${escapeHtml(section.title || "")}</h3>
           <ul class="${listClass}">${items}</ul>
         </section>`;
     })
     .join("");
 
-  body.innerHTML = `<p class="basics-hint">Tap blue to hear.</p>${sectionsHtml}`;
+  body.innerHTML = `
+    <p class="basics-hint">
+      <span class="basics-hint-dot" aria-hidden="true"></span>
+      Tap a letter or word to hear it
+    </p>
+    ${sectionsHtml}`;
 }
 
 function openBasicsModal(returnFocusId) {
@@ -7813,6 +7821,14 @@ function openBasicsModal(returnFocusId) {
   if (title) {
     title.textContent = category?.label || "Basics";
   }
+  const flagEl = document.getElementById("basics-hero-flag");
+  if (flagEl) {
+    flagEl.textContent = category?.flag || "🏳️";
+  }
+  modal.setAttribute(
+    "aria-label",
+    `Letters and sounds for ${category?.label || "this language"}`
+  );
   renderLanguageBasics(category);
   modal.classList.remove("hidden");
   document.body.classList.add("modal-open");
