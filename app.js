@@ -3237,15 +3237,13 @@ function triggerTrackSwitchHaptic() {
 let trackSwitchOverlayTimer = null;
 let trackSwitchLanguageFlashTimer = null;
 
-function updateProgressLevelsLanguage(category = getActiveCategory(), { flash = false } = {}) {
-  const el = document.getElementById("progress-levels-language");
+/**
+ * After the switch overlay lifts, gently pulse the language control
+ * (flag + name in the prefs row) so attention lands on the durable UI.
+ */
+function flashProgressLanguageControl() {
+  const el = document.getElementById("progress-language-btn");
   if (!el) return;
-  const label =
-    category?.label || category?.learningLanguageName || "Language";
-  el.textContent = label;
-  el.setAttribute("aria-label", `Active language: ${label}`);
-
-  if (!flash) return;
   if (trackSwitchLanguageFlashTimer) {
     window.clearTimeout(trackSwitchLanguageFlashTimer);
     trackSwitchLanguageFlashTimer = null;
@@ -3316,8 +3314,8 @@ function showTrackSwitchOverlay(label) {
         el.setAttribute("aria-hidden", "true");
       }
     }, 280);
-    // After the veil lifts, land attention on the durable language chip.
-    updateProgressLevelsLanguage(getActiveCategory(), { flash: true });
+    // After the veil lifts, land attention on the durable language control.
+    flashProgressLanguageControl();
   }, 1250);
 }
 
@@ -3334,7 +3332,6 @@ function announceTrackSwitch(category = getActiveCategory()) {
   const label = category?.label || category?.learningLanguageName || "Language";
   // Warm the audio pipeline in this same user-gesture turn (menu → pick).
   unlockAudioPipeline();
-  updateProgressLevelsLanguage(category, { flash: false });
   showTrackSwitchOverlay(label);
   triggerTrackSwitchHaptic();
   playTrackSwitchSound();
@@ -6901,7 +6898,6 @@ function applyCategoryUI() {
   applyAddCardFormUI();
   applyPracticeDirectionUI();
   updateBasicsButtonVisibility(category.id);
-  updateProgressLevelsLanguage(category, { flash: false });
   updateReadLanguageIndicator(category);
 
   document.title = "Leitner Learning";

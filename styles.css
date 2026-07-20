@@ -229,28 +229,65 @@ main,
   margin: 0 0 0.35rem;
 }
 
-.category-picker-btn--flag {
-  min-width: 3.15rem;
+/*
+ * Progress language control — flag + written name (single source of truth).
+ * Not flag-only: name lives here so section headers stay clean.
+ */
+.category-picker-btn--progress {
+  min-width: 0;
   min-height: 2.25rem;
-  padding: 0.28rem 0.55rem 0.28rem 0.6rem;
-  gap: 0.28rem;
-  justify-content: center;
+  max-width: min(11.5rem, 42vw);
+  padding: 0.28rem 0.55rem 0.28rem 0.5rem;
+  gap: 0.35rem;
+  justify-content: flex-start;
   text-transform: none;
-  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  font-size: 0.8rem;
+  font-weight: 650;
   line-height: 1;
   color: var(--text-secondary);
   background: var(--surface-glass-strong);
   border: 1px solid var(--border-strong);
   box-shadow: none;
+  transition:
+    color 0.2s var(--ease, ease),
+    background 0.2s var(--ease, ease),
+    border-color 0.2s var(--ease, ease),
+    box-shadow 0.2s var(--ease, ease);
 }
 
-.category-picker-btn--flag:hover,
-.category-picker-btn--flag:focus-visible,
-.category-picker-btn--flag[aria-expanded="true"] {
+.category-picker-btn--progress:hover,
+.category-picker-btn--progress:focus-visible,
+.category-picker-btn--progress[aria-expanded="true"] {
   color: var(--brand-deep);
   background: var(--brand-soft);
   border-color: transparent;
   outline: none;
+}
+
+.category-picker-btn--progress.is-flashing {
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-color: transparent;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
+}
+
+.category-picker-btn--progress .category-flag {
+  font-size: 1.15rem;
+}
+
+.category-picker-lang {
+  min-width: 0;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.category-picker-btn--progress .category-picker-chevron {
+  flex-shrink: 0;
+  opacity: 0.65;
 }
 
 .category-flag {
@@ -289,7 +326,7 @@ main,
 
 /*
  * Progress prefs (under tabs · above stat bubbles):
- *  [ 🇳🇴 ▾ ] [ Basics ] ………… [ Voice F|M ] [ About ]
+ *  [ 🇳🇴 Norwegian ▾ ] [ Basics ] …… [ Voice F|M ] [ About ]
  */
 .progress-prefs {
   display: flex;
@@ -593,86 +630,6 @@ main,
     opacity: 1 !important;
     transform: none !important;
   }
-}
-
-/* Durable active-language chip next to Leitner levels */
-.progress-levels-language {
-  flex-shrink: 0;
-  max-width: min(52%, 12rem);
-  padding: 0.28rem 0.65rem;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: var(--surface-glass-strong);
-  color: var(--text-secondary);
-  font-size: 0.7rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  transition:
-    color 0.2s var(--ease, ease),
-    background 0.2s var(--ease, ease),
-    border-color 0.2s var(--ease, ease),
-    box-shadow 0.2s var(--ease, ease);
-}
-
-.progress-levels-language.is-flashing {
-  color: var(--brand-deep);
-  background: var(--brand-soft);
-  border-color: transparent;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
-}
-
-/* Basics + Voice live in bottom chrome on Progress */
-.progress-basics-btn {
-  appearance: none;
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.25rem;
-  padding: 0.35rem 0.85rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: var(--surface-glass-strong);
-  color: var(--text-secondary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow: none;
-  transition:
-    color 0.15s var(--ease),
-    background 0.15s var(--ease),
-    border-color 0.15s var(--ease),
-    box-shadow 0.15s var(--ease),
-    transform 0.12s ease;
-}
-
-.progress-basics-btn:hover,
-.progress-basics-btn:focus-visible {
-  color: var(--brand-deep);
-  background: var(--brand-soft);
-  border-color: transparent;
-  box-shadow: none;
-  outline: none;
-}
-
-.progress-basics-btn:active {
-  transform: scale(0.98);
-}
-
-.progress-voice {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.4rem;
-  min-width: 0;
 }
 
 .progress-voice-label {
@@ -4824,9 +4781,16 @@ body.welcome-open .app {
     font-size: 0.68rem;
   }
 
-  .category-picker-btn--flag {
+  .category-picker-btn--progress {
     min-height: 2.15rem;
-    min-width: 2.85rem;
+    max-width: min(9.5rem, 38vw);
+    padding: 0.28rem 0.45rem 0.28rem 0.4rem;
+    font-size: 0.74rem;
+    gap: 0.28rem;
+  }
+
+  .category-picker-btn--progress .category-flag {
+    font-size: 1.05rem;
   }
 
   .progress-about-btn {
@@ -6342,9 +6306,11 @@ body.welcome-open .app {
     font-size: 0.65rem;
   }
 
-  .category-picker-btn--flag {
+  .category-picker-btn--progress {
     min-height: 2rem;
-    min-width: 2.75rem;
+    max-width: min(8.5rem, 36vw);
+    padding: 0.22rem 0.4rem 0.22rem 0.35rem;
+    font-size: 0.7rem;
   }
 
   .welcome-modal {

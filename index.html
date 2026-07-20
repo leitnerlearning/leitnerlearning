@@ -471,12 +471,12 @@
         </section>
 
         <section id="stats-panel" class="panel" role="tabpanel" hidden>
-          <!-- Under tabs · above stats: flag · Basics · Voice · About -->
+          <!-- Under tabs · above stats: flag + name · Basics · Voice · About -->
           <div class="progress-prefs" role="group" aria-label="Learning preferences">
             <div class="category-picker category-picker--progress">
               <button
                 type="button"
-                class="category-picker-btn category-picker-btn--flag"
+                class="category-picker-btn category-picker-btn--progress"
                 aria-haspopup="listbox"
                 aria-expanded="false"
                 aria-controls="progress-category-picker-menu"
@@ -484,7 +484,7 @@
                 id="progress-language-btn"
               >
                 <span class="category-flag" data-category-picker-flag aria-hidden="true">🇳🇴</span>
-                <span class="visually-hidden" data-category-picker-label>Norwegian</span>
+                <span class="category-picker-lang" data-category-picker-label>Norwegian</span>
                 <span class="category-picker-chevron" aria-hidden="true"></span>
               </button>
               <div
@@ -543,11 +543,6 @@
           <section class="progress-section" aria-labelledby="progress-levels-title">
             <div class="progress-section-head">
               <h3 class="progress-section-title" id="progress-levels-title">Leitner levels</h3>
-              <span
-                class="progress-levels-language"
-                id="progress-levels-language"
-                aria-label="Active language"
-              >Norwegian</span>
             </div>
             <div class="box-stats" id="box-stats"></div>
           </section>
