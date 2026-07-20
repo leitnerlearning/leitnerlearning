@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=176" />
+    <link rel="stylesheet" href="styles.css?v=177" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -98,27 +98,6 @@
             width="320"
             height="210"
           />
-        </div>
-        <div class="header-track">
-          <div class="category-picker category-picker--header">
-            <button
-              type="button"
-              class="category-picker-btn"
-              aria-haspopup="listbox"
-              aria-expanded="false"
-              aria-controls="header-category-picker-menu"
-              aria-label="Current language"
-            >
-              <span data-category-picker-label>Norwegian</span>
-              <span class="category-picker-chevron" aria-hidden="true"></span>
-            </button>
-            <div
-              class="category-picker-menu hidden"
-              id="header-category-picker-menu"
-              role="listbox"
-              aria-label="Choose language"
-            ></div>
-          </div>
         </div>
         <nav class="tabs" role="tablist" aria-label="Main navigation">
           <button class="tab active" data-tab="practice" role="tab" aria-selected="true">
@@ -484,47 +463,6 @@
         </section>
 
         <section id="stats-panel" class="panel" role="tabpanel" hidden>
-          <!-- Prefs: Basics + Voice (language lives in the global header) -->
-          <div class="progress-prefs" role="group" aria-label="Learning preferences">
-            <button
-              type="button"
-              class="progress-basics-btn"
-              id="progress-basics-btn"
-              aria-haspopup="dialog"
-              aria-controls="basics-modal"
-              aria-label="Language basics"
-            >
-              Basics
-            </button>
-
-            <div class="progress-voice" aria-labelledby="progress-voice-title">
-              <span class="progress-voice-label" id="progress-voice-title">Voice</span>
-              <div
-                class="voice-gender-control"
-                id="voice-gender-control"
-                role="group"
-                aria-label="Voice"
-              >
-                <button
-                  type="button"
-                  class="voice-gender-option"
-                  data-voice-gender="female"
-                  aria-pressed="true"
-                >
-                  Female
-                </button>
-                <button
-                  type="button"
-                  class="voice-gender-option"
-                  data-voice-gender="male"
-                  aria-pressed="false"
-                >
-                  Male
-                </button>
-              </div>
-            </div>
-          </div>
-
           <div class="stats-summary" id="stats-summary"></div>
 
           <section class="progress-section" aria-labelledby="progress-levels-title">
@@ -565,7 +503,68 @@
         </section>
       </main>
 
-      <footer class="site-footer">
+      <footer class="site-chrome" aria-label="App controls">
+        <div class="category-picker category-picker--chrome">
+          <button
+            type="button"
+            class="category-picker-btn category-picker-btn--flag"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="chrome-category-picker-menu"
+            aria-label="Current language: Norwegian"
+            id="chrome-language-btn"
+          >
+            <span class="category-flag" data-category-picker-flag aria-hidden="true">🇳🇴</span>
+            <span class="visually-hidden" data-category-picker-label>Norwegian</span>
+            <span class="category-picker-chevron" aria-hidden="true"></span>
+          </button>
+          <div
+            class="category-picker-menu category-picker-menu--up hidden"
+            id="chrome-category-picker-menu"
+            role="listbox"
+            aria-label="Choose language"
+          ></div>
+        </div>
+
+        <div class="site-chrome-progress" id="site-chrome-progress" hidden>
+          <button
+            type="button"
+            class="progress-basics-btn"
+            id="progress-basics-btn"
+            aria-haspopup="dialog"
+            aria-controls="basics-modal"
+            aria-label="Language basics"
+          >
+            Basics
+          </button>
+          <div class="progress-voice" aria-labelledby="progress-voice-title">
+            <span class="progress-voice-label" id="progress-voice-title">Voice</span>
+            <div
+              class="voice-gender-control"
+              id="voice-gender-control"
+              role="group"
+              aria-label="Voice"
+            >
+              <button
+                type="button"
+                class="voice-gender-option"
+                data-voice-gender="female"
+                aria-pressed="true"
+              >
+                Female
+              </button>
+              <button
+                type="button"
+                class="voice-gender-option"
+                data-voice-gender="male"
+                aria-pressed="false"
+              >
+                Male
+              </button>
+            </div>
+          </div>
+        </div>
+
         <button type="button" class="site-footer-btn" id="about-open-btn">About</button>
       </footer>
     </div>
@@ -720,7 +719,7 @@
 
     <script src="norwegian-frequency-deck.js?v=25"></script>
     <script src="norwegian-reading-vocab.js?v=6"></script>
-    <script src="learning-categories.js?v=39"></script>
+    <script src="learning-categories.js?v=40"></script>
     <script src="read-stories.js?v=13"></script>
     <script src="lang/registry.js?v=1"></script>
     <script src="lang/basics-data.js?v=2"></script>
@@ -731,6 +730,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=239"></script>
+    <script src="app.js?v=240"></script>
   </body>
 </html>

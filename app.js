@@ -6797,18 +6797,32 @@ function applyCategoryUI() {
   document.querySelectorAll("[data-category-picker-label]").forEach((el) => {
     el.textContent = category.label;
   });
-
-  const setText = (id, text) => {
-    const el = document.getElementById(id);
-    if (el && text) el.textContent = text;
-  };
+  document.querySelectorAll("[data-category-picker-flag]").forEach((el) => {
+    el.textContent = category.flag || "🏳️";
+  });
+  const chromeLangBtn = document.getElementById("chrome-language-btn");
+  if (chromeLangBtn) {
+    chromeLangBtn.setAttribute(
+      "aria-label",
+      `Current language: ${category.label || "Language"}`
+    );
+  }
 
   applyAddCardFormUI();
   applyPracticeDirectionUI();
   updateBasicsButtonVisibility(category.id);
   updateProgressLevelsLanguage(category, { flash: false });
+  updateSiteChromeForTab();
 
   document.title = "Leitner Learning";
+}
+
+function updateSiteChromeForTab() {
+  const progressTools = document.getElementById("site-chrome-progress");
+  if (!progressTools) return;
+  const onProgress = isOnProgressTab();
+  progressTools.hidden = !onProgress;
+  document.body.classList.toggle("chrome-progress", onProgress);
 }
 
 function applyPracticeDirectionUI() {
@@ -6847,6 +6861,7 @@ function applyPracticeDirectionUI() {
 
 function renderAvailableCategoryOption(category) {
   const isActive = category.id === activeCategoryId;
+  const flag = category.flag || "🏳️";
   return `
     <button
       type="button"
@@ -6855,11 +6870,13 @@ function renderAvailableCategoryOption(category) {
       aria-selected="${isActive}"
       data-category-id="${category.id}"
     >
+      <span class="category-option-flag" aria-hidden="true">${flag}</span>
       <span class="category-option-label">${escapeHtml(category.label)}</span>
     </button>`;
 }
 
 function renderUpcomingCategoryOption(category) {
+  const flag = category.flag || "🏳️";
   return `
     <button
       type="button"
@@ -6869,6 +6886,7 @@ function renderUpcomingCategoryOption(category) {
       data-category-id="${category.id}"
       disabled
     >
+      <span class="category-option-flag" aria-hidden="true">${flag}</span>
       <span class="category-option-label">${escapeHtml(category.label)}</span>
     </button>`;
 }
@@ -7130,6 +7148,7 @@ function switchTab(tabName) {
   }
   if (tabName === "stats") renderStatsSummary();
   if (tabName === "cards") renderCardList();
+  updateSiteChromeForTab();
   document.getElementById("library-float-actions")?.classList.add("hidden");
   document.getElementById("progress-float-actions")?.classList.add("hidden");
   if (tabName === "cards" || tabName === "stats") {

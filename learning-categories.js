@@ -7,6 +7,7 @@ const LEARNING_CATEGORIES = [
   {
     id: "nb-bokmal",
     label: "Norwegian",
+    flag: "🇳🇴",
     available: true,
     foreignLang: "nb",
     speechLang: "nb-NO",
@@ -42,6 +43,7 @@ const LEARNING_CATEGORIES = [
   {
     id: "sv",
     label: "Swedish",
+    flag: "🇸🇪",
     available: true,
     foreignLang: "sv",
     speechLang: "sv-SE",
@@ -78,6 +80,7 @@ const LEARNING_CATEGORIES = [
   {
     id: "da",
     label: "Danish",
+    flag: "🇩🇰",
     available: true,
     foreignLang: "da",
     speechLang: "da-DK",
@@ -114,6 +117,7 @@ const LEARNING_CATEGORIES = [
   {
     id: "de",
     label: "German",
+    flag: "🇩🇪",
     available: true,
     foreignLang: "de",
     speechLang: "de-DE",
@@ -150,6 +154,7 @@ const LEARNING_CATEGORIES = [
   {
     id: "fr",
     label: "French",
+    flag: "🇫🇷",
     available: true,
     foreignLang: "fr",
     speechLang: "fr-FR",
@@ -186,6 +191,7 @@ const LEARNING_CATEGORIES = [
   {
     id: "es",
     label: "Spanish",
+    flag: "🇪🇸",
     available: true,
     foreignLang: "es",
     speechLang: "es-ES",
@@ -222,6 +228,7 @@ const LEARNING_CATEGORIES = [
   {
     id: "it",
     label: "Italian",
+    flag: "🇮🇹",
     available: true,
     foreignLang: "it",
     speechLang: "it-IT",

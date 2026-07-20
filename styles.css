@@ -161,14 +161,29 @@ main,
   text-align: center;
 }
 
-/* Site footer */
-.site-footer {
+/* Bottom chrome: language (flag) · Progress tools · About */
+.site-chrome {
   margin-top: auto;
-  padding-top: 2.25rem;
+  padding-top: 1.75rem;
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem 0.65rem;
+}
+
+.site-chrome-progress {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.45rem 0.65rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.site-chrome-progress[hidden] {
+  display: none !important;
 }
 
 .site-footer-btn {
@@ -176,11 +191,11 @@ main,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  padding: 0.4rem 1rem;
+  min-height: 2.25rem;
+  padding: 0.4rem 0.9rem;
   border: 1px solid var(--border-strong);
   border-radius: 999px;
-  background: var(--surface-glass);
+  background: var(--surface-glass-strong);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: var(--shadow-sm);
@@ -218,7 +233,7 @@ main,
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.65rem;
+  margin-bottom: 1.35rem;
 }
 
 .brand-logo {
@@ -230,73 +245,84 @@ main,
   filter: drop-shadow(0 8px 24px rgba(54, 95, 207, 0.1));
 }
 
-/* Global language track — always visible above tabs */
-.header-track {
-  display: flex;
-  justify-content: center;
-  margin: 0 0 1.15rem;
-}
-
 .category-picker {
   position: relative;
   margin: 0 0 0.35rem;
 }
 
-.category-picker--header {
+.category-picker--chrome {
   position: relative;
   margin: 0;
-  max-width: min(16rem, 88vw);
+  flex: 0 0 auto;
 }
 
-.category-picker--header .category-picker-btn {
-  min-height: 2.15rem;
-  width: 100%;
-  max-width: 100%;
-  padding: 0.35rem 0.85rem 0.35rem 0.95rem;
-  justify-content: space-between;
-  gap: 0.45rem;
-  font-size: 0.78rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
+.category-picker-btn--flag {
+  min-width: 3.15rem;
+  min-height: 2.25rem;
+  padding: 0.28rem 0.55rem 0.28rem 0.6rem;
+  gap: 0.28rem;
+  justify-content: center;
   text-transform: none;
+  font-size: 1.15rem;
+  line-height: 1;
   color: var(--text-secondary);
   background: var(--surface-glass-strong);
   border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-sm);
-  transition:
-    color 0.15s var(--ease),
-    background 0.15s var(--ease),
-    border-color 0.15s var(--ease),
-    box-shadow 0.15s var(--ease);
 }
 
-.category-picker--header .category-picker-btn:hover,
-.category-picker--header .category-picker-btn:focus-visible,
-.category-picker--header .category-picker-btn[aria-expanded="true"] {
+.category-picker-btn--flag:hover,
+.category-picker-btn--flag:focus-visible,
+.category-picker-btn--flag[aria-expanded="true"] {
   color: var(--brand-deep);
   background: var(--brand-soft);
   border-color: transparent;
-  box-shadow: var(--shadow-sm);
   outline: none;
 }
 
-.category-picker--header [data-category-picker-label] {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: left;
+.category-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
-.category-picker--header .category-picker-menu {
-  left: 50%;
+.category-picker-menu.category-picker-menu--up {
+  top: auto;
+  bottom: calc(100% + 0.4rem);
+  left: 0;
   right: auto;
-  transform: translateX(-50%);
-  min-width: min(100%, 16rem);
-  width: max-content;
-  max-width: min(20rem, 92vw);
-  z-index: 80;
+  transform: none;
+  min-width: 12.5rem;
+  max-width: min(18rem, 92vw);
+  z-index: 90;
+}
+
+.category-option-flag {
+  flex-shrink: 0;
+  font-size: 1.15rem;
+  line-height: 1;
+  width: 1.4rem;
+  text-align: center;
+}
+
+.category-option--compact {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .category-picker--welcome {
@@ -554,22 +580,7 @@ main,
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
-/*
- * Progress prefs: Basics ······ Voice [ F | M ]
- * Language lives in the global header on every page.
- */
-.progress-prefs {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.75rem;
-  width: 100%;
-  margin: 0 0 1rem;
-  box-sizing: border-box;
-}
-
+/* Basics + Voice live in bottom chrome on Progress */
 .progress-basics-btn {
   appearance: none;
   flex: 0 0 auto;
@@ -615,9 +626,8 @@ main,
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.45rem;
+  gap: 0.4rem;
   min-width: 0;
-  margin-left: auto;
 }
 
 .progress-voice-label {
@@ -831,21 +841,9 @@ main,
     margin-bottom: 1rem;
   }
 
-  .header-track {
-    margin-bottom: 0.75rem;
-  }
-
-  .category-picker--header {
-    max-width: min(14rem, 86vw);
-  }
-
-  .category-picker--header .category-picker-btn {
-    min-height: 2.05rem;
-    font-size: 0.72rem;
-  }
-
-  .site-footer {
-    padding-top: 1.75rem;
+  .site-chrome {
+    padding-top: 1.25rem;
+    gap: 0.45rem;
   }
 
   .site-footer-btn {
@@ -853,7 +851,7 @@ main,
   }
 
   .brand {
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.85rem;
     gap: 0.3rem;
   }
 
@@ -868,21 +866,11 @@ main,
   }
 
   .app.practice-focus .brand {
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.4rem;
   }
 
   .app.practice-focus .brand-logo {
     width: min(140px, 42vw);
-  }
-
-  .app.practice-focus .header-track {
-    margin-bottom: 0.55rem;
-  }
-
-  .app.practice-focus .category-picker--header .category-picker-btn {
-    min-height: 1.95rem;
-    padding: 0.28rem 0.7rem;
-    font-size: 0.72rem;
   }
 
   .app.practice-focus .practice-card {
@@ -1886,15 +1874,11 @@ main {
   }
 
   .app.practice-focus .brand {
-    margin-bottom: 0.55rem;
+    margin-bottom: 0.85rem;
   }
 
   .app.practice-focus .brand-logo {
     width: min(200px, 28vw);
-  }
-
-  .app.practice-focus .header-track {
-    margin-bottom: 0.85rem;
   }
 
   .practice-meta {
@@ -4525,19 +4509,10 @@ body.welcome-open .app {
     letter-spacing: 0.04em;
   }
 
-  .progress-prefs {
-    gap: 1rem;
-    margin-bottom: 1.15rem;
-  }
-
   .progress-basics-btn {
     min-height: 2.35rem;
     padding: 0.38rem 0.95rem;
     font-size: 0.78rem;
-  }
-
-  .progress-voice {
-    gap: 0.5rem;
   }
 
   .voice-gender-control {
@@ -4786,30 +4761,17 @@ body.welcome-open .app {
     text-wrap: balance;
   }
 
-  /* Mobile Progress: Basics + Voice on one row */
-  .progress-prefs {
-    flex-wrap: nowrap;
-    gap: 0.45rem;
-    margin-bottom: 0.9rem;
+  .site-chrome-progress {
+    gap: 0.35rem;
   }
 
   .progress-basics-btn {
-    flex: 0 0 auto;
     min-height: 2.15rem;
-    min-width: 0;
     padding: 0.3rem 0.55rem;
     font-size: 0.68rem;
   }
 
-  .progress-voice {
-    flex: 0 0 auto;
-    margin-left: auto;
-    justify-content: flex-end;
-    gap: 0;
-  }
-
   .progress-voice-label {
-    /* Segment labels (Female/Male) are enough */
     position: absolute;
     width: 1px;
     height: 1px;
@@ -6247,7 +6209,7 @@ body.welcome-open .app {
     width: min(100%, 22rem);
   }
 
-  .site-footer {
+  .site-chrome {
     padding-top: 0.5rem;
   }
 
@@ -6255,6 +6217,11 @@ body.welcome-open .app {
     min-height: 2rem;
     padding: 0.25rem 0.75rem;
     font-size: 0.65rem;
+  }
+
+  .category-picker-btn--flag {
+    min-height: 2rem;
+    min-width: 2.75rem;
   }
 
   .welcome-modal {
