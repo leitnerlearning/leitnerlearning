@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=189" />
+    <link rel="stylesheet" href="styles.css?v=190" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -179,6 +179,7 @@
                 <p class="power-on-teaser hidden" id="power-on-teaser" aria-live="polite"></p>
               </div>
               <div class="empty-home-status" id="empty-home-status" aria-live="polite"></div>
+              <!-- Optional bridges kept for future; home status is the power hint line -->
               <button
                 type="button"
                 class="read-bridge-btn hidden"
@@ -188,9 +189,6 @@
               >
                 <span class="read-bridge-btn__label">Read a story</span>
                 <span class="read-bridge-btn__meta">See the words in real sentences</span>
-              </button>
-              <button id="keep-practicing-btn" class="btn secondary hidden" type="button">
-                Keep reviewing
               </button>
               <button type="button" class="btn secondary hidden" id="empty-library-btn" data-tab-jump="cards">
                 Library
@@ -753,6 +751,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=249"></script>
+    <script src="app.js?v=250"></script>
   </body>
 </html>

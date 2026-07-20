@@ -3510,9 +3510,12 @@ function setEmptyStatePowerAction(
   } = {}
 ) {
   powerEl?.classList.toggle("hidden", !show);
+  // Status line under the power button — primary “what do I do?” cue.
   if (hintEl) {
-    hintEl.textContent = hint;
-    hintEl.classList.toggle("hidden", !hint);
+    const text = String(hint || "").trim();
+    hintEl.textContent = text;
+    hintEl.classList.toggle("hidden", !show || !text);
+    hintEl.classList.toggle("power-on-hint--idle", show && text && !enabled);
   }
 
   const startBtn = document.getElementById("start-practice-btn");
@@ -3525,7 +3528,8 @@ function setEmptyStatePowerAction(
     if (show) startBtn.classList.add(`power-on-btn--${mode}`);
     startBtn.disabled = !enabled;
     startBtn.setAttribute("aria-disabled", enabled ? "false" : "true");
-    startBtn.setAttribute("aria-label", ariaLabel);
+    startBtn.setAttribute("aria-label", ariaLabel || hint || "Review");
+    if (hint) startBtn.title = hint;
   }
 
   if (powerEl) {
@@ -3536,6 +3540,40 @@ function setEmptyStatePowerAction(
       celebrateGoalComplete();
     }
   }
+}
+
+/** Short status under the logo power button (visible, not aria-only). */
+function formatPowerHomeHint({
+  mode = "start",
+  remaining = 0,
+  extraDue = 0,
+  sessionLine = "",
+} = {}) {
+  if (mode === "start") {
+    if (remaining > 0) {
+      return remaining === 1
+        ? "Start today's review · 1 card"
+        : `Start today's review · ${remaining} cards`;
+    }
+    return "Start today's review";
+  }
+  if (mode === "continue") {
+    if (remaining > 0) {
+      return remaining === 1
+        ? "Continue · 1 left"
+        : `Continue · ${remaining} left`;
+    }
+    return "Continue review";
+  }
+  // complete
+  if (extraDue > 0) {
+    if (sessionLine) return sessionLine;
+    return extraDue === 1
+      ? "Done for today · 1 extra ready"
+      : `Done for today · ${extraDue} extras ready`;
+  }
+  if (sessionLine) return sessionLine;
+  return "Done for today";
 }
 
 function renderHomeStatus() {
@@ -3591,7 +3629,6 @@ function renderEmptyState() {
   const powerHintEl = document.getElementById("power-on-hint");
   const powerTeaserEl = document.getElementById("power-on-teaser");
   const readBridgeBtn = document.getElementById("read-bridge-btn");
-  const keepBtn = document.getElementById("keep-practicing-btn");
   const libraryBtn = document.getElementById("empty-library-btn");
 
   messageEl.classList.remove("hidden");
@@ -3607,28 +3644,47 @@ function renderEmptyState() {
   setEmptyStateSecondaryActions({ libraryBtn });
 
   const daily = ensureDailyPracticeState();
-  const due = getDueCards(deck);
   const remainingToday = getDailyRemainingCount(daily);
   const extraDue = getOutstandingDueCount(daily);
+  const emptyPreview = document.getElementById("empty-preview");
 
-  function showGoalCompletePower({
+  function hideLegacyCopy() {
+    if (emptyPreview) emptyPreview.hidden = true;
+    // Status lives under the power button — avoid a second paragraph by default.
+    messageEl.textContent = "";
+    messageEl.classList.add("hidden");
+  }
+
+  function showPowerHome({
+    mode = "start",
+    enabled = true,
     celebrate = false,
-    message = "",
+    hint = "",
+    ariaLabel = "",
     showTeaser = false,
+    detail = "",
   } = {}) {
     emptyEl.classList.add("empty-state--power-complete");
     setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
-    messageEl.classList.toggle("hidden", !message);
-    if (message) messageEl.textContent = message;
-    const emptyPreview = document.getElementById("empty-preview");
-    if (emptyPreview) emptyPreview.hidden = true;
-    const canKeepGoing = extraDue > 0;
+    hideLegacyCopy();
+    if (detail) {
+      messageEl.textContent = detail;
+      messageEl.classList.remove("hidden");
+    }
+    const resolvedHint =
+      hint ||
+      formatPowerHomeHint({
+        mode,
+        remaining: remainingToday,
+        extraDue,
+      });
     setEmptyStatePowerAction(powerEl, powerHintEl, {
       show: true,
-      mode: "complete",
-      ariaLabel: canKeepGoing ? "Keep reviewing" : "Done for today",
+      mode,
+      ariaLabel: ariaLabel || resolvedHint,
+      hint: resolvedHint,
       celebrate,
-      enabled: canKeepGoing,
+      enabled,
     });
     renderPowerOnExtras({
       teaserEl: powerTeaserEl,
@@ -3642,40 +3698,45 @@ function renderEmptyState() {
     emptyEl.classList.add("session-complete");
     emptyEl.classList.toggle("goal-met", daily.goalMet);
     const correct =
-      sessionCorrect === 1 ? "1 answer right" : `${sessionCorrect} answers right`;
+      sessionCorrect === 1 ? "1 right this round" : `${sessionCorrect} right this round`;
 
     if (daily.goalMet && !daily.extraMode) {
-      showGoalCompletePower({
+      showPowerHome({
+        mode: "complete",
+        enabled: extraDue > 0,
         celebrate: true,
-        message: `${correct} this round. Nice work. You're done for today.`,
+        hint: formatPowerHomeHint({
+          mode: "complete",
+          extraDue,
+          sessionLine:
+            extraDue > 0
+              ? `${correct} · extras ready`
+              : `${correct} · done for today`,
+        }),
+        ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for today",
       });
     } else if (remainingToday > 0) {
-      setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
-      const emptyPreview = document.getElementById("empty-preview");
-    if (emptyPreview) emptyPreview.hidden = true;
-      setEmptyStatePowerAction(powerEl, powerHintEl, {
-        show: true,
+      showPowerHome({
         mode: "continue",
+        hint: formatPowerHomeHint({
+          mode: "continue",
+          remaining: remainingToday,
+        }),
         ariaLabel: "Continue today's review",
       });
     } else {
-      setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
-      const emptyPreview = document.getElementById("empty-preview");
-    if (emptyPreview) emptyPreview.hidden = true;
-      setEmptyStatePowerAction(powerEl, powerHintEl, {
-        show: true,
+      showPowerHome({
         mode: extraDue > 0 ? "continue" : "complete",
-        ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for today",
         enabled: extraDue > 0,
-      });
-      renderPowerOnExtras({
-        teaserEl: powerTeaserEl,
-        readBridgeBtn,
+        hint: formatPowerHomeHint({
+          mode: extraDue > 0 ? "continue" : "complete",
+          remaining: extraDue,
+          extraDue,
+          sessionLine: correct,
+        }),
+        ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for today",
       });
     }
-
-    if (keepBtn) keepBtn.classList.add("hidden");
-    renderHomeStatus();
     return;
   }
 
@@ -3684,47 +3745,35 @@ function renderEmptyState() {
 
   if (hasDailyGoalRemaining(daily)) {
     const continuing = daily.reviewed > 0;
-    setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
-    const emptyPreview = document.getElementById("empty-preview");
-    if (emptyPreview) emptyPreview.hidden = true;
-    if (keepBtn) keepBtn.classList.add("hidden");
-    setEmptyStatePowerAction(powerEl, powerHintEl, {
-      show: true,
+    showPowerHome({
       mode: continuing ? "continue" : "start",
-      ariaLabel: continuing ? "Continue today's review" : "Start today's review",
-      enabled: true,
+      hint: formatPowerHomeHint({
+        mode: continuing ? "continue" : "start",
+        remaining: remainingToday,
+      }),
+      ariaLabel: continuing
+        ? "Continue today's review"
+        : "Start today's review",
     });
-    renderHomeStatus();
     return;
   }
 
   if (daily.goalMet && !daily.extraMode) {
-    let goalMessage = "";
-    const fullyCaughtUp = extraDue === 0;
-    if (extraDue > 0) {
-      goalMessage = `${extraDue} more ${
-        extraDue === 1 ? "card is" : "cards are"
-      } ready if you want extra practice. Or stop here and come back tomorrow.`;
-    } else if (due.length > 0) {
-      goalMessage =
-        "You hit today's goal. Extra cards can wait until tomorrow.";
-    } else {
-      goalMessage = "You're all caught up. More reviews show up when they're due.";
-    }
-    showGoalCompletePower({
-      message: fullyCaughtUp ? "" : goalMessage,
+    showPowerHome({
+      mode: "complete",
+      enabled: extraDue > 0,
+      hint: formatPowerHomeHint({ mode: "complete", extraDue }),
+      ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for today",
     });
-    if (keepBtn) keepBtn.classList.add("hidden");
     return;
   }
 
   emptyEl.classList.remove("goal-met");
-
-  if (keepBtn) keepBtn.classList.add("hidden");
-  const emptyPreview = document.getElementById("empty-preview");
-  if (emptyPreview) emptyPreview.hidden = true;
-  showGoalCompletePower({
-    message: "",
+  showPowerHome({
+    mode: "complete",
+    enabled: extraDue > 0,
+    hint: formatPowerHomeHint({ mode: "complete", extraDue }),
+    ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for today",
   });
 }
 
@@ -7331,11 +7380,6 @@ function initEventListeners() {
     }
     sessionReviewed = 0;
     sessionCorrect = 0;
-    beginPracticeSession();
-  });
-
-  document.getElementById("keep-practicing-btn")?.addEventListener("click", () => {
-    enableExtraPractice();
     beginPracticeSession();
   });
 
