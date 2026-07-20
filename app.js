@@ -173,10 +173,72 @@ function hasLanguageBasics(categoryId = activeCategoryId) {
   return Boolean(data?.sections?.length);
 }
 
+/**
+ * Signature letters for the Progress Basics chip (max 3).
+ * Prefer data from LANGUAGE_BASICS; fall back per language when digraphs dominate.
+ */
+const BASICS_PREVIEW_GLYPHS_FALLBACK = {
+  "nb-bokmal": ["æ", "ø", "å"],
+  sv: ["å", "ä", "ö"],
+  da: ["æ", "ø", "å"],
+  de: ["ä", "ö", "ü"],
+  fr: ["é", "è", "ç"],
+  es: ["ñ", "á", "ü"],
+  it: ["à", "è", "ò"],
+};
+
+function getBasicsPreviewGlyphs(categoryId = activeCategoryId) {
+  const data =
+    typeof window !== "undefined" ? window.LANGUAGE_BASICS?.[categoryId] : null;
+  if (Array.isArray(data?.previewGlyphs) && data.previewGlyphs.length) {
+    return data.previewGlyphs.slice(0, 3).map(String);
+  }
+
+  const specialSection =
+    (data?.sections || []).find((s) =>
+      /special|letter/i.test(String(s?.title || ""))
+    ) || data?.sections?.[0];
+  const derived = [];
+  for (const item of specialSection?.items || []) {
+    const glyph = String(item?.glyph || "").trim();
+    if (!glyph || /\s/.test(glyph)) continue;
+    // Single grapheme (æ, ñ, ß) or very short pair only if listed as a unit
+    const units = [...glyph];
+    if (units.length > 2) continue;
+    if (units.length === 2 && !/^[a-zA-Zæøåäöüœßñàèéìòùç]+$/u.test(glyph)) continue;
+    // Prefer true specials over digraphs (kj, sj) when single letters exist later
+    if (units.length === 2 && derived.some((g) => [...g].length === 1)) continue;
+    derived.push(glyph);
+    if (derived.length >= 3) break;
+  }
+  // Prefer only single-character specials when we have them
+  const singles = derived.filter((g) => [...g].length === 1);
+  if (singles.length >= 2) return singles.slice(0, 3);
+
+  const fallback = BASICS_PREVIEW_GLYPHS_FALLBACK[categoryId];
+  if (fallback?.length) return fallback.slice(0, 3);
+  return derived.slice(0, 3);
+}
+
 function updateBasicsButtonVisibility(categoryId = activeCategoryId) {
   const btn = document.getElementById("progress-basics-btn");
   if (!btn) return;
-  btn.classList.toggle("hidden", !hasLanguageBasics(categoryId));
+  const show = hasLanguageBasics(categoryId);
+  btn.classList.toggle("hidden", !show);
+  if (!show) return;
+
+  const glyphs = getBasicsPreviewGlyphs(categoryId);
+  const glyphsEl = btn.querySelector("[data-basics-glyphs]");
+  if (glyphsEl) {
+    glyphsEl.textContent = glyphs.join(" ");
+    glyphsEl.hidden = glyphs.length === 0;
+  }
+  const label =
+    glyphs.length > 0
+      ? `Letters and sounds: ${glyphs.join(", ")}`
+      : "Letters and sounds";
+  btn.setAttribute("aria-label", label);
+  btn.title = label;
 }
 
 function buildStarterDeck(category = getActiveCategory()) {

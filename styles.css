@@ -353,7 +353,7 @@ main,
 
 /*
  * Basics + About — same secondary chip family.
- * Language stays primary (flag + name); these stay quiet twins.
+ * Basics shows "Letters" + signature characters (æ ø å, etc.).
  */
 .progress-basics-btn,
 .progress-about-btn {
@@ -362,6 +362,7 @@ main,
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.35rem;
   min-height: 2.25rem;
   padding: 0.35rem 0.85rem;
   border: 1px solid var(--border-strong);
@@ -384,6 +385,35 @@ main,
     background 0.15s var(--ease),
     border-color 0.15s var(--ease),
     transform 0.12s ease;
+}
+
+.progress-basics-btn {
+  padding: 0.32rem 0.7rem 0.32rem 0.75rem;
+  max-width: min(11rem, 46vw);
+}
+
+.progress-basics-kicker {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+
+.progress-basics-glyphs {
+  flex-shrink: 1;
+  min-width: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--brand-deep);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.progress-basics-btn:hover .progress-basics-glyphs,
+.progress-basics-btn:focus-visible .progress-basics-glyphs {
+  color: var(--brand);
 }
 
 .progress-basics-btn:hover,
@@ -854,6 +884,22 @@ main,
   .progress-basics-btn,
   .progress-about-btn {
     min-height: 44px;
+  }
+
+  /* Phones: glyphs carry the meaning; "Letters" stays tiny */
+  .progress-basics-btn {
+    max-width: none;
+    padding: 0.3rem 0.55rem 0.3rem 0.55rem;
+    gap: 0.28rem;
+  }
+
+  .progress-basics-kicker {
+    font-size: 0.65rem;
+  }
+
+  .progress-basics-glyphs {
+    font-size: 0.82rem;
+    letter-spacing: 0.03em;
   }
 
   .progress-prefs {
@@ -6563,10 +6609,11 @@ body.welcome-open .app {
   }
 
   .category-picker-btn--progress {
+    width: 2.65rem;
+    min-width: 2.65rem;
+    max-width: 2.65rem;
     min-height: 2rem;
-    max-width: min(7.75rem, 32vw);
-    padding: 0.22rem 0.35rem 0.22rem 0.32rem;
-    font-size: 0.68rem;
+    padding: 0 0.28rem;
   }
 
   .progress-prefs {
