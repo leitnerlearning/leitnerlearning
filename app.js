@@ -3616,8 +3616,8 @@ function isOnProgressTab() {
 }
 
 function isCategoryPickerAvailable() {
-  // Global header control is always available; welcome has its own picker while gated.
-  return true;
+  // Welcome gate or Progress tab (flag control lives on Progress).
+  return isWelcomeOpen() || isOnProgressTab();
 }
 
 function updateCategoryPickerAvailability() {
@@ -6800,9 +6800,9 @@ function applyCategoryUI() {
   document.querySelectorAll("[data-category-picker-flag]").forEach((el) => {
     el.textContent = category.flag || "🏳️";
   });
-  const chromeLangBtn = document.getElementById("chrome-language-btn");
-  if (chromeLangBtn) {
-    chromeLangBtn.setAttribute(
+  const progressLangBtn = document.getElementById("progress-language-btn");
+  if (progressLangBtn) {
+    progressLangBtn.setAttribute(
       "aria-label",
       `Current language: ${category.label || "Language"}`
     );
@@ -6812,17 +6812,8 @@ function applyCategoryUI() {
   applyPracticeDirectionUI();
   updateBasicsButtonVisibility(category.id);
   updateProgressLevelsLanguage(category, { flash: false });
-  updateSiteChromeForTab();
 
   document.title = "Leitner Learning";
-}
-
-function updateSiteChromeForTab() {
-  const progressTools = document.getElementById("site-chrome-progress");
-  if (!progressTools) return;
-  const onProgress = isOnProgressTab();
-  progressTools.hidden = !onProgress;
-  document.body.classList.toggle("chrome-progress", onProgress);
 }
 
 function applyPracticeDirectionUI() {
@@ -7148,7 +7139,6 @@ function switchTab(tabName) {
   }
   if (tabName === "stats") renderStatsSummary();
   if (tabName === "cards") renderCardList();
-  updateSiteChromeForTab();
   document.getElementById("library-float-actions")?.classList.add("hidden");
   document.getElementById("progress-float-actions")?.classList.add("hidden");
   if (tabName === "cards" || tabName === "stats") {

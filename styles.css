@@ -161,32 +161,9 @@ main,
   text-align: center;
 }
 
-/* Bottom chrome: language (flag) · Progress tools · About */
-.site-chrome {
-  margin-top: auto;
-  padding-top: 1.75rem;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.55rem 0.65rem;
-}
-
-.site-chrome-progress {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem 0.65rem;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.site-chrome-progress[hidden] {
-  display: none !important;
-}
-
-.site-footer-btn {
+/* Compact About control (Progress prefs row) */
+.site-footer-btn,
+.progress-about-btn {
   appearance: none;
   display: inline-flex;
   align-items: center;
@@ -198,7 +175,7 @@ main,
   background: var(--surface-glass-strong);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   font-family: inherit;
   font-size: 0.72rem;
   font-weight: 600;
@@ -216,15 +193,17 @@ main,
 }
 
 .site-footer-btn:hover,
-.site-footer-btn:focus-visible {
+.site-footer-btn:focus-visible,
+.progress-about-btn:hover,
+.progress-about-btn:focus-visible {
   color: var(--brand-deep);
   background: var(--brand-soft);
-  border-color: var(--brand-ring);
-  box-shadow: var(--shadow-sm);
+  border-color: transparent;
   outline: none;
 }
 
-.site-footer-btn:active {
+.site-footer-btn:active,
+.progress-about-btn:active {
   transform: scale(0.98);
 }
 
@@ -250,12 +229,6 @@ main,
   margin: 0 0 0.35rem;
 }
 
-.category-picker--chrome {
-  position: relative;
-  margin: 0;
-  flex: 0 0 auto;
-}
-
 .category-picker-btn--flag {
   min-width: 3.15rem;
   min-height: 2.25rem;
@@ -268,7 +241,7 @@ main,
   color: var(--text-secondary);
   background: var(--surface-glass-strong);
   border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .category-picker-btn--flag:hover,
@@ -286,17 +259,6 @@ main,
   justify-content: center;
   font-size: 1.25rem;
   line-height: 1;
-}
-
-.category-picker-menu.category-picker-menu--up {
-  top: auto;
-  bottom: calc(100% + 0.4rem);
-  left: 0;
-  right: auto;
-  transform: none;
-  min-width: 12.5rem;
-  max-width: min(18rem, 92vw);
-  z-index: 90;
 }
 
 .category-option-flag {
@@ -323,6 +285,89 @@ main,
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/*
+ * Progress prefs (under tabs · above stat bubbles):
+ *  [ 🇳🇴 ▾ ] [ Basics ] ………… [ Voice F|M ] [ About ]
+ */
+.progress-prefs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.45rem 0.55rem;
+  width: 100%;
+  margin: 0 0 1rem;
+  box-sizing: border-box;
+}
+
+.category-picker--progress {
+  position: relative;
+  flex: 0 0 auto;
+  margin: 0;
+}
+
+.category-picker--progress .category-picker-menu {
+  left: 0;
+  right: auto;
+  transform: none;
+  min-width: 12.5rem;
+  max-width: min(18rem, 92vw);
+  z-index: 40;
+}
+
+.progress-basics-btn {
+  appearance: none;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-glass-strong);
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: none;
+  transition:
+    color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    border-color 0.15s var(--ease),
+    transform 0.12s ease;
+}
+
+.progress-basics-btn:hover,
+.progress-basics-btn:focus-visible {
+  color: var(--brand-deep);
+  background: var(--brand-soft);
+  border-color: transparent;
+  outline: none;
+}
+
+.progress-basics-btn:active {
+  transform: scale(0.98);
+}
+
+.progress-voice {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  min-width: 0;
+  margin-left: auto;
+}
+
+.progress-about-btn {
+  flex: 0 0 auto;
+  margin-left: 0;
 }
 
 .category-picker--welcome {
@@ -841,13 +886,26 @@ main,
     margin-bottom: 1rem;
   }
 
-  .site-chrome {
-    padding-top: 1.25rem;
-    gap: 0.45rem;
+  .site-footer-btn,
+  .progress-about-btn {
+    min-height: 44px;
   }
 
-  .site-footer-btn {
-    min-height: 44px;
+  .progress-prefs {
+    gap: 0.35rem;
+    margin-bottom: 0.9rem;
+  }
+
+  .progress-voice-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .brand {
@@ -4761,26 +4819,21 @@ body.welcome-open .app {
     text-wrap: balance;
   }
 
-  .site-chrome-progress {
-    gap: 0.35rem;
-  }
-
   .progress-basics-btn {
     min-height: 2.15rem;
     padding: 0.3rem 0.55rem;
     font-size: 0.68rem;
   }
 
-  .progress-voice-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+  .category-picker-btn--flag {
+    min-height: 2.15rem;
+    min-width: 2.85rem;
+  }
+
+  .progress-about-btn {
+    min-height: 2.15rem;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.65rem;
   }
 
   .voice-gender-control {
@@ -6209,13 +6262,9 @@ body.welcome-open .app {
     width: min(100%, 22rem);
   }
 
-  .site-chrome {
-    padding-top: 0.5rem;
-  }
-
-  .site-footer-btn {
+  .progress-about-btn {
     min-height: 2rem;
-    padding: 0.25rem 0.75rem;
+    padding: 0.25rem 0.65rem;
     font-size: 0.65rem;
   }
 
