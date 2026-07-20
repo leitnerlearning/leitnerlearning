@@ -3542,37 +3542,20 @@ function setEmptyStatePowerAction(
   }
 }
 
-/** Short status under the logo power button (visible, not aria-only). */
+/**
+ * Short status under the logo power button.
+ * Counts live in home stats (e.g. "15 left today") — don't repeat them here.
+ */
 function formatPowerHomeHint({
   mode = "start",
-  remaining = 0,
   extraDue = 0,
   sessionLine = "",
 } = {}) {
-  if (mode === "start") {
-    if (remaining > 0) {
-      return remaining === 1
-        ? "Start today's review · 1 card"
-        : `Start today's review · ${remaining} cards`;
-    }
-    return "Start today's review";
-  }
-  if (mode === "continue") {
-    if (remaining > 0) {
-      return remaining === 1
-        ? "Continue · 1 left"
-        : `Continue · ${remaining} left`;
-    }
-    return "Continue review";
-  }
-  // complete
-  if (extraDue > 0) {
-    if (sessionLine) return sessionLine;
-    return extraDue === 1
-      ? "Done for today · 1 extra ready"
-      : `Done for today · ${extraDue} extras ready`;
-  }
   if (sessionLine) return sessionLine;
+  if (mode === "start") return "Start review";
+  if (mode === "continue") return "Continue";
+  // complete — button enabled only when extras exist
+  if (extraDue > 0) return "Extras ready";
   return "Done for today";
 }
 
