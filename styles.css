@@ -1320,9 +1320,8 @@ main {
 
 .goal-cap-head {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  justify-content: center;
   margin-bottom: 0.85rem;
   text-align: center;
 }
@@ -1334,15 +1333,6 @@ main {
   letter-spacing: -0.025em;
   color: var(--ink);
   line-height: 1.2;
-}
-
-.goal-cap-sub {
-  margin: 0;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--text-tertiary);
-  line-height: 1.25;
 }
 
 .goal-cap-options {
