@@ -169,7 +169,7 @@
             glyph: "tone",
             speak: "bønder",
             glyphSize: "pair",
-            approxHtml: "Norwegian pitch accent is light — listen more than you analyse",
+            approxHtml: "Norwegian pitch accent is light. Listen more than you analyse",
             examples: [
               { speak: "bønder", text: "bønder", gloss: "farmers" },
               { speak: "bønner", text: "bønner", gloss: "beans" },
@@ -179,7 +179,7 @@
             glyph: "ae / oe / aa",
             speak: "vaere",
             glyphSize: "pair",
-            approxHtml: "ASCII fallbacks for æ/ø/å when typing — still the same letters",
+            approxHtml: "ASCII fallbacks for æ/ø/å when typing. Still the same letters",
             examples: [
               { speak: "være", text: "være", gloss: "to be" },
               { speak: "år", text: "år", gloss: "year" },

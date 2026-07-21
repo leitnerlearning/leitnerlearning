@@ -1,7 +1,7 @@
 /**
  * Parallel reading texts for the Read tab.
  * Trail marks follow ski-run difficulty (green → double black).
- * Subtitles: short English labels only — no meta, no attribution fluff.
+ * Subtitles: short English labels only - no meta, no attribution fluff.
  *
  * Norwegian story pass: natural dialogue first; weave high-frequency core
  * and next-tier theme forms (airport, transit, dining, health, home, campus,
@@ -41,7 +41,7 @@ function getReadTrailLevel(id) {
 }
 
 function sortStoriesByTrail(stories) {
-  return [...stories].sort(
+  return [. .stories].sort(
     (a, b) => READ_TRAIL_ORDER.indexOf(a.trail) - READ_TRAIL_ORDER.indexOf(b.trail)
   );
 }
@@ -61,7 +61,7 @@ const READ_STORIES = [
       { nb: "Unnskyld, hvor er holdeplassen for trikken?", en: "Excuse me, where is the tram stop?" },
       { nb: "Rett fram, over fortauet ved veikrysset.", en: "Straight ahead, across the sidewalk by the intersection." },
       { nb: "Takk. Går det en rute til sentrum nå?", en: "Thanks. Is there a route into the center now?" },
-      { nb: "Ja. Se på rutetabellen — eller ta taxi hvis du har hastverk.", en: "Yes. Check the timetable — or take a taxi if you're in a hurry." },
+      { nb: "Ja. Se på rutetabellen, eller ta taxi hvis du har hastverk.", en: "Yes. Check the timetable, or take a taxi if you're in a hurry." },
       { nb: "Tusen takk. Ha en fin dag!", en: "Thank you. Have a nice day!" },
       { nb: "Ikke noe problem. Lykke til!", en: "No problem. Good luck!" },
     ],
@@ -171,10 +171,10 @@ const READ_STORIES = [
       { nb: "Hvor lenge har dere åpent?", en: "How long are you open?" },
       { nb: "Til klokka ni i kveld. Auditorium stenger tidligere.", en: "Until nine o'clock this evening. The lecture hall closes earlier." },
       { nb: "Kan jeg låne bøker med studentbevis? Jeg bor i studentbolig like ved.", en: "Can I borrow books with a student ID? I live in student housing nearby." },
-      { nb: "Ja. Trenger du noe fra pensumlista til emnet ditt — eller lekser til i morgen?", en: "Yes. Do you need anything from the reading list for your course — or homework for tomorrow?" },
+      { nb: "Ja. Trenger du noe fra pensumlista til emnet ditt, eller lekser til i morgen?", en: "Yes. Do you need anything from the reading list for your course, or homework for tomorrow?" },
       { nb: "Kanskje senere. Jeg har gruppearbeid med en medstudent først. Kan du gjenta det?", en: "Maybe later. I have group work with a classmate first. Could you repeat that?" },
       { nb: "Husk å notere. Kontortid hos læreren er i morgen. Oppmelding til lab er online.", en: "Remember to take notes. The teacher's office hours are tomorrow. Lab enrollment is online." },
-      { nb: "Takk. Jeg håper jeg skal bestå — ikke stryke på eksamen. Masteroppgaven kommer senere.", en: "Thanks. I hope I'll pass — not fail the exam. The master's thesis comes later." },
+      { nb: "Takk. Jeg håper jeg skal bestå. Ikke stryke på eksamen. Masteroppgaven kommer senere.", en: "Thanks. I hope I'll pass. Not fail the exam. The master's thesis comes later." },
       { nb: "Lykke til med eksamen neste uke!", en: "Good luck with the exam next week!" },
     ],
     glosses: {
@@ -213,9 +213,9 @@ const READ_STORIES = [
       { nb: "Tretti kroner stykket. Vil du ha en handlepose?", en: "Thirty kroner each. Would you like a shopping bag?" },
       { nb: "Ja, gjerne. Jeg tar to oster og fire epler.", en: "Yes, please. I'll take two cheeses and four apples." },
       { nb: "Handlevogna er der borte hvis du trenger mer. Åpningstidene står på døra.", en: "The shopping cart is over there if you need more. Opening hours are on the door." },
-      { nb: "Takk. Kan jeg betale med debetkort i kassen — eller kredittkort?", en: "Thanks. Can I pay with a debit card at the checkout — or a credit card?" },
+      { nb: "Takk. Kan jeg betale med debetkort i kassen, eller kredittkort?", en: "Thanks. Can I pay with a debit card at the checkout, or a credit card?" },
       { nb: "Begge deler. Vi er nesten kontantløse. Her er vekslepenger hvis du trenger det.", en: "Either. We're almost cashless. Here's change if you need it." },
-      { nb: "Supert. Jeg leter også etter en gave. Denne genseren er for stor — har dere en som er for liten, annen størrelse?", en: "Great. I'm also looking for a gift. This sweater is too big — do you have one that's too small, another size?" },
+      { nb: "Supert. Jeg leter også etter en gave. Denne genseren er for stor. Har dere en som er for liten, annen størrelse?", en: "Great. I'm also looking for a gift. This sweater is too big. Do you have one that's too small, another size?" },
       { nb: "Prøverommet er der. Du kan bytte den senere, eller be om refusjon. Hvilken farge er pen?", en: "The fitting room is there. You can exchange it later, or ask for a refund. Which color is nice?" },
       { nb: "Blå er fin. Ha det!", en: "Blue is nice. Goodbye!" },
     ],
@@ -259,11 +259,11 @@ const READ_STORIES = [
       { nb: "Fra Canada, men jeg bor her nå. Og du?", en: "From Canada, but I live here now. And you?" },
       { nb: "Herfra. Hva studerer du?", en: "From here. What do you study?" },
       { nb: "Informatikk. Har du planer i helgen?", en: "Computer science. Do you have plans this weekend?" },
-      { nb: "Ja — en liten fest hos en kamerat. Vil du bli invitert? Er du ledig?", en: "Yes — a small party at a buddy's place. Want to be invited? Are you free?" },
+      { nb: "Ja, en liten fest hos en kamerat. Vil du bli invitert? Er du ledig?", en: "Yes. A small party at a buddy's place. Want to be invited? Are you free?" },
       { nb: "Gjerne! Jeg liker å henge med nye folk. Hobbyen min er foto.", en: "Gladly! I like hanging out with new people. My hobby is photo." },
-      { nb: "Kjempehyggelig. Det er bursdagen hans — vi sier gratulerer med dagen, og skål!", en: "Really nice. It's his birthday — we say happy birthday, and cheers!" },
+      { nb: "Kjempehyggelig. Det er bursdagen hans. Vi sier gratulerer med dagen, og skål!", en: "Really nice. It's his birthday. We say happy birthday, and cheers!" },
       { nb: "Kaffe etter seminaret i morgen? Eller en date på museum i helgen?", en: "Coffee after the seminar tomorrow? Or a date at the museum this weekend?" },
-      { nb: "Ja. Vi ses snart. Ta vare på deg — og hold kontakten!", en: "Yes. See you soon. Take care — and stay in touch!" },
+      { nb: "Ja. Vi ses snart. Ta vare på deg, og hold kontakten!", en: "Yes. See you soon. Take care, and stay in touch!" },
     ],
     glosses: {
       "Hyggelig å se deg": "Good to see you",
@@ -302,7 +302,7 @@ const READ_STORIES = [
       { nb: "Forstått. Hvem er veilederen min i dag? Jobbintervjuet gikk bra, synes jeg.", en: "Understood. Who is my supervisor today? The job interview went well, I think." },
       { nb: "Det er jeg. Innleveringsfristen for første faktura til kunden er fredag.", en: "That's me. The deadline for the first invoice to the client is Friday." },
       { nb: "Ok. Når kommer lønnen, og kan jeg jobbe hjemmekontor noen dager?", en: "Ok. When does the salary come, and can I do home office some days?" },
-      { nb: "Lønn den 15. — se lønnsslippen. Hjemmekontor etter prøvetiden. Ikke tenk på oppsigelse allerede!", en: "Salary on the 15th — see the payslip. Home office after the trial period. Don't think about resigning already!" },
+      { nb: "Lønn den 15. Se lønnsslippen. Hjemmekontor etter prøvetiden. Ikke tenk på oppsigelse allerede!", en: "Salary on the 15th: see the payslip. Home office after the trial period. Don't think about resigning already!" },
       { nb: "Ha ha. Og forretningsreise senere i året?", en: "Ha ha. And a business trip later in the year?" },
       { nb: "Mulig. Lykke til!", en: "Possible. Good luck!" },
     ],
@@ -349,7 +349,7 @@ const READ_STORIES = [
       { nb: "Nei. Trenger jeg resept på medisin? Eller bare tannlege for tanna?", en: "No. Do I need a prescription for medicine? Or just a dentist for the tooth?" },
       { nb: "Ikke ennå. Hvile, vann og paracetamol. Bandasje trenger du ikke.", en: "Not yet. Rest, water, and paracetamol. You don't need a bandage." },
       { nb: "Tusen takk. Kan jeg få sykmelding hvis det blir verre?", en: "Thank you. Can I get a sick note if it gets worse?" },
-      { nb: "Ja. Ved nødsituasjon — ring ambulanse, eller gå til akuttmottaket.", en: "Yes. In an emergency — call an ambulance, or go to the ER." },
+      { nb: "Ja. Ved nødsituasjon: ring ambulanse, eller gå til akuttmottaket.", en: "Yes. In an emergency: call an ambulance, or go to the ER." },
     ],
     glosses: {
       legetime: "doctor's appointment",
@@ -385,14 +385,14 @@ const READ_STORIES = [
       { nb: "Hei, jeg ringer om leiligheten på nettet.", en: "Hi, I'm calling about the apartment online." },
       { nb: "Ja, den er fortsatt ledig. Når vil du se den?", en: "Yes, it's still free. When would you like to see it?" },
       { nb: "I ettermiddag går fint, rundt tre.", en: "This afternoon works fine, around three." },
-      { nb: "Fint. Den ligger i nabolaget, tredje etasje. Det er et kollektiv — du blir leietaker.", en: "Fine. It's in the neighborhood, third floor. It's a shared flat — you'll be a tenant." },
+      { nb: "Fint. Den ligger i nabolaget, tredje etasje. Det er et kollektiv. Du blir leietaker.", en: "Fine. It's in the neighborhood, third floor. It's a shared flat. You'll be a tenant." },
       { nb: "Er det heis? Jeg har møbler i en liten koffert bare. Hotell er for dyrt lenge.", en: "Is there an elevator? I only have furniture in a small suitcase. A hotel is too expensive long-term." },
       { nb: "Nei, bare trapper. Soverommet er lyst, og det er balkong.", en: "No, only stairs. The bedroom is bright, and there is a balcony." },
       { nb: "Hva med stuen og vaskerommet? Noen lekkasje i badet?", en: "What about the living room and the laundry room? Any leak in the bathroom?" },
       { nb: "Felles. Ingen lekkasje. Husleia inkluderer internett; fellesutgifter kommer ekstra.", en: "Shared. No leak. The rent includes internet; shared costs come extra." },
       { nb: "Og er det sikkerhetsdepositum? Når får jeg nøkler?", en: "And is there a security deposit? When do I get keys?" },
       { nb: "Ja, en måned. Utleier møter deg ved postkassen med leiekontrakten.", en: "Yes, one month. The landlord will meet you at the mailbox with the lease." },
-      { nb: "Flott. Si ifra hvis naboen klager på støy — jeg er stille.", en: "Great. Let me know if the neighbor complains about noise — I'm quiet." },
+      { nb: "Flott. Si ifra hvis naboen klager på støy. Jeg er stille.", en: "Great. Let me know if the neighbor complains about noise, I'm quiet." },
     ],
     glosses: {
       leiligheten: "the apartment",
@@ -433,7 +433,7 @@ const READ_STORIES = [
       { nb: "Mange stopper. Det blir byttebuss fra endestasjonen.", en: "Many will stop. There will be a connecting bus from the terminus." },
       { nb: "Jeg tar bysykkel, selv om det regner på fortauet.", en: "I'll take a city bike, even if it rains on the sidewalk." },
       { nb: "Smart. Eller jobber du hjemmefra med hjemmekontor?", en: "Smart. Or are you working from home with remote office?" },
-      { nb: "Kanskje. Jeg skal snakke med lederen først — og sjekke budsjettet for taxi.", en: "Maybe. I'll talk to the manager first — and check the budget for a taxi." },
+      { nb: "Kanskje. Jeg skal snakke med lederen først, og sjekke budsjettet for taxi.", en: "Maybe. I'll talk to the manager first, and check the budget for a taxi." },
       { nb: "Rundkjøringen ved stasjonen blir kaos. Ta trikk hvis den går.", en: "The roundabout by the station will be chaos. Take the tram if it runs." },
       { nb: "Greit. Hold meg oppdatert hvis avgangen blir kansellert.", en: "Alright. Keep me posted if the departure is cancelled." },
     ],
@@ -465,12 +465,12 @@ const READ_STORIES = [
     sentences: [
       { nb: "Jeg synes kollektivtransport er kjempeviktig.", en: "I think public transport is really important." },
       { nb: "Hvorfor det?", en: "Why?" },
-      { nb: "Fordi ikke alle kan ha bil i rushtiden — og gebyrene for parkering er høye.", en: "Because not everyone can have a car in rush hour — and parking fees are high." },
+      { nb: "Fordi ikke alle kan ha bil i rushtiden, og gebyrene for parkering er høye.", en: "Because not everyone can have a car in rush hour, and parking fees are high." },
       { nb: "Men bussene er alltid fulle og forsinka. Beløpet på billetten stiger også.", en: "But the buses are always full and late. The ticket amount is rising too." },
       { nb: "Hvis vi investerer mer i ruter, blir det bedre. Se på saldoen i bybudsjettet.", en: "If we invest more in routes, it gets better. Look at the balance in the city budget." },
-      { nb: "På lang sikt, kanskje. Akkurat nå er det dyrt — rente og lån presser folk.", en: "In the long run, maybe. Right now it's expensive — interest and loans pressure people." },
+      { nb: "På lang sikt, kanskje. Akkurat nå er det dyrt. Rente og lån presser folk.", en: "In the long run, maybe. Right now it's expensive. Interest and loans pressure people." },
       { nb: "Sant. Likevel synes jeg det er verdt det. Man kan overføre mer til kollektiv.", en: "True. Even so I think it's worth it. You can transfer more to public transport." },
-      { nb: "La oss lese mer om det før vi bestemmer. Jeg sjekker kontoen min først — og minibanken ved stasjonen.", en: "Let's read more about it before we decide. I'll check my account first — and the ATM by the station." },
+      { nb: "La oss lese mer om det før vi bestemmer. Jeg sjekker kontoen min først, og minibanken ved stasjonen.", en: "Let's read more about it before we decide. I'll check my account first, and the ATM by the station." },
       { nb: "Greit. Vi kan møtes etter lunsj og snakke videre. Valuta og vekslingskontor er et annet kapittel.", en: "Alright. We can meet after lunch and talk more. Currency and exchange offices are another chapter." },
     ],
     glosses: {
@@ -506,10 +506,10 @@ const READ_STORIES = [
       { nb: "Har du pass og koffert klar? Bagasjen må innom innsjekking og passkontroll.", en: "Do you have passport and suitcase ready? The luggage has to go through check-in and passport control." },
       { nb: "Ja. Håndbagasje bare. Gate og sete står på boardingkortet etter sikkerhetskontrollen.", en: "Yes. Hand luggage only. Gate and seat are on the boarding pass after security." },
       { nb: "Ombordstigning starter tidlig. Etter landing henter du kofferten på bagasjebåndet.", en: "Boarding starts early. After landing you pick up the suitcase on the baggage carousel." },
-      { nb: "Jeg blir og jobber overtid. Sparingen går til budsjettet mitt — avdrag på lån også.", en: "I'll stay and work overtime. The savings go into my budget — loan installments too." },
+      { nb: "Jeg blir og jobber overtid. Sparingen går til budsjettet mitt. Avdrag på lån også.", en: "I'll stay and work overtime. The savings go into my budget. Loan installments too." },
       { nb: "Kjedelig? Eller praktisk? Flyet kan bli forsinket eller kansellert. Ankomst er sent.", en: "Boring? Or practical? The flight can be delayed or cancelled. Arrival is late." },
       { nb: "Praktisk. Jeg sparer til neste år. Si ifra når du lander.", en: "Practical. I'm saving for next year. Let me know when you land." },
-      { nb: "Gjerne. Hvis du vil bli med senere — terminalen er enkel å finne.", en: "Gladly. If you want to join later — the terminal is easy to find." },
+      { nb: "Gjerne. Hvis du vil bli med senere. Terminalen er enkel å finne.", en: "Gladly. If you want to join later. The terminal is easy to find." },
       { nb: "Hold meg oppdatert. Ha en fin avgang!", en: "Keep me posted. Have a good departure!" },
     ],
     glosses: {
