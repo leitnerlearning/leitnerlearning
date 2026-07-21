@@ -86,7 +86,7 @@
     { foreign: 'ta', native: 'to take', rank: 82, category: 'noun', band: 'A' },
     { foreign: 'jag är student', native: 'I am a student', rank: 83, category: 'phrase', band: 'phrase' },
     { foreign: 'er', native: 'you (pl object)', rank: 84, category: 'noun', band: 'A' },
-    { foreign: ' mot', native: 'against', rank: 85, category: 'phrase', band: 'phrase' },
+    { foreign: 'förstås', native: 'of course', rank: 85, category: 'noun', band: 'A' },
     { foreign: 'göra', native: 'to do', rank: 86, category: 'noun', band: 'A' },
     { foreign: 'mörkt läge', native: 'dark mode', rank: 87, category: 'phrase', band: 'phrase' },
     { foreign: 'okej', native: 'okay', rank: 88, category: 'noun', band: 'A' },
