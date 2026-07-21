@@ -200,7 +200,7 @@
     let ri = 0;
     let hooksTaken = 0;
     let glueTaken = 0;
-    // Start with a hook when possible — first impression should be memorable.
+    // Start with a hook when possible - first impression should be memorable.
     let nextHook = true;
 
     while (ids.length < slots) {
@@ -221,7 +221,7 @@
         nextHook = true;
         continue;
       }
-      // Targets filled or one side exhausted — drain remaining pools.
+      // Targets filled or one side exhausted - drain remaining pools.
       if (hi < hooks.length) {
         ids.push(hooks[hi].id);
         hi += 1;
@@ -263,7 +263,7 @@
 
     if (newSlots <= 0) return reviewIds;
 
-    // —— Early "hook mix": memorable content + necessary glue ——
+    // - - Early "hook mix": memorable content + necessary glue - - 
     if (introducedCount < HOOK_INTRO_THRESHOLD) {
       // Interleave already avoids particle walls; tiny local swaps keep it human.
       const hookIds = buildHookMixedNewIds(dueNew, newSlots);
@@ -278,7 +278,7 @@
       return reviewIds.concat(mixed);
     }
 
-    // —— Mature path: frequency core + small spice ——
+    // - - Mature path: frequency core + small spice - - 
     const spiceSlots = getSpiceSlotCount(introducedCount, newSlots, randomFn);
     const coreSlots = Math.max(0, newSlots - spiceSlots);
     const coreNew = sortByRank(dueNew).slice(0, coreSlots);

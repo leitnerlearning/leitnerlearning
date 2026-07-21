@@ -74,7 +74,7 @@ function testEarlyHookMix() {
 
 function testSpiceAfterHookPhase() {
   const cards = Srs.createStarterDeck(300, now);
-  // Past hook threshold — spice path should activate.
+  // Past hook threshold - spice path should activate.
   for (let i = 0; i < Srs.HOOK_INTRO_THRESHOLD + 5; i += 1) {
     cards[i] = Srs.promote(cards[i], now);
   }

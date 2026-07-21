@@ -1,8 +1,8 @@
 /**
  * Reading vocabulary supplement for Leitner Learning.
  * Reading, dialogue, and story vocabulary for the second half of the deck.
- * Merged with the 500-word essentials deck — 1,000 unique cards total (ranks 501–1000).
- * Curated for campus life, travel, health, housing, and reading — not every fairy-tale name.
+ * Merged with the 500-word essentials deck - 1,000 unique cards total (ranks 501–1000).
+ * Curated for campus life, travel, health, housing, and reading - not every fairy-tale name.
  */
 const NORWEGIAN_READING_VOCAB = [
   { foreign: "konklusjon", native: "conclusion", rank: 501, category: "noun", band: "E" },

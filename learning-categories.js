@@ -12,7 +12,7 @@ const LEARNING_CATEGORIES = [
     label: "Norwegian",
     flag: "🇳🇴",
     available: true,
-    /** full | spell | mt — how strict Library Check can be for this track */
+    /** full | spell | mt - how strict Library Check can be for this track */
     checkStrength: "spell",
     foreignLang: "nb",
     speechLang: "nb-NO",
@@ -409,6 +409,6 @@ function setActiveCategoryId(id) {
   try {
     localStorage.setItem(ACTIVE_CATEGORY_KEY, id);
   } catch {
-    // Private browsing or storage blocked — session still works in memory.
+    // Private browsing or storage blocked - session still works in memory.
   }
 }

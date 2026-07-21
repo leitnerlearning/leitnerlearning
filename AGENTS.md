@@ -1,4 +1,4 @@
-# Leitner Learning — Agent Guide
+# Leitner Learning - Agent Guide
 
 This file is the product law for anyone (human or AI) working in this repository.
 Read it before shipping. Prefer judgment over thrash.
@@ -12,18 +12,18 @@ Read it before shipping. Prefer judgment over thrash.
 ## North star
 
 **Trust + clarity + craft + beauty.**  
-The serious, beautiful way to actually learn a language — not noisy gamification.
+The serious, beautiful way to actually learn a language - not noisy gamification.
 
 We sell:
 - Exact correct forms (no false “Looks good”)
-- Calm, **beautiful**, readable UX (proportion and quiet life — not toy chrome, not sterile gray)
+- Calm, **beautiful**, readable UX (proportion and quiet life - not toy chrome, not sterile gray)
 - Real high-frequency decks (1,000 unique cards per language)
 - Stories that sound like people
 - Safety (including photosensitive-friendly motion)
 
 We do **not** sell: streak guilt, gem shops, leaderboard theater, or AI that invents “correct” answers.
 
-**Beauty is essential** (philosophy + nature + craft): wholeness, harmony, clarity — the result of subtraction *and* composition. Empty is not enough; resolved and alive is the bar.
+**Beauty is essential** (philosophy + nature + craft): wholeness, harmony, clarity - the result of subtraction *and* composition. Empty is not enough; resolved and alive is the bar.
 
 ---
 
@@ -47,7 +47,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 ### Correctness
 - Teach **exact correct forms** only.
 - Never mark wrong L2 as LOOKS GOOD.
-- Soft-accept **major orthographic variants** of the *same* word (e.g. BE/AE English, German ß/ss, EP→BR Portuguese clusters) — not false friends or different lemmas.
+- Soft-accept **major orthographic variants** of the *same* word (e.g. BE/AE English, German ß/ss, EP→BR Portuguese clusters) - not false friends or different lemmas.
 - Library Check: strong match required for LOOKS GOOD; Save Anyway is OK for the user.
 
 ### Content quality
@@ -61,7 +61,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - Flag can replace written language name where the flag is already shown (e.g. Read story bar).
 - Keep `aria-label`s for accessibility; do not reintroduce mouse tooltips for “helpfulness.”
 - Prefer discovery by use over instructional popups.
-- **Subtraction over addition.** Prefer removing restated copy, duplicate progress chrome, and empty-state marketing. One status surface per fact (e.g. theme set progress in the Review strip only — not also under the prompt).
+- **Subtraction over addition.** Prefer removing restated copy, duplicate progress chrome, and empty-state marketing. One status surface per fact (e.g. theme set progress in the Review strip only - not also under the prompt).
 
 ### Safety & motion
 - Photosensitive-safe: soft motion only; no full-screen strobes.
@@ -70,7 +70,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 ### Languages
 - Prefer **Latin-script** languages with solid LanguageTool + MT + TTS.
 - Do **not** add CJK / complex-script languages without explicit founder approval and a quality plan.
-- Nordic languages: keep with honest Check strength (`spell` where grammar is thin) — do not delete for weak LT.
+- Nordic languages: keep with honest Check strength (`spell` where grammar is thin) - do not delete for weak LT.
 
 ---
 
@@ -94,7 +94,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - Anything that changes the product’s moral center (e.g. “AI grades freeform L2 as correct”)
 
 ### Partner tone
-- Founder is building skill as a coder — explain clearly when teaching, ship decisively when executing.
+- Founder is building skill as a coder - explain clearly when teaching, ship decisively when executing.
 - Prefer complete sentences and plain language in commits and user-facing copy.
 - One focused change set > drive-by refactors.
 
@@ -103,13 +103,13 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 ## Engineering conventions
 
 ### Layout
-- `index.html`, `app.js`, `styles.css` — main app
-- `lang/*-pack.js` — STARTER_DECKS + LANGUAGE_BASICS + EXTRA_READ_STORIES
-- `norwegian-frequency-deck.js` + `norwegian-reading-vocab.js` — NB 500+500
-- `learning-categories.js` — language registry (speechLang, checkStrength, flags)
-- `read-stories.js` — Norwegian READ_STORIES + trail helpers
-- `mini-packs.js` — opt-in thematic packs (e.g. Airport & travel)
-- `tools/` — generation/cleanup scripts (not required at runtime)
+- `index.html`, `app.js`, `styles.css` - main app
+- `lang/*-pack.js` - STARTER_DECKS + LANGUAGE_BASICS + EXTRA_READ_STORIES
+- `norwegian-frequency-deck.js` + `norwegian-reading-vocab.js` - NB 500+500
+- `learning-categories.js` - language registry (speechLang, checkStrength, flags)
+- `read-stories.js` - Norwegian READ_STORIES + trail helpers
+- `mini-packs.js` - opt-in thematic packs (e.g. Airport & travel)
+- `tools/` - generation/cleanup scripts (not required at runtime)
 
 ### Shipping checklist
 1. Change code/content.
@@ -133,7 +133,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - Trail marks: ski-run metaphor (green-circle → double-black-diamond).
 - Brand motion: portal ceremony is special; never flash-heavy.
 - Visual experiments (Imagine/Canva) → **implement winners as SVG/CSS** in production (avoid soft AI mush in UI chrome).
-- Next craft priorities when free: identity kit, story covers, calm finish states, share cards — without breaking quiet UX.
+- Next craft priorities when free: identity kit, story covers, calm finish states, share cards - without breaking quiet UX.
 
 ---
 
@@ -145,14 +145,14 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - **Glue recognition-first**: weak glue cards (new / boxes 1–2) practice **L2→EN** even if the user toggle is EN→L2. Exact production waits until the form is less brittle.
 - **Post-wrong context**: on miss/reveal, when a Read story uses the word, show that short L2 line + English under the answer pill.
 - **Later spice**: after the hook phase, small random pulls from slightly ahead of the frequency frontier.
-- Daily goal remains a **small bite** (cap 10–30, default 20) — never dump the whole unpaid mountain into the UI.
+- Daily goal remains a **small bite** (cap 10–30, default 20) - never dump the whole unpaid mountain into the UI.
 - Exact-form checking stays strict; soft-accept only true orthographic variants, not wrong articles.
 
 ## Content expansion priorities
 
 1. Quality of existing 10 languages (lemmas vs noise, story naturalness).  
 2. More **phrases** and concrete hooks in ranks ~36–260 (feeds early mix).  
-3. Thematic mini-packs (Airport, Café, Campus, Doctor, Housing, Work, Shopping, Social) — **opt-in** from Library → Themes; never auto-dump into day one. Packs aim for **unique foreign forms across packs** (merge still de-dupes). Enabled packs get ranks 1001+ and a small daily intro bias after the hook phase. Library **Themes** filter + per-pack chips; after Add, focus that pack and offer **Study now**. Progress Themes glance + **Study** (cap ~12). Misses prefer **Read story → pack/phrase example → simple theme template → pack label**.  
+3. Thematic mini-packs (Airport, Café, Campus, Doctor, Housing, Work, Shopping, Social) - **opt-in** from Library → Themes; never auto-dump into day one. Packs aim for **unique foreign forms across packs** (merge still de-dupes). Enabled packs get ranks 1001+ and a small daily intro bias after the hook phase. Library **Themes** filter + per-pack chips; after Add, focus that pack and offer **Study now**. Progress Themes glance + **Study** (cap ~12). Misses prefer **Read story → pack/phrase example → simple theme template → pack label**.  
 4. New full language only after LT/TTS/content research + founder OK.
 
 ---
@@ -188,8 +188,8 @@ Grok.com skill **Leitner Learning Product Partner** encodes the same judgment fo
 
 ## Craft skills (Grok)
 
-- **Essential Craft** (`essential-craft`) — beauty + subtraction + 80/20 + MED; Jobs/Rams + philosophical/natural beauty; default product philosophy.
-- **Leitner Product Partner** (`leitner-learning-product-partner`) — this product’s judgment layer on top of Essential Craft.
+- **Essential Craft** (`essential-craft`) - beauty + subtraction + 80/20 + MED; Jobs/Rams + philosophical/natural beauty; default product philosophy.
+- **Leitner Product Partner** (`leitner-learning-product-partner`) - this product’s judgment layer on top of Essential Craft.
 - This **AGENTS.md** remains **hard law** for correctness, autonomy, and anti-goals.
 
 When the founder says **go**, prefer 80/20 + subtraction **and** beauty before expansion.
@@ -207,4 +207,4 @@ If it’s craft within the spine → ship.
 
 ---
 
-*Last updated: Phase 0 product law — autonomous partnership enabled.*
+*Last updated: Phase 0 product law - autonomous partnership enabled.*

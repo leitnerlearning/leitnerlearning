@@ -797,7 +797,7 @@ def clean_pack(lang: str) -> tuple[int, int]:
     if not m:
         raise SystemExit(f"STARTER_DECKS not found in {path}")
     start = m.end()
-    # find matching ]; after start — first ]; that closes the array after cards
+    # find matching ]; after start - first ]; that closes the array after cards
     # Use the first occurrence of "\n  ];" after STARTER_DECKS
     end_m = re.search(r"\n  \];", text[start:])
     if not end_m:

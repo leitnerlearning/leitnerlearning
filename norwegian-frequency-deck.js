@@ -1,8 +1,8 @@
 /**
  * Essential-first Norwegian (Bokmål) starter deck.
  * Source: Wiktionary spoken-frequency list (OpenSubtitles corpus),
- * curated for learners — function words, verbs, and survival phrases first.
- * 500 core cards — merged with norwegian-reading-vocab.js for 1,000 unique cards total.
+ * curated for learners - function words, verbs, and survival phrases first.
+ * 500 core cards - merged with norwegian-reading-vocab.js for 1,000 unique cards total.
  */
 const DECK_META = {
   name: "Norwegian Essentials",

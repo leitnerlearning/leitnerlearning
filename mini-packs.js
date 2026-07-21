@@ -1,5 +1,5 @@
 /**
- * Thematic mini-packs — opt-in extras (ranks 1001+).
+ * Thematic mini-packs - opt-in extras (ranks 1001+).
  * Content law: 10 themes × 20 forms = 200 next-tier essentials per language.
  * One-word theme titles, mutually clear (no Travel/Transit confusables).
  * Norwegian curated first; other languages hold parallel concepts until their pass.

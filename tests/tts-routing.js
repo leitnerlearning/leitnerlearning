@@ -1,7 +1,7 @@
 /**
  * Lightweight checks for Hear/Speak routing helpers.
  * Run: node tests/tts-routing.js
- * (No browser — pure logic only.)
+ * (No browser - pure logic only.)
  */
 
 function assert(cond, msg) {

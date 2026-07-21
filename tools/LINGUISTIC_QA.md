@@ -1,6 +1,6 @@
 # Linguistic QA status
 
-Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as linguistic certification — but both are now green for all 10 languages at **PASS 1** (NB at PASS 2).
+Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as linguistic certification - but both are now green for all 10 languages at **PASS 1** (NB at PASS 2).
 
 | Language | Structure | Linguistic QA | Notes |
 |----------|-----------|---------------|--------|
@@ -15,7 +15,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 | Portuguese | PASS | **PASS 1 COMPLETE** | BR standard; POS; packs; **story pass 1** |
 | Polish | PASS | **PASS 1 COMPLETE** | POS; zła/przepraszam; packs; **story pass 1** |
 
-## Polish — pass 1 checklist
+## Polish - pass 1 checklist
 
 - [x] Mechanical 1000 + 200 + 12 stories
 - [x] POS honesty (not all `noun`)
@@ -27,7 +27,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 
 ## Story pass (Read → 1,200)
 
-Goal: natural dialogue that weaves high-frequency **core** and **theme** forms so Read serves the teachable set — not a word list.
+Goal: natural dialogue that weaves high-frequency **core** and **theme** forms so Read serves the teachable set - not a word list.
 
 | Language | Story pass | Notes |
 |----------|------------|--------|

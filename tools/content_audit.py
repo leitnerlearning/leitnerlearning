@@ -2,7 +2,7 @@
 """
 Content integrity audit for Leitner Learning.
 
-This does NOT prove every translation is correct — it proves structure and
+This does NOT prove every translation is correct - it proves structure and
 detects mechanical failure modes. Human / Grok linguistic QA is still required.
 
 Run from repo root:
@@ -193,7 +193,7 @@ def audit_cards(lang_id: str, label: str, cards: list[dict]) -> dict:
 
 
 def main() -> int:
-    print("Leitner Learning — content structure audit")
+    print("Leitner Learning - content structure audit")
     print("=" * 60)
     print(
         "NOTE: Passing structure checks ≠ linguistic correctness.\n"

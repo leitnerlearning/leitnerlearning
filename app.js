@@ -317,7 +317,7 @@ function warnIfStorageFailed(ok) {
   // Prefer practice feedback when visible; otherwise console is enough for boot.
   try {
     showFeedback(
-      "Progress may not save in this browser (private mode or full storage). Type is fine — just know results may not stick.",
+      "Progress may not save in this browser (private mode or full storage). Type is fine - just know results may not stick.",
       "revealed",
       { autoHideMs: 10000 }
     );
@@ -439,7 +439,7 @@ function getOutstandingDueCount(daily = ensureDailyPracticeState(), cards = deck
 
 /**
  * Human-facing practice status for Review home + Progress.
- * Never dump the full unpaid mountain (e.g. 976 due) — the daily cap is
+ * Never dump the full unpaid mountain (e.g. 976 due) - the daily cap is
  * the honest "today" size. Big queues become calm labels + small sets.
  */
 function getProgressPracticeStat() {
@@ -453,7 +453,7 @@ function getProgressPracticeStat() {
   ).length;
   const setWord = cap === 1 ? "card" : "cards";
 
-  // In-progress daily goal (normal mode only — extra mode can make remaining = full backlog)
+  // In-progress daily goal (normal mode only - extra mode can make remaining = full backlog)
   // Home chips: one-word labels. Prefer REMAINING over LEFT (LEFT is ambiguous).
   if (!daily.extraMode && remainingToday > 0) {
     return {
@@ -479,7 +479,7 @@ function getProgressPracticeStat() {
     };
   }
 
-  // Extra practice after goal — never a huge unpaid count on the home chip
+  // Extra practice after goal - never a huge unpaid count on the home chip
   if (daily.extraMode && outstanding > 0) {
     return {
       value: "→",
@@ -505,7 +505,7 @@ function getProgressPracticeStat() {
     };
   }
 
-  // Reviews waiting (not yet framed as today's goal) — hide mountain size
+  // Reviews waiting (not yet framed as today's goal) - hide mountain size
   if (reviewDue > 0) {
     if (reviewDue > cap) {
       return {
@@ -529,7 +529,7 @@ function getProgressPracticeStat() {
     };
   }
 
-  // New cards / mixed outstanding — invite, don't intimidate
+  // New cards / mixed outstanding - invite, don't intimidate
   if (outstanding > 0) {
     const allNew = newDue === outstanding;
     if (allNew || outstanding > cap) {
@@ -1153,7 +1153,7 @@ function normalizeAnswer(text) {
 }
 
 /**
- * Flashcards are lemmas and short phrases — not full sentences.
+ * Flashcards are lemmas and short phrases - not full sentences.
  * Strip wrapping quotes and trailing . ! … that MT likes to add
  * (those also glitch review copy: … “spise”. Tap…).
  * Keep ? so questions still read as questions.
@@ -1936,7 +1936,7 @@ function maxEditDistance(text) {
 
 function answersAreClose(user, expected) {
   if (user === expected) return true;
-  // Type æ ø å as ae/oe/aa (or plain a/o) — works for Norwegian answers
+  // Type æ ø å as ae/oe/aa (or plain a/o) - works for Norwegian answers
   if (norwegianTypingMatches(user, expected)) return true;
   // British spelling taught in Europe counts for American deck glosses
   if (englishDialectSpellingMatches(user, expected)) return true;
@@ -1982,7 +1982,7 @@ function updateAnswerInputPlaceholder() {
 
 /**
  * Review orientation is fixed: see the learning language, answer in English.
- * (No EN → L2 production toggle — special characters + fuzzy L2 answers were a trap.)
+ * (No EN → L2 production toggle - special characters + fuzzy L2 answers were a trap.)
  */
 function getDirectionLabels(category = getActiveCategory()) {
   return {
@@ -2260,7 +2260,7 @@ function ensureDeckIsUsable(cards) {
   return sanitized;
 }
 
-/* —— Thematic mini-packs (opt-in from Library → Themes) —— */
+/* Thematic mini-packs (opt-in from Library → Themes) */
 
 function getThematicPackList() {
   if (typeof window !== "undefined" && Array.isArray(window.THEMATIC_PACK_LIST)) {
@@ -2376,7 +2376,7 @@ function mergeEnabledThematicPacks(cards, category = getActiveCategory()) {
       if (!key) continue;
       const existing = byKey.get(key);
       if (existing) {
-        // Leave core/user cards alone — only brand-new rows get packId,
+        // Leave core/user cards alone - only brand-new rows get packId,
         // so frequency intro order is never hijacked by theme tagging.
         // Pack-owned cards may pick up example lines when we add them.
         if (
@@ -2512,7 +2512,7 @@ function formatPackAddNote({ added, already, glossKept, total }) {
 
 /**
  * Enable a pack and merge its cards into the live deck.
- * One full Add — no partial “Add rest” second step.
+ * One full Add - no partial “Add rest” second step.
  * Returns { added, total, already, glossKept, packId, title }.
  */
 function enableThematicPack(packId, options = {}) {
@@ -2548,7 +2548,7 @@ function enableThematicPack(packId, options = {}) {
     // non-fatal
   }
 
-  // Stay put in Library — live line + Study on the pack card is enough.
+  // Stay put in Library - live line + Study on the pack card is enough.
   // Optional focusLibrary: true jumps to Themes filter (rare / tests).
   if (options.focusLibrary === true) {
     libraryFilter = "themes";
@@ -2573,7 +2573,7 @@ function enableThematicPack(packId, options = {}) {
 
 /**
  * Turn off a theme and remove only pack-owned rows (packId match).
- * Core frequency cards that overlap the theme stay — progress on the spine is sacred.
+ * Core frequency cards that overlap the theme stay - progress on the spine is sacred.
  * Returns { removed, packId, title }.
  */
 function removeThematicPack(packId) {
@@ -2626,7 +2626,7 @@ function renderThemePackWordList(pack, category) {
       const foreign = String(entry.foreign || "").trim();
       const native = String(entry.native || "").trim();
       if (!foreign) return "";
-      // English left (anchor) · L2 right (target) — tight pair for scanning before Add.
+      // English left (anchor) · L2 right (target) - tight pair for scanning before Add.
       return `<li class="library-theme-word">
         <span class="library-theme-word-en">${escapeHtml(native)}</span>
         <span class="library-theme-word-l2" lang="${escapeAttr(category.foreignLang || "nb")}">${escapeHtml(foreign)}</span>
@@ -2635,7 +2635,7 @@ function renderThemePackWordList(pack, category) {
     .filter(Boolean)
     .join("");
   if (!rows) return "";
-  // Preview before Add (and quick reference after) — collapsed by default.
+  // Preview before Add (and quick reference after) - collapsed by default.
   // Scroll fades (more above/below) mirror the language menu: 20 words never look “complete” at a glance.
   return `<details class="library-theme-preview">
     <summary class="library-theme-preview-summary">${entries.length}</summary>
@@ -2657,7 +2657,7 @@ function renderThemePackCard(pack, category) {
   let actions = "";
   if (enabled) {
     // Study top-right (primary) · Remove bottom-right (quiet reverse).
-    // Full pack merges on Add — no “Add rest” half-step.
+    // Full pack merges on Add - no “Add rest” half-step.
     actions = `<button
         type="button"
         class="btn primary library-theme-btn library-theme-btn--study"
@@ -2703,7 +2703,7 @@ function renderThematicPacks() {
   const body = document.getElementById("library-themes-body");
   if (!root) return;
 
-  // Packs filter only — never under All / Phrases / Yours.
+  // Packs filter only - never under All / Phrases / Yours.
   if (libraryFilter !== "themes") {
     root.classList.add("hidden");
     root.classList.remove("has-enabled");
@@ -2712,7 +2712,7 @@ function renderThematicPacks() {
   }
 
   const category = getActiveCategory();
-  // Alphabetical — stable, scannable; not “random” pack-definition order.
+  // Alphabetical - stable, scannable; not “random” pack-definition order.
   const packs = getThematicPackList()
     .filter((pack) => getPackEntriesForCategory(pack, category.id).length > 0)
     .slice()
@@ -2740,13 +2740,13 @@ function renderThematicPacks() {
   if (body) body.innerHTML = grid;
   else root.innerHTML = grid;
 
-  // One peek at a time — opening Bank closes Dining (and vice versa).
+  // One peek at a time - opening Bank closes Dining (and vice versa).
   bindLibraryThemePreviewAccordion(body || root);
 }
 
 /**
  * Fade when more pack words sit above/below the fold (same lesson as the language menu).
- * Classes only — no extra chrome that jumps layout.
+ * Classes only - no extra chrome that jumps layout.
  */
 function updatePackWordListScrollHints(list) {
   if (!list) return;
@@ -2761,9 +2761,9 @@ function updatePackWordListScrollHints(list) {
 
 /**
  * Pack word previews: exclusive open. Keeps the Packs grid calm when
- * scanning — one expanded list, not a page of open columns.
+ * scanning - one expanded list, not a page of open columns.
  * Always start the open list at the top (not mid-scroll from a prior peek).
- * Scroll fades show “more words” above/below — same as language picker.
+ * Scroll fades show “more words” above/below - same as language picker.
  */
 function bindLibraryThemePreviewAccordion(scope) {
   if (!scope) return;
@@ -2795,7 +2795,7 @@ function bindLibraryThemePreviewAccordion(scope) {
         if (other !== details) other.open = false;
       });
       if (!list) return;
-      // After layout — top of list + fade cue for “more below.”
+      // After layout - top of list + fade cue for “more below.”
       list.scrollTop = 0;
       requestAnimationFrame(() => {
         list.scrollTop = 0;
@@ -3144,7 +3144,7 @@ function getSpeechUnavailableMessage() {
 }
 
 /**
- * Platform notes (Speak + Hear) — verify all when changing audio code:
+ * Platform notes (Speak + Hear) - verify all when changing audio code:
  * - Desktop Chrome: cloud speech; interim + stable accept for normal volume.
  * - Desktop Safari: Nora TTS; never force Google when OS nb exists.
  * - Mobile Chrome: continuous recognition is unreliable and still re-toasts on restart;
@@ -3454,7 +3454,7 @@ function bestTranscriptFromSpeechEvent(event) {
 
 /**
  * One-shot listen for the current card.
- * Priority: actually hear speech. Chrome mobile may toast on each start() —
+ * Priority: actually hear speech. Chrome mobile may toast on each start() - 
  * continuous mode there still re-toasted and stopped capturing audio.
  */
 function beginSpeakAttempt() {
@@ -3652,21 +3652,21 @@ function resumeSpeakModeIfNeeded() {
 /**
  * Speech synthesis (Hear)
  * -----------------------
- * Simple, testable routing — prefer reliability over clever hacks:
- *  - Safari/iOS female → Apple Nora (natural)
- *  - Safari/iOS male → Google TTS male profile when no OS male (clear difference)
- *  - Chrome → Google TTS first (works when system voices are empty/broken), then system
- *  - Never use createMediaElementSource (silences Chrome cross-origin / CORS audio)
- *  - No speechSynthesis warm-up cancel (degrades Safari quality)
+ * Simple, testable routing - prefer reliability over clever hacks:
+ * - Safari/iOS female → Apple Nora (natural)
+ * - Safari/iOS male → Google TTS male profile when no OS male (clear difference)
+ * - Chrome → Google TTS first (works when system voices are empty/broken), then system
+ * - Never use createMediaElementSource (silences Chrome cross-origin / CORS audio)
+ * - No speechSynthesis warm-up cancel (degrades Safari quality)
  */
 let speechVoicesCache = [];
 let speechVoicesListening = false;
 let preferredVoiceGender = loadVoiceGender();
 let ttsPlayToken = 0;
 let ttsAudioEl = null;
-/** Every Audio we create — must all be killed on stop (orphans can keep playing). */
+/** Every Audio we create - must all be killed on stop (orphans can keep playing). */
 const ttsActiveAudios = new Set();
-/** Delayed speak timer (must clear on stop — else sample phrase can replay later). */
+/** Delayed speak timer (must clear on stop - else sample phrase can replay later). */
 let ttsSpeakDelayTimer = null;
 /** Minimum score to treat an OS Norwegian voice as "premium neural". */
 const NB_PREMIUM_VOICE_SCORE = 45;
@@ -3686,7 +3686,7 @@ function saveVoiceGender(gender) {
 }
 
 function triggerVoiceGenderHaptic() {
-  // Short single tick — lighter than goal / language-switch patterns.
+  // Short single tick - lighter than goal / language-switch patterns.
   if (typeof navigator.vibrate === "function") {
     navigator.vibrate(12);
   }
@@ -3702,7 +3702,7 @@ function setVoiceGender(gender) {
   } else {
     updateVoiceGenderUI();
   }
-  /* Isolated preview — separate from Hear so it cannot stick in a queue/timer */
+  /* Isolated preview - separate from Hear so it cannot stick in a queue/timer */
   playVoiceGenderPreview();
 }
 
@@ -4201,7 +4201,7 @@ function playGoogleTtsSimple(text, lang, gender, token) {
   });
 }
 
-/** Voice toggle sample — one short word via the same Hear pipeline. */
+/** Voice toggle sample - one short word via the same Hear pipeline. */
 function playVoiceGenderPreview() {
   speakText(VOICE_PREVIEW_PHRASE, getActiveCategory().speechLang || "nb-NO", {
     isPreview: true,
@@ -4210,7 +4210,7 @@ function playVoiceGenderPreview() {
 
 /**
  * Speak exact `text` only via speechSynthesis (primary Hear path).
- * Single utterance — no second engine, no backup race.
+ * Single utterance - no second engine, no backup race.
  */
 function speakWithSystemVoice(text, lang, forcedVoice, rate, pitch, token) {
   if (!window.speechSynthesis) return false;
@@ -4247,7 +4247,7 @@ function speakWithSystemVoice(text, lang, forcedVoice, rate, pitch, token) {
   utterance.volume = 1;
 
   try {
-    // Do not resume() before speak — can revive a cancelled leftover utterance on Chrome.
+    // Do not resume() before speak - can revive a cancelled leftover utterance on Chrome.
     window.speechSynthesis.speak(utterance);
     return true;
   } catch {
@@ -4365,7 +4365,7 @@ function getGoalAudioContext() {
 
 /**
  * UI sounds (switch / goal) need a *running* AudioContext.
- * Mobile Safari often stays suspended if we only fire-and-forget resume() —
+ * Mobile Safari often stays suspended if we only fire-and-forget resume() - 
  * tones schedule against silence. Always await resume in the user-gesture chain.
  * Returns null when audio cannot play; callers must treat that as fine.
  */
@@ -4429,7 +4429,7 @@ function celebrateGoalComplete() {
 }
 
 /**
- * Soft rising triad — a short “portal” into the new language track.
+ * Soft rising triad - a short “portal” into the new language track.
  * Flourish only: ceremony must still feel complete with visual + haptic alone.
  * Distinct from the goal-complete chime (higher, brighter).
  */
@@ -4441,7 +4441,7 @@ function playTrackSwitchSound() {
 
     const now = ctx.currentTime;
     const master = ctx.createGain();
-    // Slightly quieter than goal chime — ambient, not a win fanfare.
+    // Slightly quieter than goal chime - ambient, not a win fanfare.
     master.gain.setValueAtTime(0.0001, now);
     master.gain.exponentialRampToValueAtTime(0.07, now + 0.04);
     master.gain.exponentialRampToValueAtTime(0.03, now + 0.32);
@@ -4517,7 +4517,7 @@ function playWelcomeEnterSound() {
   })();
 }
 
-/** Mobile confirmation for language switch — works with the silent switch off. */
+/** Mobile confirmation for language switch - works with the silent switch off. */
 function triggerTrackSwitchHaptic() {
   if (typeof navigator.vibrate === "function") {
     // Short dual pulse: “leave · land”
@@ -4557,7 +4557,7 @@ function flashProgressLanguageControl() {
 
 /**
  * Language lives inside the Read story selector (flag + muted name).
- * Read-only — switching languages stays on Progress.
+ * Read-only - switching languages stays on Progress.
  */
 function updateReadLanguageIndicator(category = getActiveCategory()) {
   const label =
@@ -4580,7 +4580,7 @@ function updateReadLanguageIndicator(category = getActiveCategory()) {
     const title = (titleEl?.textContent || "").trim();
     storyBtn.setAttribute(
       "aria-label",
-      title && title !== "—"
+      title && title !== "-"
         ? `${label} story: ${title}. Choose story`
         : `Choose ${label} story`
     );
@@ -4623,7 +4623,7 @@ function showTrackSwitchOverlay(label, options = {}) {
   const durationMs = Number(options.durationMs) > 0 ? Number(options.durationMs) : 1250;
   const isWelcome = Boolean(options.welcome);
   const isPortal = Boolean(options.portal);
-  // Default off — brand is already "Leitner Learning"; kicker felt redundant.
+  // Default off - brand is already "Leitner Learning"; kicker felt redundant.
   const showKicker = options.showKicker === true;
   const restart = options.restart !== false;
   // Mid-session Progress picks: pulse the language chip after the veil
@@ -4660,7 +4660,7 @@ function showTrackSwitchOverlay(label, options = {}) {
   // restart:false keeps an already-visible veil stable (no opacity blink)
   if (restart || !el.classList.contains("is-visible")) {
     if (isPortal) {
-      // Instant cover — never fade in over Review / welcome
+      // Instant cover - never fade in over Review / welcome
       el.classList.add("is-visible");
       void el.offsetHeight;
     } else {
@@ -4741,7 +4741,7 @@ function scheduleTrackSwitchOverlayEnd(durationMs, options = {}) {
 
 /**
  * Mid-session language switch (Progress tab picker, etc.).
- * Same music portal as first entry — logo on the beat, then target language on denser bass.
+ * Same music portal as first entry - logo on the beat, then target language on denser bass.
  */
 function announceTrackSwitch(category = getActiveCategory()) {
   announceLanguagePortal(category, { firstEntry: false });
@@ -4894,7 +4894,7 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
     const nameEl = document.getElementById("track-switch-overlay-name");
 
     if (!map || !audio) {
-      // Veil already up — soft synth underlay only
+      // Veil already up - soft synth underlay only
       if (firstEntry) playWelcomeEnterSound();
       else playTrackSwitchSound();
       return;
@@ -4914,7 +4914,7 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
       audio.volume = volume;
       await audio.play();
     } catch {
-      // Autoplay blocked or decode fail — keep visuals + soft synth underlay
+      // Autoplay blocked or decode fail - keep visuals + soft synth underlay
       if (firstEntry) playWelcomeEnterSound();
       else playTrackSwitchSound();
     }
@@ -4923,7 +4923,7 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
     const events = [];
     (map.phase1Beats || []).forEach((t) => events.push({ t: Number(t), type: "logo" }));
     events.push({ t: switchAt, type: "switch" });
-    // Phase 2: soft flag pulse, but not on every dense hit — keeps under
+    // Phase 2: soft flag pulse, but not on every dense hit - keeps under
     // the WCAG “3 flashes per second” caution for large bright changes.
     const phase2 = (map.phase2Beats || [])
       .map(Number)
@@ -5078,7 +5078,7 @@ function showFeedbackExample(example, card = currentCard) {
 
 /**
  * Prefer: Read story → stored example → phrase → simple in-language line → honest pair.
- * Every miss should leave the learner with *something* true — not a blank slot.
+ * Every miss should leave the learner with *something* true - not a blank slot.
  */
 function getCardContextExample(card) {
   if (!card) return null;
@@ -5120,7 +5120,7 @@ function getCardContextExample(card) {
 
 /**
  * Tiny in-context lines for single theme lemmas when Read has no match.
- * Patterns stay honest and short — not full generative sentences.
+ * Patterns stay honest and short - not full generative sentences.
  */
 function buildSimpleThemeExample(foreign, native, langCode) {
   const lang = String(langCode || "nb").split("-")[0].toLowerCase();
@@ -5289,7 +5289,7 @@ function setEmptyStatePowerAction(
   } = {}
 ) {
   powerEl?.classList.toggle("hidden", !show);
-  // Status line under the power button — primary “what do I do?” cue.
+  // Status line under the power button - primary “what do I do?” cue.
   if (hintEl) {
     const text = String(hint || "").trim();
     hintEl.textContent = text;
@@ -5312,7 +5312,7 @@ function setEmptyStatePowerAction(
     startBtn.disabled = !enabled;
     startBtn.setAttribute("aria-disabled", enabled ? "false" : "true");
     startBtn.setAttribute("aria-label", ariaLabel || hint || "Review");
-    // Status text already lives under the power button — no duplicate hover.
+    // Status text already lives under the power button - no duplicate hover.
     startBtn.removeAttribute("title");
   }
 
@@ -5328,8 +5328,8 @@ function setEmptyStatePowerAction(
 
 /**
  * Short status under the logo power button.
- * Counts live in home stats — don't repeat them here.
- * Fully done (no extras): silence under the logo — complete logo is enough.
+ * Counts live in home stats - don't repeat them here.
+ * Fully done (no extras): silence under the logo - complete logo is enough.
  */
 function formatPowerHomeHint({
   mode = "start",
@@ -5339,7 +5339,7 @@ function formatPowerHomeHint({
   if (sessionLine) return sessionLine;
   if (mode === "start") return "Start Review";
   if (mode === "continue") return "Continue";
-  // complete — only speak when there's something left to do
+  // complete - only speak when there's something left to do
   if (extraDue > 0) return "Extras Ready";
   return ""; // idle done: no caption under the logo
 }
@@ -5418,7 +5418,7 @@ function renderEmptyState() {
 
   function hideLegacyCopy() {
     if (emptyPreview) emptyPreview.hidden = true;
-    // Status lives under the power button — avoid a second paragraph by default.
+    // Status lives under the power button - avoid a second paragraph by default.
     messageEl.textContent = "";
     messageEl.classList.add("hidden");
   }
@@ -5488,7 +5488,7 @@ function renderEmptyState() {
     const correct =
       sessionCorrect === 1 ? "1 right this round" : `${sessionCorrect} right this round`;
 
-    // Theme set finished — name it once; skip a second “N right this round” paragraph.
+    // Theme set finished - name it once; skip a second “N right this round” paragraph.
     if (lastThemeSessionNote) {
       const themeLine = `${lastThemeSessionNote.title} done`;
       showPowerHome({
@@ -5676,7 +5676,7 @@ function renderPractice() {
       else goalChip.textContent = countText;
       goalChip.classList.remove("hidden", "goal-met");
       goalChip.classList.add("is-live", "is-theme-chip");
-      // Theme set is not the daily-cap control — keep it non-interactive look via aria only.
+      // Theme set is not the daily-cap control - keep it non-interactive look via aria only.
       goalChip.setAttribute(
         "aria-label",
         `${pack?.title || "Theme"}: ${done} of ${total}, ${left} left`
@@ -5767,7 +5767,7 @@ function renderPractice() {
   promptEl.lang = labels.promptLang;
   promptEl.className = "prompt norwegian";
 
-  // Theme progress lives in the goal strip — no second “N left” line under the prompt.
+  // Theme progress lives in the goal strip - no second “N left” line under the prompt.
   const promptHint = document.getElementById("prompt-hint");
   if (promptHint) {
     promptHint.textContent = "";
@@ -5914,7 +5914,7 @@ function getPackDisplayTitle(packId) {
 
 /**
  * Match an L2 form to a thematic pack entry (enabled or not).
- * Used for add-card feedback — not for auto-adding the pack.
+ * Used for add-card feedback - not for auto-adding the pack.
  */
 function findThematicPackMatch(foreign, categoryId = activeCategoryId) {
   const key = normalizeAnswer(foreign);
@@ -6068,7 +6068,7 @@ function softTokenMatch(a, b, minEditLen = 5) {
 /**
  * Review-time gloss compare: exact vs soft (typo / inflection / dialect).
  * Multi-word: same token count, each word soft-matches (min edit 4 so "feal"→"feel").
- * spellingOnly means soft match that is NOT exact — never treat as "Looks good".
+ * spellingOnly means soft match that is NOT exact - never treat as "Looks good".
  */
 function reviewGlossCompare(user, suggested) {
   if (!user || !suggested) {
@@ -6248,7 +6248,7 @@ function getStarterSuggestions(query, limit = 5) {
       foreign: entry.foreign,
       native: entry.native,
       rank: entry.rank,
-      // Honest label — starter catalog is not always already in the live deck.
+      // Honest label - starter catalog is not always already in the live deck.
       meta: inDeck ? "In your deck" : "Essentials",
       selectable: true,
     };
@@ -6277,7 +6277,7 @@ function getLibrarySuggestions(query, limit = 5) {
 }
 
 /**
- * Words from packs the user has not Added yet — discoverable in typeahead,
+ * Words from packs the user has not Added yet - discoverable in typeahead,
  * never auto-enables the pack.
  */
 function getPackCatalogSuggestions(query, limit = 5) {
@@ -6442,7 +6442,7 @@ function toMyMemoryLangCode(code) {
 }
 
 /**
- * Rank translation memory hits. Not spell-correcting Norwegian — picking among API candidates.
+ * Rank translation memory hits. Not spell-correcting Norwegian - picking among API candidates.
  * Near-ties like "fucke" (0.99) vs "fuck" (0.98) should prefer real English.
  */
 function scoreTranslationCandidate(entry, peers, toLang, sourceWordCount) {
@@ -6477,7 +6477,7 @@ function scoreTranslationCandidate(entry, peers, toLang, sourceWordCount) {
     if (entry._sourceLen > 0 && outLen > entry._sourceLen * 2.5 && outLen >= 12) {
       score -= 0.1;
     }
-    // great: god and flott often tie at 0.99 — slight preference for a fuller everyday gloss
+    // great: god and flott often tie at 0.99 - slight preference for a fuller everyday gloss
     if (!toEnglish && words.length === 1 && outLen >= 4 && outLen <= 12) {
       score += 0.015;
     }
@@ -6494,7 +6494,7 @@ function scoreTranslationCandidate(entry, peers, toLang, sourceWordCount) {
     score += 0.01;
   }
 
-  // For short sources, lightly prefer neural MT over dusty TM junk — but only as a tie-break
+  // For short sources, lightly prefer neural MT over dusty TM junk - but only as a tie-break
   if (sourceWordCount <= 2 && entry.fromMachine) score += 0.01;
 
   return score;
@@ -6506,7 +6506,7 @@ function pickBestTranslationSuggestion(data, sourceText, toLang = "en") {
   const candidates = [];
   const targetLang = toMyMemoryLangCode(toLang);
 
-  // Primary neural/default response — prefer this over dusty TM "quality" scores
+  // Primary neural/default response - prefer this over dusty TM "quality" scores
   // (those can rank "I want a blow job" above a correct sword/birthday gloss).
   const primaryRaw = data.responseData?.translatedText;
   const primaryClean = primaryRaw ? cleanTranslationCandidate(primaryRaw) : "";
@@ -6583,7 +6583,7 @@ function pickBestTranslationSuggestion(data, sourceText, toLang = "en") {
   });
   const unique = [...byText.values()];
 
-  // Prefer primary when present and plausible — never let a higher TM score hijack meaning
+  // Prefer primary when present and plausible - never let a higher TM score hijack meaning
   if (primaryOk) {
     const primaryHit = unique.find(
       (entry) => normalizeAnswer(entry.text) === normalizeAnswer(primaryClean)
@@ -6649,7 +6649,7 @@ async function fetchMyMemoryTranslation(trimmed, from, to) {
 
 /**
  * Fallback when MyMemory is rate-limited or empty.
- * Unofficial Google translate endpoint (client=gtx) — used only as backup.
+ * Unofficial Google translate endpoint (client=gtx) - used only as backup.
  */
 async function fetchGoogleTranslateFallback(trimmed, from, to) {
   try {
@@ -6772,9 +6772,9 @@ function toLanguageToolCode(langCode) {
 
 /**
  * How reliable Library Check is for a track (LanguageTool depth).
- * full  — strong spell + grammar (DE/FR/ES/NL/PT/PL…)
- * spell — spell/dictionary ok; grammar thin (Nordic, Italian…)
- * mt    — mostly translation double-check; avoid false LOOKS GOOD
+ * full - strong spell + grammar (DE/FR/ES/NL/PT/PL…)
+ * spell - spell/dictionary ok; grammar thin (Nordic, Italian…)
+ * mt - mostly translation double-check; avoid false LOOKS GOOD
  */
 function getCheckStrength(category = getActiveCategory()) {
   const raw = String(category?.checkStrength || "").toLowerCase();
@@ -7075,7 +7075,7 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
   const o = normalizeAnswer(original);
   if (!o) return null;
 
-  // Recovery first (kiss), then LT — never blind adjacent swaps (those produced "kis")
+  // Recovery first (kiss), then LT - never blind adjacent swaps (those produced "kis")
   const pool = [...englishRecoveryCandidates(original), ...(replacements || [])];
   if (!pool.length) return null;
 
@@ -7146,7 +7146,7 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
     if (prevTok === "to" || prevTok === "and" || prevTok === "or") {
       if (COMMON_ENGLISH_RECOVER_WORDS.includes(n)) score += 25;
     }
-    // LanguageTool order — weaker so acronyms / ski don't dominate
+    // LanguageTool order - weaker so acronyms / ski don't dominate
     score += Math.max(0, 12 - index * 1.5);
     score += Math.max(0, 12 - dist * 3);
     if (n[0] === o[0]) score += 4;
@@ -7155,7 +7155,7 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
     if (caseOnly && /^[A-Z][a-z]/.test(candidate) && /^[A-Z]/.test(String(original || ""))) {
       score += 12;
     }
-    // Penalize "delete first letter only" (yamo→amo) — usually wrong
+    // Penalize "delete first letter only" (yamo→amo) - usually wrong
     if (dist === 1 && o.length === n.length + 1 && o.endsWith(n)) score -= 10;
     if (dist === 1 && n.length === o.length + 1 && n.endsWith(o) && !isOneLetterInsert(o, n)) {
       score -= 4;
@@ -7179,7 +7179,7 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
 
 /**
  * Known acronyms that must stay UPPER on flashcards (ATM, not atm / Atm).
- * Keep short and high-confidence — better miss than invent.
+ * Keep short and high-confidence - better miss than invent.
  */
 const FLASHCARD_ACRONYMS = new Set(
   [
@@ -7289,7 +7289,7 @@ const ENGLISH_PROPER_LOWER = new Set(
   ].map((w) => w.toLowerCase())
 );
 
-/** LanguageTool rule ids that only force sentence-start caps — wrong for lemma flashcards. */
+/** LanguageTool rule ids that only force sentence-start caps - wrong for lemma flashcards. */
 const LT_SENTENCE_START_RULES = new Set([
   "UPPERCASE_SENTENCE_START",
   "SENTENCE_FRAGMENT",
@@ -7301,7 +7301,7 @@ function isFlashcardAcronymToken(token) {
   const bare = t.replace(/\./g, "");
   const key = normalizeAnswer(bare);
   if (FLASHCARD_ACRONYMS.has(key)) return true;
-  // Consonant-only 2–4 letter tokens (cv, pdf) — same idea as preferDisplayForm
+  // Consonant-only 2–4 letter tokens (cv, pdf) - same idea as preferDisplayForm
   if (/^[a-z]{2,4}$/i.test(bare) && !/[aeiouyæøåäöü]/i.test(bare)) return true;
   // Short ALLCAPS only if consonant-heavy (ATM, not HUNGER / NORGE)
   if (/^[A-Z]{2,5}$/.test(bare) && !/[AEIOUYaeiouy]/.test(bare)) return true;
@@ -7337,7 +7337,7 @@ function isFlashcardOrthographyMatch(match) {
   const msg = `${id} ${match.message || ""} ${match.shortMessage || ""}`;
 
   if (LT_SENTENCE_START_RULES.has(id)) return false;
-  // Pure style / punctuation cosmetics — not teaching accuracy
+  // Pure style / punctuation cosmetics - not teaching accuracy
   if (
     /WHITESPACE|DASH_RULE|ELLIPSIS|OXFORD_COMMA|COMMA_PARENTHESIS|SENTENCE_WHITESPACE|EN_QUOTES|FR_SPACING|PUNCTUATION_PARAGRAPH_END/i.test(
       id
@@ -7412,7 +7412,7 @@ function applyEnglishGrammarFixes(text) {
   return result;
 }
 
-/** German closed-class words — flashcard style keeps these lowercase. */
+/** German closed-class words - flashcard style keeps these lowercase. */
 const GERMAN_FUNCTION_LOWER = new Set(
   [
     "ich",
@@ -7674,7 +7674,7 @@ async function fetchSpellingCorrection(text, langCode) {
         if (!pick || pick === original) continue;
         result =
           result.slice(0, match.offset) + pick + result.slice(match.offset + match.length);
-        // Protect real orthography (I, Norway, girls') — not ALLCAPS noise for lower typos
+        // Protect real orthography (I, Norway, girls') - not ALLCAPS noise for lower typos
         for (const tok of reviewTokens(pick)) {
           if (
             /^[A-Z]{2,}$/.test(tok) &&
@@ -7925,7 +7925,7 @@ function refreshAddCardSuggestions(preferField = "native") {
 
 function renderSuggestionOption(item, index) {
   const meta = item.meta ? `<span class="library-suggest-option-meta">${escapeHtml(item.meta)}</span>` : "";
-  // English then Norwegian — same order as the form and review
+  // English then Norwegian - same order as the form and review
   const native = `<span class="library-suggest-option-native">${escapeHtml(item.native)}</span>`;
   const sep = `<span class="library-suggest-option-sep" aria-hidden="true">·</span>`;
   const foreign = `<span class="library-suggest-option-foreign" lang="${getActiveCategory().foreignLang || "nb"}">${escapeHtml(item.foreign)}</span>`;
@@ -8012,13 +8012,13 @@ async function updateForeignSuggestions() {
     });
   };
 
-  // Local deck first — do not wait on MyMemory or nothing shows while the network spins
+  // Local deck first - do not wait on MyMemory or nothing shows while the network spins
   getStarterSuggestions(query, 6).forEach(addSuggestion);
   getLibrarySuggestions(query, 6).forEach(addSuggestion);
   getPackCatalogSuggestions(query, 4).forEach(addSuggestion);
   paint();
 
-  // Don't advertise a "translation" of keyboard mash — it only creates false confidence later.
+  // Don't advertise a "translation" of keyboard mash - it only creates false confidence later.
   if (shouldRequestTranslation(query)) {
     const { foreignCode, nativeCode } = getCategoryLanguageCodes();
     // Spell learning language first, then translate once from the corrected form
@@ -8125,7 +8125,7 @@ function isSafeSoftSpellingFix(userText, suggestedText) {
 
 /**
  * Full alternative gloss for the non-anchor side (e.g. DA→EN when Danish was typed first).
- * Allows real translation alternatives, not only one-letter typos — but blocks junk / wild length.
+ * Allows real translation alternatives, not only one-letter typos - but blocks junk / wild length.
  */
 function isPlausibleTranslationAlternative(userText, suggestedText) {
   if (!userText || !suggestedText) return false;
@@ -8148,7 +8148,7 @@ function isPlausibleTranslationAlternative(userText, suggestedText) {
 
 /**
  * Strong translation agreement for LOOKS GOOD / anchors.
- * Exact letters (ignoring case) or casing/apostrophe-only — NOT soft one-edit
+ * Exact letters (ignoring case) or casing/apostrophe-only - NOT soft one-edit
  * neighbors (epler ≉ eller, jenter ≉ jente). Those used to false-approve bad cards.
  */
 function isStrongTranslationMatch(userText, suggestedText, langCode = null) {
@@ -8348,7 +8348,7 @@ function getRelatedEntriesForReview(foreign, native, limit = 5) {
     const foreignKey = normalizeAnswer(item.foreign);
     if (seen.has(foreignKey)) return;
     if (foreignKey === exactForeign) return;
-    // Skip weak mid-string hits (great → great-grandmother) — only clear relatives
+    // Skip weak mid-string hits (great → great-grandmother) - only clear relatives
     const score = suggestionMatchScore(term, item.foreign, item.native);
     if (score < 55) return;
     if (editingCardId) {
@@ -8402,7 +8402,7 @@ function wordLooksLikeGibberish(word) {
   if (word.length >= 8 && /([aeiouyæøåäöü]{2})\1{2,}/i.test(word)) return true;
   if (word.length >= 8 && /(..)\1{2,}/i.test(word)) return true;
 
-  // Last 5 letters all vowels — "…keieie" (not "…poeia" in onomatopoeia)
+  // Last 5 letters all vowels - "…keieie" (not "…poeia" in onomatopoeia)
   if (word.length >= 9) {
     const tip = word.slice(-5);
     const tipVowels = (tip.match(/[aeiouyæøåäöü]/gi) || []).length;
@@ -8491,7 +8491,7 @@ function nonsenseReviewSummary(learningName, foreignGibberish, nativeGibberish, 
   return null;
 }
 
-/** English then Norwegian — same order as the review panel. No trailing periods inside. */
+/** English then Norwegian - same order as the review panel. No trailing periods inside. */
 function formatReviewPair(foreign, native) {
   const en = stripFlashcardPunctuation(native);
   const nb = preferDisplayForm(foreign);
@@ -8521,7 +8521,7 @@ function isCasingOnlyDiff(a, b) {
 
 /**
  * Same letters if we strip punctuation (banana's ≈ bananas in normalizeAnswer).
- * Those are NOT safe auto-fixes — possessives/plurals mean different things.
+ * Those are NOT safe auto-fixes - possessives/plurals mean different things.
  */
 function isNormalizeOnlyDiff(a, b) {
   const x = stripFlashcardPunctuation(a);
@@ -8566,7 +8566,7 @@ function orthographyFixIsPlausible(userText, correctedText, langCode = null) {
   if (!userClean || !fixClean || userClean === fixClean) return false;
 
   // School-standard vs major regional variant (Straße/Strasse, color/colour…)
-  // is not a "fix" — Check should soft-accept, not nag.
+  // is not a "fix" - Check should soft-accept, not nag.
   const code =
     langCode ||
     getActiveCategory()?.foreignLang ||
@@ -8599,7 +8599,7 @@ function orthographyFixIsPlausible(userText, correctedText, langCode = null) {
     if (anyDiff && onlyAcronymShout) return false;
   }
 
-  // Pure capitalization / acronym form (ATM, Norway) — not noise above
+  // Pure capitalization / acronym form (ATM, Norway) - not noise above
   if (isCasingOnlyDiff(userClean, fixClean)) return true;
   // Grammar: apostrophe placement
   if (isApostropheGrammarDiff(userClean, fixClean)) return true;
@@ -8773,7 +8773,7 @@ function getTranslationReviewSummary(
       if (fix) return fix;
     }
 
-    // Same Norwegian headword, different English — only if Norwegian match is strong
+    // Same Norwegian headword, different English - only if Norwegian match is strong
     if (foreignStrong && !nativeStrong && !foreignGibberish) {
       const fix = makePairFix(
         "In your deck",
@@ -8784,7 +8784,7 @@ function getTranslationReviewSummary(
       if (fix) return fix;
     }
 
-    // Same English gloss, different Norwegian — only if English match is strong
+    // Same English gloss, different Norwegian - only if English match is strong
     if (nativeStrong && !foreignStrong && !nativeGibberish) {
       const fix = makePairFix(
         "In your deck",
@@ -8867,7 +8867,7 @@ function getTranslationReviewSummary(
     };
   }
 
-  // Safe soft spelling only — keep the other side as the user typed it
+  // Safe soft spelling only - keep the other side as the user typed it
   if (!foreignGibberish && !nativeGibberish && hasSpellingIssue) {
     if (nativeSafeSpell && foreignSafeSpell) {
       const fix = makePairFix(
@@ -9197,7 +9197,7 @@ function renderAddCardReviewContext({
       </section>`);
   }
 
-  // Word lives in a pack the user hasn’t Added — allow free Add, quiet tip only.
+  // Word lives in a pack the user hasn’t Added - allow free Add, quiet tip only.
   if (!duplicate) {
     const packMatch = findThematicPackMatch(foreign);
     if (packMatch && !packMatch.enabled) {
@@ -9383,7 +9383,7 @@ async function openAddCardReview() {
   const related = getRelatedEntriesForReview(foreign, native);
   const localPair = findLocalDeckPair(foreign, native);
   const { foreignCode, nativeCode } = getCategoryLanguageCodes();
-  // Spell-check BOTH sides in parallel with MT — MT often echoes typos.
+  // Spell-check BOTH sides in parallel with MT - MT often echoes typos.
   // Learning-language side uses LanguageTool + deck near-match.
   const [
     suggestedNativeRaw,
@@ -9403,7 +9403,7 @@ async function openAddCardReview() {
   let suggestedForeign = suggestedForeignRaw;
 
   // If English spelling was fixed, re-translate EN→learning for a better foreign gloss.
-  // Do NOT reverse-translate learning→English into a "better" English — that morphs
+  // Do NOT reverse-translate learning→English into a "better" English - that morphs
   // meaning (sword → hard one / blow job) via bad TM hits.
   const nativeFixed =
     spellingCorrectedNative &&
@@ -9496,7 +9496,7 @@ function resetAddCardForm() {
  * Load a card into the editor.
  * options.seedNative / seedForeign: keep the pair the user just refined (e.g. from
  * Check card) instead of overwriting with the old wrong deck text.
- * options.autoReview: default true when both sides filled — always run Check card
+ * options.autoReview: default true when both sides filled - always run Check card
  * so wrong deck text still gets translation / spelling suggestions.
  */
 function startEditCard(cardId, options = {}) {
@@ -9505,7 +9505,7 @@ function startEditCard(cardId, options = {}) {
 
   suppressAddCardSuggestions = false;
   editingCardId = card.id;
-  // The Edit click bubbles to document and would clear suggestions — ignore briefly.
+  // The Edit click bubbles to document and would clear suggestions - ignore briefly.
   addCardSuppressOutsideHideUntil = Date.now() + 600;
 
   const seedForeign = stripFlashcardPunctuation(
@@ -9567,7 +9567,7 @@ function saveLibraryCard(foreign, native) {
       normalizeAnswer(card.native) !== normalizeAnswer(trimmedNative);
     card.foreign = trimmedForeign;
     card.native = trimmedNative;
-    // Editing a pack-owned card makes it Yours — Remove pack must not delete it later.
+    // Editing a pack-owned card makes it Yours - Remove pack must not delete it later.
     if (card.packId && (foreignChanged || nativeChanged)) {
       card.packId = null;
     }
@@ -9667,7 +9667,7 @@ function getLibraryBandJumpSectionsFromDeck() {
 }
 
 function scrollToLibrarySection(key) {
-  // Phrases / Yours / search hide band sections — switch back to All, then jump.
+  // Phrases / Yours / search hide band sections - switch back to All, then jump.
   const needsAllView =
     libraryFilter === "phrase" ||
     libraryFilter === "yours" ||
@@ -9708,7 +9708,7 @@ function isStatsPanelActive() {
 
 /**
  * One Top control: return to site header (tabs) so you can leave the page.
- * On Library, gently pulse Search as a visual cue — but do not focus it.
+ * On Library, gently pulse Search as a visual cue - but do not focus it.
  * Focusing opens the mobile keyboard and covers the header/tabs.
  */
 function handlePageFloatTop() {
@@ -9732,7 +9732,7 @@ function handlePageFloatTop() {
     document.activeElement.blur();
   }
 
-  // Visual only — user taps Search when they actually want to type.
+  // Visual only - user taps Search when they actually want to type.
   input.classList.add("library-search--ready");
   window.setTimeout(() => input.classList.remove("library-search--ready"), 1200);
 }
@@ -9988,7 +9988,7 @@ function renderCardList() {
     return;
   }
 
-  // Themes: group by pack title (Travel, Dining, …) — jump chips use those sections.
+  // Themes: group by pack title (Travel, Dining, …) - jump chips use those sections.
   if (libraryFilter === "themes") {
     const packOrder = getThematicPackList().map((pack) => pack.id);
     const byPack = new Map();
@@ -10655,11 +10655,11 @@ function openReadGloss(button) {
   const inDeck = Boolean(payload.cardId || payload.source === "deck");
 
   // Calm structure: English meaning primary; lemma only when form differs.
-  let html = `<span class="read-gloss-en">${escapeHtml(native || "—")}</span>`;
+  let html = `<span class="read-gloss-en">${escapeHtml(native || "-")}</span>`;
   if (lemma && normalizeAnswer(lemma) !== normalizeAnswer(surface)) {
     html += `<span class="read-gloss-lemma">${escapeHtml(lemma)}</span>`;
   } else if (inDeck && surface && normalizeAnswer(surface) !== normalizeAnswer(native)) {
-    // Surface L2 already in the sentence — no need to repeat unless helpful
+    // Surface L2 already in the sentence - no need to repeat unless helpful
   }
   meaningEl.innerHTML = html;
   glossEl.classList.toggle("is-deck", inDeck);
@@ -10938,7 +10938,7 @@ function renderReadHeader(story) {
   if (trailBtn) {
     const trailLabel = trail?.label || "Beginner";
     trailBtn.innerHTML = `${getReadTrailSymbolMarkup(story.trail)}<span class="read-trail-btn__label">${escapeHtml(trailLabel)}</span>`;
-    // Screen readers still get the level; no hover title — it only repeated the visible label.
+    // Screen readers still get the level; no hover title - it only repeated the visible label.
     trailBtn.setAttribute("aria-label", `Difficulty: ${trailLabel}`);
     trailBtn.removeAttribute("title");
   }
@@ -11010,7 +11010,7 @@ function renderReadPanel() {
   const story = getActiveReadStory();
   const shell = panel.querySelector(".read-shell");
 
-  // No pack stories (or broken story) — calm empty, not a blank panel
+  // No pack stories (or broken story) - calm empty, not a blank panel
   if (!stories.length || !story?.sentences?.length) {
     closeReadMenu();
     setReadEmptyVisible(true, {
@@ -11207,7 +11207,7 @@ function renderStatsSummary() {
 
 function applyCategoryUI() {
   const category = getActiveCategory();
-  // Progress (and any non-welcome) pickers only — welcome stays "Choose a Language"
+  // Progress (and any non-welcome) pickers only - welcome stays "Choose a Language"
   // until the user commits a pick and enters the app.
   document.querySelectorAll("[data-category-picker-label]").forEach((el) => {
     if (el.closest(".category-picker--welcome")) return;
@@ -11275,7 +11275,7 @@ function applyPracticeDirectionUI() {
 
 /**
  * Menu / welcome order: alphabetical by display name (A–Z).
- * Scales better as languages are added — users can scan and find a language.
+ * Scales better as languages are added - users can scan and find a language.
  */
 function sortCategoriesForDisplay(categories) {
   return [...categories].sort((a, b) => {
@@ -11409,7 +11409,7 @@ function bindCategoryMenuScrollHints(menu) {
     { passive: true }
   );
 
-  // Decorative only — no click/keyboard activation (avoids mis-taps on last language)
+  // Decorative only - no click/keyboard activation (avoids mis-taps on last language)
   menu
     .querySelectorAll("[data-category-scroll-cue], [data-category-scroll-cue-up]")
     .forEach((cue) => {
@@ -11442,7 +11442,7 @@ function renderCategoryPicker() {
 
 /**
  * First-run: picking a language *is* entering the app (no Start button).
- * Full portal ceremony (visual + haptic + sound) — then land in Review.
+ * Full portal ceremony (visual + haptic + sound) - then land in Review.
  *
  * Order matters: paint the portal veil first, then swap app state under it,
  * so Review never flashes before the ceremony covers the screen.
@@ -11485,7 +11485,7 @@ function completeWelcomeWithLanguage(categoryId) {
 /**
  * Progress language menu: land on the currently selected language
  * (centered when possible) instead of always starting at the top.
- * Welcome menu has no current pick — stays at top.
+ * Welcome menu has no current pick - stays at top.
  */
 function scrollCategoryMenuToActive(menu) {
   if (!menu || menu.closest(".category-picker--welcome")) return;
@@ -11516,7 +11516,7 @@ function openCategoryMenu(btn) {
   const picker = btn?.closest(".category-picker");
   const menu = picker?.querySelector(".category-picker-menu");
   if (!btn || !menu) return;
-  // First half of the switch gesture — unlock audio so the pick can chime on mobile.
+  // First half of the switch gesture - unlock audio so the pick can chime on mobile.
   unlockAudioPipeline();
   void ensureUiAudioReady();
   categoryMenuOpen = true;
@@ -11755,7 +11755,7 @@ function switchTab(tabName) {
     panel.hidden = !isActive;
   });
 
-  // Leaving Library collapses Packs view — don’t leave it “stuck open.”
+  // Leaving Library collapses Packs view - don’t leave it “stuck open.”
   if (tabName !== "cards") {
     if (libraryFilter !== "all" || librarySearch) {
       librarySearch = "";
@@ -12059,12 +12059,12 @@ function initEventListeners() {
   });
 
   document.getElementById("daily-goal-chip")?.addEventListener("click", () => {
-    // Theme set uses this chip as progress only — don't open daily-cap modal.
+    // Theme set uses this chip as progress only - don't open daily-cap modal.
     if (themeSessionPackId) return;
     openGoalCapModal();
   });
   document.getElementById("goal-cap-modal")?.addEventListener("click", (e) => {
-    // Backdrop dismiss — no Close button; pick a number or tap away / Escape.
+    // Backdrop dismiss - no Close button; pick a number or tap away / Escape.
     if (e.target.id === "goal-cap-modal") closeGoalCapModal();
   });
   document.getElementById("goal-cap-options")?.addEventListener("click", (e) => {
@@ -12461,7 +12461,7 @@ function showWelcomeModal() {
   const modal = document.getElementById("welcome-modal");
   if (!modal) return;
   renderCategoryPicker();
-  // Never pre-fill — picking a language is the only way in.
+  // Never pre-fill - picking a language is the only way in.
   const welcomeLabel = modal.querySelector("[data-welcome-language-label]");
   if (welcomeLabel) welcomeLabel.textContent = "Choose a Language";
   const welcomeBtn = document.getElementById("welcome-language-btn");
@@ -12513,7 +12513,7 @@ function maybeShowWelcome() {
       return false;
     }
   } catch {
-    // storage blocked — treat as first visit
+    // storage blocked - treat as first visit
   }
   showWelcomeModal();
   return true;
