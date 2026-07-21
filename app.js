@@ -5204,6 +5204,7 @@ function isWordBand(band) {
 function matchesLibraryFilter(card) {
   if (libraryFilter === "phrase" && card.band !== "phrase") return false;
   if (libraryFilter === "yours" && card.band) return false;
+  if (libraryFilter === "themes" && !card.packId) return false;
 
   if (!librarySearch.trim()) return true;
 
@@ -5211,6 +5212,13 @@ function matchesLibraryFilter(card) {
   const foreign = normalizeAnswer(card.foreign);
   const native = normalizeAnswer(card.native);
   return foreign.includes(query) || native.includes(query);
+}
+
+function getThemeSectionLabel(packId) {
+  const pack = getThematicPackById(packId);
+  if (pack?.title) return pack.title;
+  if (!packId) return "Theme";
+  return packId.charAt(0).toUpperCase() + packId.slice(1);
 }
 
 function preferLibraryCard(existing, candidate) {
@@ -8853,6 +8861,10 @@ function getLibraryBandGroups() {
   if (libraryFilter === "yours") {
     return [null];
   }
+  if (libraryFilter === "themes") {
+    // Sections are built per packId in renderCardList.
+    return [];
+  }
   return [libraryFilter];
 }
 
@@ -9204,9 +9216,35 @@ function renderCardList() {
               ? "Cards you add show up here."
               : libraryFilter === "phrase"
                 ? "No phrases in this deck yet."
-                : "No cards in this view."
+                : libraryFilter === "themes"
+                  ? "Add a theme pack above to see those cards here."
+                  : "No cards in this view."
         }</p>
       </div>`;
+    updateLibraryScrollTopVisibility();
+    return;
+  }
+
+  // Themes: group by pack title (Airport, Café, …).
+  if (libraryFilter === "themes") {
+    clearLibraryJumpNav();
+    const packOrder = getThematicPackList().map((pack) => pack.id);
+    const byPack = new Map();
+    filtered.forEach((card) => {
+      const key = card.packId || "other";
+      if (!byPack.has(key)) byPack.set(key, []);
+      byPack.get(key).push(card);
+    });
+    const orderedIds = [
+      ...packOrder.filter((id) => byPack.has(id)),
+      ...[...byPack.keys()].filter((id) => !packOrder.includes(id)),
+    ];
+    const sections = orderedIds.map((packId) => ({
+      band: packId,
+      label: getThemeSectionLabel(packId),
+      cards: sortCards(byPack.get(packId) || []),
+    }));
+    renderCardListSections(sections, list, token);
     updateLibraryScrollTopVisibility();
     return;
   }
