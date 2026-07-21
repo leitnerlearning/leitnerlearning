@@ -563,8 +563,8 @@ function getProgressPracticeStat() {
     return {
       ...nextReview,
       line:
-        nextReview.label === "Next review"
-          ? `Next review · ${nextReview.value}`
+        nextReview.label === "Next"
+          ? `Next · ${nextReview.value}`
           : `${nextReview.value} · ${nextReview.label}`,
       kind: "next",
     };
@@ -595,7 +595,7 @@ function getNextReviewStat() {
   if (unlockDay === tomorrow) {
     return {
       value: "Tomorrow",
-      label: "Next review",
+      label: "Next",
       ariaLabel: teaser || "Reviews unlock tomorrow",
       highlight: false,
       actionable: false,
@@ -606,7 +606,7 @@ function getNextReviewStat() {
   if (hours < 48) {
     return {
       value: `~${hours}h`,
-      label: "Next review",
+      label: "Next",
       ariaLabel: teaser || `Reviews unlock in about ${hours} hours`,
       highlight: false,
       actionable: false,
@@ -622,7 +622,7 @@ function getNextReviewStat() {
   );
   return {
     value: `~${dayDiff}d`,
-    label: "Next review",
+    label: "Next",
     ariaLabel: teaser || `Reviews unlock in about ${dayDiff} days`,
     highlight: false,
     actionable: false,
@@ -1108,21 +1108,22 @@ function formatNextReviewTeaser(unlockMs = getNextReviewUnlockMs()) {
   const today = getLocalDayKey();
   const tomorrow = getLocalDayKey(new Date(Date.now() + daysToMs(1)));
 
-  if (unlockDay === tomorrow) return "Reviews unlock tomorrow";
+  // Title-style captions under the power button (not full sentences).
+  if (unlockDay === tomorrow) return "Unlocks Tomorrow";
   if (unlockDay !== today) {
     const dayDiff = Math.max(
       2,
       Math.ceil((getLocalDayStartAfterDays(0, new Date(unlockMs)) - getLocalDayStartAfterDays(0)) / daysToMs(1))
     );
-    return `Reviews unlock in ~${dayDiff} days`;
+    return `Unlocks In ~${dayDiff} Days`;
   }
 
   const minutes = Math.ceil(diff / 60000);
   const hours = Math.ceil(diff / 3600000);
-  if (hours >= 2) return `Reviews unlock in ~${hours} hours`;
-  if (hours === 1) return "Reviews unlock in ~1 hour";
-  if (minutes >= 2) return `Reviews unlock in ~${minutes} minutes`;
-  return "Reviews unlock soon";
+  if (hours >= 2) return `Unlocks In ~${hours} Hours`;
+  if (hours === 1) return "Unlocks In ~1 Hour";
+  if (minutes >= 2) return `Unlocks In ~${minutes} Min`;
+  return "Unlocks Soon";
 }
 
 function promote(card) {
@@ -5359,9 +5360,16 @@ function setEmptyStatePowerAction(
 }
 
 /**
- * Short status under the logo power button.
+ * Short title under the logo power button (Title Case if multi-word).
  * Counts live in home stats - don't repeat them here.
  * Fully done (no extras): silence under the logo - complete logo is enough.
+ *
+ * Stages:
+ *   start     → Start
+ *   continue  → Continue
+ *   complete + extras → Extra
+ *   complete + quiet  → (empty)
+ *   perfect session   → All N Right / 1 Right (via sessionLine)
  */
 function formatPowerHomeHint({
   mode = "start",
@@ -5373,7 +5381,7 @@ function formatPowerHomeHint({
   if (mode === "start") return "Start";
   if (mode === "continue") return "Continue";
   // complete - only speak when there's something left to do
-  if (extraDue > 0) return "Extras Ready";
+  if (extraDue > 0) return "Extra";
   return ""; // idle done: no caption under the logo
 }
 
@@ -5488,7 +5496,7 @@ function renderEmptyState() {
     const resolvedAria =
       ariaLabel ||
       resolvedHint ||
-      (mode === "complete" && !enabled ? "Done for Today" : "Review");
+      (mode === "complete" && !enabled ? "Done for today" : "Review");
     setEmptyStatePowerAction(powerEl, powerHintEl, {
       show: true,
       mode,
@@ -5519,17 +5527,17 @@ function renderEmptyState() {
     emptyEl.classList.add("session-complete");
     emptyEl.classList.toggle("goal-met", daily.goalMet);
     // Honest end line: never claim “N right” when misses happened.
-    // Perfect round only — soft note. Otherwise silence (DONE chip already tells truth).
+    // Perfect round only — Title Case. Otherwise silence (Done chip already tells truth).
     const sessionLine =
       sessionIncorrect === 0 && sessionCorrect > 0
         ? sessionCorrect === 1
-          ? "1 right this round"
-          : `All ${sessionCorrect} right`
+          ? "1 Right"
+          : `All ${sessionCorrect} Right`
         : "";
 
-    // Theme set finished - name it once; skip a second score paragraph.
+    // Theme set finished - name it once; Title Case caption.
     if (lastThemeSessionNote) {
-      const themeLine = `${lastThemeSessionNote.title} done`;
+      const themeLine = `${lastThemeSessionNote.title} Done`;
       showPowerHome({
         mode: remainingToday > 0 || extraDue > 0 ? "continue" : "complete",
         enabled: remainingToday > 0 || extraDue > 0 || hasDailyGoalRemaining(daily),
@@ -5552,13 +5560,13 @@ function renderEmptyState() {
           extraDue,
           sessionLine,
         }),
-        ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for Today",
+        ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for today",
       });
     } else if (remainingToday > 0) {
       showPowerHome({
         mode: "continue",
         hint: formatPowerHomeHint({ mode: "continue" }),
-        ariaLabel: "Continue",
+        ariaLabel: "Continue review",
       });
     } else {
       showPowerHome({
@@ -5569,7 +5577,7 @@ function renderEmptyState() {
           extraDue,
           sessionLine,
         }),
-        ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for Today",
+        ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for today",
       });
     }
     return;
@@ -5595,7 +5603,7 @@ function renderEmptyState() {
       mode: "complete",
       enabled: extraDue > 0,
       hint: formatPowerHomeHint({ mode: "complete", extraDue }),
-      ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for Today",
+      ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for today",
     });
     return;
   }
@@ -5605,7 +5613,7 @@ function renderEmptyState() {
     mode: "complete",
     enabled: extraDue > 0,
     hint: formatPowerHomeHint({ mode: "complete", extraDue }),
-    ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for Today",
+    ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for today",
   });
 }
 
