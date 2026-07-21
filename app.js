@@ -5077,8 +5077,9 @@ function showFeedbackExample(example, card = currentCard) {
 }
 
 /**
- * Prefer: Read story → stored example → phrase → simple in-language line → honest pair.
- * Every miss should leave the learner with *something* true - not a blank slot.
+ * Prefer: Read story → stored example → phrase → simple in-language line.
+ * Never return the bare card pair — the answer pill already shows the gloss.
+ * (Glue used to fall back to {ikke, not} under the pill: pure redundancy.)
  */
 function getCardContextExample(card) {
   if (!card) return null;
@@ -5098,14 +5099,14 @@ function getCardContextExample(card) {
     .trim();
   if (!foreign || !native) return null;
 
-  // Multi-word / sentence cards already are usable context.
+  // Multi-word / sentence cards already are usable context (not a bare lemma).
   if (card.band === "phrase" || /\s|[?!…]/.test(foreign)) {
     return { foreign, en: native };
   }
 
-  // Tiny glue words: honest pair only (fake “I need et” sentences hurt trust).
+  // Glue / tiny words: no fake “I need et” — and no restated pair under the pill.
   if (isGluePracticeCard(card) || foreign.length <= 2) {
-    return { foreign, en: native };
+    return null;
   }
 
   const built = buildSimpleThemeExample(
@@ -5115,7 +5116,32 @@ function getCardContextExample(card) {
   );
   if (built) return built;
 
-  return { foreign, en: native };
+  // Bare lemma again would only restate the prompt + answer pill.
+  return null;
+}
+
+/** True when the “example” is just the same flashcard again (skip it). */
+function isRedundantFeedbackExample(example, card, answerText) {
+  if (!example?.foreign || !card) return true;
+  const exL2 = normalizeAnswer(example.foreign);
+  const exEn = normalizeAnswer(example.en || "");
+  const cardL2 = normalizeAnswer(card.foreign || "");
+  const cardEn = normalizeAnswer(
+    String(card.native || "")
+      .split("/")[0]
+      .trim()
+  );
+  const pill = normalizeAnswer(answerText || "");
+
+  // Same L2 as the prompt (with EN matching gloss or the answer pill)
+  if (exL2 === cardL2 && (exEn === cardEn || exEn === pill || !exEn)) {
+    return true;
+  }
+  // Example is only the English answer, restated
+  if (exL2 === pill || exEn === pill && exL2 === cardL2) {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -5198,12 +5224,12 @@ function cardLooksLikeInfinitive(foreign, lang) {
 
 /**
  * After a miss/reveal: show the answer pill, plus a real-sentence beat when we have one.
- * Especially valuable for glue words that only make sense in use.
+ * Skip when the “example” only restates the card (prompt + gloss already on screen).
  */
 function showIncorrectWithExample(card, answerText) {
   showFeedback(answerText, "incorrect");
   const example = getCardContextExample(card);
-  if (example) {
+  if (example && !isRedundantFeedbackExample(example, card, answerText)) {
     showFeedbackExample(example, card);
     return true;
   }
