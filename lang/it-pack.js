@@ -991,17 +991,18 @@
     { foreign: 'al forno', native: 'baked', rank: 987, category: 'phrase', band: 'phrase' },
     { foreign: 'vegetariano', native: 'vegetarian', rank: 988, category: 'noun', band: 'G' },
     { foreign: 'vegano', native: 'vegan', rank: 989, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-990', native: 'extra term 990', rank: 990, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-991', native: 'extra term 991', rank: 991, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-992', native: 'extra term 992', rank: 992, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-993', native: 'extra term 993', rank: 993, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-994', native: 'extra term 994', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-995', native: 'extra term 995', rank: 995, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-996', native: 'extra term 996', rank: 996, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-997', native: 'extra term 997', rank: 997, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-998', native: 'extra term 998', rank: 998, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-999', native: 'extra term 999', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'it-extra-1000', native: 'extra term 1000', rank: 1000, category: 'noun', band: 'G' },
+    { foreign: 'non ne ho idea', native: 'no idea', rank: 990, category: 'phrase', band: 'phrase' },
+    { foreign: 'buon viaggio', native: 'have a good trip', rank: 991, category: 'phrase', band: 'phrase' },
+    { foreign: 'divertiti', native: 'have fun', rank: 992, category: 'phrase', band: 'G' },
+    { foreign: 'abbi cura di te', native: 'take care', rank: 993, category: 'phrase', band: 'phrase' },
+    { foreign: 'capisco', native: 'I understand', rank: 994, category: 'phrase', band: 'G' },
+    { foreign: 'non lo so', native: 'I don\'t know', rank: 995, category: 'phrase', band: 'phrase' },
+    { foreign: 'come dice', native: 'pardon?', rank: 996, category: 'phrase', band: 'phrase' },
+    { foreign: 'un momento', native: 'one moment', rank: 997, category: 'phrase', band: 'phrase' },
+    { foreign: 'non fa niente', native: 'that\'s okay / no problem', rank: 998, category: 'phrase', band: 'phrase' },
+    { foreign: 'mi dispiace', native: 'I\'m sorry', rank: 999, category: 'phrase', band: 'phrase' },
+    { foreign: 'scontrino', native: 'receipt', rank: 1000, category: 'noun', band: 'G' }
+
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
   window.LANGUAGE_BASICS[id] = {

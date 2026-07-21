@@ -992,16 +992,17 @@
     { foreign: 'lejos de aquí', native: 'far from here', rank: 988, category: 'phrase', band: 'phrase' },
     { foreign: 'buenas', native: 'hello (informal)', rank: 989, category: 'phrase', band: 'phrase' },
     { foreign: 'quince', native: 'fifteen', rank: 990, category: 'number', band: 'G' },
-    { foreign: 'es-extra-991', native: 'extra term 991', rank: 991, category: 'noun', band: 'G' },
-    { foreign: 'es-extra-992', native: 'extra term 992', rank: 992, category: 'noun', band: 'G' },
-    { foreign: 'es-extra-993', native: 'extra term 993', rank: 993, category: 'noun', band: 'G' },
-    { foreign: 'es-extra-994', native: 'extra term 994', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'es-extra-995', native: 'extra term 995', rank: 995, category: 'noun', band: 'G' },
-    { foreign: 'es-extra-996', native: 'extra term 996', rank: 996, category: 'noun', band: 'G' },
-    { foreign: 'es-extra-997', native: 'extra term 997', rank: 997, category: 'noun', band: 'G' },
-    { foreign: 'es-extra-998', native: 'extra term 998', rank: 998, category: 'noun', band: 'G' },
-    { foreign: 'es-extra-999', native: 'extra term 999', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'es-extra-1000', native: 'extra term 1000', rank: 1000, category: 'noun', band: 'G' },
+    { foreign: 'ni idea', native: 'no idea', rank: 991, category: 'phrase', band: 'phrase' },
+    { foreign: 'todo bien', native: 'all good', rank: 992, category: 'phrase', band: 'phrase' },
+    { foreign: 'buen viaje', native: 'have a good trip', rank: 993, category: 'phrase', band: 'phrase' },
+    { foreign: 'buen provecho', native: 'enjoy your meal', rank: 994, category: 'phrase', band: 'phrase' },
+    { foreign: 'felicidades', native: 'congratulations', rank: 995, category: 'phrase', band: 'G' },
+    { foreign: 'diviértete', native: 'have fun', rank: 996, category: 'phrase', band: 'G' },
+    { foreign: 'cuídate', native: 'take care', rank: 997, category: 'phrase', band: 'G' },
+    { foreign: 'está bien', native: 'it\'s fine', rank: 998, category: 'phrase', band: 'phrase' },
+    { foreign: 'entiendo', native: 'I understand', rank: 999, category: 'phrase', band: 'G' },
+    { foreign: 'no sé', native: 'I don\'t know', rank: 1000, category: 'phrase', band: 'phrase' }
+
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
   window.LANGUAGE_BASICS[id] = {
