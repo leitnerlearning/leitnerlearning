@@ -2228,7 +2228,7 @@ main {
   font-weight: 700;
   letter-spacing: -0.035em;
   line-height: 1.28;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   word-break: break-word;
   color: var(--ink);
   overflow: visible;
@@ -4762,17 +4762,15 @@ html.needs-welcome body {
   gap: 0.5rem;
 }
 
-/* Library → Themes (opt-in mini-packs) */
+/* Library → Themes (opt-in mini-packs) — secondary, sits under search */
 .library-themes {
-  margin: 0 0 1.1rem;
-  padding: 0.95rem 1rem 1rem;
-  border-radius: 16px;
-  border: 1px solid rgba(54, 95, 207, 0.12);
-  background: linear-gradient(
-    165deg,
-    rgba(91, 154, 255, 0.06),
-    rgba(255, 255, 255, 0.55)
-  );
+  margin: 0 0 1rem;
+  padding: 0.85rem 0.95rem 0.9rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-glass);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .library-themes.hidden {
@@ -5814,13 +5812,26 @@ html.needs-welcome body {
   width: 100%;
 }
 
+/* Progress stack: one rhythm so truth reads as one calm column */
+#progress-daily,
+#progress-coverage,
+#progress-themes {
+  margin-bottom: 0.65rem;
+}
+
+#progress-themes:not(.hidden) + .stats-summary,
+#progress-coverage:not(.hidden) + .stats-summary,
+#progress-daily:not(.hidden) + .stats-summary {
+  margin-top: 0.15rem;
+}
+
 .progress-coverage {
-  margin-bottom: 1.1rem;
-  padding: 0.9rem 1rem 0.85rem;
+  margin-bottom: 0.65rem;
+  padding: 0.85rem 0.95rem 0.8rem;
   border-radius: var(--radius-sm);
   background: var(--surface-glass-strong);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  box-shadow: none;
 }
 
 .progress-coverage-head {
@@ -5879,12 +5890,12 @@ html.needs-welcome body {
 
 /* Progress → Themes glance (opt-in packs only) */
 .progress-themes {
-  margin-bottom: 1.1rem;
-  padding: 0.9rem 1rem 0.85rem;
+  margin-bottom: 0.65rem;
+  padding: 0.85rem 0.95rem 0.8rem;
   border-radius: var(--radius-sm);
   background: var(--surface-glass-strong);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  box-shadow: none;
 }
 
 .progress-themes.hidden {
@@ -6032,15 +6043,15 @@ html.needs-welcome body {
 }
 
 .progress-daily {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.65rem;
   padding: 0;
   border-radius: var(--radius-sm);
   background: var(--surface-glass-strong);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
   font-size: 0.9rem;
   line-height: 1.45;
   color: var(--text-secondary);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
   overflow: hidden;
 }
 
