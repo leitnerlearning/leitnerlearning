@@ -4869,7 +4869,7 @@ html.needs-welcome body {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.35rem;
+  gap: 0.3rem;
 }
 
 .library-theme-card {
@@ -4877,7 +4877,7 @@ html.needs-welcome body {
   flex-direction: column;
   align-items: stretch;
   gap: 0;
-  padding: 0.42rem 0.48rem 0.38rem;
+  padding: 0.34rem 0.4rem 0.3rem;
   border: 1px solid var(--border-strong, rgba(54, 95, 207, 0.14));
   border-radius: 10px;
   background: var(--surface-glass-strong, rgba(255, 255, 255, 0.9));
@@ -4890,40 +4890,71 @@ html.needs-welcome body {
   background: color-mix(in srgb, var(--brand, #365fcf) 5%, var(--surface-glass-strong, #fff));
 }
 
+/*
+ * Tile grid:
+ *   Name                 [Study / Add]   ← upper right
+ *   20/20 (optional)
+ *   › N                  [Remove]        ← lower right (enabled only)
+ * Open word list spans full width under that.
+ */
 .library-theme-top {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  column-gap: 0.35rem;
-  row-gap: 0.06rem;
+  grid-template-rows: auto auto auto;
+  column-gap: 0.3rem;
+  row-gap: 0;
   align-items: start;
   min-width: 0;
 }
 
-.library-theme-copy {
+.library-theme-name {
   grid-column: 1;
   grid-row: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.04rem;
+  margin: 0;
+  padding-top: 0.12rem; /* optical align with Study pill */
+  font-size: 0.82rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text, #1a1f26);
+  line-height: 1.1;
+}
+
+.library-theme-status {
+  grid-column: 1;
+  grid-row: 2;
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.1;
+  color: var(--muted, #5c6570);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 .library-theme-actions {
   grid-column: 2;
-  grid-row: 1;
+  grid-row: 1 / -1; /* span all rows so Study top / Remove bottom of the tile */
   display: flex;
+  flex-direction: column;
   flex-shrink: 0;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  justify-content: flex-end;
-  align-items: flex-start;
+  align-items: flex-end;
+  justify-content: space-between;
+  align-self: stretch;
+  gap: 0.12rem;
+  min-height: 100%;
 }
 
-/* › N sits on the row under the title (left column); open list spans full tile */
+/* Not enabled: only Add — pin to upper right, don’t stretch */
+.library-theme-card:not(.is-enabled) .library-theme-actions {
+  grid-row: 1;
+  justify-content: flex-start;
+  align-self: start;
+}
+
+/* › N tight under name/status; open list spans full tile */
 .library-theme-preview {
-  grid-column: 1 / -1;
-  grid-row: 2;
+  grid-column: 1;
+  grid-row: 3;
   margin: 0;
   border: none;
   background: transparent;
@@ -4933,15 +4964,24 @@ html.needs-welcome body {
   min-width: 0;
 }
 
+.library-theme-preview[open] {
+  grid-column: 1 / -1;
+}
+
+/* No status row → preview moves up under the name */
+.library-theme-top:not(:has(.library-theme-status)) .library-theme-preview {
+  grid-row: 2;
+}
+
 .library-theme-preview-summary {
   display: inline-flex;
   align-items: center;
-  gap: 0.22rem;
+  gap: 0.18rem;
   padding: 0;
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 500;
-  line-height: 1.15;
+  line-height: 1.1;
   color: var(--muted, #5c6570);
   cursor: pointer;
   list-style: none;
@@ -5029,54 +5069,41 @@ html.needs-welcome body {
   white-space: nowrap;
 }
 
-.library-theme-name {
-  margin: 0;
-  font-size: 0.84rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: var(--text, #1a1f26);
-  line-height: 1.15;
-}
-
-.library-theme-status {
-  margin: 0;
-  font-size: 0.7rem;
-  line-height: 1.15;
-  color: var(--muted, #5c6570);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
 .library-theme-btn {
   flex-shrink: 0;
-  min-height: 1.75rem;
-  padding-inline: 0.55rem;
-  font-size: 0.74rem;
+  min-height: 1.65rem;
+  padding-inline: 0.5rem;
+  font-size: 0.72rem;
 }
 
 .library-theme-btn--study {
-  min-width: 3.75rem;
+  min-width: 3.4rem;
+}
+
+.library-theme-btn--add {
+  min-width: auto;
 }
 
 /*
  * Remove — quiet reverse action (Reset Deck family).
- * Study is the attractive primary; Remove must not compete as a second pill.
+ * Lower-right of the tile; Study stays the only attractive control.
  */
 .btn.ghost.library-theme-btn.library-theme-btn--remove,
 .library-theme-btn--remove {
   min-width: auto;
-  min-height: 1.45rem;
+  min-height: 1.2rem;
   height: auto;
-  padding: 0.2rem 0.35rem;
+  padding: 0.1rem 0.2rem;
+  margin-top: auto; /* pin to bottom of the actions column */
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   box-shadow: none;
   color: var(--text-tertiary);
-  font-size: 0.68rem;
+  font-size: 0.64rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .btn.ghost.library-theme-btn.library-theme-btn--remove:hover,
@@ -5102,15 +5129,15 @@ html.needs-welcome body {
 @media (max-width: 520px) {
   .library-themes-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.3rem;
+    gap: 0.28rem;
   }
 
   .library-theme-card {
-    padding: 0.38rem 0.42rem 0.34rem;
+    padding: 0.3rem 0.36rem 0.28rem;
   }
 
   .library-theme-name {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
   .library-theme-word {

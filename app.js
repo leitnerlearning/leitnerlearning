@@ -2620,7 +2620,7 @@ function renderThemePackCard(pack, category) {
 
   let actions = "";
   if (enabled) {
-    // Two actions only: Study (primary) and Remove (quiet reverse).
+    // Study top-right (primary) · Remove bottom-right (quiet reverse).
     // Full pack merges on Add — no “Add rest” half-step.
     actions = `<button
         type="button"
@@ -2636,26 +2636,27 @@ function renderThemePackCard(pack, category) {
   } else {
     actions = `<button
         type="button"
-        class="btn secondary library-theme-btn"
+        class="btn secondary library-theme-btn library-theme-btn--add"
         data-pack-enable="${escapeAttr(pack.id)}"
         aria-label="${escapeAttr(`Add ${pack.title} to deck`)}"
       >Add</button>`;
   }
 
-  // Grid: name | Add on row 1, › N (and open word list) on row 2 under the name.
-  // Keeps count tight to the title without wasting vertical space under the button.
+  // Compact tile:
+  //   Name              [Study / Add]
+  //   20/20 (if any)
+  //   › N               [Remove]
+  // Open word list spans the full tile under that.
   return `
     <li class="library-theme-card${enabled ? " is-enabled" : ""}" data-pack-id="${escapeAttr(pack.id)}">
       <div class="library-theme-top">
-        <div class="library-theme-copy">
-          <p class="library-theme-name">${escapeHtml(pack.title)}</p>
-          ${
-            status
-              ? `<p class="library-theme-status">${escapeHtml(status)}</p>`
-              : ""
-          }
-        </div>
+        <p class="library-theme-name">${escapeHtml(pack.title)}</p>
         <div class="library-theme-actions">${actions}</div>
+        ${
+          status
+            ? `<p class="library-theme-status">${escapeHtml(status)}</p>`
+            : ""
+        }
         ${renderThemePackWordList(pack, category)}
       </div>
     </li>`;
