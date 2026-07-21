@@ -10865,52 +10865,6 @@ function getBoxCounts() {
   return counts;
 }
 
-function renderProgressSummary() {
-  const container = document.getElementById("stats-summary");
-  const coverageEl = document.getElementById("progress-coverage");
-
-  const streakStat = getHomeStreakStat();
-  const total = deck.length;
-  const introduced = getIntroducedCount();
-  const introducedPct = total ? Math.round((introduced / total) * 100) : 0;
-  const mastered = deck.filter((card) => card.box === BOX_COUNT).length;
-  const masteredPct = total ? Math.round((mastered / total) * 100) : 0;
-  const deckLabel = total === 1 ? "1 card" : `${total.toLocaleString("en-US")} cards`;
-
-  // Deck coverage only — Review truth lives on the Review tab (default home).
-  if (coverageEl) {
-    coverageEl.classList.toggle("hidden", total === 0);
-    if (total > 0) {
-      coverageEl.innerHTML = `
-        <div class="progress-coverage-head">
-          <span class="progress-coverage-label">Deck</span>
-          <span class="progress-coverage-value">
-            ${escapeHtml(String(introducedPct))}<span class="progress-coverage-total">% · ${escapeHtml(deckLabel)}</span>
-          </span>
-        </div>
-        <div class="progress-coverage-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${introducedPct}" aria-label="${introduced} of ${total} cards introduced">
-          <div class="progress-coverage-fill" style="width: ${introducedPct}%"></div>
-        </div>`;
-    } else {
-      coverageEl.innerHTML = "";
-    }
-  }
-
-  if (!container) return;
-
-  const streakRisk = streakStat.atRisk ? " stat-card--risk" : "";
-  const streakHighlight = streakStat.highlight ? " highlight" : "";
-  container.innerHTML = `
-    <div class="stat-card${streakHighlight}${streakRisk}" aria-label="${escapeAttr(streakStat.ariaLabel)}">
-      <span class="stat-value">${escapeHtml(String(streakStat.value))}</span>
-      <span class="stat-label">${escapeHtml(streakStat.label)}</span>
-    </div>
-    <div class="stat-card" aria-label="${mastered} of ${total} cards mastered (${masteredPct}%)">
-      <span class="stat-value">${masteredPct}%</span>
-      <span class="stat-label">Mastered</span>
-    </div>`;
-}
-
 function renderProgressBoxStats() {
   const container = document.getElementById("box-stats");
   if (!container) return;
@@ -11027,7 +10981,8 @@ function renderProgressReadStats() {
 }
 
 function renderStatsSummary() {
-  renderProgressSummary();
+  // Progress page: Leitner levels (+ Reading when relevant).
+  // Streak / daily goal live on Review; no duplicate deck summary here.
   renderProgressBoxStats();
   renderProgressReadStats();
 }
@@ -11623,12 +11578,6 @@ function initEventListeners() {
 
   document.querySelectorAll("[data-tab-jump]").forEach((btn) => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tabJump));
-  });
-
-  document.getElementById("stats-summary")?.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-tab-jump]");
-    if (!btn) return;
-    switchTab(btn.dataset.tabJump);
   });
 
   document.getElementById("start-practice-btn")?.addEventListener("click", (e) => {

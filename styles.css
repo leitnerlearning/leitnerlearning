@@ -5106,10 +5106,6 @@ html.needs-welcome body {
   margin-bottom: 1rem;
 }
 
-#stats-panel .stats-summary {
-  margin-bottom: 1.1rem;
-}
-
 .library-search {
   width: 100%;
   min-height: 2.55rem;
@@ -5870,84 +5866,6 @@ html.needs-welcome body {
   text-align: left;
 }
 
-/* Progress tab — body below prefs (stats · levels · reading)
-   Two long-game bubbles (streak · mastered); daily/deck truth is above. */
-.stats-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.55rem;
-  margin: 0.35rem 0 1rem;
-  width: 100%;
-}
-
-/* Progress stack: Deck coverage leads into long-game stats */
-#progress-coverage {
-  margin-bottom: 0.65rem;
-}
-
-#progress-coverage:not(.hidden) + .stats-summary {
-  margin-top: 0.15rem;
-}
-
-/* Deck strip: flat truth */
-.progress-coverage {
-  margin-bottom: 0.55rem;
-  padding: 0.55rem 0 0.35rem;
-  border-radius: 0;
-  background: transparent;
-  border: none;
-  border-top: 1px solid var(--border);
-  box-shadow: none;
-}
-
-.progress-coverage-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.4rem;
-}
-
-.progress-coverage-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-}
-
-.progress-coverage-value {
-  font-size: 0.95rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.progress-coverage-total {
-  font-size: 0.86rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.progress-coverage-bar {
-  height: 0.3rem;
-  border-radius: 999px;
-  background: rgba(54, 95, 207, 0.08);
-  overflow: hidden;
-}
-
-.progress-coverage-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--brand), #5b9aff);
-  transition: width 0.35s var(--ease);
-}
-
-.progress-coverage.hidden {
-  display: none;
-}
-
 /* Soft section cards — desktop + mobile share the same language */
 .progress-section {
   margin-bottom: 0.95rem;
@@ -6011,113 +5929,11 @@ html.needs-welcome body {
   color: var(--brand-deep);
 }
 
-.stat-card {
-  background: var(--surface-glass-strong);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  padding: 1.25rem 0.75rem 1.1rem;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  box-sizing: border-box;
-  min-width: 0;
-}
-
-.stat-card.highlight {
-  background: linear-gradient(145deg, rgba(91, 154, 255, 0.16) 0%, rgba(54, 95, 207, 0.08) 100%);
-  border-color: var(--brand-ring);
-  box-shadow: var(--shadow-brand);
-}
-
-.stat-card--risk .stat-label {
-  color: var(--brand);
-}
-
-.stat-card--action {
-  width: 100%;
-  font-family: inherit;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition:
-    transform 0.15s var(--ease),
-    box-shadow 0.15s var(--ease),
-    background 0.15s var(--ease),
-    border-color 0.15s var(--ease);
-}
-
-.stat-card--action:hover {
-  border-color: var(--brand-ring);
-  box-shadow: var(--shadow-md);
-}
-
-.stat-card--action:active {
-  transform: scale(0.97);
-  box-shadow: var(--shadow-sm);
-}
-
-.stat-card--action.highlight:hover {
-  background: linear-gradient(145deg, rgba(91, 154, 255, 0.22) 0%, rgba(54, 95, 207, 0.12) 100%);
-}
-
-.stat-value {
-  display: block;
-  font-size: clamp(1.7rem, 5.5vw, 2.2rem);
-  font-weight: 750;
-  letter-spacing: -0.04em;
-  color: var(--ink);
-  line-height: 1.05;
-  font-variant-numeric: tabular-nums;
-}
-
-.stat-card.highlight .stat-value {
-  color: var(--brand);
-}
-
-.stat-label {
-  display: block;
-  margin-top: 0.4rem;
-  font-size: 0.68rem;
-  font-weight: 650;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  line-height: 1.25;
-  color: var(--text-tertiary);
-}
-
-/* —— Desktop Progress: glanceable stats, calm sections —— */
+/* —— Desktop Progress: calm levels · reading —— */
 @media (min-width: 721px) {
   #stats-panel.active {
     width: min(100%, 40rem);
     margin-inline: auto;
-  }
-
-  .stats-summary {
-    gap: 0.75rem;
-    margin-bottom: 1.35rem;
-  }
-
-  .stat-card {
-    padding: 1.35rem 0.9rem 1.2rem;
-    border-radius: var(--radius-sm);
-    transition:
-      border-color 0.2s var(--ease),
-      box-shadow 0.2s var(--ease),
-      transform 0.15s var(--ease);
-  }
-
-  .stat-card--action:hover {
-    transform: translateY(-1px);
-  }
-
-  .stat-value {
-    font-size: clamp(1.85rem, 2.4vw, 2.25rem);
-  }
-
-  .stat-label {
-    margin-top: 0.45rem;
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
   }
 
   .progress-prefs {
@@ -6138,19 +5954,6 @@ html.needs-welcome body {
 
   .voice-gender-option {
     padding: 0 0.75rem;
-  }
-
-  .progress-coverage {
-    margin-bottom: 0.65rem;
-    padding: 0.55rem 0 0.35rem;
-  }
-
-  .progress-coverage-head {
-    margin-bottom: 0.4rem;
-  }
-
-  .progress-coverage-value {
-    font-size: 0.98rem;
   }
 
   .progress-section {
@@ -6289,21 +6092,6 @@ html.needs-welcome body {
     min-height: 2.75rem;
   }
 
-  /* Progress: two long-game stats side by side */
-  .stats-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.65rem;
-  }
-
-  .stat-card {
-    padding: 1.2rem 0.85rem 1.05rem;
-  }
-
-  .stat-card--action,
-  .stat-card--action:hover {
-    transform: none; /* touch: no hover-lift dependency */
-  }
-
   /* Library: equal filters already; denser jump chips + full touch height */
   .filter-chip {
     min-height: 2.65rem;
@@ -6321,40 +6109,10 @@ html.needs-welcome body {
 }
 
 @media (max-width: 720px) {
-  /* —— Mobile Progress: two bubbles, section cards, touch rows —— */
+  /* —— Mobile Progress: section cards, touch rows —— */
   #stats-panel.active {
     width: 100%;
     min-width: 0;
-  }
-
-  .stats-summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
-    width: 100%;
-    min-width: 0;
-    margin-bottom: 1rem;
-  }
-
-  .stat-card {
-    min-width: 0;
-    padding: 1.05rem 0.55rem 0.95rem;
-    box-sizing: border-box;
-    border-radius: var(--radius-sm);
-  }
-
-  .stat-value {
-    font-size: clamp(1.5rem, 6.5vw, 1.9rem);
-  }
-
-  .stat-label {
-    margin-top: 0.35rem;
-    font-size: clamp(0.6rem, 2.5vw, 0.7rem);
-    letter-spacing: 0.03em;
-    line-height: 1.2;
-    max-width: 100%;
-    white-space: normal;
-    overflow-wrap: break-word;
-    text-wrap: balance;
   }
 
   .progress-section {
@@ -6380,11 +6138,6 @@ html.needs-welcome body {
     min-height: 2.35rem;
     padding: 0.35rem 0.7rem;
     font-size: 0.72rem;
-  }
-
-  .progress-coverage {
-    padding: 0.5rem 0 0.3rem;
-    margin-bottom: 0.55rem;
   }
 
   .box-stats {
@@ -8211,14 +7964,6 @@ html.needs-welcome body {
 
   .library-header {
     margin-bottom: 0.5rem;
-  }
-
-  .stats-summary {
-    gap: 0.4rem;
-  }
-
-  .stat-card {
-    padding: 0.65rem 0.4rem;
   }
 }
 
