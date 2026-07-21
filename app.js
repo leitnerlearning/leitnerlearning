@@ -6152,6 +6152,23 @@ function isPlausibleTranslationAlternative(userText, suggestedText) {
 }
 
 /**
+ * Strong translation agreement for LOOKS GOOD / anchors.
+ * Exact letters (ignoring case) or casing/apostrophe-only — NOT soft one-edit
+ * neighbors (epler ≉ eller, jenter ≉ jente). Those used to false-approve bad cards.
+ */
+function isStrongTranslationMatch(userText, suggestedText) {
+  if (!userText || !suggestedText) return false;
+  if (!isPlausibleCardText(suggestedText)) return false;
+  const u = stripFlashcardPunctuation(userText);
+  const s = stripFlashcardPunctuation(suggestedText);
+  if (!u || !s) return false;
+  if (normalizeAnswer(u) === normalizeAnswer(s)) return true;
+  if (isCasingOnlyDiff(u, s)) return true;
+  if (isApostropheGrammarDiff(u, s)) return true;
+  return false;
+}
+
+/**
  * Round-trip a translation to catch typos on the source side.
  * EN "… i feal" → NO → EN "… I feel" → only if a safe one-token spelling fix.
  * Never rewrite meaning (sword ↛ hard one).
@@ -6790,9 +6807,16 @@ function getTranslationReviewSummary(
     ? reviewGlossCompare(native, usableSuggestedNative)
     : { exact: false, soft: false, spellingOnly: false };
 
-  const foreignOk = foreignCmp.soft || foreignCmp.exact;
-  const nativeOk = nativeCmp.soft || nativeCmp.exact;
-  // Safe one-token spelling only (feal→feel). Never phrase rewrites via reverse MT.
+  // Soft = fuzzy (epler≈eller). Never use soft alone for LOOKS GOOD.
+  const foreignSoft = foreignCmp.soft || foreignCmp.exact;
+  const nativeSoft = nativeCmp.soft || nativeCmp.exact;
+  // Strong = exact / casing / apostrophe only
+  const foreignStrong =
+    usableSuggestedForeign && isStrongTranslationMatch(foreign, usableSuggestedForeign);
+  const nativeStrong =
+    usableSuggestedNative && isStrongTranslationMatch(native, usableSuggestedNative);
+
+  // Safe one-token spelling only (feal→feel). Never multi-word false friends.
   const nativeSafeSpell =
     usableSuggestedNative && isSafeSoftSpellingFix(native, usableSuggestedNative);
   const foreignSafeSpell =
@@ -6803,8 +6827,8 @@ function getTranslationReviewSummary(
   if (
     usableSuggestedForeign &&
     usableSuggestedNative &&
-    !foreignOk &&
-    !nativeOk &&
+    !foreignSoft &&
+    !nativeSoft &&
     softGlossMatch(usableSuggestedForeign, native) &&
     softGlossMatch(usableSuggestedNative, foreign)
   ) {
@@ -6850,13 +6874,13 @@ function getTranslationReviewSummary(
     }
   }
 
-  // Anchor = side that already agrees with a translation of the other.
-  // foreignOk: user Danish ≈ EN→DA(user English)  → English is a solid source
-  // nativeOk:  user English ≈ DA→EN(user Danish) → Danish is a solid source
-  const englishIsAnchor = foreignOk && !nativeGibberish;
-  const learningIsAnchor = nativeOk && !foreignGibberish;
+  // Anchor = strong agreement only (not epler≈eller soft-match)
+  // englishIsAnchor: EN→NB matches user NB exactly → English is solid source
+  // learningIsAnchor: NB→EN matches user EN exactly → Norwegian is solid source
+  const englishIsAnchor = foreignStrong && !nativeGibberish;
+  const learningIsAnchor = nativeStrong && !foreignGibberish;
 
-  // Both sides consistent (or one-way MT agreement) → looks good (+ casing only)
+  // LOOKS GOOD only when at least one direction is a strong (exact) match
   if (
     (englishIsAnchor || learningIsAnchor) &&
     !foreignGibberish &&
@@ -6900,8 +6924,7 @@ function getTranslationReviewSummary(
   }
 
   // Inconsistent pair: fix only the non-anchor side. Never rewrite both via reverse MT.
-  // English typed first (or English is anchor): may suggest learning language only.
-  // Danish/etc. typed first (or learning is anchor): may suggest English only.
+  // Soft-near wrong translations (eller/jente) fall through here and get a real alternative.
   if (!foreignGibberish && !nativeGibberish) {
     const last = addCardLastEditedSide;
     const preferEnglishSource =
@@ -6922,7 +6945,7 @@ function getTranslationReviewSummary(
       preferEnglishSource &&
       !learningIsAnchor &&
       usableSuggestedForeign &&
-      !foreignOk &&
+      !foreignStrong &&
       isPlausibleTranslationAlternative(foreign, usableSuggestedForeign)
     ) {
       return {
@@ -6939,7 +6962,7 @@ function getTranslationReviewSummary(
       preferLearningSource &&
       !englishIsAnchor &&
       usableSuggestedNative &&
-      !nativeOk &&
+      !nativeStrong &&
       isPlausibleTranslationAlternative(native, usableSuggestedNative)
     ) {
       return {
@@ -6951,16 +6974,11 @@ function getTranslationReviewSummary(
       };
     }
 
-    // Neither anchor clear: if only one side has a usable alternative, offer that
+    // Neither anchor clear: prefer offering the learning-language fix when English is solid text
     if (
       usableSuggestedForeign &&
-      !foreignOk &&
-      isPlausibleTranslationAlternative(foreign, usableSuggestedForeign) &&
-      !(
-        usableSuggestedNative &&
-        !nativeOk &&
-        isPlausibleTranslationAlternative(native, usableSuggestedNative)
-      )
+      !foreignStrong &&
+      isPlausibleTranslationAlternative(foreign, usableSuggestedForeign)
     ) {
       return {
         matches: false,
@@ -6972,13 +6990,8 @@ function getTranslationReviewSummary(
     }
     if (
       usableSuggestedNative &&
-      !nativeOk &&
-      isPlausibleTranslationAlternative(native, usableSuggestedNative) &&
-      !(
-        usableSuggestedForeign &&
-        !foreignOk &&
-        isPlausibleTranslationAlternative(foreign, usableSuggestedForeign)
-      )
+      !nativeStrong &&
+      isPlausibleTranslationAlternative(native, usableSuggestedNative)
     ) {
       return {
         matches: false,
