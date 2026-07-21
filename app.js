@@ -5369,7 +5369,8 @@ function formatPowerHomeHint({
   sessionLine = "",
 } = {}) {
   if (sessionLine) return sessionLine;
-  if (mode === "start") return "Start Review";
+  // Tab is already “Review” — caption is the verb only.
+  if (mode === "start") return "Start";
   if (mode === "continue") return "Continue";
   // complete - only speak when there's something left to do
   if (extraDue > 0) return "Extras Ready";
@@ -5584,7 +5585,7 @@ function renderEmptyState() {
       hint: formatPowerHomeHint({
         mode: continuing ? "continue" : "start",
       }),
-      ariaLabel: continuing ? "Continue" : "Start Review",
+      ariaLabel: continuing ? "Continue review" : "Start review",
     });
     return;
   }
