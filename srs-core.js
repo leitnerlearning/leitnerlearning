@@ -180,8 +180,8 @@
   }
 
   /**
-   * Build new-card IDs for early sessions: ~half hooks, ~half glue, alternating
-   * so day 1 is not twenty particles in a row.
+   * Build new-card IDs for early sessions: ~half hooks, ~half glue, interleaved
+   * so day 1 is not ten particles then ten phrases (or the reverse).
    */
   function buildHookMixedNewIds(newCards, slots) {
     if (slots <= 0 || !newCards.length) return [];
@@ -193,29 +193,43 @@
     );
 
     const hookTarget = Math.max(1, Math.round(slots * HOOK_NEW_RATIO));
+    const glueTarget = Math.max(0, slots - hookTarget);
     const ids = [];
     let hi = 0;
     let gi = 0;
     let ri = 0;
     let hooksTaken = 0;
+    let glueTaken = 0;
+    // Start with a hook when possible — first impression should be memorable.
+    let nextHook = true;
 
     while (ids.length < slots) {
-      const preferHook = hooksTaken < hookTarget;
-      if (preferHook && hi < hooks.length) {
+      const canHook = hooksTaken < hookTarget && hi < hooks.length;
+      const canGlue = glueTaken < glueTarget && gi < glue.length;
+
+      if (canHook && (nextHook || !canGlue)) {
         ids.push(hooks[hi].id);
         hi += 1;
         hooksTaken += 1;
+        nextHook = false;
+        continue;
+      }
+      if (canGlue) {
+        ids.push(glue[gi].id);
+        gi += 1;
+        glueTaken += 1;
+        nextHook = true;
+        continue;
+      }
+      // Targets filled or one side exhausted — drain remaining pools.
+      if (hi < hooks.length) {
+        ids.push(hooks[hi].id);
+        hi += 1;
         continue;
       }
       if (gi < glue.length) {
         ids.push(glue[gi].id);
         gi += 1;
-        continue;
-      }
-      if (hi < hooks.length) {
-        ids.push(hooks[hi].id);
-        hi += 1;
-        hooksTaken += 1;
         continue;
       }
       if (ri < rest.length) {
@@ -251,15 +265,14 @@
 
     // —— Early "hook mix": memorable content + necessary glue ——
     if (introducedCount < HOOK_INTRO_THRESHOLD) {
+      // Interleave already avoids particle walls; tiny local swaps keep it human.
       const hookIds = buildHookMixedNewIds(dueNew, newSlots);
-      // Light shuffle of pairs so it doesn't feel like a rigid template
       const mixed = hookIds.slice();
-      for (let i = mixed.length - 1; i > 0; i -= 1) {
-        if (randomFn() < 0.35) {
-          const j = Math.floor(randomFn() * (i + 1));
-          const tmp = mixed[i];
-          mixed[i] = mixed[j];
-          mixed[j] = tmp;
+      for (let i = 1; i < mixed.length; i += 2) {
+        if (randomFn() < 0.25) {
+          const tmp = mixed[i - 1];
+          mixed[i - 1] = mixed[i];
+          mixed[i] = tmp;
         }
       }
       return reviewIds.concat(mixed);
