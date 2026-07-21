@@ -5058,15 +5058,35 @@ html.needs-welcome body {
   min-width: 3.75rem;
 }
 
+/*
+ * Remove — quiet reverse action (Reset Deck family).
+ * Study is the attractive primary; Remove must not compete as a second pill.
+ */
+.btn.ghost.library-theme-btn.library-theme-btn--remove,
 .library-theme-btn--remove {
   min-width: auto;
-  color: var(--muted, #5c6570);
-  font-weight: 500;
+  min-height: 1.45rem;
+  height: auto;
+  padding: 0.2rem 0.35rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-tertiary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
+.btn.ghost.library-theme-btn.library-theme-btn--remove:hover,
+.btn.ghost.library-theme-btn.library-theme-btn--remove:focus-visible,
 .library-theme-btn--remove:hover,
 .library-theme-btn--remove:focus-visible {
-  color: var(--text, #1a1f26);
+  color: color-mix(in srgb, var(--error, #d70015) 88%, var(--ink));
+  background: var(--error-soft, rgba(215, 0, 21, 0.08));
+  border-color: color-mix(in srgb, var(--error, #d70015) 18%, transparent);
+  box-shadow: none;
   outline: none;
 }
 
