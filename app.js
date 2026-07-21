@@ -2688,6 +2688,7 @@ async function resetToStarter() {
   sessionReviewed = 0;
   sessionCorrect = 0;
   sessionJustCompleted = false;
+  clearThemePracticeSession();
   currentCard = null;
   setSpeakMode(false);
   startPractice();
@@ -2702,6 +2703,7 @@ function syncPracticeSessionDay() {
     sessionReviewed = 0;
     sessionCorrect = 0;
     sessionJustCompleted = false;
+    clearThemePracticeSession();
   }
   sessionDayKey = today;
 }
