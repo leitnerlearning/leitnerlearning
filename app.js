@@ -1998,6 +1998,7 @@ function loadDeck(categoryId = activeCategoryId) {
 }
 
 function saveDeck() {
+  invalidateKnownForeignFormCache();
   warnIfStorageFailed(storageSet(getDeckStorageKey(), JSON.stringify(deck)));
 }
 
@@ -4625,11 +4626,82 @@ function editDistance(a, b) {
   return prev[t.length];
 }
 
+/** Map app language codes → LanguageTool language ids. */
+function toLanguageToolCode(langCode) {
+  const raw = String(langCode || "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, "-");
+  if (!raw) return null;
+  const base = raw.split("-")[0];
+  const map = {
+    en: "en-US",
+    "en-us": "en-US",
+    "en-gb": "en-GB",
+    nb: "nb",
+    no: "nb",
+    nn: "nb",
+    sv: "sv",
+    "sv-se": "sv",
+    da: "da-DK",
+    "da-dk": "da-DK",
+    de: "de-DE",
+    "de-de": "de-DE",
+    "de-at": "de-AT",
+    "de-ch": "de-CH",
+    fr: "fr",
+    "fr-fr": "fr",
+    es: "es",
+    "es-es": "es",
+    it: "it",
+    "it-it": "it",
+  };
+  return map[raw] || map[base] || null;
+}
+
+/** Cached normalized → display forms for the active learning language (starter + library). */
+let knownForeignFormCache = { categoryId: null, forms: null };
+
+function invalidateKnownForeignFormCache() {
+  knownForeignFormCache = { categoryId: null, forms: null };
+}
+
+function getKnownForeignForms() {
+  if (knownForeignFormCache.categoryId === activeCategoryId && knownForeignFormCache.forms) {
+    return knownForeignFormCache.forms;
+  }
+  const forms = new Map();
+  const addForm = (text) => {
+    const cleaned = stripFlashcardPunctuation(text);
+    if (!cleaned) return;
+    const fullKey = normalizeAnswer(cleaned);
+    if (fullKey && !forms.has(fullKey)) forms.set(fullKey, cleaned);
+    for (const tok of reviewTokens(cleaned)) {
+      if (tok.length < 3) continue;
+      if (!forms.has(tok)) forms.set(tok, tok);
+    }
+  };
+  getStarterDeckEntries().forEach((entry) => {
+    String(entry.foreign || "")
+      .split("/")
+      .forEach((part) => addForm(part));
+  });
+  deck.forEach((card) => {
+    if (card.id === editingCardId) return;
+    String(card.foreign || "")
+      .split("/")
+      .forEach((part) => addForm(part));
+  });
+  knownForeignFormCache = { categoryId: activeCategoryId, forms };
+  return forms;
+}
+
 /**
  * Pick the best spelling replacement from LanguageTool candidates.
- * Prefers words already in the phrase (feel…feal → feel), then same first letter + near edits.
+ * Prefers: phrase context, learner deck, LanguageTool rank, near edits.
+ * First-letter match is only a weak signal (Spanish yamo→llamo breaks it).
  */
-function pickSpellingReplacement(original, replacements, fullText) {
+function pickSpellingReplacement(original, replacements, fullText, knownForms = null) {
   if (!replacements?.length) return null;
   const o = normalizeAnswer(original);
   if (!o) return null;
@@ -4639,21 +4711,30 @@ function pickSpellingReplacement(original, replacements, fullText) {
 
   replacements.forEach((raw, index) => {
     const candidate = String(raw || "").trim();
-    if (!candidate || candidate.includes(" ")) return;
+    // Allow accented single tokens; reject multi-word rewrites
+    if (!candidate || /\s/.test(candidate)) return;
     const n = normalizeAnswer(candidate);
     if (!n || n === o) return;
     const dist = editDistance(o, n);
-    if (dist > 2) return;
+    // Digraph fixes (yamo→llamo) need dist 2; allow up to 3 for accented forms
+    if (dist > 3) return;
 
     let score = 0;
-    if (contextTokens.has(n)) score += 30;
-    if (n[0] === o[0]) score += 12;
-    score += Math.max(0, 8 - dist * 3);
+    if (contextTokens.has(n)) score += 40;
+    if (knownForms && knownForms.has(n)) score += 35;
+    // LanguageTool ranks best first — trust that more than first-letter heuristics
+    score += Math.max(0, 22 - index * 2.5);
+    score += Math.max(0, 12 - dist * 3);
+    if (n[0] === o[0]) score += 4;
     if (Math.abs(n.length - o.length) <= 1) score += 2;
-    score -= index * 0.15; // LanguageTool order as weak tie-break
+    // Penalize "delete first letter only" (yamo→amo) — usually wrong
+    if (dist === 1 && o.length === n.length + 1 && o.endsWith(n)) score -= 10;
+    if (dist === 1 && n.length === o.length + 1 && n.endsWith(o)) score -= 4;
+
     if (score > bestScore) {
       bestScore = score;
-      best = candidate;
+      // Prefer deck display form (accents/casing) when we know the word
+      best = knownForms && knownForms.has(n) ? knownForms.get(n) : candidate;
     }
   });
 
@@ -4661,18 +4742,24 @@ function pickSpellingReplacement(original, replacements, fullText) {
 }
 
 /**
- * English spelling correction via LanguageTool public API (CORS open).
+ * Spell-check via LanguageTool public API (CORS open).
  * Only applies misspelling fixes — not casing/style — so flashcards stay lemma-friendly.
+ * langCode: app code (en, nb, sv, da, de, fr, es, it) or full BCP-47.
  * Returns corrected text, or null if unchanged / unavailable.
  */
-async function fetchEnglishSpellingCorrection(text) {
+async function fetchSpellingCorrection(text, langCode) {
   const trimmed = String(text || "").trim();
   if (!trimmed || trimmed.length < 2) return null;
   if (looksLikeGibberish(trimmed)) return null;
+  const ltLang = toLanguageToolCode(langCode);
+  if (!ltLang) return null;
+
+  const knownForms =
+    ltLang === "en-US" || ltLang === "en-GB" ? null : getKnownForeignForms();
 
   try {
     const body = new URLSearchParams({
-      language: "en-US",
+      language: ltLang,
       text: trimmed,
     });
     const response = await fetch("https://api.languagetool.org/v2/check", {
@@ -4707,11 +4794,13 @@ async function fetchEnglishSpellingCorrection(text) {
       const pick = pickSpellingReplacement(
         original,
         match.replacements.map((r) => r.value).filter(Boolean),
-        trimmed
+        trimmed,
+        knownForms
       );
       if (!pick) continue;
       if (normalizeAnswer(pick) === normalizeAnswer(original)) continue;
-      if (editDistance(original, pick) > 2) continue;
+      // Allow dist 3 for digraph/accent fixes (yamo→llamo, heise→heiße)
+      if (editDistance(original, pick) > 3) continue;
       result =
         result.slice(0, match.offset) + pick + result.slice(match.offset + match.length);
       changed = true;
@@ -4724,6 +4813,82 @@ async function fetchEnglishSpellingCorrection(text) {
   } catch {
     return null;
   }
+}
+
+/** English convenience wrapper (answer side). */
+async function fetchEnglishSpellingCorrection(text) {
+  return fetchSpellingCorrection(text, "en-US");
+}
+
+/**
+ * When LanguageTool misses a learning-language typo, try a near match against
+ * the starter deck + library (e.g. snaker → snakker if snakker is in the deck).
+ * Only rewrites tokens that already look like a known form within 1–2 edits.
+ */
+function correctForeignViaDeckNearMatch(text) {
+  const trimmed = stripFlashcardPunctuation(text);
+  if (!trimmed || looksLikeGibberish(trimmed)) return null;
+
+  const forms = getKnownForeignForms();
+  if (!forms.size) return null;
+
+  // Prefer full-phrase deck match first
+  const fullKey = normalizeAnswer(trimmed);
+  if (forms.has(fullKey)) {
+    const exact = forms.get(fullKey);
+    return exact !== trimmed ? exact : null;
+  }
+
+  // Single-token or multi-token: fix only clearly near tokens
+  const rawTokens = trimmed.split(/(\s+)/);
+  let changed = false;
+  const out = rawTokens.map((piece) => {
+    if (/^\s+$/.test(piece) || !piece) return piece;
+    const core = stripFlashcardPunctuation(piece);
+    if (!core || core.length < 4) return piece;
+    const key = normalizeAnswer(core);
+    if (forms.has(key)) {
+      const known = forms.get(key);
+      // Keep user casing if already the known word
+      return piece;
+    }
+
+    let bestDisplay = null;
+    let bestDist = 99;
+    for (const [formKey, display] of forms) {
+      if (formKey.includes(" ")) continue;
+      if (formKey.length < 4) continue;
+      if (formKey[0] !== key[0]) continue;
+      if (Math.abs(formKey.length - key.length) > 2) continue;
+      const dist = editDistance(key, formKey);
+      if (dist > 0 && dist <= 2 && dist < bestDist) {
+        bestDist = dist;
+        bestDisplay = display;
+      }
+    }
+    if (!bestDisplay) return piece;
+    // Require same first letter already enforced; soft token match for safety
+    if (!softTokenMatch(core, bestDisplay, 4) && bestDist > 1) return piece;
+    changed = true;
+    // Preserve surrounding punctuation on the piece if any
+    if (piece === core) return bestDisplay;
+    return piece.replace(core, bestDisplay);
+  });
+
+  if (!changed) return null;
+  const cleaned = stripFlashcardPunctuation(out.join(""));
+  if (!cleaned || normalizeAnswer(cleaned) === normalizeAnswer(trimmed)) return null;
+  return preferDisplayForm(cleaned);
+}
+
+/**
+ * Best-effort learning-language spelling correction:
+ * LanguageTool first, then deck near-match for words LT misses.
+ */
+async function fetchLearningSpellingCorrection(text, foreignCode) {
+  const fromTool = await fetchSpellingCorrection(text, foreignCode);
+  if (fromTool) return fromTool;
+  return correctForeignViaDeckNearMatch(text);
 }
 
 function syncAddCardSuggestingState() {
@@ -4843,10 +5008,33 @@ async function updateForeignSuggestions() {
   // Don't advertise a "translation" of keyboard mash — it only creates false confidence later.
   if (shouldRequestTranslation(query)) {
     const { foreignCode, nativeCode } = getCategoryLanguageCodes();
-    const translated = await fetchTranslationSuggestion(query, foreignCode, nativeCode);
+    // Spell-check the learning language first so we never pair a typo with English
+    const [translated, spellingFixedForeign] = await Promise.all([
+      fetchTranslationSuggestion(query, foreignCode, nativeCode),
+      fetchLearningSpellingCorrection(query, foreignCode),
+    ]);
     if (token !== foreignSuggestToken) return;
-    if (translated && activeSuggestField === "foreign" && input.value.trim() === query) {
-      // Round-trip: if source had a typo, prefer the corrected learning-language form
+    if (input.value.trim() !== query || activeSuggestField !== "foreign") return;
+
+    let foreignSide = query;
+    let nativeSide = translated;
+    let spellingFixed = false;
+
+    if (
+      spellingFixedForeign &&
+      normalizeAnswer(spellingFixedForeign) !== normalizeAnswer(query)
+    ) {
+      foreignSide = preferDisplayForm(spellingFixedForeign);
+      spellingFixed = true;
+      // Re-translate from the corrected form so English is also legitimate
+      const retranslated = await fetchTranslationSuggestion(
+        foreignSide,
+        foreignCode,
+        nativeCode
+      );
+      if (token !== foreignSuggestToken || input.value.trim() !== query) return;
+      if (retranslated) nativeSide = retranslated;
+    } else if (translated) {
       const correctedForeign = await correctSideViaRoundTrip(
         query,
         translated,
@@ -4855,13 +5043,16 @@ async function updateForeignSuggestions() {
         "foreign"
       );
       if (token !== foreignSuggestToken || input.value.trim() !== query) return;
-      const foreignSide = correctedForeign || query;
-      const spellingFixed = Boolean(
-        correctedForeign && normalizeAnswer(correctedForeign) !== normalizeAnswer(query)
-      );
+      if (correctedForeign && normalizeAnswer(correctedForeign) !== normalizeAnswer(query)) {
+        foreignSide = preferDisplayForm(correctedForeign);
+        spellingFixed = true;
+      }
+    }
+
+    if (nativeSide) {
       addSuggestion({
         foreign: foreignSide,
-        native: translated,
+        native: nativeSide,
         meta: spellingFixed ? "Suggested · spelling fixed" : "Suggested translation",
         selectable: true,
       });
@@ -5183,13 +5374,26 @@ function formatReviewPair(foreign, native) {
   return `“${en}” / “${nb}”`;
 }
 
+function spellingFixIsPlausible(userText, correctedText) {
+  if (!userText || !correctedText) return false;
+  if (normalizeAnswer(userText) === normalizeAnswer(correctedText)) return false;
+  const spellingCmp = reviewGlossCompare(userText, correctedText);
+  if (spellingCmp.spellingOnly || spellingCmp.soft) return true;
+  const tokenDist = editDistance(
+    reviewTokens(userText).join(" "),
+    reviewTokens(correctedText).join(" ")
+  );
+  return tokenDist <= Math.max(2, Math.floor(reviewTokens(userText).length / 2));
+}
+
 function getTranslationReviewSummary(
   foreign,
   native,
   suggestedNative,
   suggestedForeign,
   localPair = null,
-  spellingCorrectedNative = null
+  spellingCorrectedNative = null,
+  spellingCorrectedForeign = null
 ) {
   const learningName = getActiveCategory().learningLanguageName || "Norwegian";
   const foreignWords = foreign.trim().split(/\s+/).filter(Boolean).length;
@@ -5212,11 +5416,15 @@ function getTranslationReviewSummary(
       ? null
       : preferDisplayForm(suggestedForeign) || null;
 
-  // Real English spell-check (LanguageTool) — independent of MT, catches "feal"→"feel"
-  // even when the translator echoes the typo.
+  // Real spell-check (LanguageTool + deck near-match) — independent of MT.
+  // MT often echoes typos; we still must never teach a wrong form.
   const safeSpellingNative =
     !nativeGibberish && spellingCorrectedNative
       ? stripFlashcardPunctuation(spellingCorrectedNative) || null
+      : null;
+  const safeSpellingForeign =
+    !foreignGibberish && spellingCorrectedForeign
+      ? preferDisplayForm(spellingCorrectedForeign) || null
       : null;
 
   const makePairFix = (title, copy, pairForeign, pairNative) => ({
@@ -5229,27 +5437,39 @@ function getTranslationReviewSummary(
     copy,
   });
 
-  // Spell-check first — product rule: never freely accept misspelled English to learn.
-  if (safeSpellingNative && normalizeAnswer(safeSpellingNative) !== normalizeAnswer(native)) {
-    const spellingCmp = reviewGlossCompare(native, safeSpellingNative);
-    const tokenDist = editDistance(
-      reviewTokens(native).join(" "),
-      reviewTokens(safeSpellingNative).join(" ")
+  const nativeNeedsSpelling =
+    safeSpellingNative && spellingFixIsPlausible(native, safeSpellingNative);
+  const foreignNeedsSpelling =
+    safeSpellingForeign && spellingFixIsPlausible(foreign, safeSpellingForeign);
+
+  // Spell-check first — product rule: never freely accept ANY misspelled side to learn.
+  if (nativeNeedsSpelling && foreignNeedsSpelling) {
+    return makePairFix(
+      "Fix spelling?",
+      `Tap to use ${formatReviewPair(safeSpellingForeign, safeSpellingNative)} — exact correct forms only.`,
+      safeSpellingForeign,
+      safeSpellingNative
     );
-    // Same phrase with a typo fix, or a near rewrite from the spell checker
-    if (
-      spellingCmp.spellingOnly ||
-      spellingCmp.soft ||
-      tokenDist <= Math.max(2, Math.floor(reviewTokens(native).length / 2))
-    ) {
-      const pairForeign = safeSuggestedForeign || foreign;
-      return makePairFix(
-        "Fix English spelling?",
-        `Tap to use ${formatReviewPair(pairForeign, safeSpellingNative)} — learn the exact correct English.`,
-        pairForeign,
-        safeSpellingNative
-      );
-    }
+  }
+
+  if (nativeNeedsSpelling) {
+    const pairForeign = safeSpellingForeign || safeSuggestedForeign || foreign;
+    return makePairFix(
+      "Fix English spelling?",
+      `Tap to use ${formatReviewPair(pairForeign, safeSpellingNative)} — learn the exact correct English.`,
+      pairForeign,
+      safeSpellingNative
+    );
+  }
+
+  if (foreignNeedsSpelling) {
+    const pairNative = safeSpellingNative || safeSuggestedNative || native;
+    return makePairFix(
+      `Fix ${learningName} spelling?`,
+      `Tap to use ${formatReviewPair(safeSpellingForeign, pairNative)} — never learn a misspelled ${learningName} form.`,
+      safeSpellingForeign,
+      pairNative
+    );
   }
 
   // Curated local data first (can still rescue mash on one side with a real deck pair).
@@ -5521,6 +5741,7 @@ function renderAddCardReviewContext({
   related,
   localPair = null,
   spellingCorrectedNative = null,
+  spellingCorrectedForeign = null,
 }) {
   const container = document.getElementById("add-card-review-context");
   if (!container) return;
@@ -5532,7 +5753,8 @@ function renderAddCardReviewContext({
     suggestedNative,
     suggestedForeign,
     localPair,
-    spellingCorrectedNative
+    spellingCorrectedNative,
+    spellingCorrectedForeign
   );
 
   if (duplicate) {
@@ -5646,6 +5868,7 @@ function renderAddCardReviewContext({
     related,
     localPair,
     spellingCorrectedNative,
+    spellingCorrectedForeign,
     translation,
   };
 }
@@ -5742,29 +5965,55 @@ async function openAddCardReview() {
   const related = getRelatedEntriesForReview(foreign, native);
   const localPair = findLocalDeckPair(foreign, native);
   const { foreignCode, nativeCode } = getCategoryLanguageCodes();
-  // Spell-check English in parallel with MT — MT alone often echoes typos ("feal").
-  const [suggestedNative, suggestedForeignRaw, spellingCorrectedNative] = await Promise.all([
+  // Spell-check BOTH sides in parallel with MT — MT often echoes typos.
+  // Learning-language side uses LanguageTool + deck near-match.
+  const [
+    suggestedNativeRaw,
+    suggestedForeignRaw,
+    spellingCorrectedNative,
+    spellingCorrectedForeign,
+  ] = await Promise.all([
     fetchTranslationSuggestion(foreign, foreignCode, nativeCode),
     fetchTranslationSuggestion(native, nativeCode, foreignCode),
     fetchEnglishSpellingCorrection(native),
+    fetchLearningSpellingCorrection(foreign, foreignCode),
   ]);
 
   if (!addCardReviewOpen || reviewForeign.textContent.trim() !== foreign) return;
 
-  // When English was misspelled, re-translate from the corrected form so the
-  // learning-language side is a real gloss — not MT of "feal".
+  let suggestedNative = suggestedNativeRaw;
   let suggestedForeign = suggestedForeignRaw;
-  if (
+
+  // Re-translate from corrected forms so neither side ships a typo-shaped gloss.
+  const nativeFixed =
     spellingCorrectedNative &&
-    normalizeAnswer(spellingCorrectedNative) !== normalizeAnswer(native)
-  ) {
-    const fromCorrected = await fetchTranslationSuggestion(
-      spellingCorrectedNative,
-      nativeCode,
-      foreignCode
-    );
+    normalizeAnswer(spellingCorrectedNative) !== normalizeAnswer(native);
+  const foreignFixed =
+    spellingCorrectedForeign &&
+    normalizeAnswer(spellingCorrectedForeign) !== normalizeAnswer(foreign);
+
+  if (nativeFixed || foreignFixed) {
+    const tasks = [];
+    if (nativeFixed) {
+      tasks.push(
+        fetchTranslationSuggestion(spellingCorrectedNative, nativeCode, foreignCode).then(
+          (value) => {
+            if (value) suggestedForeign = value;
+          }
+        )
+      );
+    }
+    if (foreignFixed) {
+      tasks.push(
+        fetchTranslationSuggestion(spellingCorrectedForeign, foreignCode, nativeCode).then(
+          (value) => {
+            if (value) suggestedNative = value;
+          }
+        )
+      );
+    }
+    await Promise.all(tasks);
     if (!addCardReviewOpen || reviewForeign.textContent.trim() !== foreign) return;
-    if (fromCorrected) suggestedForeign = fromCorrected;
   }
 
   renderAddCardReviewContext({
@@ -5776,6 +6025,7 @@ async function openAddCardReview() {
     related,
     localPair,
     spellingCorrectedNative,
+    spellingCorrectedForeign,
   });
 }
 
