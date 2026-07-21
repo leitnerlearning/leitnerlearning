@@ -451,11 +451,12 @@ function getProgressPracticeStat() {
   const setWord = cap === 1 ? "card" : "cards";
 
   // In-progress daily goal (normal mode only — extra mode can make remaining = full backlog)
+  // Home chips: one-word labels (LEFT · STREAK). Aria keeps the full sentence.
   if (!daily.extraMode && remainingToday > 0) {
     return {
       value: remainingToday,
-      label: "Left today",
-      line: `${remainingToday} left today`,
+      label: "Left",
+      line: `${remainingToday} left`,
       ariaLabel: `${remainingToday} card${remainingToday === 1 ? "" : "s"} left in today's review`,
       highlight: true,
       actionable: true,
@@ -466,8 +467,8 @@ function getProgressPracticeStat() {
   if (!daily.extraMode && daily.goalMet && daily.goal > 0) {
     return {
       value: `${daily.reviewed}/${daily.goal}`,
-      label: "Done today",
-      line: `Today's goal done · ${daily.reviewed}/${daily.goal}`,
+      label: "Done",
+      line: `Done · ${daily.reviewed}/${daily.goal}`,
       ariaLabel: `Completed today's goal: ${daily.reviewed} of ${daily.goal} cards reviewed`,
       highlight: false,
       actionable: false,
@@ -475,12 +476,12 @@ function getProgressPracticeStat() {
     };
   }
 
-  // Extra practice after goal — never "976 left today"
+  // Extra practice after goal — never a huge unpaid count on the home chip
   if (daily.extraMode && outstanding > 0) {
     return {
       value: "→",
-      label: "Extras",
-      line: "Extras open · keep going if you like",
+      label: "Extra",
+      line: "Extra open",
       ariaLabel: `Extra practice available. Work in small sets of about ${cap} ${setWord}.`,
       highlight: true,
       actionable: true,
@@ -489,13 +490,11 @@ function getProgressPracticeStat() {
   }
 
   // Goal complete, extras available (not yet in extra mode)
-  // Note: "Done today" branch above already handles goalMet+goal>0 for Progress;
-  // this catches edge cases (goal 0) without huge counts.
   if (outstanding > 0 && daily.goalMet) {
     return {
       value: "→",
-      label: "Extras ready",
-      line: "Goal done · extras ready if you want",
+      label: "Extra",
+      line: "Extra ready",
       ariaLabel: `Today's goal is done. Extra practice is available in small sets.`,
       highlight: false,
       actionable: true,
@@ -508,8 +507,8 @@ function getProgressPracticeStat() {
     if (reviewDue > cap) {
       return {
         value: String(cap),
-        label: "Today's set",
-        line: `Reviews ready · up to ${cap} today`,
+        label: "Set",
+        line: `Set · up to ${cap}`,
         ariaLabel: `Reviews are ready. Today's set is up to ${cap} ${setWord}.`,
         highlight: true,
         actionable: true,
@@ -518,8 +517,8 @@ function getProgressPracticeStat() {
     }
     return {
       value: reviewDue,
-      label: "Due for review",
-      line: `${reviewDue} due for review`,
+      label: "Due",
+      line: `${reviewDue} due`,
       ariaLabel: `Review ${reviewDue} card${reviewDue === 1 ? "" : "s"} due for review`,
       highlight: true,
       actionable: true,
@@ -533,10 +532,8 @@ function getProgressPracticeStat() {
     if (allNew || outstanding > cap) {
       return {
         value: String(cap),
-        label: "Today's set",
-        line: allNew
-          ? `Ready when you are · up to ${cap} today`
-          : `Cards waiting · up to ${cap} today`,
+        label: "Set",
+        line: allNew ? `Set · up to ${cap}` : `Set · up to ${cap}`,
         ariaLabel: allNew
           ? `New cards are waiting. Today's set is up to ${cap} ${setWord}.`
           : `Cards are waiting. Today's set is up to ${cap} ${setWord}.`,
@@ -547,8 +544,8 @@ function getProgressPracticeStat() {
     }
     return {
       value: outstanding,
-      label: "Due now",
-      line: `${outstanding} ready now`,
+      label: "Due",
+      line: `${outstanding} due`,
       ariaLabel: `${outstanding} card${outstanding === 1 ? "" : "s"} ready now`,
       highlight: true,
       actionable: true,
@@ -570,8 +567,8 @@ function getProgressPracticeStat() {
 
   return {
     value: "✓",
-    label: "Caught up",
-    line: "All caught up for now",
+    label: "Clear",
+    line: "All clear for now",
     ariaLabel: "All caught up for now",
     highlight: false,
     actionable: false,
@@ -647,7 +644,8 @@ function getHomeStreakStat(categoryId = activeCategoryId) {
 
   return {
     value: streak,
-    label: atRisk ? "Keep streak" : "Day streak",
+    // One-word chip label; risk is color/aria, not a longer string.
+    label: "Streak",
     ariaLabel: atRisk
       ? `${streak}-day streak. Finish today's review to keep it.`
       : streak > 0
