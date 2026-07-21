@@ -2664,7 +2664,12 @@ function bindLibraryThemePreviewAccordion(scope) {
         if (other !== details) other.open = false;
       });
       const list = details.querySelector(".library-theme-word-list");
-      if (list) list.scrollTop = 0;
+      if (!list) return;
+      // After layout — otherwise the first row can still look clipped mid-open.
+      list.scrollTop = 0;
+      requestAnimationFrame(() => {
+        list.scrollTop = 0;
+      });
     });
   });
 }

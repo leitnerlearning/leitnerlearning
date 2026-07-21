@@ -4828,8 +4828,8 @@ html.needs-welcome body {
 /* Library → Packs filter only: compact optional grid (not a second product) */
 .library-themes {
   margin: 0 0 0.55rem;
-  /* Room so fixed TOP doesn’t sit on the last Add / Study pills */
-  padding: 0 0 3.75rem;
+  /* Clear the fixed TOP float so Work’s Add stays tappable */
+  padding: 0 0 5.5rem;
   border: none;
   background: transparent;
 }
@@ -5021,18 +5021,21 @@ html.needs-welcome body {
   list-style: none;
   width: 100%;
   max-width: 100%;
-  margin: 0.12rem 0 0;
-  padding: 0.12rem 0.35rem;
+  margin: 0.2rem 0 0;
+  padding: 0.28rem 0.4rem 0.22rem;
   border-radius: 8px;
   background: color-mix(in srgb, var(--brand, #365fcf) 4%, var(--surface, #fff));
   border: 1px solid rgba(54, 95, 207, 0.08);
   /* Short peek — scroll inside for the rest; one open pack at a time */
-  max-height: 8.25rem;
+  max-height: 8.5rem;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   text-align: left;
   box-sizing: border-box;
+  /* Avoid first row looking “cut off” under the › N summary */
+  scroll-padding-top: 0.15rem;
 }
 
 .library-theme-word {
