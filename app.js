@@ -127,6 +127,8 @@ let addCardReviewApplyHistory = [];
 let addCardFormBaseline = { foreign: "", native: "" };
 /** Which add-card side the user last typed in: "native" | "foreign" | null */
 let addCardLastEditedSide = null;
+/** Ignore document “outside click” hides until this time (ms since epoch). */
+let addCardSuppressOutsideHideUntil = 0;
 let foreignSuggestTimer = null;
 let nativeSuggestTimer = null;
 let activeSuggestField = null;
@@ -7412,7 +7414,8 @@ function resetAddCardForm() {
  * Load a card into the editor.
  * options.seedNative / seedForeign: keep the pair the user just refined (e.g. from
  * Check card) instead of overwriting with the old wrong deck text.
- * options.autoReview: run Check card after load so translation fixes stay available.
+ * options.autoReview: default true when both sides filled — always run Check card
+ * so wrong deck text still gets translation / spelling suggestions.
  */
 function startEditCard(cardId, options = {}) {
   const card = deck.find((entry) => entry.id === cardId);
@@ -7420,6 +7423,8 @@ function startEditCard(cardId, options = {}) {
 
   suppressAddCardSuggestions = false;
   editingCardId = card.id;
+  // The Edit click bubbles to document and would clear suggestions — ignore briefly.
+  addCardSuppressOutsideHideUntil = Date.now() + 600;
 
   const seedForeign = stripFlashcardPunctuation(
     options.seedForeign != null && String(options.seedForeign).trim()
@@ -7447,15 +7452,20 @@ function startEditCard(cardId, options = {}) {
   document.getElementById("add-card-form")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   syncAddCardResetButton();
 
-  // After the click that opened edit settles, restore suggestions (document click
-  // used to clear them immediately). Prefer English field for MT of learning side.
+  // Prefer treating English as source when editing (offer better Norwegian).
+  addCardLastEditedSide = "native";
+
+  // After the Edit click finishes bubbling, run the same Check process as Add.
   window.setTimeout(() => {
+    suppressAddCardSuggestions = false;
     nativeInput?.focus({ preventScroll: true });
     refreshAddCardSuggestions("native");
-    if (options.autoReview && seedForeign && seedNative) {
+    // Default: always Check when both sides present (list Edit + Edit existing).
+    const autoReview = options.autoReview !== false;
+    if (autoReview && seedForeign && seedNative) {
       openAddCardReview();
     }
-  }, 0);
+  }, 40);
 }
 
 function saveLibraryCard(foreign, native) {
@@ -7737,7 +7747,11 @@ function bindCardListListeners(list) {
   if (!list) return;
 
   list.querySelectorAll(".edit-card-btn").forEach((btn) => {
-    btn.addEventListener("click", () => startEditCard(btn.dataset.id));
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      startEditCard(btn.dataset.id, { autoReview: true });
+    });
   });
 
   list.querySelectorAll(".delete-card-btn").forEach((btn) => {
@@ -9767,10 +9781,13 @@ function initEventListeners() {
 
   document.addEventListener("click", (e) => {
     // Don't kill suggestions when using review/edit chrome in the same form
+    if (Date.now() < addCardSuppressOutsideHideUntil) return;
     if (e.target.closest(".add-card-field")) return;
     if (e.target.closest("#add-card-edit-existing")) return;
     if (e.target.closest("#add-card-review")) return;
     if (e.target.closest(".library-suggest")) return;
+    if (e.target.closest(".edit-card-btn")) return;
+    if (e.target.closest(".card-item")) return;
     hideLibrarySuggestions();
   });
 
