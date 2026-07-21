@@ -3438,12 +3438,13 @@ function updateReadLanguageIndicator(category = getActiveCategory()) {
 /**
  * Full-screen language ceremony: logo bloom + optional flag + language name.
  * @param {string} label
- * @param {{ flag?: string, durationMs?: number, welcome?: boolean }} [options]
+ * @param {{ flag?: string, durationMs?: number, welcome?: boolean, portal?: boolean }} [options]
  */
 function showTrackSwitchOverlay(label, options = {}) {
   const el = document.getElementById("track-switch-overlay");
   const nameEl = document.getElementById("track-switch-overlay-name");
   const flagEl = document.getElementById("track-switch-overlay-flag");
+  const logoEl = el?.querySelector(".track-switch-logo");
   if (!el || !nameEl) return;
   const text = String(label || "").trim();
   if (!text) return;
@@ -3456,6 +3457,7 @@ function showTrackSwitchOverlay(label, options = {}) {
   const flag = String(options.flag || "").trim();
   const durationMs = Number(options.durationMs) > 0 ? Number(options.durationMs) : 1250;
   const isWelcome = Boolean(options.welcome);
+  const isPortal = Boolean(options.portal);
 
   nameEl.textContent = text;
   if (flagEl) {
@@ -3469,6 +3471,10 @@ function showTrackSwitchOverlay(label, options = {}) {
   }
 
   el.classList.toggle("is-welcome-enter", isWelcome);
+  el.classList.toggle("is-welcome-portal", isPortal);
+  el.classList.remove("is-phase-language");
+  logoEl?.classList.remove("is-beat-flash");
+  flagEl?.classList.remove("is-beat-flash");
   el.classList.remove("hidden");
   el.setAttribute("aria-hidden", "false");
   // Restart CSS animations cleanly
@@ -3479,14 +3485,29 @@ function showTrackSwitchOverlay(label, options = {}) {
   trackSwitchOverlayTimer = window.setTimeout(() => {
     trackSwitchOverlayTimer = null;
     el.classList.remove("is-visible");
+    // Stop portal music with the veil
+    if (isPortal) {
+      clearWelcomePortalTimers();
+      const portalAudio = document.getElementById("welcome-portal-audio");
+      if (portalAudio) {
+        try {
+          portalAudio.pause();
+          portalAudio.currentTime = 0;
+        } catch {
+          /* ignore */
+        }
+      }
+    }
     window.setTimeout(() => {
       if (!el.classList.contains("is-visible")) {
         el.classList.add("hidden");
-        el.classList.remove("is-welcome-enter");
+        el.classList.remove("is-welcome-enter", "is-welcome-portal", "is-phase-language");
         el.setAttribute("aria-hidden", "true");
+        logoEl?.classList.remove("is-beat-flash");
         if (flagEl) {
           flagEl.hidden = true;
           flagEl.textContent = "";
+          flagEl.classList.remove("is-beat-flash");
         }
       }
     }, 320);
@@ -3515,19 +3536,116 @@ function announceTrackSwitch(category = getActiveCategory()) {
   playTrackSwitchSound();
 }
 
+/** Beat map + audio for first-entry portal (from Music for Leitner clip). */
+let welcomePortalBeatmap = null;
+let welcomePortalTimers = [];
+
+function clearWelcomePortalTimers() {
+  welcomePortalTimers.forEach((id) => window.clearTimeout(id));
+  welcomePortalTimers = [];
+}
+
+function pulseWelcomeBeat(el) {
+  if (!el || el.hidden) return;
+  el.classList.remove("is-beat-flash");
+  void el.offsetWidth;
+  el.classList.add("is-beat-flash");
+}
+
+async function loadWelcomePortalBeatmap() {
+  if (welcomePortalBeatmap) return welcomePortalBeatmap;
+  try {
+    const res = await fetch("assets/welcome-portal-beats.json", { cache: "force-cache" });
+    if (!res.ok) return null;
+    welcomePortalBeatmap = await res.json();
+    return welcomePortalBeatmap;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * First-run: user chooses a language and steps through the door.
- * Same visual language as track switch, with more presence (flag, longer hold, warmer sound).
- * Still calm — Jobs polish, not a carnival.
+ * Music portal: logo flashes on the beat, then language flag takes over on the rapid bass,
+ * then the app is revealed. Falls back to short synth if audio/beatmap unavailable.
  */
 function announceWelcomeEnter(category = getActiveCategory()) {
   const label = category?.label || category?.learningLanguageName || "Language";
   const flag = category?.flag || "";
   unlockAudioPipeline();
   void ensureUiAudioReady();
-  showTrackSwitchOverlay(label, { flag, durationMs: 1680, welcome: true });
-  triggerWelcomeEnterHaptic();
-  playWelcomeEnterSound();
+  clearWelcomePortalTimers();
+
+  // Reduced motion or missing assets → short calm ceremony
+  if (prefersReducedMotion()) {
+    showTrackSwitchOverlay(label, { flag, durationMs: 1400, welcome: true });
+    triggerWelcomeEnterHaptic();
+    playWelcomeEnterSound();
+    return;
+  }
+
+  void (async () => {
+    const map = await loadWelcomePortalBeatmap();
+    const audio = document.getElementById("welcome-portal-audio");
+    const overlay = document.getElementById("track-switch-overlay");
+    const logoEl = overlay?.querySelector(".track-switch-logo");
+    const flagEl = document.getElementById("track-switch-overlay-flag");
+
+    if (!map || !audio) {
+      showTrackSwitchOverlay(label, { flag, durationMs: 1680, welcome: true });
+      triggerWelcomeEnterHaptic();
+      playWelcomeEnterSound();
+      return;
+    }
+
+    const durationMs = Math.round((Number(map.duration) || 8) * 1000 + 450);
+    showTrackSwitchOverlay(label, {
+      flag,
+      durationMs,
+      welcome: true,
+      portal: true,
+    });
+    triggerWelcomeEnterHaptic();
+
+    // Phase 1 — logo on the main beat
+    (map.phase1Beats || []).forEach((t) => {
+      welcomePortalTimers.push(
+        window.setTimeout(() => {
+          pulseWelcomeBeat(logoEl);
+          if (typeof navigator.vibrate === "function") navigator.vibrate(11);
+        }, Math.round(t * 1000))
+      );
+    });
+
+    // Switch to language flag when the beat densifies
+    const switchAt = Number(map.switchAt) || 4;
+    welcomePortalTimers.push(
+      window.setTimeout(() => {
+        overlay?.classList.add("is-phase-language");
+        if (typeof navigator.vibrate === "function") navigator.vibrate([14, 30, 18]);
+      }, Math.round(switchAt * 1000))
+    );
+
+    // Phase 2 — flag punches with the rapid bass
+    (map.phase2Beats || []).forEach((t) => {
+      welcomePortalTimers.push(
+        window.setTimeout(() => {
+          pulseWelcomeBeat(flagEl);
+          if (typeof navigator.vibrate === "function") navigator.vibrate(9);
+        }, Math.round(t * 1000))
+      );
+    });
+
+    try {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = Math.min(1, Math.max(0, Number(map.volume) || 0.72));
+      await audio.play();
+    } catch {
+      // Autoplay blocked or decode fail — keep visuals + soft synth underlay
+      playWelcomeEnterSound();
+    }
+  })();
 }
 
 function speakPromptForCard(card) {

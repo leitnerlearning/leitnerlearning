@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=221" />
+    <link rel="stylesheet" href="styles.css?v=222" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -93,6 +93,13 @@
         <p class="track-switch-overlay-name" id="track-switch-overlay-name"></p>
       </div>
     </div>
+    <!-- First-entry portal music (silent preload; play starts on language pick) -->
+    <audio
+      id="welcome-portal-audio"
+      src="assets/welcome-portal.m4a"
+      preload="auto"
+      playsinline
+    ></audio>
 
     <div class="app">
       <header class="header">

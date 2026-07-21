@@ -1,0 +1,31 @@
+{
+  "src": "assets/welcome-portal.m4a",
+  "duration": 8.0,
+  "switchAt": 3.93,
+  "phase1Beats": [
+    0.29,
+    0.9,
+    1.51,
+    2.11,
+    2.72,
+    3.34
+  ],
+  "phase2Beats": [
+    3.93,
+    4.24,
+    4.55,
+    4.85,
+    5.15,
+    5.46,
+    5.77,
+    6.065,
+    6.36,
+    6.67,
+    6.98,
+    7.275,
+    7.57,
+    7.875
+  ],
+  "volume": 0.72,
+  "notes": "Clip from Music for Leitner .MP4 ~7.0s-15.0s (after JP intro, before EN rap)."
+}
