@@ -267,9 +267,10 @@ main {
   left: 0;
   right: auto;
   transform: none;
-  min-width: 12.5rem;
-  max-width: min(18rem, 92vw);
-  max-height: min(16.5rem, 52dvh);
+  min-width: 14.5rem;
+  max-width: min(20rem, 94vw);
+  /* Tall enough to show most of the 10 languages without a secretive peephole */
+  max-height: min(28rem, 72dvh);
   z-index: 40;
 }
 
@@ -1132,7 +1133,7 @@ main {
   display: flex;
   flex-direction: column;
   min-width: min(18rem, 88vw);
-  max-height: min(16.5rem, 52dvh);
+  max-height: min(28rem, 72dvh);
   overflow: hidden;
   background: var(--surface-glass-strong);
   backdrop-filter: blur(22px);
@@ -1140,7 +1141,7 @@ main {
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
-  padding: 0.35rem;
+  padding: 0.4rem;
   z-index: 20;
 }
 
@@ -3402,23 +3403,23 @@ html.needs-welcome body {
   left: 0;
   right: 0;
   transform: none;
-  max-height: min(20rem, 48dvh);
+  max-height: min(28rem, 70dvh);
 }
 
 /*
- * When scrollable: cap height so ~4 full rows + a half-peek of the 5th
- * (flags/names visibly cut off = no text needed).
+ * Prefer showing the full list. Only scroll on very short viewports.
+ * (Older caps forced a ~3-row peephole with up/down arrows.)
  */
 .category-picker--welcome .category-picker-menu.is-scrollable {
-  max-height: min(12.75rem, 42dvh);
+  max-height: min(28rem, 70dvh);
 }
 
 .category-picker--progress .category-picker-menu.is-scrollable {
-  max-height: min(11.5rem, 44dvh);
+  max-height: min(28rem, 72dvh);
 }
 
 .category-picker-menu.is-scrollable {
-  max-height: min(12rem, 44dvh);
+  max-height: min(28rem, 72dvh);
 }
 
 /* Primary door: large “Choose a Language” control */
