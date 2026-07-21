@@ -6,3 +6,5 @@ dev-key.pem
 
 # macOS
 .DS_Store
+# Local-only preview (not production)
+portal-preview.html
