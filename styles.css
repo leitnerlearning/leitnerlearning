@@ -873,25 +873,20 @@ main,
     inset 0 -1.4rem 1.1rem -0.85rem color-mix(in srgb, var(--brand-deep) 14%, transparent);
 }
 
-/* Larger tappable double-chevron pill (no label) */
+/* Quiet double-arrow only (no pill/bubble) — fade + half-peek do the real work */
 .category-picker-scroll-cue {
   flex: 0 0 auto;
   display: none;
   align-items: center;
   justify-content: center;
-  margin: 0.15rem 0.15rem 0.05rem;
-  padding: 0.42rem 0.65rem;
-  min-height: 1.85rem;
-  border: 1px solid color-mix(in srgb, var(--brand) 22%, var(--border));
-  border-radius: 999px;
-  color: var(--brand-deep);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--brand) 10%, var(--surface-glass-strong)),
-    color-mix(in srgb, var(--brand) 16%, var(--surface-glass-strong))
-  );
-  box-shadow: 0 1px 0 color-mix(in srgb, #fff 55%, transparent) inset,
-    0 4px 12px color-mix(in srgb, var(--brand) 12%, transparent);
+  margin: 0;
+  padding: 0.28rem 0.35rem 0.2rem;
+  min-height: 0;
+  border: none;
+  border-radius: 0;
+  color: color-mix(in srgb, var(--brand-deep) 78%, var(--muted));
+  background: transparent;
+  box-shadow: none;
   pointer-events: auto;
   cursor: pointer;
   user-select: none;
@@ -902,17 +897,13 @@ main,
 }
 
 .category-picker-scroll-cue:hover {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--brand) 14%, var(--surface-glass-strong)),
-    color-mix(in srgb, var(--brand) 22%, var(--surface-glass-strong))
-  );
-  border-color: color-mix(in srgb, var(--brand) 34%, var(--border));
+  color: var(--brand-deep);
 }
 
 .category-picker-scroll-cue:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--brand) 50%, transparent);
-  outline-offset: 2px;
+  outline: 2px solid color-mix(in srgb, var(--brand) 45%, transparent);
+  outline-offset: 1px;
+  border-radius: var(--radius-xs);
 }
 
 .category-picker-scroll-cue-icon {
@@ -920,38 +911,35 @@ main,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.1rem;
+  gap: 0.08rem;
   line-height: 0;
+  animation: category-scroll-cue-bounce 1.3s var(--ease, ease) infinite;
 }
 
 .category-picker-scroll-cue-chevron {
   display: block;
-  width: 0.62rem;
-  height: 0.62rem;
-  margin-top: -0.28rem;
-  border-right: 2.2px solid currentColor;
-  border-bottom: 2.2px solid currentColor;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: -0.24rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
   transform: rotate(45deg);
-  opacity: 0.88;
+  opacity: 0.9;
 }
 
 .category-picker-scroll-cue-chevron:first-child {
   margin-top: 0;
-  opacity: 0.5;
-}
-
-.category-picker-scroll-cue-icon {
-  animation: category-scroll-cue-bounce 1.25s var(--ease, ease) infinite;
+  opacity: 0.45;
 }
 
 @keyframes category-scroll-cue-bounce {
   0%,
   100% {
     transform: translateY(0);
-    opacity: 0.85;
+    opacity: 0.8;
   }
   50% {
-    transform: translateY(3px);
+    transform: translateY(2px);
     opacity: 1;
   }
 }
