@@ -2681,6 +2681,15 @@ function renderThematicPacks() {
   const body = document.getElementById("library-themes-body");
   if (!root) return;
 
+  // Constraint as kindness: pack management only on Themes filter.
+  // All / Phrases / Yours stay about the deck — no chevron catalog under search.
+  if (libraryFilter !== "themes") {
+    root.classList.add("hidden");
+    root.classList.remove("has-enabled");
+    if (body) body.innerHTML = "";
+    return;
+  }
+
   const category = getActiveCategory();
   const packs = getThematicPackList().filter(
     (pack) => getPackEntriesForCategory(pack, category.id).length > 0
@@ -2693,38 +2702,30 @@ function renderThematicPacks() {
   }
 
   const enabledPacks = packs.filter((pack) => isPackEnabled(pack.id));
-  const morePacks = packs.filter((pack) => !isPackEnabled(pack.id));
+  const availablePacks = packs.filter((pack) => !isPackEnabled(pack.id));
 
+  // Open lists only — no <details> mystery. Enabled first (Study / Remove), then Add.
   const enabledList = enabledPacks.length
     ? `<ul class="library-themes-list" role="list">${enabledPacks
         .map((pack) => renderThemePackCard(pack, category))
         .join("")}</ul>`
     : "";
 
-  // Unadded catalog always starts collapsed — day-one Library stays about the deck.
-  // Summary: “Themes” when nothing is on; “More” once some packs are already added.
-  const moreBlock = morePacks.length
-    ? `<details class="library-themes-more">
-        <summary class="library-themes-more-summary">
-          <span>${enabledPacks.length ? "More" : "Themes"}</span>
-          <span class="library-themes-more-count">${morePacks.length}</span>
-        </summary>
-        <ul class="library-themes-list library-themes-list--more" role="list">${morePacks
-          .map((pack) => renderThemePackCard(pack, category))
-          .join("")}</ul>
-      </details>`
+  const availableList = availablePacks.length
+    ? `<ul class="library-themes-list${enabledPacks.length ? " library-themes-list--available" : ""}" role="list">${availablePacks
+        .map((pack) => renderThemePackCard(pack, category))
+        .join("")}</ul>`
     : "";
 
   root.classList.remove("hidden");
   root.classList.toggle("has-enabled", enabledPacks.length > 0);
   // Only rewrite the body — never wipe #library-themes-live (feedback / a11y).
   if (body) {
-    body.innerHTML = `${enabledList}${moreBlock}`;
+    body.innerHTML = `${enabledList}${availableList}`;
   } else {
-    // Fallback if older HTML cache lacks the body host.
     const live = document.getElementById("library-themes-live");
     const liveHtml = live ? live.outerHTML : "";
-    root.innerHTML = `${liveHtml}${enabledList}${moreBlock}`;
+    root.innerHTML = `${liveHtml}${enabledList}${availableList}`;
   }
 }
 

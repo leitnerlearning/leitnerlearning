@@ -4792,15 +4792,12 @@ html.needs-welcome body {
   gap: 0.5rem;
 }
 
-/* Library → Themes (opt-in packs) — quiet catalog under search, not a dashboard */
+/* Library → Themes filter only: open pack list (no chevron, no catalog on All) */
 .library-themes {
   margin: 0 0 0.85rem;
-  padding: 0.55rem 0;
+  padding: 0.15rem 0 0.35rem;
   border: none;
-  border-radius: 0;
   background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
 
 .library-themes.hidden {
@@ -4846,71 +4843,14 @@ html.needs-welcome body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0;
 }
 
-.library-themes-none {
-  margin: 0 0 0.65rem;
-  font-size: 0.88rem;
-  line-height: 1.4;
-  color: var(--muted, #5c6570);
-}
-
-.library-themes-more {
-  margin-top: 0.45rem;
-  border-radius: 0;
-  border: none;
-  background: transparent;
-  overflow: visible;
-}
-
-.library-themes-more-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.45rem 0.15rem;
-  cursor: pointer;
-  list-style: none;
-  font-size: 0.88rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--muted, #5c6570);
-  user-select: none;
-}
-
-.library-themes-more-summary::-webkit-details-marker {
-  display: none;
-}
-
-.library-themes-more-summary::after {
-  content: "";
-  width: 0.45rem;
-  height: 0.45rem;
-  border-right: 2px solid var(--muted, #5c6570);
-  border-bottom: 2px solid var(--muted, #5c6570);
-  transform: rotate(45deg);
-  transition: transform 0.15s ease;
-  flex-shrink: 0;
-  margin-top: -0.15rem;
-}
-
-.library-themes-more[open] > .library-themes-more-summary::after {
-  transform: rotate(225deg);
-  margin-top: 0.15rem;
-}
-
-.library-themes-more-count {
-  margin-left: auto;
-  margin-right: 0.55rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--muted, #5c6570);
-  font-variant-numeric: tabular-nums;
-}
-
-.library-themes-list--more {
-  padding: 0.15rem 0 0.25rem;
+/* Space between “in deck” packs and the Add list */
+.library-themes-list--available {
+  margin-top: 0.65rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--border, rgba(26, 31, 38, 0.08));
 }
 
 .library-theme-card {
@@ -4918,20 +4858,14 @@ html.needs-welcome body {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem 1rem;
-  padding: 0.55rem 0.15rem;
-  border-radius: 0;
-  background: transparent;
+  padding: 0.65rem 0.1rem;
   border: none;
   border-bottom: 1px solid rgba(26, 31, 38, 0.06);
+  background: transparent;
 }
 
 .library-theme-card:last-child {
   border-bottom: none;
-}
-
-.library-theme-card.is-enabled {
-  border-color: rgba(26, 31, 38, 0.06);
-  background: transparent;
 }
 
 .library-theme-copy {
@@ -4940,7 +4874,7 @@ html.needs-welcome body {
 }
 
 .library-theme-name {
-  margin: 0 0 0.12rem;
+  margin: 0;
   font-size: 0.98rem;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -4948,15 +4882,11 @@ html.needs-welcome body {
 }
 
 .library-theme-status {
-  margin: 0.15rem 0 0;
+  margin: 0.12rem 0 0;
   font-size: 0.8rem;
   color: var(--muted, #5c6570);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-}
-
-.library-themes.has-enabled .library-themes-list:first-child {
-  margin-bottom: 0.15rem;
 }
 
 .library-theme-actions {
