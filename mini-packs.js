@@ -1,78 +1,73 @@
 /**
  * Thematic mini-packs — opt-in extras (ranks 1001+).
- * Content law: 10 themes × 20 forms = 200 next-tier essentials per language,
- * ideally disjoint from the 1,000 core deck. Norwegian curated first (2026-07);
- * other languages hold parallel concepts until each language's own frequency pass.
- * Enable from Library → Themes. Merge by unique foreign form.
+ * Content law: 10 themes × 20 forms = 200 next-tier essentials per language.
+ * One-word theme titles, mutually clear (no Travel/Transit confusables).
+ * Norwegian curated first; other languages hold parallel concepts until their pass.
  */
 (function (root) {
   const packs = {
     airport: {
       id: "airport",
-      title: "Travel",
-      blurb: "Airport, bags, gates, and delays.",
+      title: "Airport",
+      blurb: "Flights, bags, and the gate.",
+      byCategory: {},
+    },
+    transit: {
+      id: "transit",
+      title: "Transport",
+      blurb: "Local rides, stops, and passes.",
       byCategory: {},
     },
     cafe: {
       id: "cafe",
       title: "Dining",
-      blurb: "Ordering food, the bill, and allergies.",
+      blurb: "Ordering food and the bill.",
       byCategory: {},
     },
     campus: {
       id: "campus",
       title: "Studies",
-      blurb: "Classes, exams, and student life.",
+      blurb: "Class, homework, and exams.",
       byCategory: {},
     },
     doctor: {
       id: "doctor",
       title: "Health",
-      blurb: "Symptoms, pharmacy, and care.",
+      blurb: "Symptoms, care, and the pharmacy.",
       byCategory: {},
     },
     housing: {
       id: "housing",
-      title: "Housing",
-      blurb: "Rent, rooms, and repairs.",
+      title: "Home",
+      blurb: "Rent, rooms, and neighbors.",
       byCategory: {},
     },
     work: {
       id: "work",
       title: "Work",
-      blurb: "Meetings, pay, and the office.",
+      blurb: "Office, pay, and meetings.",
       byCategory: {},
     },
     shopping: {
       id: "shopping",
-      title: "Shopping",
+      title: "Shop",
       blurb: "Stores, sizes, and checkout.",
       byCategory: {},
     },
     social: {
       id: "social",
-      title: "Social",
-      blurb: "Intros, plans, and hanging out.",
-      byCategory: {},
-    },
-    transit: {
-      id: "transit",
-      title: "Transit",
-      blurb: "Local buses, stops, and tickets.",
+      title: "People",
+      blurb: "Plans, parties, and friends.",
       byCategory: {},
     },
     money: {
       id: "money",
-      title: "Money",
-      blurb: "ATM, pay, and the bank.",
+      title: "Bank",
+      blurb: "Cards, cash, and accounts.",
       byCategory: {},
     },
   };
 
-  /**
-   * forms: [foreign, native] or [foreign, native, exampleL2, exampleEn]
-   * Phrases without explicit examples use themselves as context on a miss.
-   */
   function buildEntries(forms) {
     return forms.map((row) => {
       const foreign = String(row[0] || "").trim();
@@ -113,11 +108,11 @@
     ['terminal', 'terminal'],
     ['håndbagasje', 'hand luggage'],
     ['passkontroll', 'passport control'],
-    ['hotell', 'hotel'],
-    ['taxi', 'taxi'],
     ['tur-retur', 'round-trip'],
     ['enveisbillett', 'one-way ticket'],
     ['å lande', 'to land'],
+    ['plattform', 'platform'],
+    ['spor', 'track / platform number'],
   ]);
 
   packs.airport.byCategory["sv"] = buildEntries([
@@ -136,11 +131,11 @@
     ['terminal', 'terminal'],
     ['handbagage', 'hand luggage'],
     ['passkontroll', 'passport control'],
-    ['hotell', 'hotel'],
-    ['taxi', 'taxi'],
     ['tur och retur', 'round-trip'],
     ['enkel biljett', 'one-way ticket'],
     ['att landa', 'to land'],
+    ['plattform', 'platform'],
+    ['spår', 'track / platform number'],
   ]);
 
   packs.airport.byCategory["da"] = buildEntries([
@@ -159,11 +154,11 @@
     ['terminal', 'terminal'],
     ['håndbagage', 'hand luggage'],
     ['paskontrol', 'passport control'],
-    ['hotel', 'hotel'],
-    ['taxa', 'taxi'],
     ['tur-retur', 'round-trip'],
     ['enkeltbillet', 'one-way ticket'],
     ['at lande', 'to land'],
+    ['perron', 'platform'],
+    ['spor', 'track / platform number'],
   ]);
 
   packs.airport.byCategory["de"] = buildEntries([
@@ -182,11 +177,11 @@
     ['Terminal', 'terminal'],
     ['Handgepäck', 'hand luggage'],
     ['Passkontrolle', 'passport control'],
-    ['Hotel', 'hotel'],
-    ['Taxi', 'taxi'],
     ['Hin und zurück', 'round-trip'],
     ['Einfache Fahrt', 'one-way ticket'],
     ['landen', 'to land'],
+    ['Bahnsteig', 'platform'],
+    ['Gleis', 'track / platform number'],
   ]);
 
   packs.airport.byCategory["fr"] = buildEntries([
@@ -205,11 +200,11 @@
     ['terminal', 'terminal'],
     ['bagage à main', 'hand luggage'],
     ['contrôle des passeports', 'passport control'],
-    ['hôtel', 'hotel'],
-    ['taxi', 'taxi'],
     ['aller-retour', 'round-trip'],
     ['aller simple', 'one-way ticket'],
     ['atterrir', 'to land'],
+    ['quai', 'platform'],
+    ['voie', 'track / platform number'],
   ]);
 
   packs.airport.byCategory["es"] = buildEntries([
@@ -228,11 +223,11 @@
     ['terminal', 'terminal'],
     ['equipaje de mano', 'hand luggage'],
     ['control de pasaportes', 'passport control'],
-    ['hotel', 'hotel'],
-    ['taxi', 'taxi'],
     ['ida y vuelta', 'round-trip'],
     ['solo ida', 'one-way ticket'],
     ['aterrizar', 'to land'],
+    ['andén', 'platform'],
+    ['vía', 'track / platform number'],
   ]);
 
   packs.airport.byCategory["it"] = buildEntries([
@@ -251,11 +246,11 @@
     ['terminal', 'terminal'],
     ['bagaglio a mano', 'hand luggage'],
     ['controllo passaporti', 'passport control'],
-    ['hotel', 'hotel'],
-    ['taxi', 'taxi'],
     ['andata e ritorno', 'round-trip'],
     ['sola andata', 'one-way ticket'],
     ['atterrare', 'to land'],
+    ['binario', 'platform'],
+    ['binario', 'track / platform number'],
   ]);
 
   packs.airport.byCategory["nl"] = buildEntries([
@@ -274,11 +269,11 @@
     ['terminal', 'terminal'],
     ['handbagage', 'hand luggage'],
     ['paspoortcontrole', 'passport control'],
-    ['hotel', 'hotel'],
-    ['taxi', 'taxi'],
     ['retour', 'round-trip'],
     ['enkele reis', 'one-way ticket'],
     ['landen', 'to land'],
+    ['perron', 'platform'],
+    ['spoor', 'track / platform number'],
   ]);
 
   packs.airport.byCategory["pt"] = buildEntries([
@@ -297,11 +292,11 @@
     ['terminal', 'terminal'],
     ['bagagem de mão', 'hand luggage'],
     ['controle de passaporte', 'passport control'],
-    ['hotel', 'hotel'],
-    ['táxi', 'taxi'],
     ['ida e volta', 'round-trip'],
     ['só ida', 'one-way ticket'],
     ['pousar', 'to land'],
+    ['plataforma', 'platform'],
+    ['plataforma', 'track / platform number'],
   ]);
 
   packs.airport.byCategory["pl"] = buildEntries([
@@ -320,11 +315,241 @@
     ['terminal', 'terminal'],
     ['bagaż podręczny', 'hand luggage'],
     ['kontrola paszportowa', 'passport control'],
-    ['hotel', 'hotel'],
-    ['taksówka', 'taxi'],
     ['w obie strony', 'round-trip'],
     ['w jedną stronę', 'one-way ticket'],
     ['lądować', 'to land'],
+    ['peron', 'platform'],
+    ['tor', 'track / platform number'],
+  ]);
+
+  packs.transit.byCategory["nb-bokmal"] = buildEntries([
+    ['trikk', 'tram'],
+    ['t-bane', 'subway / metro'],
+    ['holdeplass', 'stop (bus/tram)'],
+    ['rutetabell', 'timetable'],
+    ['månedskort', 'monthly pass'],
+    ['bysykkel', 'city bike'],
+    ['fortau', 'sidewalk'],
+    ['veikryss', 'intersection'],
+    ['rundkjøring', 'roundabout'],
+    ['forsinkelse', 'delay'],
+    ['endestasjon', 'last stop / terminus'],
+    ['billettautomat', 'ticket machine'],
+    ['sone', 'zone (fare)'],
+    ['rushtid', 'rush hour'],
+    ['gågate', 'pedestrian street'],
+    ['overgang', 'transfer / crossing'],
+    ['byttebuss', 'connecting bus'],
+    ['rute', 'route'],
+    ['taxi', 'taxi'],
+    ['parkeringsplass', 'parking space'],
+  ]);
+
+  packs.transit.byCategory["sv"] = buildEntries([
+    ['spårvagn', 'tram'],
+    ['tunnelbana', 'subway / metro'],
+    ['hållplats', 'stop (bus/tram)'],
+    ['tidtabell', 'timetable'],
+    ['månadskort', 'monthly pass'],
+    ['stadscykel', 'city bike'],
+    ['trottoar', 'sidewalk'],
+    ['korsning', 'intersection'],
+    ['rondell', 'roundabout'],
+    ['försening', 'delay'],
+    ['ändhållplats', 'last stop / terminus'],
+    ['biljettautomat', 'ticket machine'],
+    ['zon', 'zone (fare)'],
+    ['rusningstid', 'rush hour'],
+    ['gågata', 'pedestrian street'],
+    ['byte', 'transfer / crossing'],
+    ['bytesbuss', 'connecting bus'],
+    ['linje', 'route'],
+    ['taxi', 'taxi'],
+    ['parkeringsplats', 'parking space'],
+  ]);
+
+  packs.transit.byCategory["da"] = buildEntries([
+    ['sporvogn', 'tram'],
+    ['metro', 'subway / metro'],
+    ['stoppested', 'stop (bus/tram)'],
+    ['køreplan', 'timetable'],
+    ['månedskort', 'monthly pass'],
+    ['bycykel', 'city bike'],
+    ['fortov', 'sidewalk'],
+    ['vejkryds', 'intersection'],
+    ['rundkørsel', 'roundabout'],
+    ['forsinkelse', 'delay'],
+    ['endestation', 'last stop / terminus'],
+    ['billetautomat', 'ticket machine'],
+    ['zone', 'zone (fare)'],
+    ['myldretid', 'rush hour'],
+    ['gågade', 'pedestrian street'],
+    ['skift', 'transfer / crossing'],
+    ['skiftebus', 'connecting bus'],
+    ['rute', 'route'],
+    ['taxa', 'taxi'],
+    ['parkeringsplads', 'parking space'],
+  ]);
+
+  packs.transit.byCategory["de"] = buildEntries([
+    ['Straßenbahn', 'tram'],
+    ['U-Bahn', 'subway / metro'],
+    ['Haltestelle', 'stop (bus/tram)'],
+    ['Fahrplan', 'timetable'],
+    ['Monatskarte', 'monthly pass'],
+    ['Stadtrad', 'city bike'],
+    ['Bürgersteig', 'sidewalk'],
+    ['Kreuzung', 'intersection'],
+    ['Kreisverkehr', 'roundabout'],
+    ['Verspätung', 'delay'],
+    ['Endhaltestelle', 'last stop / terminus'],
+    ['Fahrkartenautomat', 'ticket machine'],
+    ['Zone', 'zone (fare)'],
+    ['Rushhour', 'rush hour'],
+    ['Fußgängerzone', 'pedestrian street'],
+    ['Umstieg', 'transfer / crossing'],
+    ['Anschlussbus', 'connecting bus'],
+    ['Linie', 'route'],
+    ['Taxi', 'taxi'],
+    ['Parkplatz', 'parking space'],
+  ]);
+
+  packs.transit.byCategory["fr"] = buildEntries([
+    ['tram', 'tram'],
+    ['métro', 'subway / metro'],
+    ['arrêt', 'stop (bus/tram)'],
+    ['horaire', 'timetable'],
+    ['abonnement mensuel', 'monthly pass'],
+    ['vélo en libre-service', 'city bike'],
+    ['trottoir', 'sidewalk'],
+    ['carrefour', 'intersection'],
+    ['rond-point', 'roundabout'],
+    ['retard', 'delay'],
+    ['terminus', 'last stop / terminus'],
+    ['distributeur de billets', 'ticket machine'],
+    ['zone', 'zone (fare)'],
+    ['heure de pointe', 'rush hour'],
+    ['rue piétonne', 'pedestrian street'],
+    ['correspondance', 'transfer / crossing'],
+    ['bus de correspondance', 'connecting bus'],
+    ['ligne', 'route'],
+    ['taxi', 'taxi'],
+    ['place de parking', 'parking space'],
+  ]);
+
+  packs.transit.byCategory["es"] = buildEntries([
+    ['tranvía', 'tram'],
+    ['metro', 'subway / metro'],
+    ['parada', 'stop (bus/tram)'],
+    ['horario', 'timetable'],
+    ['abono mensual', 'monthly pass'],
+    ['bici pública', 'city bike'],
+    ['acera', 'sidewalk'],
+    ['cruce', 'intersection'],
+    ['rotonda', 'roundabout'],
+    ['retraso', 'delay'],
+    ['terminal', 'last stop / terminus'],
+    ['máquina de billetes', 'ticket machine'],
+    ['zona', 'zone (fare)'],
+    ['hora punta', 'rush hour'],
+    ['calle peatonal', 'pedestrian street'],
+    ['transbordo', 'transfer / crossing'],
+    ['bus de enlace', 'connecting bus'],
+    ['línea', 'route'],
+    ['taxi', 'taxi'],
+    ['plaza de aparcamiento', 'parking space'],
+  ]);
+
+  packs.transit.byCategory["it"] = buildEntries([
+    ['tram', 'tram'],
+    ['metropolitana', 'subway / metro'],
+    ['fermata', 'stop (bus/tram)'],
+    ['orario', 'timetable'],
+    ['abbonamento mensile', 'monthly pass'],
+    ['bici condivisa', 'city bike'],
+    ['marciapiede', 'sidewalk'],
+    ['incrocio', 'intersection'],
+    ['rotonda', 'roundabout'],
+    ['ritardo', 'delay'],
+    ['capolinea', 'last stop / terminus'],
+    ['biglietteria automatica', 'ticket machine'],
+    ['zona', 'zone (fare)'],
+    ['ora di punta', 'rush hour'],
+    ['isola pedonale', 'pedestrian street'],
+    ['coincidenza', 'transfer / crossing'],
+    ['bus di coincidenza', 'connecting bus'],
+    ['linea', 'route'],
+    ['taxi', 'taxi'],
+    ['posto auto', 'parking space'],
+  ]);
+
+  packs.transit.byCategory["nl"] = buildEntries([
+    ['tram', 'tram'],
+    ['metro', 'subway / metro'],
+    ['halte', 'stop (bus/tram)'],
+    ['dienstregeling', 'timetable'],
+    ['maandkaart', 'monthly pass'],
+    ['deelfiets', 'city bike'],
+    ['stoep', 'sidewalk'],
+    ['kruispunt', 'intersection'],
+    ['rotonde', 'roundabout'],
+    ['vertraging', 'delay'],
+    ['eindhalte', 'last stop / terminus'],
+    ['kaartautomaat', 'ticket machine'],
+    ['zone', 'zone (fare)'],
+    ['spitsuur', 'rush hour'],
+    ['voetgangersgebied', 'pedestrian street'],
+    ['overstap', 'transfer / crossing'],
+    ['aansluitende bus', 'connecting bus'],
+    ['lijn', 'route'],
+    ['taxi', 'taxi'],
+    ['parkeerplaats', 'parking space'],
+  ]);
+
+  packs.transit.byCategory["pt"] = buildEntries([
+    ['bonde', 'tram'],
+    ['metrô', 'subway / metro'],
+    ['ponto', 'stop (bus/tram)'],
+    ['horário', 'timetable'],
+    ['passe mensal', 'monthly pass'],
+    ['bike compartilhada', 'city bike'],
+    ['calçada', 'sidewalk'],
+    ['cruzamento', 'intersection'],
+    ['rotatória', 'roundabout'],
+    ['atraso', 'delay'],
+    ['ponto final', 'last stop / terminus'],
+    ['máquina de bilhetes', 'ticket machine'],
+    ['zona', 'zone (fare)'],
+    ['hora do rush', 'rush hour'],
+    ['rua de pedestres', 'pedestrian street'],
+    ['baldeação', 'transfer / crossing'],
+    ['ônibus de conexão', 'connecting bus'],
+    ['linha', 'route'],
+    ['táxi', 'taxi'],
+    ['vaga de estacionamento', 'parking space'],
+  ]);
+
+  packs.transit.byCategory["pl"] = buildEntries([
+    ['tramwaj', 'tram'],
+    ['metro', 'subway / metro'],
+    ['przystanek', 'stop (bus/tram)'],
+    ['rozkład jazdy', 'timetable'],
+    ['bilet miesięczny', 'monthly pass'],
+    ['rower miejski', 'city bike'],
+    ['chodnik', 'sidewalk'],
+    ['skrzyżowanie', 'intersection'],
+    ['rondo', 'roundabout'],
+    ['opóźnienie', 'delay'],
+    ['pętla', 'last stop / terminus'],
+    ['biletomat', 'ticket machine'],
+    ['strefa', 'zone (fare)'],
+    ['godziny szczytu', 'rush hour'],
+    ['ulica piesza', 'pedestrian street'],
+    ['przesiadka', 'transfer / crossing'],
+    ['autobus przesiadkowy', 'connecting bus'],
+    ['linia', 'route'],
+    ['taksówka', 'taxi'],
+    ['miejsce parkingowe', 'parking space'],
   ]);
 
   packs.cafe.byCategory["nb-bokmal"] = buildEntries([
@@ -1033,11 +1258,11 @@
     ['fellesutgifter', 'shared costs / utilities'],
     ['kollektiv', 'shared apartment'],
     ['vaskerom', 'laundry room'],
-    ['parkeringsplass', 'parking space'],
     ['postkasse', 'mailbox'],
     ['nabolag', 'neighborhood'],
     ['sikkerhetsdepositum', 'security deposit'],
     ['lekkasje', 'leak'],
+    ['hotell', 'hotel'],
   ]);
 
   packs.housing.byCategory["sv"] = buildEntries([
@@ -1056,11 +1281,11 @@
     ['avgifter', 'shared costs / utilities'],
     ['korridor', 'shared apartment'],
     ['tvättstuga', 'laundry room'],
-    ['parkeringsplats', 'parking space'],
     ['brevlåda', 'mailbox'],
     ['grannskap', 'neighborhood'],
     ['deposition', 'security deposit'],
     ['läcka', 'leak'],
+    ['hotell', 'hotel'],
   ]);
 
   packs.housing.byCategory["da"] = buildEntries([
@@ -1079,11 +1304,11 @@
     ['fællesudgifter', 'shared costs / utilities'],
     ['bofællesskab', 'shared apartment'],
     ['vaskerum', 'laundry room'],
-    ['parkeringsplads', 'parking space'],
     ['postkasse', 'mailbox'],
     ['kvarter', 'neighborhood'],
     ['depositum', 'security deposit'],
     ['lækage', 'leak'],
+    ['hotel', 'hotel'],
   ]);
 
   packs.housing.byCategory["de"] = buildEntries([
@@ -1102,11 +1327,11 @@
     ['Nebenkosten', 'shared costs / utilities'],
     ['WG', 'shared apartment'],
     ['Waschküche', 'laundry room'],
-    ['Parkplatz', 'parking space'],
     ['Briefkasten', 'mailbox'],
     ['Nachbarschaft', 'neighborhood'],
     ['Kaution', 'security deposit'],
     ['Leck', 'leak'],
+    ['Hotel', 'hotel'],
   ]);
 
   packs.housing.byCategory["fr"] = buildEntries([
@@ -1125,11 +1350,11 @@
     ['charges', 'shared costs / utilities'],
     ['colocation', 'shared apartment'],
     ['buanderie', 'laundry room'],
-    ['place de parking', 'parking space'],
     ['boîte aux lettres', 'mailbox'],
     ['quartier', 'neighborhood'],
     ['caution', 'security deposit'],
     ['fuite', 'leak'],
+    ['hôtel', 'hotel'],
   ]);
 
   packs.housing.byCategory["es"] = buildEntries([
@@ -1148,11 +1373,11 @@
     ['gastos comunes', 'shared costs / utilities'],
     ['piso compartido', 'shared apartment'],
     ['lavadero', 'laundry room'],
-    ['plaza de aparcamiento', 'parking space'],
     ['buzón', 'mailbox'],
     ['barrio', 'neighborhood'],
     ['fianza', 'security deposit'],
     ['fuga', 'leak'],
+    ['hotel', 'hotel'],
   ]);
 
   packs.housing.byCategory["it"] = buildEntries([
@@ -1171,11 +1396,11 @@
     ['spese condominiali', 'shared costs / utilities'],
     ['casa condivisa', 'shared apartment'],
     ['lavanderia', 'laundry room'],
-    ['posto auto', 'parking space'],
     ['cassetta della posta', 'mailbox'],
     ['quartiere', 'neighborhood'],
     ['deposito cauzionale', 'security deposit'],
     ['perdita', 'leak'],
+    ['hotel', 'hotel'],
   ]);
 
   packs.housing.byCategory["nl"] = buildEntries([
@@ -1194,11 +1419,11 @@
     ['servicekosten', 'shared costs / utilities'],
     ['studentenhuis', 'shared apartment'],
     ['wasruimte', 'laundry room'],
-    ['parkeerplaats', 'parking space'],
     ['brievenbus', 'mailbox'],
     ['buurt', 'neighborhood'],
     ['borg', 'security deposit'],
     ['lekkage', 'leak'],
+    ['hotel', 'hotel'],
   ]);
 
   packs.housing.byCategory["pt"] = buildEntries([
@@ -1217,11 +1442,11 @@
     ['condomínio', 'shared costs / utilities'],
     ['república', 'shared apartment'],
     ['lavanderia', 'laundry room'],
-    ['vaga de estacionamento', 'parking space'],
     ['caixa de correio', 'mailbox'],
     ['bairro', 'neighborhood'],
     ['caução', 'security deposit'],
     ['vazamento', 'leak'],
+    ['hotel', 'hotel'],
   ]);
 
   packs.housing.byCategory["pl"] = buildEntries([
@@ -1240,11 +1465,11 @@
     ['opłaty', 'shared costs / utilities'],
     ['wspólne mieszkanie', 'shared apartment'],
     ['pralnia', 'laundry room'],
-    ['miejsce parkingowe', 'parking space'],
     ['skrzynka na listy', 'mailbox'],
     ['okolica', 'neighborhood'],
     ['kaucja', 'security deposit'],
     ['przeciek', 'leak'],
+    ['hotel', 'hotel'],
   ]);
 
   packs.work.byCategory["nb-bokmal"] = buildEntries([
@@ -1935,236 +2160,6 @@
     ['utrzymywać kontakt', 'to stay in touch'],
     ['kumpel', 'buddy / mate'],
     ['randka', 'date (meetup)'],
-  ]);
-
-  packs.transit.byCategory["nb-bokmal"] = buildEntries([
-    ['trikk', 'tram'],
-    ['t-bane', 'subway / metro'],
-    ['holdeplass', 'stop (bus/tram)'],
-    ['rutetabell', 'timetable'],
-    ['månedskort', 'monthly pass'],
-    ['bysykkel', 'city bike'],
-    ['fortau', 'sidewalk'],
-    ['veikryss', 'intersection'],
-    ['rundkjøring', 'roundabout'],
-    ['forsinkelse', 'delay'],
-    ['endestasjon', 'last stop / terminus'],
-    ['plattform', 'platform'],
-    ['billettautomat', 'ticket machine'],
-    ['sone', 'zone (fare)'],
-    ['rushtid', 'rush hour'],
-    ['gågate', 'pedestrian street'],
-    ['overgang', 'transfer / crossing'],
-    ['spor', 'track / platform number'],
-    ['byttebuss', 'connecting bus'],
-    ['rute', 'route'],
-  ]);
-
-  packs.transit.byCategory["sv"] = buildEntries([
-    ['spårvagn', 'tram'],
-    ['tunnelbana', 'subway / metro'],
-    ['hållplats', 'stop (bus/tram)'],
-    ['tidtabell', 'timetable'],
-    ['månadskort', 'monthly pass'],
-    ['stadscykel', 'city bike'],
-    ['trottoar', 'sidewalk'],
-    ['korsning', 'intersection'],
-    ['rondell', 'roundabout'],
-    ['försening', 'delay'],
-    ['ändhållplats', 'last stop / terminus'],
-    ['plattform', 'platform'],
-    ['biljettautomat', 'ticket machine'],
-    ['zon', 'zone (fare)'],
-    ['rusningstid', 'rush hour'],
-    ['gågata', 'pedestrian street'],
-    ['byte', 'transfer / crossing'],
-    ['spår', 'track / platform number'],
-    ['bytesbuss', 'connecting bus'],
-    ['linje', 'route'],
-  ]);
-
-  packs.transit.byCategory["da"] = buildEntries([
-    ['sporvogn', 'tram'],
-    ['metro', 'subway / metro'],
-    ['stoppested', 'stop (bus/tram)'],
-    ['køreplan', 'timetable'],
-    ['månedskort', 'monthly pass'],
-    ['bycykel', 'city bike'],
-    ['fortov', 'sidewalk'],
-    ['vejkryds', 'intersection'],
-    ['rundkørsel', 'roundabout'],
-    ['forsinkelse', 'delay'],
-    ['endestation', 'last stop / terminus'],
-    ['perron', 'platform'],
-    ['billetautomat', 'ticket machine'],
-    ['zone', 'zone (fare)'],
-    ['myldretid', 'rush hour'],
-    ['gågade', 'pedestrian street'],
-    ['skift', 'transfer / crossing'],
-    ['spor', 'track / platform number'],
-    ['skiftebus', 'connecting bus'],
-    ['rute', 'route'],
-  ]);
-
-  packs.transit.byCategory["de"] = buildEntries([
-    ['Straßenbahn', 'tram'],
-    ['U-Bahn', 'subway / metro'],
-    ['Haltestelle', 'stop (bus/tram)'],
-    ['Fahrplan', 'timetable'],
-    ['Monatskarte', 'monthly pass'],
-    ['Stadtrad', 'city bike'],
-    ['Bürgersteig', 'sidewalk'],
-    ['Kreuzung', 'intersection'],
-    ['Kreisverkehr', 'roundabout'],
-    ['Verspätung', 'delay'],
-    ['Endhaltestelle', 'last stop / terminus'],
-    ['Bahnsteig', 'platform'],
-    ['Fahrkartenautomat', 'ticket machine'],
-    ['Zone', 'zone (fare)'],
-    ['Rushhour', 'rush hour'],
-    ['Fußgängerzone', 'pedestrian street'],
-    ['Umstieg', 'transfer / crossing'],
-    ['Gleis', 'track / platform number'],
-    ['Anschlussbus', 'connecting bus'],
-    ['Linie', 'route'],
-  ]);
-
-  packs.transit.byCategory["fr"] = buildEntries([
-    ['tram', 'tram'],
-    ['métro', 'subway / metro'],
-    ['arrêt', 'stop (bus/tram)'],
-    ['horaire', 'timetable'],
-    ['abonnement mensuel', 'monthly pass'],
-    ['vélo en libre-service', 'city bike'],
-    ['trottoir', 'sidewalk'],
-    ['carrefour', 'intersection'],
-    ['rond-point', 'roundabout'],
-    ['retard', 'delay'],
-    ['terminus', 'last stop / terminus'],
-    ['quai', 'platform'],
-    ['distributeur de billets', 'ticket machine'],
-    ['zone', 'zone (fare)'],
-    ['heure de pointe', 'rush hour'],
-    ['rue piétonne', 'pedestrian street'],
-    ['correspondance', 'transfer / crossing'],
-    ['voie', 'track / platform number'],
-    ['bus de correspondance', 'connecting bus'],
-    ['ligne', 'route'],
-  ]);
-
-  packs.transit.byCategory["es"] = buildEntries([
-    ['tranvía', 'tram'],
-    ['metro', 'subway / metro'],
-    ['parada', 'stop (bus/tram)'],
-    ['horario', 'timetable'],
-    ['abono mensual', 'monthly pass'],
-    ['bici pública', 'city bike'],
-    ['acera', 'sidewalk'],
-    ['cruce', 'intersection'],
-    ['rotonda', 'roundabout'],
-    ['retraso', 'delay'],
-    ['terminal', 'last stop / terminus'],
-    ['andén', 'platform'],
-    ['máquina de billetes', 'ticket machine'],
-    ['zona', 'zone (fare)'],
-    ['hora punta', 'rush hour'],
-    ['calle peatonal', 'pedestrian street'],
-    ['transbordo', 'transfer / crossing'],
-    ['vía', 'track / platform number'],
-    ['bus de enlace', 'connecting bus'],
-    ['línea', 'route'],
-  ]);
-
-  packs.transit.byCategory["it"] = buildEntries([
-    ['tram', 'tram'],
-    ['metropolitana', 'subway / metro'],
-    ['fermata', 'stop (bus/tram)'],
-    ['orario', 'timetable'],
-    ['abbonamento mensile', 'monthly pass'],
-    ['bici condivisa', 'city bike'],
-    ['marciapiede', 'sidewalk'],
-    ['incrocio', 'intersection'],
-    ['rotonda', 'roundabout'],
-    ['ritardo', 'delay'],
-    ['capolinea', 'last stop / terminus'],
-    ['binario', 'platform'],
-    ['biglietteria automatica', 'ticket machine'],
-    ['zona', 'zone (fare)'],
-    ['ora di punta', 'rush hour'],
-    ['isola pedonale', 'pedestrian street'],
-    ['coincidenza', 'transfer / crossing'],
-    ['binario', 'track / platform number'],
-    ['bus di coincidenza', 'connecting bus'],
-    ['linea', 'route'],
-  ]);
-
-  packs.transit.byCategory["nl"] = buildEntries([
-    ['tram', 'tram'],
-    ['metro', 'subway / metro'],
-    ['halte', 'stop (bus/tram)'],
-    ['dienstregeling', 'timetable'],
-    ['maandkaart', 'monthly pass'],
-    ['deelfiets', 'city bike'],
-    ['stoep', 'sidewalk'],
-    ['kruispunt', 'intersection'],
-    ['rotonde', 'roundabout'],
-    ['vertraging', 'delay'],
-    ['eindhalte', 'last stop / terminus'],
-    ['perron', 'platform'],
-    ['kaartautomaat', 'ticket machine'],
-    ['zone', 'zone (fare)'],
-    ['spitsuur', 'rush hour'],
-    ['voetgangersgebied', 'pedestrian street'],
-    ['overstap', 'transfer / crossing'],
-    ['spoor', 'track / platform number'],
-    ['aansluitende bus', 'connecting bus'],
-    ['lijn', 'route'],
-  ]);
-
-  packs.transit.byCategory["pt"] = buildEntries([
-    ['bonde', 'tram'],
-    ['metrô', 'subway / metro'],
-    ['ponto', 'stop (bus/tram)'],
-    ['horário', 'timetable'],
-    ['passe mensal', 'monthly pass'],
-    ['bike compartilhada', 'city bike'],
-    ['calçada', 'sidewalk'],
-    ['cruzamento', 'intersection'],
-    ['rotatória', 'roundabout'],
-    ['atraso', 'delay'],
-    ['ponto final', 'last stop / terminus'],
-    ['plataforma', 'platform'],
-    ['máquina de bilhetes', 'ticket machine'],
-    ['zona', 'zone (fare)'],
-    ['hora do rush', 'rush hour'],
-    ['rua de pedestres', 'pedestrian street'],
-    ['baldeação', 'transfer / crossing'],
-    ['plataforma', 'track / platform number'],
-    ['ônibus de conexão', 'connecting bus'],
-    ['linha', 'route'],
-  ]);
-
-  packs.transit.byCategory["pl"] = buildEntries([
-    ['tramwaj', 'tram'],
-    ['metro', 'subway / metro'],
-    ['przystanek', 'stop (bus/tram)'],
-    ['rozkład jazdy', 'timetable'],
-    ['bilet miesięczny', 'monthly pass'],
-    ['rower miejski', 'city bike'],
-    ['chodnik', 'sidewalk'],
-    ['skrzyżowanie', 'intersection'],
-    ['rondo', 'roundabout'],
-    ['opóźnienie', 'delay'],
-    ['pętla', 'last stop / terminus'],
-    ['peron', 'platform'],
-    ['biletomat', 'ticket machine'],
-    ['strefa', 'zone (fare)'],
-    ['godziny szczytu', 'rush hour'],
-    ['ulica piesza', 'pedestrian street'],
-    ['przesiadka', 'transfer / crossing'],
-    ['tor', 'track / platform number'],
-    ['autobus przesiadkowy', 'connecting bus'],
-    ['linia', 'route'],
   ]);
 
   packs.money.byCategory["nb-bokmal"] = buildEntries([
