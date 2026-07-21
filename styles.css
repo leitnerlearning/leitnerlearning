@@ -5316,19 +5316,19 @@ html.needs-welcome body {
     font-size: 0.98rem;
   }
 
-  /* All / Phrases / Yours — equal segments, not a loose chip pile */
+  /* All / Phrases / Themes / Yours — one equal row */
   .filter-chips {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.45rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.4rem;
     width: 100%;
   }
 
   .filter-chip {
     width: 100%;
     min-height: 2.35rem;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.84rem;
+    padding: 0.4rem 0.3rem;
+    font-size: 0.82rem;
   }
 
   .library-jump {
@@ -5517,8 +5517,8 @@ html.needs-welcome body {
 
   .filter-chips {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.4rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
     max-width: 100%;
     margin: 0;
     overflow: visible;
@@ -5527,8 +5527,8 @@ html.needs-welcome body {
   .filter-chip {
     width: 100%;
     min-height: 48px;
-    padding-inline: 0.4rem;
-    font-size: 0.82rem;
+    padding-inline: 0.25rem;
+    font-size: 0.8rem;
     font-weight: 600;
     touch-action: manipulation;
   }
