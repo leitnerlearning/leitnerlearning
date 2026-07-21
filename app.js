@@ -125,6 +125,8 @@ let addCardReviewState = null;
 let addCardReviewApplyHistory = [];
 /** Snapshot of the form before the user started typing / picking suggestions. */
 let addCardFormBaseline = { foreign: "", native: "" };
+/** Which add-card side the user last typed in: "native" | "foreign" | null */
+let addCardLastEditedSide = null;
 let foreignSuggestTimer = null;
 let nativeSuggestTimer = null;
 let activeSuggestField = null;
@@ -5536,6 +5538,8 @@ async function updateForeignSuggestions() {
     renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
       document.getElementById("new-foreign").value = item.foreign;
       document.getElementById("new-native").value = item.native;
+      // User started from the learning-language field
+      addCardLastEditedSide = "foreign";
       syncAddCardResetButton();
       document.getElementById("new-foreign")?.focus();
     });
@@ -5625,6 +5629,29 @@ function isSafeSoftSpellingFix(userText, suggestedText) {
 }
 
 /**
+ * Full alternative gloss for the non-anchor side (e.g. DA→EN when Danish was typed first).
+ * Allows real translation alternatives, not only one-letter typos — but blocks junk / wild length.
+ */
+function isPlausibleTranslationAlternative(userText, suggestedText) {
+  if (!userText || !suggestedText) return false;
+  if (!isPlausibleCardText(suggestedText)) return false;
+  if (stripFlashcardPunctuation(userText) === stripFlashcardPunctuation(suggestedText)) {
+    return false;
+  }
+  if (isSafeSoftSpellingFix(userText, suggestedText)) return true;
+  const wu = reviewTokens(userText);
+  const ws = reviewTokens(suggestedText);
+  if (!ws.length) return false;
+  // Empty-ish user side: always allow a real gloss
+  if (!wu.length) return true;
+  // Wild length swings are usually wrong-sense TM
+  if (wu.length >= 3 && (ws.length < 2 || ws.length > wu.length + 4 || ws.length < wu.length - 3)) {
+    return false;
+  }
+  return true;
+}
+
+/**
  * Round-trip a translation to catch typos on the source side.
  * EN "… i feal" → NO → EN "… I feel" → only if a safe one-token spelling fix.
  * Never rewrite meaning (sword ↛ hard one).
@@ -5671,6 +5698,8 @@ async function updateNativeSuggestions() {
     renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
       document.getElementById("new-foreign").value = item.foreign;
       document.getElementById("new-native").value = item.native;
+      // User started from the English field
+      addCardLastEditedSide = "native";
       syncAddCardResetButton();
       document.getElementById("new-foreign")?.focus();
     });
@@ -6289,15 +6318,24 @@ function getTranslationReviewSummary(
     }
   }
 
-  // Either direction confirming is enough for a real everyday pair.
+  // Anchor = side that already agrees with a translation of the other.
+  // foreignOk: user Danish ≈ EN→DA(user English)  → English is a solid source
+  // nativeOk:  user English ≈ DA→EN(user Danish) → Danish is a solid source
+  const englishIsAnchor = foreignOk && !nativeGibberish;
+  const learningIsAnchor = nativeOk && !foreignGibberish;
+
+  // Both sides consistent (or one-way MT agreement) → looks good (+ casing only)
   if (
-    (foreignCmp.exact || nativeCmp.exact || foreignOk || nativeOk) &&
+    (englishIsAnchor || learningIsAnchor) &&
     !foreignGibberish &&
     !nativeGibberish &&
     !hasSpellingIssue
   ) {
-    // Casing-only polish on one side — never rewrite meaning
-    if (usableSuggestedForeign && isCasingOnlyDiff(foreign, usableSuggestedForeign)) {
+    if (
+      englishIsAnchor &&
+      usableSuggestedForeign &&
+      isCasingOnlyDiff(foreign, usableSuggestedForeign)
+    ) {
       const fix = makePairFix(
         "Suggested capitalization",
         `Use ${formatReviewPair(usableSuggestedForeign, native)}?`,
@@ -6306,7 +6344,11 @@ function getTranslationReviewSummary(
       );
       if (fix) return fix;
     }
-    if (usableSuggestedNative && isCasingOnlyDiff(native, usableSuggestedNative)) {
+    if (
+      learningIsAnchor &&
+      usableSuggestedNative &&
+      isCasingOnlyDiff(native, usableSuggestedNative)
+    ) {
       const fix = makePairFix(
         "Suggested capitalization",
         `Use ${formatReviewPair(foreign, usableSuggestedNative)}?`,
@@ -6325,39 +6367,98 @@ function getTranslationReviewSummary(
     };
   }
 
-  // Translation differs: only nudge the learning-language side.
-  // English the user typed is trusted unless orthography already ran above.
-  // Never replace both sides with a reverse-MT "pair" (sword → hard one loops).
-  if (!foreignGibberish && !nativeGibberish && usableSuggestedForeign && !foreignOk) {
-    return {
-      matches: false,
-      targetField: "foreign",
-      suggestedValue: preferDisplayForm(usableSuggestedForeign),
-      title: `Suggested ${learningName}`,
-      copy: `Use “${preferDisplayForm(usableSuggestedForeign)}”?`,
-    };
-  }
+  // Inconsistent pair: fix only the non-anchor side. Never rewrite both via reverse MT.
+  // English typed first (or English is anchor): may suggest learning language only.
+  // Danish/etc. typed first (or learning is anchor): may suggest English only.
+  if (!foreignGibberish && !nativeGibberish) {
+    const last = addCardLastEditedSide;
+    const preferEnglishSource =
+      englishIsAnchor ||
+      (!learningIsAnchor && last === "native") ||
+      (!learningIsAnchor &&
+        !englishIsAnchor &&
+        last !== "foreign" &&
+        reviewTokens(native).length >= reviewTokens(foreign).length);
 
-  // Single-word English alternative only when it's a safe spelling fix (already handled)
-  // or single-token and user foreign is solid
-  if (
-    !isPhrase &&
-    usableSuggestedNative &&
-    !nativeOk &&
-    !nativeGibberish &&
-    isPlausibleCardText(usableSuggestedNative)
-  ) {
-    return {
-      matches: false,
-      targetField: "native",
-      suggestedValue: usableSuggestedNative,
-      title: "Suggested English",
-      copy: `Use “${usableSuggestedNative}”?`,
-    };
+    const preferLearningSource =
+      learningIsAnchor ||
+      (!englishIsAnchor && last === "foreign") ||
+      (!learningIsAnchor && !englishIsAnchor && last === "foreign");
+
+    // English is source → only offer learning-language alternative
+    if (
+      preferEnglishSource &&
+      !learningIsAnchor &&
+      usableSuggestedForeign &&
+      !foreignOk &&
+      isPlausibleTranslationAlternative(foreign, usableSuggestedForeign)
+    ) {
+      return {
+        matches: false,
+        targetField: "foreign",
+        suggestedValue: preferDisplayForm(usableSuggestedForeign),
+        title: `Suggested ${learningName}`,
+        copy: `Use “${preferDisplayForm(usableSuggestedForeign)}”?`,
+      };
+    }
+
+    // Learning language is source → only offer English alternative
+    if (
+      preferLearningSource &&
+      !englishIsAnchor &&
+      usableSuggestedNative &&
+      !nativeOk &&
+      isPlausibleTranslationAlternative(native, usableSuggestedNative)
+    ) {
+      return {
+        matches: false,
+        targetField: "native",
+        suggestedValue: stripFlashcardPunctuation(usableSuggestedNative),
+        title: "Suggested English",
+        copy: `Use “${stripFlashcardPunctuation(usableSuggestedNative)}”?`,
+      };
+    }
+
+    // Neither anchor clear: if only one side has a usable alternative, offer that
+    if (
+      usableSuggestedForeign &&
+      !foreignOk &&
+      isPlausibleTranslationAlternative(foreign, usableSuggestedForeign) &&
+      !(
+        usableSuggestedNative &&
+        !nativeOk &&
+        isPlausibleTranslationAlternative(native, usableSuggestedNative)
+      )
+    ) {
+      return {
+        matches: false,
+        targetField: "foreign",
+        suggestedValue: preferDisplayForm(usableSuggestedForeign),
+        title: `Suggested ${learningName}`,
+        copy: `Use “${preferDisplayForm(usableSuggestedForeign)}”?`,
+      };
+    }
+    if (
+      usableSuggestedNative &&
+      !nativeOk &&
+      isPlausibleTranslationAlternative(native, usableSuggestedNative) &&
+      !(
+        usableSuggestedForeign &&
+        !foreignOk &&
+        isPlausibleTranslationAlternative(foreign, usableSuggestedForeign)
+      )
+    ) {
+      return {
+        matches: false,
+        targetField: "native",
+        suggestedValue: stripFlashcardPunctuation(usableSuggestedNative),
+        title: "Suggested English",
+        copy: `Use “${stripFlashcardPunctuation(usableSuggestedNative)}”?`,
+      };
+    }
   }
 
   if (isPhrase || usableSuggestedForeign || usableSuggestedNative) {
-    // Phrase with no strong issue: accept user's pair (don't morph meaning)
     if (!foreignGibberish && !nativeGibberish) {
       return {
         matches: true,
@@ -6758,6 +6859,7 @@ function restoreAddCardFormBaseline() {
 function resetAddCardForm() {
   editingCardId = null;
   suppressAddCardSuggestions = false;
+  addCardLastEditedSide = null;
   document.getElementById("add-card-form")?.reset();
   setAddCardFormBaseline("", "");
   closeAddCardReview();
@@ -9069,6 +9171,7 @@ function initEventListeners() {
   document.getElementById("new-foreign")?.addEventListener("input", () => {
     suppressAddCardSuggestions = false;
     activeSuggestField = "foreign";
+    addCardLastEditedSide = "foreign";
     invalidateAddCardReviewIfStale();
     syncAddCardResetButton();
     queueForeignSuggestions();
@@ -9082,6 +9185,7 @@ function initEventListeners() {
   document.getElementById("new-native")?.addEventListener("input", () => {
     suppressAddCardSuggestions = false;
     activeSuggestField = "native";
+    addCardLastEditedSide = "native";
     invalidateAddCardReviewIfStale();
     syncAddCardResetButton();
     queueNativeSuggestions();
