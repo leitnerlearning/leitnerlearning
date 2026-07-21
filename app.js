@@ -9731,31 +9731,49 @@ function renderProgressSummary() {
     dailyEl.classList.toggle("is-quiet", Boolean(isQuiet) && !isDone);
 
     const valueText = String(practiceStat.value);
-    const line =
-      practiceStat.label === "Left today"
-        ? `${valueText} left in today's review`
-        : practiceStat.label === "Done today"
-          ? `Today's goal done · ${valueText}`
-          : practiceStat.label === "Due for review" || practiceStat.label === "Due now"
-            ? `${valueText} due for review`
-            : practiceStat.label === "Ready to learn"
-              ? `${valueText} ready to learn`
-              : practiceStat.label === "Caught up"
-                ? "All caught up for now"
-                : practiceStat.label === "Next review"
-                  ? `Next review · ${valueText}`
-                  : `${valueText} · ${practiceStat.label}`;
+    const doneBit =
+      reviewedToday > 0 ? ` · ${reviewedToday} done` : "";
+    let line;
+    let aria = practiceStat.ariaLabel;
+    if (practiceStat.label === "Left today") {
+      line = `${valueText} left today${doneBit}`;
+      aria = `${valueText} left in today's review${
+        reviewedToday > 0 ? `, ${reviewedToday} already reviewed` : ""
+      }`;
+    } else if (practiceStat.label === "Done today") {
+      line = `Today's goal done · ${valueText}`;
+    } else if (
+      practiceStat.label === "Due for review" ||
+      practiceStat.label === "Due now"
+    ) {
+      line = `${valueText} due for review${doneBit}`;
+    } else if (practiceStat.label === "Ready to learn") {
+      line = `${valueText} ready to learn${doneBit}`;
+    } else if (practiceStat.label === "Caught up") {
+      line =
+        reviewedToday > 0
+          ? `All caught up · ${reviewedToday} reviewed today`
+          : "All caught up for now";
+      aria =
+        reviewedToday > 0
+          ? `All caught up. ${reviewedToday} reviewed today.`
+          : practiceStat.ariaLabel;
+    } else if (practiceStat.label === "Next review") {
+      line = `Next review · ${valueText}${doneBit}`;
+    } else {
+      line = `${valueText} · ${practiceStat.label}${doneBit}`;
+    }
 
     if (practiceStat.actionable) {
       dailyEl.innerHTML = `
-        <button type="button" class="progress-daily-action" data-tab-jump="practice" aria-label="${escapeAttr(practiceStat.ariaLabel)}">
+        <button type="button" class="progress-daily-action" data-tab-jump="practice" aria-label="${escapeAttr(aria)}">
           <span class="progress-daily-kicker">Review</span>
           <span class="progress-daily-line">${escapeHtml(line)}</span>
           <span class="progress-daily-go" aria-hidden="true">→</span>
         </button>`;
     } else {
       dailyEl.innerHTML = `
-        <div class="progress-daily-static" aria-label="${escapeAttr(practiceStat.ariaLabel)}">
+        <div class="progress-daily-static" aria-label="${escapeAttr(aria)}">
           <span class="progress-daily-kicker">Review</span>
           <span class="progress-daily-line">${escapeHtml(line)}</span>
         </div>`;
@@ -9792,20 +9810,15 @@ function renderProgressSummary() {
 
   if (!container) return;
 
+  // Two long-game stats only — daily/introduced live in the strips above.
+  const streakRisk = streakStat.atRisk ? " stat-card--risk" : "";
+  const streakHighlight = streakStat.highlight ? " highlight" : "";
   container.innerHTML = `
-    <div class="stat-card" aria-label="${escapeAttr(streakStat.ariaLabel)}">
-      <span class="stat-value">${streakStat.value}</span>
+    <div class="stat-card${streakHighlight}${streakRisk}" aria-label="${escapeAttr(streakStat.ariaLabel)}">
+      <span class="stat-value">${escapeHtml(String(streakStat.value))}</span>
       <span class="stat-label">${escapeHtml(streakStat.label)}</span>
     </div>
-    <div class="stat-card" aria-label="${reviewedToday} card${reviewedToday === 1 ? "" : "s"} reviewed today">
-      <span class="stat-value">${reviewedToday}</span>
-      <span class="stat-label">Reviewed Today</span>
-    </div>
-    <div class="stat-card" aria-label="${introduced} of ${total} words introduced (${introducedPct}%)">
-      <span class="stat-value">${introducedPct}%</span>
-      <span class="stat-label">Introduced</span>
-    </div>
-    <div class="stat-card" aria-label="${mastered} of ${total} words mastered (${masteredPct}%)">
+    <div class="stat-card" aria-label="${mastered} of ${total} cards mastered (${masteredPct}%)">
       <span class="stat-value">${masteredPct}%</span>
       <span class="stat-label">Mastered</span>
     </div>`;

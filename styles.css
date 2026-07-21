@@ -5520,10 +5520,11 @@ html.needs-welcome body {
   text-align: left;
 }
 
-/* Progress tab — body below prefs (stats · levels · reading) */
+/* Progress tab — body below prefs (stats · levels · reading)
+   Two long-game bubbles (streak · mastered); daily/deck truth is above. */
 .stats-summary {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.55rem;
   margin: 0 0 1.15rem;
   width: 100%;
@@ -6057,7 +6058,7 @@ html.needs-welcome body {
     min-height: 2.75rem;
   }
 
-  /* Progress: 2×2 stats — 4-up is cramped at ~768 content width */
+  /* Progress: two long-game stats side by side */
   .stats-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.65rem;
@@ -6089,7 +6090,7 @@ html.needs-welcome body {
 }
 
 @media (max-width: 720px) {
-  /* —— Mobile Progress only: glanceable 2×2, section cards, touch rows —— */
+  /* —— Mobile Progress: two bubbles, section cards, touch rows —— */
   #stats-panel.active {
     width: 100%;
     min-width: 0;
