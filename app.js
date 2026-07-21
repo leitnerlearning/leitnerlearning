@@ -13,7 +13,7 @@ const VOICE_GENDER_KEY = "leitner-learning-voice-gender";
 const VOICE_GENDERS = ["female", "male"];
 
 const LEARNING_LEVELS = [
-  { short: "New", interval: "Waiting to learn", celebration: "Nice start. Keep going." },
+  { short: "New", interval: "Not started", celebration: "Nice start. Keep going." },
   { short: "Learning", interval: "Next day", celebration: "Good one." },
   { short: "Familiar", interval: "Every 3 days", celebration: "This one is sticking." },
   { short: "Known", interval: "Weekly", celebration: "Well done." },
@@ -9850,19 +9850,11 @@ function renderProgressSummary() {
     }
   }
 
-  // —— Deck coverage (map of the library — not a panic "due" queue) ——
-  // Action pressure lives on the Review strip (today's goal / left today).
+  // —— Deck coverage: size + introduced % only (no path pep-talk).
+  // "Still new" / fresh-deck copy is redundant with 0% + Leitner New row.
   if (coverageEl) {
     coverageEl.classList.toggle("hidden", total === 0);
     if (total > 0) {
-      const stillNew = Math.max(0, total - introduced);
-      // Gentle residual: path ahead, not "1,000 due now".
-      const pathNote =
-        stillNew === 0
-          ? "every card met once"
-          : stillNew === total
-            ? "fresh deck · start when ready"
-            : `${stillNew.toLocaleString("en-US")} still new`;
       coverageEl.innerHTML = `
         <div class="progress-coverage-head">
           <span class="progress-coverage-label">Your deck</span>
@@ -9874,9 +9866,7 @@ function renderProgressSummary() {
           <div class="progress-coverage-fill" style="width: ${introducedPct}%"></div>
         </div>
         <div class="progress-coverage-meta">
-          <span>${escapeHtml(deckLabel)} in deck</span>
-          <span>${introduced.toLocaleString("en-US")} introduced</span>
-          <span>${escapeHtml(pathNote)}</span>
+          <span>${escapeHtml(deckLabel)}</span>
         </div>`;
     } else {
       coverageEl.innerHTML = "";
