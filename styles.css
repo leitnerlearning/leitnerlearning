@@ -3953,10 +3953,7 @@ html.needs-welcome body {
   }
 
   .basics-hero-flag {
-    width: 2.85rem;
-    height: 2.85rem;
-    font-size: 1.45rem;
-    border-radius: 0.9rem;
+    font-size: 1.75rem;
   }
 
   .basics-modal-title {
@@ -6696,17 +6693,10 @@ html.needs-welcome body {
   text-overflow: ellipsis;
 }
 
-/* Language — ambient only (flag + quiet name) */
+/* Language name hidden everywhere — flag next to the story title is enough.
+   (Button aria-label / title still include the language for screen readers.) */
 .read-story-select-lang {
-  max-width: 100%;
-  font-size: 0.66rem;
-  font-weight: 550;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
-  color: var(--text-tertiary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: none;
 }
 
 .read-story-select-meta {
