@@ -645,32 +645,50 @@ main,
   font-size: clamp(1.55rem, 5.6vw, 2.05rem);
 }
 
-/* Portal music ceremony: logo on the beat, then flag takes the stage */
+/* Portal music ceremony: logo on the beat, then language flag takes the bass */
+.track-switch-overlay.is-welcome-portal .track-switch-overlay-inner {
+  position: relative;
+  min-height: 15rem;
+  justify-content: center;
+}
+
+/* During portal phase 1, keep the normal flag-in animation off */
+.track-switch-overlay.is-welcome-portal.is-visible .track-switch-overlay-flag:not([hidden]) {
+  animation: none;
+}
+
 .track-switch-overlay.is-welcome-portal .track-switch-overlay-flag {
   position: absolute;
   left: 50%;
-  top: 42%;
-  transform: translate(-50%, -50%) scale(0.55);
+  top: 40%;
+  transform: translate(-50%, -50%) scale(0.42);
   margin: 0;
-  font-size: clamp(3.2rem, 12vw, 4.4rem);
+  font-size: clamp(3.4rem, 13vw, 4.8rem);
   opacity: 0;
   pointer-events: none;
   transition:
-    opacity 0.5s cubic-bezier(0.2, 0.85, 0.25, 1),
-    transform 0.55s cubic-bezier(0.2, 0.85, 0.25, 1),
+    opacity 0.42s cubic-bezier(0.2, 0.85, 0.25, 1),
+    transform 0.48s cubic-bezier(0.2, 0.85, 0.25, 1),
     filter 0.2s ease;
   filter: drop-shadow(0 10px 24px rgba(18, 24, 38, 0.28));
 }
 
-.track-switch-overlay.is-welcome-portal .track-switch-overlay-inner {
-  position: relative;
-  min-height: 14.5rem;
-  justify-content: center;
+/* Language name stays soft while logo owns the beat */
+.track-switch-overlay.is-welcome-portal .track-switch-overlay-name {
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease,
+    color 0.35s ease,
+    text-shadow 0.2s ease;
+}
+
+.track-switch-overlay.is-welcome-portal:not(.is-phase-language) .track-switch-overlay-name {
+  opacity: 0.72;
 }
 
 .track-switch-overlay.is-welcome-portal.is-phase-language .track-switch-logo-wrap {
   opacity: 0;
-  transform: scale(0.55);
+  transform: scale(0.48);
   pointer-events: none;
 }
 
@@ -679,17 +697,27 @@ main,
   transform: translate(-50%, -50%) scale(1);
 }
 
+.track-switch-overlay.is-welcome-portal.is-phase-language .track-switch-overlay-name {
+  opacity: 1;
+  transform: translateY(0);
+  font-size: clamp(1.65rem, 6vw, 2.2rem);
+}
+
 /* Beat punch — applied for one pulse then removed */
 .track-switch-logo.is-beat-flash {
-  animation: welcome-beat-logo 0.22s cubic-bezier(0.15, 0.9, 0.3, 1) forwards;
+  animation: welcome-beat-logo 0.24s cubic-bezier(0.12, 0.92, 0.28, 1) forwards;
 }
 
 .track-switch-overlay-flag.is-beat-flash {
-  animation: welcome-beat-flag 0.2s cubic-bezier(0.15, 0.9, 0.3, 1) forwards;
+  animation: welcome-beat-flag 0.2s cubic-bezier(0.12, 0.92, 0.28, 1) forwards;
+}
+
+.track-switch-overlay-name.is-beat-flash {
+  animation: welcome-beat-name 0.2s cubic-bezier(0.12, 0.92, 0.28, 1) forwards;
 }
 
 .track-switch-overlay.is-welcome-portal.is-phase-language .track-switch-logo-bloom {
-  opacity: 0.25;
+  opacity: 0.2;
 }
 
 @keyframes welcome-beat-logo {
@@ -698,10 +726,10 @@ main,
     filter: drop-shadow(0 8px 16px color-mix(in srgb, var(--brand, #365fcf) 28%, transparent))
       brightness(1);
   }
-  35% {
-    transform: scale(1.16);
-    filter: drop-shadow(0 12px 28px color-mix(in srgb, var(--brand, #365fcf) 55%, transparent))
-      brightness(1.25);
+  32% {
+    transform: scale(1.2);
+    filter: drop-shadow(0 14px 32px color-mix(in srgb, var(--brand, #365fcf) 62%, transparent))
+      brightness(1.32);
   }
   100% {
     transform: scale(1);
@@ -715,9 +743,9 @@ main,
     transform: translate(-50%, -50%) scale(1);
     filter: drop-shadow(0 10px 24px rgba(18, 24, 38, 0.28)) brightness(1);
   }
-  40% {
-    transform: translate(-50%, -50%) scale(1.18);
-    filter: drop-shadow(0 14px 32px rgba(18, 24, 38, 0.35)) brightness(1.15);
+  38% {
+    transform: translate(-50%, -50%) scale(1.22);
+    filter: drop-shadow(0 16px 36px rgba(18, 24, 38, 0.4)) brightness(1.18);
   }
   100% {
     transform: translate(-50%, -50%) scale(1);
@@ -725,9 +753,25 @@ main,
   }
 }
 
+@keyframes welcome-beat-name {
+  0% {
+    transform: translateY(0) scale(1);
+    text-shadow: none;
+  }
+  40% {
+    transform: translateY(0) scale(1.045);
+    text-shadow: 0 0 22px color-mix(in srgb, var(--brand, #365fcf) 38%, transparent);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    text-shadow: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .track-switch-logo.is-beat-flash,
-  .track-switch-overlay-flag.is-beat-flash {
+  .track-switch-overlay-flag.is-beat-flash,
+  .track-switch-overlay-name.is-beat-flash {
     animation: none !important;
   }
 }

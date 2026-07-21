@@ -3475,6 +3475,7 @@ function showTrackSwitchOverlay(label, options = {}) {
   el.classList.remove("is-phase-language");
   logoEl?.classList.remove("is-beat-flash");
   flagEl?.classList.remove("is-beat-flash");
+  nameEl?.classList.remove("is-beat-flash");
   el.classList.remove("hidden");
   el.setAttribute("aria-hidden", "false");
   // Restart CSS animations cleanly
@@ -3504,6 +3505,7 @@ function showTrackSwitchOverlay(label, options = {}) {
         el.classList.remove("is-welcome-enter", "is-welcome-portal", "is-phase-language");
         el.setAttribute("aria-hidden", "true");
         logoEl?.classList.remove("is-beat-flash");
+        nameEl?.classList.remove("is-beat-flash");
         if (flagEl) {
           flagEl.hidden = true;
           flagEl.textContent = "";
@@ -3555,7 +3557,7 @@ function pulseWelcomeBeat(el) {
 async function loadWelcomePortalBeatmap() {
   if (welcomePortalBeatmap) return welcomePortalBeatmap;
   try {
-    const res = await fetch("assets/welcome-portal-beats.json", { cache: "force-cache" });
+    const res = await fetch("assets/welcome-portal-beats.json?v=2", { cache: "force-cache" });
     if (!res.ok) return null;
     welcomePortalBeatmap = await res.json();
     return welcomePortalBeatmap;
@@ -3566,8 +3568,9 @@ async function loadWelcomePortalBeatmap() {
 
 /**
  * First-run: user chooses a language and steps through the door.
- * Music portal: logo flashes on the beat, then language flag takes over on the rapid bass,
- * then the app is revealed. Falls back to short synth if audio/beatmap unavailable.
+ * Music portal: Leitner logo flashes on the main beat; when the bass densifies,
+ * branding hands off to the target-language flag (still on the beat); then the app.
+ * Falls back to short synth if audio/beatmap unavailable.
  */
 function announceWelcomeEnter(category = getActiveCategory()) {
   const label = category?.label || category?.learningLanguageName || "Language";
@@ -3590,6 +3593,7 @@ function announceWelcomeEnter(category = getActiveCategory()) {
     const overlay = document.getElementById("track-switch-overlay");
     const logoEl = overlay?.querySelector(".track-switch-logo");
     const flagEl = document.getElementById("track-switch-overlay-flag");
+    const nameEl = document.getElementById("track-switch-overlay-name");
 
     if (!map || !audio) {
       showTrackSwitchOverlay(label, { flag, durationMs: 1680, welcome: true });
@@ -3598,7 +3602,8 @@ function announceWelcomeEnter(category = getActiveCategory()) {
       return;
     }
 
-    const durationMs = Math.round((Number(map.duration) || 8) * 1000 + 450);
+    // Hold the veil a beat past the clip so the last flash can land cleanly
+    const durationMs = Math.round((Number(map.duration) || 8) * 1000 + 380);
     showTrackSwitchOverlay(label, {
       flag,
       durationMs,
@@ -3607,43 +3612,58 @@ function announceWelcomeEnter(category = getActiveCategory()) {
     });
     triggerWelcomeEnterHaptic();
 
-    // Phase 1 — logo on the main beat
-    (map.phase1Beats || []).forEach((t) => {
-      welcomePortalTimers.push(
-        window.setTimeout(() => {
-          pulseWelcomeBeat(logoEl);
-          if (typeof navigator.vibrate === "function") navigator.vibrate(11);
-        }, Math.round(t * 1000))
-      );
-    });
-
-    // Switch to language flag when the beat densifies
-    const switchAt = Number(map.switchAt) || 4;
-    welcomePortalTimers.push(
-      window.setTimeout(() => {
-        overlay?.classList.add("is-phase-language");
-        if (typeof navigator.vibrate === "function") navigator.vibrate([14, 30, 18]);
-      }, Math.round(switchAt * 1000))
-    );
-
-    // Phase 2 — flag punches with the rapid bass
-    (map.phase2Beats || []).forEach((t) => {
-      welcomePortalTimers.push(
-        window.setTimeout(() => {
-          pulseWelcomeBeat(flagEl);
-          if (typeof navigator.vibrate === "function") navigator.vibrate(9);
-        }, Math.round(t * 1000))
-      );
-    });
-
+    // Start audio first; schedule flashes relative to a shared t0 after play begins
+    const volume = Math.min(1, Math.max(0, Number(map.volume) || 0.75));
+    let audioStarted = false;
     try {
       audio.pause();
       audio.currentTime = 0;
-      audio.volume = Math.min(1, Math.max(0, Number(map.volume) || 0.72));
+      audio.volume = volume;
       await audio.play();
+      audioStarted = true;
     } catch {
       // Autoplay blocked or decode fail — keep visuals + soft synth underlay
       playWelcomeEnterSound();
+    }
+
+    const t0 = performance.now();
+    const scheduleAt = (seconds, fn) => {
+      const delay = Math.max(0, Math.round(seconds * 1000 - (performance.now() - t0)));
+      welcomePortalTimers.push(window.setTimeout(fn, delay));
+    };
+
+    // Phase 1 — Leitner logo on the main beat
+    (map.phase1Beats || []).forEach((t) => {
+      scheduleAt(t, () => {
+        pulseWelcomeBeat(logoEl);
+        if (typeof navigator.vibrate === "function") navigator.vibrate(11);
+      });
+    });
+
+    // Hand off to target-language flag when the bass densifies
+    const switchAt = Number(map.switchAt) || 4;
+    scheduleAt(switchAt, () => {
+      overlay?.classList.add("is-phase-language");
+      if (typeof navigator.vibrate === "function") navigator.vibrate([14, 30, 18]);
+      // First language beat lands with the handoff
+      pulseWelcomeBeat(flagEl);
+      pulseWelcomeBeat(nameEl);
+    });
+
+    // Phase 2 — flag (+ language name) punches with the denser bass
+    (map.phase2Beats || []).forEach((t) => {
+      // skip the first if it lands on switchAt (already pulsed above)
+      if (Math.abs(t - switchAt) < 0.04) return;
+      scheduleAt(t, () => {
+        pulseWelcomeBeat(flagEl);
+        pulseWelcomeBeat(nameEl);
+        if (typeof navigator.vibrate === "function") navigator.vibrate(9);
+      });
+    });
+
+    // If audio never started, still finish on the visual timeline (overlay timer owns exit)
+    if (!audioStarted) {
+      /* visuals already scheduled */
     }
   })();
 }
