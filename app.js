@@ -9560,8 +9560,9 @@ function renderReadHeader(story) {
   if (trailBtn) {
     const trailLabel = trail?.label || "Beginner";
     trailBtn.innerHTML = `${getReadTrailSymbolMarkup(story.trail)}<span class="read-trail-btn__label">${escapeHtml(trailLabel)}</span>`;
+    // Screen readers still get the level; no hover title — it only repeated the visible label.
     trailBtn.setAttribute("aria-label", `Difficulty: ${trailLabel}`);
-    trailBtn.title = trailLabel;
+    trailBtn.removeAttribute("title");
   }
 
   if (titleEl) titleEl.textContent = story.title;
