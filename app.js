@@ -3302,11 +3302,69 @@ function playTrackSwitchSound() {
   })();
 }
 
+/**
+ * First-entry portal sound: soft pad + rising triad + brief high settle.
+ * Still a flourish (never required). More presence than a mid-session switch.
+ */
+function playWelcomeEnterSound() {
+  void (async () => {
+    if (prefersReducedMotion()) return;
+    const ctx = await ensureUiAudioReady();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.09, now + 0.05);
+    master.gain.exponentialRampToValueAtTime(0.045, now + 0.45);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 1.15);
+    master.connect(ctx.destination);
+
+    // Soft low pad (presence under the triad)
+    const pad = ctx.createOscillator();
+    const padGain = ctx.createGain();
+    pad.type = "sine";
+    pad.frequency.value = 130.81; // C3
+    padGain.gain.setValueAtTime(0.0001, now);
+    padGain.gain.exponentialRampToValueAtTime(0.28, now + 0.08);
+    padGain.gain.exponentialRampToValueAtTime(0.12, now + 0.55);
+    padGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.05);
+    pad.connect(padGain);
+    padGain.connect(master);
+    pad.start(now);
+    pad.stop(now + 1.1);
+
+    // Rising portal: C4 · E4 · G4 · C5
+    [261.63, 329.63, 392.0, 523.25].forEach((frequency, index) => {
+      const oscillator = ctx.createOscillator();
+      const voice = ctx.createGain();
+      oscillator.type = index === 0 ? "triangle" : "sine";
+      oscillator.frequency.value = frequency;
+      voice.gain.setValueAtTime(0.0001, now);
+      const start = now + 0.06 + index * 0.11;
+      const peak = index === 3 ? 0.42 : 0.62 - index * 0.08;
+      voice.gain.exponentialRampToValueAtTime(peak, start + 0.04);
+      voice.gain.exponentialRampToValueAtTime(0.0001, start + 0.42 + index * 0.04);
+      oscillator.connect(voice);
+      voice.connect(master);
+      oscillator.start(start);
+      oscillator.stop(start + 0.55);
+    });
+  })();
+}
+
 /** Mobile confirmation for language switch — works with the silent switch off. */
 function triggerTrackSwitchHaptic() {
   if (typeof navigator.vibrate === "function") {
     // Short dual pulse: “leave · land”
     navigator.vibrate([16, 32, 20]);
+  }
+}
+
+/** First-entry haptic: open · hold · land */
+function triggerWelcomeEnterHaptic() {
+  if (typeof navigator.vibrate === "function") {
+    navigator.vibrate([18, 40, 22, 48, 28]);
   }
 }
 
@@ -3375,9 +3433,15 @@ function updateReadLanguageIndicator(category = getActiveCategory()) {
   }
 }
 
-function showTrackSwitchOverlay(label) {
+/**
+ * Full-screen language ceremony: logo bloom + optional flag + language name.
+ * @param {string} label
+ * @param {{ flag?: string, durationMs?: number, welcome?: boolean }} [options]
+ */
+function showTrackSwitchOverlay(label, options = {}) {
   const el = document.getElementById("track-switch-overlay");
   const nameEl = document.getElementById("track-switch-overlay-name");
+  const flagEl = document.getElementById("track-switch-overlay-flag");
   if (!el || !nameEl) return;
   const text = String(label || "").trim();
   if (!text) return;
@@ -3387,9 +3451,26 @@ function showTrackSwitchOverlay(label) {
     trackSwitchOverlayTimer = null;
   }
 
+  const flag = String(options.flag || "").trim();
+  const durationMs = Number(options.durationMs) > 0 ? Number(options.durationMs) : 1250;
+  const isWelcome = Boolean(options.welcome);
+
   nameEl.textContent = text;
+  if (flagEl) {
+    if (flag) {
+      flagEl.textContent = flag;
+      flagEl.hidden = false;
+    } else {
+      flagEl.textContent = "";
+      flagEl.hidden = true;
+    }
+  }
+
+  el.classList.toggle("is-welcome-enter", isWelcome);
   el.classList.remove("hidden");
   el.setAttribute("aria-hidden", "false");
+  // Restart CSS animations cleanly
+  el.classList.remove("is-visible");
   void el.offsetWidth;
   el.classList.add("is-visible");
 
@@ -3399,17 +3480,23 @@ function showTrackSwitchOverlay(label) {
     window.setTimeout(() => {
       if (!el.classList.contains("is-visible")) {
         el.classList.add("hidden");
+        el.classList.remove("is-welcome-enter");
         el.setAttribute("aria-hidden", "true");
+        if (flagEl) {
+          flagEl.hidden = true;
+          flagEl.textContent = "";
+        }
       }
-    }, 280);
-    // After the veil lifts, land attention on the durable language control.
-    flashProgressLanguageControl();
-  }, 1250);
+    }, 320);
+    // Mid-session switches land attention on Progress language control.
+    // First entry: already on Review — no Progress flash.
+    if (!isWelcome) flashProgressLanguageControl();
+  }, durationMs);
 }
 
 /**
  * Language-switch ceremony stack (by reliability, not by flashiness):
- *  1. Visual — logo + language name overlay (always; the real confirmation)
+ *  1. Visual — logo + flag + language name overlay (always; the real confirmation)
  *  2. Haptic — dual pulse on phones (works even with hardware mute)
  *  3. Sound  — soft rising triad only if Web Audio is actually running
  *
@@ -3418,11 +3505,27 @@ function showTrackSwitchOverlay(label) {
  */
 function announceTrackSwitch(category = getActiveCategory()) {
   const label = category?.label || category?.learningLanguageName || "Language";
+  const flag = category?.flag || "";
   // Warm the audio pipeline in this same user-gesture turn (menu → pick).
   unlockAudioPipeline();
-  showTrackSwitchOverlay(label);
+  showTrackSwitchOverlay(label, { flag, durationMs: 1250, welcome: false });
   triggerTrackSwitchHaptic();
   playTrackSwitchSound();
+}
+
+/**
+ * First-run: user chooses a language and steps through the door.
+ * Same visual language as track switch, with more presence (flag, longer hold, warmer sound).
+ * Still calm — Jobs polish, not a carnival.
+ */
+function announceWelcomeEnter(category = getActiveCategory()) {
+  const label = category?.label || category?.learningLanguageName || "Language";
+  const flag = category?.flag || "";
+  unlockAudioPipeline();
+  void ensureUiAudioReady();
+  showTrackSwitchOverlay(label, { flag, durationMs: 1680, welcome: true });
+  triggerWelcomeEnterHaptic();
+  playWelcomeEnterSound();
 }
 
 function speakPromptForCard(card) {
@@ -8957,12 +9060,15 @@ function renderCategoryPicker() {
 
 /**
  * First-run: picking a language *is* entering the app (no Start button).
- * Straight into Review — no flourish here (Progress keeps the full language ceremony).
+ * Full portal ceremony (visual + haptic + sound) — then land in Review.
  */
 function completeWelcomeWithLanguage(categoryId) {
   const nextCategory = getCategoryById(categoryId);
   if (!nextCategory?.available) return;
 
+  // Same user-gesture turn as the pick: unlock audio so the portal can chime on mobile.
+  unlockAudioPipeline();
+  void ensureUiAudioReady();
   closeCategoryMenu();
 
   if (categoryId !== activeCategoryId) {
@@ -8972,12 +9078,15 @@ function completeWelcomeWithLanguage(categoryId) {
     renderAll();
   }
 
+  // Ceremony runs above the welcome gate (higher z-index); hide gate under the veil.
   closeWelcomeModal(true);
   try {
     switchTab("practice");
   } catch {
     /* keep safe */
   }
+
+  announceWelcomeEnter(nextCategory);
 }
 
 function openCategoryMenu(btn) {
