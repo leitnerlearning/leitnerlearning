@@ -2407,7 +2407,7 @@ function buildPackCards(pack, categoryId = activeCategoryId) {
  * Merge enabled thematic packs into the deck.
  * - Skips foreign forms already present (keeps progress)
  * - Tags new cards with packId + high ranks
- * - Does not remove pack cards when a pack is disabled (progress stays)
+ * - Disable/remove is handled by removeThematicPack (pack-owned rows only)
  */
 function mergeEnabledThematicPacks(cards, category = getActiveCategory()) {
   const categoryId = category?.id || activeCategoryId;
@@ -2522,11 +2522,12 @@ function getPackLearningProgress(pack, categoryId = activeCategoryId, cards = de
 
 /**
  * Enable a pack and merge its cards into the live deck.
- * Returns { added, total, already }.
+ * One full Add — no partial “Add rest” second step.
+ * Returns { added, total, already, packId, title }.
  */
 function enableThematicPack(packId, options = {}) {
   const pack = getThematicPackById(packId);
-  if (!pack) return { added: 0, total: 0, already: true };
+  if (!pack) return { added: 0, total: 0, already: true, packId, title: packId };
 
   const beforeKeys = new Set(
     deck.map((card) => normalizeAnswer(card.foreign)).filter(Boolean)
@@ -2575,30 +2576,87 @@ function enableThematicPack(packId, options = {}) {
   };
 }
 
+/**
+ * Turn off a theme and remove only pack-owned rows (packId match).
+ * Core frequency cards that overlap the theme stay — progress on the spine is sacred.
+ * Returns { removed, packId, title }.
+ */
+function removeThematicPack(packId) {
+  const pack = getThematicPackById(packId);
+  const title = pack?.title || packId || "Theme";
+  if (!packId) return { removed: 0, packId, title };
+
+  setEnabledPackIds(getEnabledPackIds().filter((id) => id !== packId));
+
+  let removed = 0;
+  const next = deck.filter((card) => {
+    if (card.packId === packId) {
+      removed += 1;
+      return false;
+    }
+    return true;
+  });
+
+  // Always drop pack-owned rows; core overlaps (no packId) stay.
+  if (removed > 0) {
+    deck = ensureDeckIsUsable(next);
+    saveDeck();
+  }
+  try {
+    const daily = ensureDailyPracticeState();
+    if (daily) {
+      refreshDailyPracticeQueue(daily);
+      saveDailyPractice(daily);
+    }
+  } catch {
+    // non-fatal
+  }
+
+  if (themeSessionPackId === packId) {
+    clearThemePracticeSession();
+    sessionQueue = [];
+    currentCard = null;
+    currentCardId = null;
+  }
+
+  renderAll();
+  return { removed, packId, title };
+}
+
+function setLibraryThemesLive(messageHtmlOrText, { html = false } = {}) {
+  const live = document.getElementById("library-themes-live");
+  if (!live) return;
+  if (!messageHtmlOrText) {
+    live.textContent = "";
+    return;
+  }
+  if (html) live.innerHTML = messageHtmlOrText;
+  else live.textContent = messageHtmlOrText;
+}
+
 function renderThemePackCard(pack, category) {
   const coverage = countPackCoverage(pack, category.id);
   const enabled = isPackEnabled(pack.id);
-  // One quiet fraction — title is the identity; no “N left” admin tone.
+  // Quiet fraction — forms already in the core deck count toward the theme.
   const status = enabled
     ? `${coverage.present}/${coverage.total}`
-    : `${coverage.total}`;
+    : String(coverage.total);
 
   let actions = "";
   if (enabled) {
+    // Two actions only: Study (primary) and Remove (quiet reverse).
+    // Full pack merges on Add — no “Add rest” half-step.
     actions = `<button
         type="button"
         class="btn primary library-theme-btn library-theme-btn--study"
         data-pack-study="${escapeAttr(pack.id)}"
         aria-label="${escapeAttr(`Study ${pack.title}`)}"
-      >Study</button>`;
-    if (coverage.missing > 0) {
-      actions += `<button
-          type="button"
-          class="btn secondary library-theme-btn"
-          data-pack-enable="${escapeAttr(pack.id)}"
-          aria-label="${escapeAttr(`Add remaining ${pack.title} cards`)}"
-        >Add rest</button>`;
-    }
+      >Study</button><button
+        type="button"
+        class="btn ghost library-theme-btn library-theme-btn--remove"
+        data-pack-remove="${escapeAttr(pack.id)}"
+        aria-label="${escapeAttr(`Remove ${pack.title} from deck`)}"
+      >Remove</button>`;
   } else {
     actions = `<button
         type="button"
@@ -2620,6 +2678,7 @@ function renderThemePackCard(pack, category) {
 
 function renderThematicPacks() {
   const root = document.getElementById("library-themes");
+  const body = document.getElementById("library-themes-body");
   if (!root) return;
 
   const category = getActiveCategory();
@@ -2629,7 +2688,7 @@ function renderThematicPacks() {
 
   if (!packs.length) {
     root.classList.add("hidden");
-    root.innerHTML = "";
+    if (body) body.innerHTML = "";
     return;
   }
 
@@ -2658,10 +2717,15 @@ function renderThematicPacks() {
 
   root.classList.remove("hidden");
   root.classList.toggle("has-enabled", enabledPacks.length > 0);
-  root.innerHTML = `
-    ${enabledList}
-    ${moreBlock}
-  `;
+  // Only rewrite the body — never wipe #library-themes-live (feedback / a11y).
+  if (body) {
+    body.innerHTML = `${enabledList}${moreBlock}`;
+  } else {
+    // Fallback if older HTML cache lacks the body host.
+    const live = document.getElementById("library-themes-live");
+    const liveHtml = live ? live.outerHTML : "";
+    root.innerHTML = `${liveHtml}${enabledList}${moreBlock}`;
+  }
 }
 
 function migrateLegacyStorage(categoryId) {
@@ -11889,12 +11953,24 @@ function initEventListeners() {
       const packId = studyBtn.getAttribute("data-pack-study");
       if (!packId) return;
       const result = startThemePracticeSession(packId);
-      const live = document.getElementById("library-themes-live");
-      if (live) {
-        live.textContent = result.ok
-          ? `Starting ${result.count} cards from this theme.`
-          : "No cards ready in this theme yet.";
-      }
+      setLibraryThemesLive(
+        result.ok
+          ? `Starting ${result.count} from this theme`
+          : "No cards ready in this theme yet"
+      );
+      return;
+    }
+
+    const removeBtn = e.target.closest("[data-pack-remove]");
+    if (removeBtn) {
+      const packId = removeBtn.getAttribute("data-pack-remove");
+      if (!packId) return;
+      const result = removeThematicPack(packId);
+      setLibraryThemesLive(
+        result.removed > 0
+          ? `Removed ${result.removed} · ${result.title}`
+          : `Removed · ${result.title}`
+      );
       return;
     }
 
@@ -11903,14 +11979,16 @@ function initEventListeners() {
     const packId = btn.getAttribute("data-pack-enable");
     if (!packId) return;
     const result = enableThematicPack(packId);
-    // One short live line + Study — pack cards already show Study once enabled.
-    const live = document.getElementById("library-themes-live");
-    if (live) {
-      if (result.added > 0) {
-        live.innerHTML = `+${result.added} <button type="button" class="library-themes-study-now" data-pack-study="${escapeAttr(packId)}">Study</button>`;
-      } else {
-        live.textContent = "";
-      }
+    // Feedback after renderAll — live node is preserved in the section shell.
+    if (result.added > 0) {
+      setLibraryThemesLive(
+        `+${result.added} <button type="button" class="library-themes-study-now" data-pack-study="${escapeAttr(packId)}">Study</button>`,
+        { html: true }
+      );
+    } else {
+      setLibraryThemesLive(
+        `In deck · ${result.title}`
+      );
     }
   });
 

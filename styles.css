@@ -4978,9 +4978,25 @@ html.needs-welcome body {
   min-width: 4.5rem;
 }
 
+.library-theme-btn--remove {
+  min-width: auto;
+  color: var(--muted, #5c6570);
+  font-weight: 500;
+}
+
+.library-theme-btn--remove:hover,
+.library-theme-btn--remove:focus-visible {
+  color: var(--text, #1a1f26);
+  outline: none;
+}
+
 .library-theme-btn:disabled {
   opacity: 0.72;
   cursor: default;
+}
+
+.library-themes-body:empty {
+  display: none;
 }
 
 @media (max-width: 520px) {
