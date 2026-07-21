@@ -9747,6 +9747,36 @@ function completeWelcomeWithLanguage(categoryId) {
   // anything peeks around the ceremony card. Cleared in scheduleTrackSwitchOverlayEnd.
 }
 
+/**
+ * Progress language menu: land on the currently selected language
+ * (centered when possible) instead of always starting at the top.
+ * Welcome menu has no current pick — stays at top.
+ */
+function scrollCategoryMenuToActive(menu) {
+  if (!menu || menu.closest(".category-picker--welcome")) return;
+  const scroller =
+    menu.querySelector("[data-category-menu-scroll]") ||
+    menu.querySelector(".category-picker-menu-scroll");
+  if (!scroller) return;
+  const active =
+    menu.querySelector('.category-option.active[aria-selected="true"]') ||
+    menu.querySelector(".category-option.active");
+  if (!active) {
+    scroller.scrollTop = 0;
+    return;
+  }
+
+  const scrollerRect = scroller.getBoundingClientRect();
+  const activeRect = active.getBoundingClientRect();
+  // Position of active relative to scroller content
+  const activeOffset =
+    activeRect.top - scrollerRect.top + scroller.scrollTop;
+  const target =
+    activeOffset - scroller.clientHeight / 2 + active.offsetHeight / 2;
+  const maxScroll = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+  scroller.scrollTop = Math.max(0, Math.min(target, maxScroll));
+}
+
 function openCategoryMenu(btn) {
   const picker = btn?.closest(".category-picker");
   const menu = picker?.querySelector(".category-picker-menu");
@@ -9757,15 +9787,23 @@ function openCategoryMenu(btn) {
   categoryMenuOpen = true;
   btn.setAttribute("aria-expanded", "true");
   menu.classList.remove("hidden");
-  // Reset scroll so the cue is honest, then measure overflow
+
+  const forWelcome = Boolean(picker?.classList.contains("category-picker--welcome"));
   const scroller =
     menu.querySelector("[data-category-menu-scroll]") ||
     menu.querySelector(".category-picker-menu-scroll");
-  if (scroller) scroller.scrollTop = 0;
+
+  // Welcome: start at top. Progress: jump to current language after layout.
+  if (scroller && forWelcome) scroller.scrollTop = 0;
+
   requestAnimationFrame(() => {
+    if (!forWelcome) scrollCategoryMenuToActive(menu);
     updateCategoryMenuScrollHints(menu);
-    // Second frame: fonts/layout settled (esp. welcome on mobile)
-    requestAnimationFrame(() => updateCategoryMenuScrollHints(menu));
+    // Second frame: fonts/layout settled (esp. mobile)
+    requestAnimationFrame(() => {
+      if (!forWelcome) scrollCategoryMenuToActive(menu);
+      updateCategoryMenuScrollHints(menu);
+    });
   });
 }
 
