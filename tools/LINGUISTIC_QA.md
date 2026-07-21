@@ -8,7 +8,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 | Swedish | PASS | **PASS 1 COMPLETE** | POS; survival; packs; stories |
 | Danish | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
 | German | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
-| Spanish | PASS | **PASS 1 COMPLETE** | POS; survival; packs; stories |
+| Spanish | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
 | French | PASS | **PASS 1 COMPLETE** | POS; survival; packs; stories |
 | Italian | PASS | **PASS 1 COMPLETE** | POS; survival; packs; stories |
 | Dutch | PASS | **PASS 1 COMPLETE** | POS; survival; packs; stories |
@@ -34,12 +34,13 @@ Goal: natural dialogue that weaves high-frequency **core** and **theme** forms s
 | Norwegian (nb) | **PASS 1 COMPLETE** | 12 stories; theme weave ~93% of 200; denser core dialogue |
 | Danish (da) | **PASS 1 COMPLETE** | 12 stories; theme weave ~93% of 200; DK forms (MobilePay, dankort, S-tog) |
 | German (de) | **PASS 1 COMPLETE** | 12 stories; theme weave ~93% of 199; DE forms (Deutschlandticket, S-Bahn, WG) |
-| Other 7 | pending | Same ladder; next on go |
+| Spanish (es) | **PASS 1 COMPLETE** | 12 stories; theme weave ~92% of 199; ES forms (VTC, cercanías, teletrabajo) |
+| Other 6 | pending | Same ladder; next on go |
 
 ## Ship rule
 
 - **All 10 languages:** structure PASS + linguistic PASS 1 (NB PASS 2).
-- **NB + DA + DE story pass 1** shipped; remaining on go (order: es → fr → it → nl → pl → pt → sv).
+- **NB + DA + DE + ES story pass 1** shipped; remaining on go (order: fr → it → nl → pl → pt → sv).
 - Continuous improvement always welcome; re-open a language only for a **named defect**.
 - Do not thrash certified decks without evidence.
 
