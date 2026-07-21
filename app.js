@@ -87,6 +87,9 @@ let sessionCorrect = 0;
 let sessionJustCompleted = false;
 /** When set, Review runs a focused theme set instead of the daily queue. */
 let themeSessionPackId = null;
+let themeSessionTotal = 0;
+/** Calm note after a theme set finishes (cleared on next start). */
+let lastThemeSessionNote = null;
 const THEME_SESSION_CAP = 12;
 let recognition = null;
 let speakModeActive = false;
@@ -2572,6 +2575,48 @@ function enableThematicPack(packId, options = {}) {
   };
 }
 
+function renderThemePackCard(pack, category) {
+  const coverage = countPackCoverage(pack, category.id);
+  const enabled = isPackEnabled(pack.id);
+  const status = enabled
+    ? coverage.missing > 0
+      ? `${coverage.present} of ${coverage.total} in deck · ${coverage.missing} left`
+      : `${coverage.present} of ${coverage.total} in your deck`
+    : `${coverage.total} cards`;
+  const actionLabel = enabled
+    ? coverage.missing > 0
+      ? "Add rest"
+      : "Added"
+    : "Add to deck";
+  const disabled = enabled && coverage.missing === 0;
+  const studyBtn = enabled
+    ? `<button
+        type="button"
+        class="btn primary library-theme-btn library-theme-btn--study"
+        data-pack-study="${escapeAttr(pack.id)}"
+        aria-label="${escapeAttr(`Study ${pack.title} now`)}"
+      >Study</button>`
+    : "";
+  return `
+    <li class="library-theme-card${enabled ? " is-enabled" : ""}" data-pack-id="${escapeAttr(pack.id)}">
+      <div class="library-theme-copy">
+        <p class="library-theme-name">${escapeHtml(pack.title)}</p>
+        <p class="library-theme-blurb">${escapeHtml(pack.blurb || "")}</p>
+        <p class="library-theme-status">${escapeHtml(status)}</p>
+      </div>
+      <div class="library-theme-actions">
+        ${studyBtn}
+        <button
+          type="button"
+          class="btn ${disabled ? "ghost" : "secondary"} library-theme-btn"
+          data-pack-enable="${escapeAttr(pack.id)}"
+          ${disabled ? "disabled" : ""}
+          aria-label="${escapeAttr(`${actionLabel}: ${pack.title}`)}"
+        >${escapeHtml(actionLabel)}</button>
+      </div>
+    </li>`;
+}
+
 function renderThematicPacks() {
   const root = document.getElementById("library-themes");
   if (!root) return;
@@ -2587,57 +2632,39 @@ function renderThematicPacks() {
     return;
   }
 
+  const enabledPacks = packs.filter((pack) => isPackEnabled(pack.id));
+  const morePacks = packs.filter((pack) => !isPackEnabled(pack.id));
+  // Keep the pack you just focused visible even if list is long.
+  const openMore =
+    libraryThemePackFilter &&
+    morePacks.some((pack) => pack.id === libraryThemePackFilter);
+
+  const enabledList = enabledPacks.length
+    ? `<ul class="library-themes-list" role="list">${enabledPacks
+        .map((pack) => renderThemePackCard(pack, category))
+        .join("")}</ul>`
+    : `<p class="library-themes-none">No packs in your deck yet — add one below.</p>`;
+
+  const moreBlock = morePacks.length
+    ? `<details class="library-themes-more"${openMore ? " open" : ""}>
+        <summary class="library-themes-more-summary">
+          <span>More packs</span>
+          <span class="library-themes-more-count">${morePacks.length}</span>
+        </summary>
+        <ul class="library-themes-list library-themes-list--more" role="list">${morePacks
+          .map((pack) => renderThemePackCard(pack, category))
+          .join("")}</ul>
+      </details>`
+    : "";
+
   root.classList.remove("hidden");
   root.innerHTML = `
     <div class="library-themes-head">
       <h3 class="library-themes-title">Themes</h3>
       <p class="library-themes-lead">Optional packs. Add when you need them — they won’t replace your essentials.</p>
     </div>
-    <ul class="library-themes-list" role="list">
-      ${packs
-        .map((pack) => {
-          const coverage = countPackCoverage(pack, category.id);
-          const enabled = isPackEnabled(pack.id);
-          const status = enabled
-            ? coverage.missing > 0
-              ? `${coverage.present} of ${coverage.total} in deck · ${coverage.missing} left`
-              : `${coverage.present} of ${coverage.total} in your deck`
-            : `${coverage.total} cards · not added`;
-          const actionLabel = enabled
-            ? coverage.missing > 0
-              ? "Add rest"
-              : "Added"
-            : "Add to deck";
-          const disabled = enabled && coverage.missing === 0;
-          const studyBtn = enabled
-            ? `<button
-                type="button"
-                class="btn primary library-theme-btn library-theme-btn--study"
-                data-pack-study="${escapeAttr(pack.id)}"
-                aria-label="${escapeAttr(`Study ${pack.title} now`)}"
-              >Study</button>`
-            : "";
-          return `
-            <li class="library-theme-card${enabled ? " is-enabled" : ""}" data-pack-id="${escapeAttr(pack.id)}">
-              <div class="library-theme-copy">
-                <p class="library-theme-name">${escapeHtml(pack.title)}</p>
-                <p class="library-theme-blurb">${escapeHtml(pack.blurb || "")}</p>
-                <p class="library-theme-status">${escapeHtml(status)}</p>
-              </div>
-              <div class="library-theme-actions">
-                ${studyBtn}
-                <button
-                  type="button"
-                  class="btn ${disabled ? "ghost" : "secondary"} library-theme-btn"
-                  data-pack-enable="${escapeAttr(pack.id)}"
-                  ${disabled ? "disabled" : ""}
-                  aria-label="${escapeAttr(`${actionLabel}: ${pack.title}`)}"
-                >${escapeHtml(actionLabel)}</button>
-              </div>
-            </li>`;
-        })
-        .join("")}
-    </ul>
+    ${enabledList}
+    ${moreBlock}
   `;
 }
 
@@ -2781,8 +2808,15 @@ function buildSessionQueue() {
 
 function nextInSession() {
   if (sessionQueue.length === 0) {
+    if (themeSessionPackId) {
+      const pack = getThematicPackById(themeSessionPackId);
+      lastThemeSessionNote = {
+        title: pack?.title || "Theme",
+        reviewed: themeSessionTotal || sessionReviewed || 0,
+      };
+      clearThemePracticeSession();
+    }
     currentCard = null;
-    if (themeSessionPackId) themeSessionPackId = null;
     return null;
   }
   const id = sessionQueue.shift();
@@ -2792,6 +2826,17 @@ function nextInSession() {
 
 function clearThemePracticeSession() {
   themeSessionPackId = null;
+  themeSessionTotal = 0;
+}
+
+function getThemeSessionRemaining() {
+  if (!themeSessionPackId) return 0;
+  return sessionQueue.length + (currentCard ? 1 : 0);
+}
+
+function getThemeSessionDoneCount() {
+  if (!themeSessionPackId || !themeSessionTotal) return 0;
+  return Math.max(0, themeSessionTotal - getThemeSessionRemaining());
 }
 
 /**
@@ -2891,6 +2936,8 @@ function startThemePracticeSession(packId) {
   if (touched) saveDeck();
 
   themeSessionPackId = packId;
+  themeSessionTotal = picked.length;
+  lastThemeSessionNote = null;
   sessionJustCompleted = false;
   sessionReviewed = 0;
   sessionCorrect = 0;
@@ -5283,6 +5330,26 @@ function renderEmptyState() {
     const correct =
       sessionCorrect === 1 ? "1 right this round" : `${sessionCorrect} right this round`;
 
+    // Theme set just finished — keep the daily spine, name the set calmly.
+    if (lastThemeSessionNote) {
+      const themeLine = `${lastThemeSessionNote.title} set done`;
+      const themeDetail =
+        lastThemeSessionNote.reviewed > 0
+          ? `${lastThemeSessionNote.reviewed} cards · ${correct}`
+          : correct;
+      showPowerHome({
+        mode: remainingToday > 0 || extraDue > 0 ? "continue" : "complete",
+        enabled: remainingToday > 0 || extraDue > 0 || hasDailyGoalRemaining(daily),
+        hint: themeLine,
+        ariaLabel:
+          remainingToday > 0
+            ? `${themeLine}. Continue daily review`
+            : themeLine,
+        detail: themeDetail,
+      });
+      return;
+    }
+
     if (daily.goalMet && !daily.extraMode) {
       showPowerHome({
         mode: "complete",
@@ -5422,51 +5489,105 @@ function renderPractice() {
   const goalChip = document.getElementById("daily-goal-chip");
   const progressBar = document.getElementById("daily-progress");
   const progressFill = document.getElementById("daily-progress-fill");
-
-  const showGoal = daily.goal > 0 && !daily.extraMode;
   const practiceMeta = document.getElementById("practice-meta");
 
+  const inTheme = Boolean(themeSessionPackId && themeSessionTotal > 0);
+  const showGoal = !inTheme && daily.goal > 0 && !daily.extraMode;
+
   if (practiceMeta) {
-    practiceMeta.classList.toggle("hidden", !showGoal);
-    practiceMeta.classList.toggle("is-complete", Boolean(showGoal && daily.goalMet));
-    practiceMeta.classList.toggle("is-active", Boolean(showGoal && !daily.goalMet && daily.reviewed > 0));
+    practiceMeta.classList.toggle("hidden", !showGoal && !inTheme);
+    practiceMeta.classList.toggle("is-theme", inTheme);
+    practiceMeta.classList.toggle(
+      "is-complete",
+      Boolean(showGoal && daily.goalMet)
+    );
+    practiceMeta.classList.toggle(
+      "is-active",
+      Boolean(
+        (showGoal && !daily.goalMet && daily.reviewed > 0) ||
+          (inTheme && getThemeSessionDoneCount() > 0)
+      )
+    );
   }
 
   if (goalChip) {
-    goalChip.classList.toggle("hidden", !showGoal);
-    goalChip.classList.toggle("goal-met", Boolean(showGoal && daily.goalMet));
-    goalChip.classList.toggle("is-live", Boolean(showGoal && !daily.goalMet && daily.reviewed > 0));
-    if (showGoal) {
+    if (inTheme) {
+      const pack = getThematicPackById(themeSessionPackId);
+      const done = getThemeSessionDoneCount();
+      const total = themeSessionTotal;
+      const left = getThemeSessionRemaining();
+      const countText = `${done}/${total}`;
       const countEl = document.getElementById("daily-goal-count");
-      const countText = `${daily.reviewed}/${daily.goal}`;
       if (countEl) countEl.textContent = countText;
       else goalChip.textContent = countText;
-      const status = daily.goalMet
-        ? "Goal complete"
-        : `Daily goal ${daily.reviewed} of ${daily.goal}`;
+      goalChip.classList.remove("hidden", "goal-met");
+      goalChip.classList.add("is-live", "is-theme-chip");
+      // Theme set is not the daily-cap control — keep it non-interactive look via aria only.
       goalChip.setAttribute(
         "aria-label",
-        `${status}. Tap to change daily target.`
+        `${pack?.title || "Theme"} set: ${done} of ${total}, ${left} left`
       );
       goalChip.removeAttribute("title");
+    } else {
+      goalChip.classList.remove("is-theme-chip");
+      goalChip.classList.toggle("hidden", !showGoal);
+      goalChip.classList.toggle("goal-met", Boolean(showGoal && daily.goalMet));
+      goalChip.classList.toggle(
+        "is-live",
+        Boolean(showGoal && !daily.goalMet && daily.reviewed > 0)
+      );
+      if (showGoal) {
+        const countEl = document.getElementById("daily-goal-count");
+        const countText = `${daily.reviewed}/${daily.goal}`;
+        if (countEl) countEl.textContent = countText;
+        else goalChip.textContent = countText;
+        const status = daily.goalMet
+          ? "Goal complete"
+          : `Daily goal ${daily.reviewed} of ${daily.goal}`;
+        goalChip.setAttribute(
+          "aria-label",
+          `${status}. Tap to change daily target.`
+        );
+        goalChip.removeAttribute("title");
+      }
     }
   }
 
   if (progressBar && progressFill) {
-    const showBar = daily.goal > 0 && !daily.extraMode;
-    progressBar.classList.toggle("hidden", !showBar);
-    progressBar.classList.toggle("is-complete", Boolean(showBar && daily.goalMet));
-    if (showBar) {
-      const pct = Math.min(100, Math.round((daily.reviewed / daily.goal) * 100));
+    if (inTheme) {
+      const done = getThemeSessionDoneCount();
+      const total = themeSessionTotal || 1;
+      const pct = Math.min(100, Math.round((done / total) * 100));
+      progressBar.classList.remove("hidden", "is-complete");
+      progressBar.classList.add("is-theme-bar");
       progressFill.style.width = `${pct}%`;
-      progressBar.setAttribute("aria-valuenow", String(daily.reviewed));
-      progressBar.setAttribute("aria-valuemax", String(daily.goal));
+      progressBar.setAttribute("aria-valuenow", String(done));
+      progressBar.setAttribute("aria-valuemax", String(total));
+      const pack = getThematicPackById(themeSessionPackId);
       progressBar.setAttribute(
         "aria-label",
-        daily.goalMet
-          ? `Daily goal complete: ${daily.reviewed} of ${daily.goal}`
-          : `${daily.reviewed} of ${daily.goal} cards reviewed today`
+        `${pack?.title || "Theme"}: ${done} of ${total}`
       );
+    } else {
+      progressBar.classList.remove("is-theme-bar");
+      const showBar = showGoal;
+      progressBar.classList.toggle("hidden", !showBar);
+      progressBar.classList.toggle(
+        "is-complete",
+        Boolean(showBar && daily.goalMet)
+      );
+      if (showBar) {
+        const pct = Math.min(100, Math.round((daily.reviewed / daily.goal) * 100));
+        progressFill.style.width = `${pct}%`;
+        progressBar.setAttribute("aria-valuenow", String(daily.reviewed));
+        progressBar.setAttribute("aria-valuemax", String(daily.goal));
+        progressBar.setAttribute(
+          "aria-label",
+          daily.goalMet
+            ? `Daily goal complete: ${daily.reviewed} of ${daily.goal}`
+            : `${daily.reviewed} of ${daily.goal} cards reviewed today`
+        );
+      }
     }
   }
 
@@ -5496,14 +5617,24 @@ function renderPractice() {
   if (promptHint) {
     if (themeSessionPackId) {
       const pack = getThematicPackById(themeSessionPackId);
-      const left = sessionQueue.length + 1; // current + remaining
+      const left = getThemeSessionRemaining();
       const title = pack?.title || "Theme";
-      promptHint.textContent = `${title} · ${left} left`;
+      promptHint.textContent = left === 1 ? `${title} · last card` : `${title} · ${left} left`;
       promptHint.classList.remove("hidden");
     } else {
       promptHint.textContent = "";
       promptHint.classList.add("hidden");
     }
+  }
+
+  // Direction chip shows *this* card’s effective direction (glue may force L2→EN).
+  const directionBtn = document.getElementById("prompt-direction");
+  if (directionBtn) {
+    directionBtn.textContent = labels.promptLabel;
+    directionBtn.setAttribute(
+      "aria-pressed",
+      String(isEffectiveReversePractice(currentCard))
+    );
   }
 
   hideFeedback();
@@ -10889,18 +11020,20 @@ function renderProgressThemes() {
       return `
         <div class="progress-themes-row">
           <div class="progress-themes-row-top">
-            <span class="progress-themes-name">${escapeHtml(pack.title)}</span>
-            <span class="progress-themes-status">${escapeHtml(status)}</span>
+            <div class="progress-themes-title-block">
+              <span class="progress-themes-name">${escapeHtml(pack.title)}</span>
+              <span class="progress-themes-status">${escapeHtml(status)}</span>
+            </div>
+            <button
+              type="button"
+              class="progress-themes-study"
+              data-pack-study="${escapeAttr(pack.id)}"
+              aria-label="${escapeAttr(`Study ${pack.title} now`)}"
+            >Study</button>
           </div>
           <div class="progress-themes-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${escapeAttr(pack.title)}: ${prog.introduced} of ${prog.present || prog.total} introduced">
             <div class="progress-themes-fill${barClass}" style="width: ${pct}%"></div>
           </div>
-          <button
-            type="button"
-            class="progress-themes-study"
-            data-pack-study="${escapeAttr(pack.id)}"
-            aria-label="${escapeAttr(`Study ${pack.title} now`)}"
-          >Study</button>
         </div>`;
     })
     .join("");
@@ -11514,6 +11647,7 @@ function startPractice() {
 
 function beginPracticeSession() {
   sessionJustCompleted = false;
+  lastThemeSessionNote = null;
   // Leaving a theme set when starting normal Review keeps the daily spine honest.
   clearThemePracticeSession();
   const daily = ensureDailyPracticeState();
@@ -11931,7 +12065,11 @@ function initEventListeners() {
     }
   });
 
-  document.getElementById("daily-goal-chip")?.addEventListener("click", () => openGoalCapModal());
+  document.getElementById("daily-goal-chip")?.addEventListener("click", () => {
+    // Theme set uses this chip as progress only — don't open daily-cap modal.
+    if (themeSessionPackId) return;
+    openGoalCapModal();
+  });
   document.getElementById("goal-cap-modal")?.addEventListener("click", (e) => {
     // Backdrop dismiss — no Close button; pick a number or tap away / Escape.
     if (e.target.id === "goal-cap-modal") closeGoalCapModal();
