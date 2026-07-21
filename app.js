@@ -6115,10 +6115,18 @@ function isSafeSoftSpellingFix(userText, suggestedText) {
   for (let i = 0; i < wu.length; i += 1) {
     if (wu[i] === ws[i]) continue;
     const common = COMMON_ENGLISH_TYPOS[wu[i]] === ws[i];
-    if (
+    const trans = isAdjacentTransposition(wu[i], ws[i]);
+    const insert =
+      isOneLetterInsert(wu[i], ws[i]) || isOneLetterInsert(ws[i], wu[i]);
+    // Multi-word: never treat epler≈eller style soft edits as "safe spelling"
+    // (that false-approved bad translations). Only map/transposition/insert.
+    if (wu.length >= 2) {
+      if (!common && !trans && !insert) return false;
+    } else if (
       !common &&
-      !isAdjacentTransposition(wu[i], ws[i]) &&
-      !softTokenMatch(wu[i], ws[i], 3)
+      !trans &&
+      !insert &&
+      !softTokenMatch(wu[i], ws[i], 4)
     ) {
       return false;
     }
@@ -7003,16 +7011,19 @@ function getTranslationReviewSummary(
     }
   }
 
-  if (isPhrase || usableSuggestedForeign || usableSuggestedNative) {
-    if (!foreignGibberish && !nativeGibberish) {
-      return {
-        matches: true,
-        targetField: null,
-        suggestedValue: null,
-        title: "Looks good",
-        copy: "",
-      };
-    }
+  // Never default a multi-word pair to LOOKS GOOD. That was approving
+  // bad cards when MT failed (rate limit) or returned no usable alternative.
+  if (isPhrase) {
+    return {
+      matches: false,
+      targetField: null,
+      suggestedValue: null,
+      title: "Couldn't double-check",
+      copy: "Online check was weak for this phrase. Only save if both sides look right to you.",
+    };
+  }
+
+  if (usableSuggestedForeign || usableSuggestedNative) {
     return {
       matches: false,
       targetField: null,
@@ -7022,7 +7033,13 @@ function getTranslationReviewSummary(
     };
   }
 
-  return null;
+  return {
+    matches: false,
+    targetField: null,
+    suggestedValue: null,
+    title: "Couldn't double-check",
+    copy: "Add if both sides look right to you.",
+  };
 }
 
 /** Drop a stale review if the form was edited after the check ran. */
@@ -7360,6 +7377,18 @@ async function openAddCardReview() {
     );
     if (!addCardReviewOpen || reviewForeign.textContent.trim() !== foreign) return;
     if (fromCorrected) suggestedForeign = fromCorrected;
+  }
+
+  // Retry EN→learning once if the first pass failed (rate limits / empty)
+  // so bad deck cards still get a real "Suggested Norwegian" instead of LOOKS GOOD.
+  if (!suggestedForeign && native) {
+    const retryForeign = await fetchTranslationSuggestion(
+      nativeFixed && spellingCorrectedNative ? spellingCorrectedNative : native,
+      nativeCode,
+      foreignCode
+    );
+    if (!addCardReviewOpen || reviewForeign.textContent.trim() !== foreign) return;
+    if (retryForeign) suggestedForeign = retryForeign;
   }
 
   renderAddCardReviewContext({
