@@ -54,13 +54,13 @@ const READ_STORIES = [
     trail: "green-circle",
     sentences: [
       { nb: "God morgen.", en: "Good morning." },
-      { nb: "Jeg har nettopp kommet fram.", en: "I just arrived." },
+      { nb: "Jeg har nettopp kommet frem.", en: "I just arrived." },
       { nb: "Det er kaldt, men sola skinner.", en: "It is cold, but the sun is shining." },
       { nb: "Jeg tar bysykkel langs gågata.", en: "I take a city bike along the pedestrian street." },
       { nb: "Unnskyld, hvor er holdeplassen?", en: "Excuse me, where is the stop?" },
       { nb: "Rett fram, ved veikrysset.", en: "Straight ahead, by the intersection." },
       { nb: "Tusen takk. Ha en fin dag!", en: "Thank you. Have a nice day!" },
-      { nb: "Ingen problem. Lykke til!", en: "No problem. Good luck!" },
+      { nb: "Ikke noe problem. Lykke til!", en: "No problem. Good luck!" },
       { nb: "Ha det!", en: "Goodbye!" },
     ],
     glosses: {
@@ -261,7 +261,7 @@ const READ_STORIES = [
     sentences: [
       { nb: "Hei, jeg ringer om leiligheten på nettet.", en: "Hi, I'm calling about the apartment online." },
       { nb: "Ja, den er fortsatt ledig. Når vil du se den?", en: "Yes, it's still free. When would you like to see it?" },
-      { nb: "I ettermiddag går, rundt tre.", en: "This afternoon works, around three." },
+      { nb: "I ettermiddag går fint, rundt tre.", en: "This afternoon works fine, around three." },
       { nb: "Fint. Den ligger i nabolaget, tredje etasje.", en: "Fine. It's in the neighborhood, third floor." },
       { nb: "Er det heis?", en: "Is there an elevator?" },
       { nb: "Nei, bare trapper. Husleia inkluderer internett.", en: "No, only stairs. The rent includes internet." },
