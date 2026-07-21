@@ -2605,7 +2605,7 @@ function renderThemePackWordList(pack, category) {
   if (!rows) return "";
   // Preview before Add (and quick reference after) — collapsed by default.
   return `<details class="library-theme-preview">
-    <summary class="library-theme-preview-summary">${entries.length} words</summary>
+    <summary class="library-theme-preview-summary">${entries.length}</summary>
     <ul class="library-theme-word-list" role="list">${rows}</ul>
   </details>`;
 }
