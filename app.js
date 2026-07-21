@@ -3438,7 +3438,7 @@ function updateReadLanguageIndicator(category = getActiveCategory()) {
 /**
  * Full-screen language ceremony: logo bloom + optional flag + language name.
  * @param {string} label
- * @param {{ flag?: string, durationMs?: number, welcome?: boolean, portal?: boolean, flashProgress?: boolean }} [options]
+ * @param {{ flag?: string, durationMs?: number, welcome?: boolean, portal?: boolean, flashProgress?: boolean, showKicker?: boolean, restart?: boolean }} [options]
  */
 function showTrackSwitchOverlay(label, options = {}) {
   const el = document.getElementById("track-switch-overlay");
@@ -3460,14 +3460,16 @@ function showTrackSwitchOverlay(label, options = {}) {
   const durationMs = Number(options.durationMs) > 0 ? Number(options.durationMs) : 1250;
   const isWelcome = Boolean(options.welcome);
   const isPortal = Boolean(options.portal);
+  const showKicker = options.showKicker !== false;
+  const restart = options.restart !== false;
   // Mid-session Progress picks: pulse the language chip after the veil
   const shouldFlashProgress =
     options.flashProgress === true || (!isWelcome && options.flashProgress !== false);
 
   nameEl.textContent = text;
   if (kickerEl) {
-    // Portal shows "Now learning" only after the logo→language handoff
-    kickerEl.hidden = !isPortal;
+    // Portal may show "Now learning" after the logo→language handoff
+    kickerEl.hidden = !(isPortal && showKicker);
   }
   if (flagEl) {
     if (flag) {
@@ -3481,6 +3483,8 @@ function showTrackSwitchOverlay(label, options = {}) {
 
   el.classList.toggle("is-welcome-enter", isWelcome);
   el.classList.toggle("is-welcome-portal", isPortal);
+  el.classList.toggle("is-hide-kicker", isPortal && !showKicker);
+  el.dataset.flashProgress = shouldFlashProgress ? "1" : "0";
   el.classList.remove("is-phase-language");
   logoEl?.classList.remove("is-beat-flash");
   logoWrap?.classList.remove("is-beat-flash");
@@ -3488,15 +3492,39 @@ function showTrackSwitchOverlay(label, options = {}) {
   nameEl?.classList.remove("is-beat-flash");
   el.classList.remove("hidden");
   el.setAttribute("aria-hidden", "false");
-  // Restart CSS animations cleanly
-  el.classList.remove("is-visible");
-  void el.offsetWidth;
-  el.classList.add("is-visible");
+
+  // restart:false keeps an already-visible veil stable (no opacity blink)
+  if (restart || !el.classList.contains("is-visible")) {
+    el.classList.remove("is-visible");
+    void el.offsetWidth;
+    el.classList.add("is-visible");
+  }
+
+  scheduleTrackSwitchOverlayEnd(durationMs, { isPortal, shouldFlashProgress });
+}
+
+/**
+ * End the ceremony timer without re-animating the veil.
+ * Used after the beatmap loads so the first-entry cover can paint before await.
+ */
+function scheduleTrackSwitchOverlayEnd(durationMs, options = {}) {
+  const el = document.getElementById("track-switch-overlay");
+  if (!el) return;
+  if (trackSwitchOverlayTimer) {
+    window.clearTimeout(trackSwitchOverlayTimer);
+    trackSwitchOverlayTimer = null;
+  }
+  const isPortal =
+    options.isPortal != null ? Boolean(options.isPortal) : el.classList.contains("is-welcome-portal");
+  const shouldFlashProgress =
+    options.shouldFlashProgress != null
+      ? Boolean(options.shouldFlashProgress)
+      : el.dataset.flashProgress === "1";
+  const ms = Number(durationMs) > 0 ? Number(durationMs) : 1250;
 
   trackSwitchOverlayTimer = window.setTimeout(() => {
     trackSwitchOverlayTimer = null;
     el.classList.remove("is-visible");
-    // Stop portal music with the veil
     if (isPortal) {
       clearWelcomePortalTimers();
       const portalAudio = document.getElementById("welcome-portal-audio");
@@ -3512,12 +3540,19 @@ function showTrackSwitchOverlay(label, options = {}) {
     window.setTimeout(() => {
       if (!el.classList.contains("is-visible")) {
         el.classList.add("hidden");
-        el.classList.remove("is-welcome-enter", "is-welcome-portal", "is-phase-language");
+        el.classList.remove(
+          "is-welcome-enter",
+          "is-welcome-portal",
+          "is-phase-language",
+          "is-hide-kicker"
+        );
         el.setAttribute("aria-hidden", "true");
-        logoEl?.classList.remove("is-beat-flash");
-        logoWrap?.classList.remove("is-beat-flash");
-        nameEl?.classList.remove("is-beat-flash");
+        el.querySelector(".track-switch-logo")?.classList.remove("is-beat-flash");
+        el.querySelector(".track-switch-logo-wrap")?.classList.remove("is-beat-flash");
+        document.getElementById("track-switch-overlay-name")?.classList.remove("is-beat-flash");
+        const kickerEl = document.getElementById("track-switch-overlay-kicker");
         if (kickerEl) kickerEl.hidden = true;
+        const flagEl = document.getElementById("track-switch-overlay-flag");
         if (flagEl) {
           flagEl.hidden = true;
           flagEl.textContent = "";
@@ -3525,10 +3560,8 @@ function showTrackSwitchOverlay(label, options = {}) {
         }
       }
     }, 320);
-    // Mid-session switches land attention on Progress language control.
-    // First entry: already on Review — no Progress flash.
     if (shouldFlashProgress) flashProgressLanguageControl();
-  }, durationMs);
+  }, ms);
 }
 
 /**
@@ -3623,10 +3656,13 @@ function runPortalBeatClock(audio, events, onEvent) {
  * when the bass densifies. No screen flashes/ripples (photosensitive-safe).
  * Falls back to short synth if audio/beatmap unavailable or reduced motion.
  *
- * @param {{ firstEntry?: boolean }} [options]
+ * The veil paints synchronously so first-entry never flashes Review underneath.
+ *
+ * @param {{ firstEntry?: boolean, showKicker?: boolean }} [options]
  */
 function announceLanguagePortal(category = getActiveCategory(), options = {}) {
   const firstEntry = Boolean(options.firstEntry);
+  const showKicker = options.showKicker !== false;
   const label = category?.label || category?.learningLanguageName || "Language";
   const flag = category?.flag || "";
   unlockAudioPipeline();
@@ -3639,6 +3675,7 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
       flag,
       durationMs: firstEntry ? 1400 : 1250,
       welcome: firstEntry,
+      showKicker,
     });
     if (firstEntry) {
       triggerWelcomeEnterHaptic();
@@ -3655,6 +3692,22 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
     return;
   }
 
+  // Paint the veil immediately (before any await) so Review never peeks through
+  // when the welcome gate closes on first language pick.
+  const provisionalMs = Math.round(
+    (Number(welcomePortalBeatmap?.duration) || 5.06) * 1000 + 420
+  );
+  showTrackSwitchOverlay(label, {
+    flag,
+    durationMs: provisionalMs,
+    welcome: true,
+    portal: true,
+    flashProgress: !firstEntry,
+    showKicker,
+  });
+  if (firstEntry) triggerWelcomeEnterHaptic();
+  else triggerTrackSwitchHaptic();
+
   void (async () => {
     const map = await loadWelcomePortalBeatmap();
     const audio = document.getElementById("welcome-portal-audio");
@@ -3665,22 +3718,18 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
     const nameEl = document.getElementById("track-switch-overlay-name");
 
     if (!map || !audio) {
-      shortFallback();
+      // Veil already up — soft synth underlay only
+      if (firstEntry) playWelcomeEnterSound();
+      else playTrackSwitchSound();
       return;
     }
 
-    // Hold the veil a beat past the clip so the last pulse can settle
+    // Match end time to the real clip without blinking the veil
     const durationMs = Math.round((Number(map.duration) || 5) * 1000 + 420);
-    showTrackSwitchOverlay(label, {
-      flag,
-      durationMs,
-      welcome: true,
-      portal: true,
-      // After Progress picks, pulse the language chip so attention lands there
-      flashProgress: !firstEntry,
+    scheduleTrackSwitchOverlayEnd(durationMs, {
+      isPortal: true,
+      shouldFlashProgress: !firstEntry,
     });
-    if (firstEntry) triggerWelcomeEnterHaptic();
-    else triggerTrackSwitchHaptic();
 
     const volume = Math.min(1, Math.max(0, Number(map.volume) || 0.75));
     try {
@@ -9643,6 +9692,9 @@ function renderCategoryPicker() {
 /**
  * First-run: picking a language *is* entering the app (no Start button).
  * Full portal ceremony (visual + haptic + sound) — then land in Review.
+ *
+ * Order matters: paint the portal veil first, then swap app state under it,
+ * so Review never flashes before the ceremony covers the screen.
  */
 function completeWelcomeWithLanguage(categoryId) {
   const nextCategory = getCategoryById(categoryId);
@@ -9653,6 +9705,10 @@ function completeWelcomeWithLanguage(categoryId) {
   void ensureUiAudioReady();
   closeCategoryMenu();
 
+  // 1) Cover the screen immediately (sync veil + start music/beats)
+  announceWelcomeEnter(nextCategory);
+
+  // 2) Swap language + land on Review underneath the veil
   if (categoryId !== activeCategoryId) {
     applyCategorySwitch(categoryId, { announce: false });
   } else {
@@ -9660,15 +9716,13 @@ function completeWelcomeWithLanguage(categoryId) {
     renderAll();
   }
 
-  // Ceremony runs above the welcome gate (higher z-index); hide gate under the veil.
+  // 3) Drop the welcome gate only after the ceremony is already covering
   closeWelcomeModal(true);
   try {
     switchTab("practice");
   } catch {
     /* keep safe */
   }
-
-  announceWelcomeEnter(nextCategory);
 }
 
 function openCategoryMenu(btn) {
@@ -10578,6 +10632,13 @@ function showWelcomeModal() {
   setWelcomeGateActive(true);
   updateCategoryPickerAvailability();
   welcomeBtn?.focus({ preventScroll: true });
+  // Warm portal assets so the first pick can cover the screen without waiting
+  void loadWelcomePortalBeatmap();
+  try {
+    document.getElementById("welcome-portal-audio")?.load?.();
+  } catch {
+    /* ignore */
+  }
 }
 
 function closeWelcomeModal(markSeen = true) {

@@ -723,6 +723,11 @@ main,
   display: block;
 }
 
+/* Optional: hide "Now learning" while keeping flag + language name */
+.track-switch-overlay.is-welcome-portal.is-hide-kicker .track-switch-overlay-kicker {
+  display: none !important;
+}
+
 .track-switch-overlay.is-welcome-portal .track-switch-overlay-name {
   transition:
     opacity 0.45s ease,
