@@ -4950,8 +4950,13 @@ html.needs-welcome body {
 .library-theme-status {
   margin: 0.15rem 0 0;
   font-size: 0.8rem;
-  color: var(--brand-deep, #2a4a9b);
+  color: var(--muted, #5c6570);
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.library-themes.has-enabled .library-themes-list:first-child {
+  margin-bottom: 0.15rem;
 }
 
 .library-theme-actions {
@@ -5039,22 +5044,9 @@ html.needs-welcome body {
   background: color-mix(in srgb, var(--error, #d70015) 12%, transparent);
 }
 
-.library-theme-pack-filters {
-  width: 100%;
-  margin-top: 0.15rem;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
+.library-theme-pack-filters,
 .library-theme-pack-filters.hidden {
-  display: none;
-}
-
-.library-theme-pack-chip {
-  font-size: 0.82rem;
-  min-height: 2rem;
-  padding-inline: 0.7rem;
+  display: none !important;
 }
 
 .library-controls {
@@ -5848,12 +5840,14 @@ html.needs-welcome body {
   margin-top: 0.15rem;
 }
 
+/* Deck strip: flat truth under the Review action (same language as Themes) */
 .progress-coverage {
-  margin-bottom: 0.65rem;
-  padding: 0.85rem 0.95rem 0.8rem;
-  border-radius: var(--radius-sm);
-  background: var(--surface-glass-strong);
-  border: 1px solid var(--border);
+  margin-bottom: 0.55rem;
+  padding: 0.55rem 0 0.35rem;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border);
   box-shadow: none;
 }
 
@@ -5862,7 +5856,7 @@ html.needs-welcome body {
   align-items: baseline;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.4rem;
 }
 
 .progress-coverage-label {
@@ -5874,21 +5868,21 @@ html.needs-welcome body {
 }
 
 .progress-coverage-value {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
 
 .progress-coverage-total {
-  font-size: 0.92rem;
-  font-weight: 600;
+  font-size: 0.86rem;
+  font-weight: 500;
   color: var(--text-secondary);
 }
 
 .progress-coverage-bar {
-  height: 0.45rem;
+  height: 0.3rem;
   border-radius: 999px;
   background: rgba(54, 95, 207, 0.08);
   overflow: hidden;
@@ -5899,16 +5893,6 @@ html.needs-welcome body {
   border-radius: inherit;
   background: linear-gradient(90deg, var(--brand), #5b9aff);
   transition: width 0.35s var(--ease);
-}
-
-.progress-coverage-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem 0.85rem;
-  margin: 0.55rem 0 0;
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: var(--text-secondary);
 }
 
 /* Progress → Themes glance (opt-in packs only) */
@@ -6091,10 +6075,6 @@ html.needs-welcome body {
 
 .progress-coverage.hidden {
   display: none;
-}
-
-.progress-coverage {
-  margin-bottom: 1rem;
 }
 
 /* Soft section cards — desktop + mobile share the same language */
@@ -6290,29 +6270,16 @@ html.needs-welcome body {
   }
 
   .progress-coverage {
-    margin-bottom: 1.35rem;
-    padding: 1.05rem 1.15rem 1rem;
+    margin-bottom: 0.65rem;
+    padding: 0.55rem 0 0.35rem;
   }
 
   .progress-coverage-head {
-    margin-bottom: 0.65rem;
-  }
-
-  .progress-coverage-label {
-    font-size: 0.7rem;
+    margin-bottom: 0.4rem;
   }
 
   .progress-coverage-value {
-    font-size: 1.25rem;
-  }
-
-  .progress-coverage-bar {
-    height: 0.5rem;
-  }
-
-  .progress-coverage-meta {
-    margin-top: 0.65rem;
-    font-size: 0.84rem;
+    font-size: 0.98rem;
   }
 
   .progress-daily {

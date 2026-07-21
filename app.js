@@ -2642,25 +2642,22 @@ function renderThematicPacks() {
         .join("")}</ul>`
     : "";
 
-  // Catalog of unadded packs — collapsed when something is already on.
+  // Unadded catalog always starts collapsed — day-one Library stays about the deck.
+  // Summary: “Themes” when nothing is on; “More” once some packs are already added.
   const moreBlock = morePacks.length
-    ? enabledPacks.length
-      ? `<details class="library-themes-more">
+    ? `<details class="library-themes-more">
         <summary class="library-themes-more-summary">
-          <span>More</span>
+          <span>${enabledPacks.length ? "More" : "Themes"}</span>
           <span class="library-themes-more-count">${morePacks.length}</span>
         </summary>
         <ul class="library-themes-list library-themes-list--more" role="list">${morePacks
           .map((pack) => renderThemePackCard(pack, category))
           .join("")}</ul>
       </details>`
-      : `<ul class="library-themes-list" role="list">${morePacks
-          .map((pack) => renderThemePackCard(pack, category))
-          .join("")}</ul>`
     : "";
 
   root.classList.remove("hidden");
-  // No second “Themes” heading — the section aria-label + filter chip carry identity.
+  root.classList.toggle("has-enabled", enabledPacks.length > 0);
   root.innerHTML = `
     ${enabledList}
     ${moreBlock}
@@ -10894,23 +10891,20 @@ function renderProgressSummary() {
     }
   }
 
-  // —— Deck coverage: size + introduced % only (no path pep-talk).
-  // "Still new" / fresh-deck copy is redundant with 0% + Leitner New row.
+  // —— Deck coverage: quiet truth strip (not a second glass card).
+  // Card count rides the head line; % + bar carry the progress fact.
   if (coverageEl) {
     coverageEl.classList.toggle("hidden", total === 0);
     if (total > 0) {
       coverageEl.innerHTML = `
         <div class="progress-coverage-head">
-          <span class="progress-coverage-label">Your deck</span>
+          <span class="progress-coverage-label">Deck</span>
           <span class="progress-coverage-value">
-            ${escapeHtml(String(introducedPct))}<span class="progress-coverage-total">% introduced</span>
+            ${escapeHtml(String(introducedPct))}<span class="progress-coverage-total">% · ${escapeHtml(deckLabel)}</span>
           </span>
         </div>
         <div class="progress-coverage-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${introducedPct}" aria-label="${introduced} of ${total} cards introduced">
           <div class="progress-coverage-fill" style="width: ${introducedPct}%"></div>
-        </div>
-        <div class="progress-coverage-meta">
-          <span>${escapeHtml(deckLabel)}</span>
         </div>`;
     } else {
       coverageEl.innerHTML = "";
