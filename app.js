@@ -4059,13 +4059,14 @@ function englishInflectionMatch(a, b) {
 /**
  * One substitution/insert/delete for longer single tokens.
  * Requires the same first letter so flott ≉ slott (which was hijacking great/flott → castle).
+ * minLen defaults to 5 (answer matching). Review spelling may pass 4 for feel≈feal in phrases.
  */
-function withinOneEdit(a, b) {
+function withinOneEdit(a, b, minLen = 5) {
   const s = normalizeAnswer(a);
   const t = normalizeAnswer(b);
   if (!s || !t || s === t) return s === t;
   if (s.includes(" ") || t.includes(" ")) return false;
-  if (s.length < 5 || t.length < 5) return false;
+  if (s.length < minLen || t.length < minLen) return false;
   if (s[0] !== t[0]) return false;
   if (Math.abs(s.length - t.length) > 1) return false;
 
@@ -4091,9 +4092,90 @@ function withinOneEdit(a, b) {
   return edits <= 1;
 }
 
+/** Normalized word tokens for review spelling compare. */
+function reviewTokens(text) {
+  return normalizeAnswer(String(text || ""))
+    .split(" ")
+    .filter(Boolean);
+}
+
+/**
+ * Single-token soft match (exact, dialect, inflection, one-edit, Norwegian typing).
+ * minEditLen: 5 for answers; 4 allowed in multi-word review so feel≈feal is caught.
+ */
+function softTokenMatch(a, b, minEditLen = 5) {
+  if (!a || !b) return false;
+  const x = normalizeAnswer(a);
+  const y = normalizeAnswer(b);
+  if (!x || !y) return false;
+  if (x === y) return true;
+  if (norwegianTypingMatches(x, y)) return true;
+  if (englishDialectSpellingMatches(x, y)) return true;
+  if (englishInflectionMatch(x, y)) return true;
+  if (withinOneEdit(x, y, minEditLen)) return true;
+  return false;
+}
+
+/**
+ * Review-time gloss compare: exact vs soft (typo / inflection / dialect).
+ * Multi-word: same token count, each word soft-matches (min edit 4 so "feal"→"feel").
+ * spellingOnly means soft match that is NOT exact — never treat as "Looks good".
+ */
+function reviewGlossCompare(user, suggested) {
+  if (!user || !suggested) {
+    return { exact: false, soft: false, spellingOnly: false };
+  }
+
+  const u = stripFlashcardPunctuation(user);
+  const s = stripFlashcardPunctuation(suggested);
+  if (!u || !s) {
+    return { exact: false, soft: false, spellingOnly: false };
+  }
+
+  if (normalizeAnswer(u) === normalizeAnswer(s)) {
+    return { exact: true, soft: true, spellingOnly: false };
+  }
+
+  // Slash / particle / dialect exact-enough (still may differ in display form)
+  if (glossPartsMatch(u, s) || particleAnswerMatches(u, s)) {
+    return { exact: true, soft: true, spellingOnly: false };
+  }
+
+  const wu = reviewTokens(u);
+  const ws = reviewTokens(s);
+
+  // Multi-word phrase: require same length, allow one-letter typos on long tokens
+  if (wu.length >= 2 && wu.length === ws.length) {
+    let allExact = true;
+    for (let i = 0; i < wu.length; i += 1) {
+      if (wu[i] === ws[i]) continue;
+      allExact = false;
+      // Anchored by the rest of the phrase → minLen 4 catches feel/feal
+      if (!softTokenMatch(wu[i], ws[i], 4)) {
+        return { exact: false, soft: false, spellingOnly: false };
+      }
+    }
+    return { exact: allExact, soft: true, spellingOnly: !allExact };
+  }
+
+  // Single token: prefer min 5, then min 4 for 4+ letter words (feel/feal)
+  if (wu.length === 1 && ws.length === 1) {
+    if (softTokenMatch(wu[0], ws[0], 5) || softTokenMatch(wu[0], ws[0], 4)) {
+      return { exact: false, soft: true, spellingOnly: true };
+    }
+  }
+
+  // Full-string soft (slash parts, short phrases that didn't token-align)
+  if (softGlossMatch(u, s)) {
+    return { exact: false, soft: true, spellingOnly: true };
+  }
+
+  return { exact: false, soft: false, spellingOnly: false };
+}
+
 /**
  * Soft match for suggestions/review: case, æ/ø/å typing, slash glosses,
- * simple plurals, and one-letter typos on longer words.
+ * simple plurals, one-letter typos, and multi-word phrase typos.
  */
 function softGlossMatch(a, b) {
   if (!a || !b) return false;
@@ -4116,6 +4198,13 @@ function softGlossMatch(a, b) {
       if (englishDialectSpellingMatches(left, right)) return true;
       if (withinOneEdit(left, right)) return true;
       if (norwegianTypingMatches(left, right)) return true;
+
+      // Multi-word: same token count, each word soft-matches (min 4 in phrases)
+      const wl = reviewTokens(left);
+      const wr = reviewTokens(right);
+      if (wl.length >= 2 && wl.length === wr.length) {
+        if (wl.every((word, i) => softTokenMatch(word, wr[i], 4))) return true;
+      }
     }
   }
   return false;
@@ -4512,6 +4601,131 @@ async function fetchTranslationSuggestion(text, fromLang, toLang) {
   }
 }
 
+/** Small Levenshtein for spelling picks (short tokens only). */
+function editDistance(a, b) {
+  const s = normalizeAnswer(a);
+  const t = normalizeAnswer(b);
+  if (s === t) return 0;
+  if (!s) return t.length;
+  if (!t) return s.length;
+  if (Math.abs(s.length - t.length) > 3) return 99;
+  const rows = s.length + 1;
+  const cols = t.length + 1;
+  const prev = new Array(cols);
+  const cur = new Array(cols);
+  for (let j = 0; j < cols; j += 1) prev[j] = j;
+  for (let i = 1; i < rows; i += 1) {
+    cur[0] = i;
+    for (let j = 1; j < cols; j += 1) {
+      const cost = s[i - 1] === t[j - 1] ? 0 : 1;
+      cur[j] = Math.min(cur[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+    }
+    for (let j = 0; j < cols; j += 1) prev[j] = cur[j];
+  }
+  return prev[t.length];
+}
+
+/**
+ * Pick the best spelling replacement from LanguageTool candidates.
+ * Prefers words already in the phrase (feel…feal → feel), then same first letter + near edits.
+ */
+function pickSpellingReplacement(original, replacements, fullText) {
+  if (!replacements?.length) return null;
+  const o = normalizeAnswer(original);
+  if (!o) return null;
+  const contextTokens = new Set(reviewTokens(fullText));
+  let best = null;
+  let bestScore = -Infinity;
+
+  replacements.forEach((raw, index) => {
+    const candidate = String(raw || "").trim();
+    if (!candidate || candidate.includes(" ")) return;
+    const n = normalizeAnswer(candidate);
+    if (!n || n === o) return;
+    const dist = editDistance(o, n);
+    if (dist > 2) return;
+
+    let score = 0;
+    if (contextTokens.has(n)) score += 30;
+    if (n[0] === o[0]) score += 12;
+    score += Math.max(0, 8 - dist * 3);
+    if (Math.abs(n.length - o.length) <= 1) score += 2;
+    score -= index * 0.15; // LanguageTool order as weak tie-break
+    if (score > bestScore) {
+      bestScore = score;
+      best = candidate;
+    }
+  });
+
+  return best;
+}
+
+/**
+ * English spelling correction via LanguageTool public API (CORS open).
+ * Only applies misspelling fixes — not casing/style — so flashcards stay lemma-friendly.
+ * Returns corrected text, or null if unchanged / unavailable.
+ */
+async function fetchEnglishSpellingCorrection(text) {
+  const trimmed = String(text || "").trim();
+  if (!trimmed || trimmed.length < 2) return null;
+  if (looksLikeGibberish(trimmed)) return null;
+
+  try {
+    const body = new URLSearchParams({
+      language: "en-US",
+      text: trimmed,
+    });
+    const response = await fetch("https://api.languagetool.org/v2/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    const matches = (data.matches || []).filter(
+      (m) =>
+        m &&
+        m.rule?.issueType === "misspelling" &&
+        Array.isArray(m.replacements) &&
+        m.replacements.length > 0 &&
+        Number.isFinite(m.offset) &&
+        Number.isFinite(m.length) &&
+        m.length > 0
+    );
+    if (!matches.length) return null;
+
+    // Apply from the end so earlier offsets stay valid
+    let result = trimmed;
+    const sorted = [...matches].sort((a, b) => b.offset - a.offset);
+    let changed = false;
+
+    for (const match of sorted) {
+      if (match.offset < 0 || match.offset + match.length > result.length) continue;
+      const original = result.slice(match.offset, match.offset + match.length);
+      // Only fix plain word tokens — skip multi-word LT rewrites
+      if (/\s/.test(original)) continue;
+      const pick = pickSpellingReplacement(
+        original,
+        match.replacements.map((r) => r.value).filter(Boolean),
+        trimmed
+      );
+      if (!pick) continue;
+      if (normalizeAnswer(pick) === normalizeAnswer(original)) continue;
+      if (editDistance(original, pick) > 2) continue;
+      result =
+        result.slice(0, match.offset) + pick + result.slice(match.offset + match.length);
+      changed = true;
+    }
+
+    if (!changed) return null;
+    const cleaned = stripFlashcardPunctuation(result);
+    if (!cleaned || normalizeAnswer(cleaned) === normalizeAnswer(trimmed)) return null;
+    return cleaned;
+  } catch {
+    return null;
+  }
+}
+
 function syncAddCardSuggestingState() {
   const form = document.getElementById("add-card-form");
   if (!form) return;
@@ -4632,15 +4846,50 @@ async function updateForeignSuggestions() {
     const translated = await fetchTranslationSuggestion(query, foreignCode, nativeCode);
     if (token !== foreignSuggestToken) return;
     if (translated && activeSuggestField === "foreign" && input.value.trim() === query) {
+      // Round-trip: if source had a typo, prefer the corrected learning-language form
+      const correctedForeign = await correctSideViaRoundTrip(
+        query,
+        translated,
+        foreignCode,
+        nativeCode,
+        "foreign"
+      );
+      if (token !== foreignSuggestToken || input.value.trim() !== query) return;
+      const foreignSide = correctedForeign || query;
+      const spellingFixed = Boolean(
+        correctedForeign && normalizeAnswer(correctedForeign) !== normalizeAnswer(query)
+      );
       addSuggestion({
-        foreign: query,
+        foreign: foreignSide,
         native: translated,
-        meta: "Suggested translation",
+        meta: spellingFixed ? "Suggested · spelling fixed" : "Suggested translation",
         selectable: true,
       });
       paint();
     }
   }
+}
+
+/**
+ * Round-trip a translation to catch typos on the source side.
+ * EN "… i feal" → NO → EN "… I feel" → soft spelling match → return corrected source.
+ * direction "native" = source is English; "foreign" = source is learning language.
+ */
+async function correctSideViaRoundTrip(sourceText, translated, foreignCode, nativeCode, direction) {
+  if (!sourceText || !translated) return null;
+  const back =
+    direction === "native"
+      ? await fetchTranslationSuggestion(translated, foreignCode, nativeCode)
+      : await fetchTranslationSuggestion(translated, nativeCode, foreignCode);
+  if (!back) return null;
+  const cmp = reviewGlossCompare(sourceText, back);
+  // Only replace when it is clearly the same phrase with a spelling/form tweak
+  if (cmp.spellingOnly || (cmp.soft && !cmp.exact)) {
+    return direction === "native"
+      ? stripFlashcardPunctuation(back)
+      : preferDisplayForm(back);
+  }
+  return null;
 }
 
 async function updateNativeSuggestions() {
@@ -4683,13 +4932,53 @@ async function updateNativeSuggestions() {
 
   if (shouldRequestTranslation(query)) {
     const { foreignCode, nativeCode } = getCategoryLanguageCodes();
-    const translated = await fetchTranslationSuggestion(query, nativeCode, foreignCode);
+    // Spell-check English first so we never offer a translation of "feal"
+    const [translated, spellingFixedNative] = await Promise.all([
+      fetchTranslationSuggestion(query, nativeCode, foreignCode),
+      fetchEnglishSpellingCorrection(query),
+    ]);
     if (token !== nativeSuggestToken) return;
-    if (translated && activeSuggestField === "native" && input.value.trim() === query) {
+    if (input.value.trim() !== query || activeSuggestField !== "native") return;
+
+    let nativeSide = query;
+    let foreignSide = translated;
+    let spellingFixed = false;
+
+    if (
+      spellingFixedNative &&
+      normalizeAnswer(spellingFixedNative) !== normalizeAnswer(query)
+    ) {
+      nativeSide = spellingFixedNative;
+      spellingFixed = true;
+      // Re-translate from the corrected English so the learning side is also legitimate
+      const retranslated = await fetchTranslationSuggestion(
+        spellingFixedNative,
+        nativeCode,
+        foreignCode
+      );
+      if (token !== nativeSuggestToken || input.value.trim() !== query) return;
+      if (retranslated) foreignSide = retranslated;
+    } else if (translated) {
+      // Fallback: round-trip may still polish rare cases
+      const correctedNative = await correctSideViaRoundTrip(
+        query,
+        translated,
+        foreignCode,
+        nativeCode,
+        "native"
+      );
+      if (token !== nativeSuggestToken || input.value.trim() !== query) return;
+      if (correctedNative && normalizeAnswer(correctedNative) !== normalizeAnswer(query)) {
+        nativeSide = correctedNative;
+        spellingFixed = true;
+      }
+    }
+
+    if (foreignSide) {
       addSuggestion({
-        foreign: translated,
-        native: query,
-        meta: "Suggested translation",
+        foreign: foreignSide,
+        native: nativeSide,
+        meta: spellingFixed ? "Suggested · spelling fixed" : "Suggested translation",
         selectable: true,
       });
       paint();
@@ -4894,7 +5183,14 @@ function formatReviewPair(foreign, native) {
   return `“${en}” / “${nb}”`;
 }
 
-function getTranslationReviewSummary(foreign, native, suggestedNative, suggestedForeign, localPair = null) {
+function getTranslationReviewSummary(
+  foreign,
+  native,
+  suggestedNative,
+  suggestedForeign,
+  localPair = null,
+  spellingCorrectedNative = null
+) {
   const learningName = getActiveCategory().learningLanguageName || "Norwegian";
   const foreignWords = foreign.trim().split(/\s+/).filter(Boolean).length;
   const nativeWords = native.trim().split(/\s+/).filter(Boolean).length;
@@ -4916,6 +5212,13 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       ? null
       : preferDisplayForm(suggestedForeign) || null;
 
+  // Real English spell-check (LanguageTool) — independent of MT, catches "feal"→"feel"
+  // even when the translator echoes the typo.
+  const safeSpellingNative =
+    !nativeGibberish && spellingCorrectedNative
+      ? stripFlashcardPunctuation(spellingCorrectedNative) || null
+      : null;
+
   const makePairFix = (title, copy, pairForeign, pairNative) => ({
     matches: false,
     targetField: "pair",
@@ -4925,6 +5228,29 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     title,
     copy,
   });
+
+  // Spell-check first — product rule: never freely accept misspelled English to learn.
+  if (safeSpellingNative && normalizeAnswer(safeSpellingNative) !== normalizeAnswer(native)) {
+    const spellingCmp = reviewGlossCompare(native, safeSpellingNative);
+    const tokenDist = editDistance(
+      reviewTokens(native).join(" "),
+      reviewTokens(safeSpellingNative).join(" ")
+    );
+    // Same phrase with a typo fix, or a near rewrite from the spell checker
+    if (
+      spellingCmp.spellingOnly ||
+      spellingCmp.soft ||
+      tokenDist <= Math.max(2, Math.floor(reviewTokens(native).length / 2))
+    ) {
+      const pairForeign = safeSuggestedForeign || foreign;
+      return makePairFix(
+        "Fix English spelling?",
+        `Tap to use ${formatReviewPair(pairForeign, safeSpellingNative)} — learn the exact correct English.`,
+        pairForeign,
+        safeSpellingNative
+      );
+    }
+  }
 
   // Curated local data first (can still rescue mash on one side with a real deck pair).
   // One-letter "typos" alone are not enough to claim the same card (flott ≉ slott/castle).
@@ -4995,10 +5321,16 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     if (nonsense) return nonsense;
   }
 
-  const foreignOk = safeSuggestedForeign ? softGlossMatch(safeSuggestedForeign, foreign) : false;
-  const nativeOk = safeSuggestedNative ? softGlossMatch(safeSuggestedNative, native) : false;
-  const foreignExact = safeSuggestedForeign ? glossPartsMatch(safeSuggestedForeign, foreign) : false;
-  const nativeExact = safeSuggestedNative ? glossPartsMatch(safeSuggestedNative, native) : false;
+  const foreignCmp = safeSuggestedForeign
+    ? reviewGlossCompare(foreign, safeSuggestedForeign)
+    : { exact: false, soft: false, spellingOnly: false };
+  const nativeCmp = safeSuggestedNative
+    ? reviewGlossCompare(native, safeSuggestedNative)
+    : { exact: false, soft: false, spellingOnly: false };
+
+  const foreignOk = foreignCmp.soft || foreignCmp.exact;
+  const nativeOk = nativeCmp.soft || nativeCmp.exact;
+  const hasSpellingIssue = foreignCmp.spellingOnly || nativeCmp.spellingOnly;
 
   // Fields look swapped (English in Norwegian box and vice versa)
   if (
@@ -5020,23 +5352,51 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     };
   }
 
+  // Product rule: never approve a soft typo as "Looks good".
+  // "do you feel the way i feal" must become a Fix spelling? offer, not a free Add.
+  if (!foreignGibberish && !nativeGibberish && hasSpellingIssue) {
+    if (safeSuggestedForeign && safeSuggestedNative && foreignOk && nativeOk) {
+      return makePairFix(
+        "Fix spelling?",
+        `Tap to use ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)} — the exact form to learn.`,
+        safeSuggestedForeign,
+        safeSuggestedNative
+      );
+    }
+    if (nativeCmp.spellingOnly && safeSuggestedNative) {
+      const pairForeign = safeSuggestedForeign || foreign;
+      return makePairFix(
+        "Fix English spelling?",
+        `Tap to use ${formatReviewPair(pairForeign, safeSuggestedNative)} — correct the English before you learn it.`,
+        pairForeign,
+        safeSuggestedNative
+      );
+    }
+    if (foreignCmp.spellingOnly && safeSuggestedForeign) {
+      const pairNative = safeSuggestedNative || native;
+      return makePairFix(
+        `Fix ${learningName} spelling?`,
+        `Tap to use ${formatReviewPair(safeSuggestedForeign, pairNative)} — correct the ${learningName} before you learn it.`,
+        safeSuggestedForeign,
+        pairNative
+      );
+    }
+  }
+
   // Either direction confirming is enough for a real everyday pair.
   // Requiring both caused false alarms: great/flott is valid, but reverse TM may say
   // "bang-up", or EN→NO may prefer "god" while the learner chose "flott" (also fine).
-  if ((foreignOk || nativeOk) && !foreignGibberish && !nativeGibberish) {
-    const both = foreignOk && nativeOk;
-    if (both && safeSuggestedForeign && safeSuggestedNative) {
+  // Exact only — soft typos already handled above and must not fall through here.
+  if ((foreignCmp.exact || nativeCmp.exact) && !foreignGibberish && !nativeGibberish && !hasSpellingIssue) {
+    if (foreignOk && nativeOk && safeSuggestedForeign && safeSuggestedNative) {
       const canonForeign = preferDisplayForm(safeSuggestedForeign);
       const canonNative = stripFlashcardPunctuation(safeSuggestedNative);
       const userForeign = stripFlashcardPunctuation(foreign);
       const userNative = stripFlashcardPunctuation(native);
-      // Only nudge real form tweaks (å vs bare verb, casing, etc.) — not trailing periods
+      // Display-only polish (casing, particles already folded by exact compare)
       if (
-        foreignExact &&
-        nativeExact &&
-        (userForeign !== stripFlashcardPunctuation(canonForeign) || userNative !== canonNative) &&
-        softGlossMatch(canonForeign, foreign) &&
-        softGlossMatch(canonNative, native)
+        userForeign !== stripFlashcardPunctuation(canonForeign) ||
+        userNative !== canonNative
       ) {
         return makePairFix(
           "Tiny spelling tweak?",
@@ -5057,13 +5417,25 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
     };
   }
 
+  // Soft match both sides without spellingOnly flag (inflection/dialect already exact-ish)
+  if ((foreignOk || nativeOk) && !foreignGibberish && !nativeGibberish && !hasSpellingIssue) {
+    return {
+      matches: true,
+      targetField: null,
+      suggestedValue: null,
+      title: "Looks good",
+      copy: "",
+    };
+  }
+
   // Both sides disagree, or multi-word: MT is unreliable for idioms/slang/dialect.
+  // Still offer a correctable pair when both directions returned something usable —
+  // never silently bless free-form phrase adds when we have a concrete alternative.
   if (isPhrase || (safeSuggestedForeign && safeSuggestedNative)) {
-    // Still offer a full pair when both directions returned something usable
-    if (safeSuggestedForeign && safeSuggestedNative && !isPhrase) {
+    if (safeSuggestedForeign && safeSuggestedNative) {
       return makePairFix(
         "Suggested pair",
-        `Tap to use ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)}, or keep yours if you prefer.`,
+        `Tap to use ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)} — the form online checks suggest. Only keep yours if you are sure it is correct.`,
         safeSuggestedForeign,
         safeSuggestedNative
       );
@@ -5077,7 +5449,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       targetField: null,
       suggestedValue: null,
       title: "Hard to check online",
-      copy: `Idioms, slang, and dialect often confuse translation tools. If your pair looks right to you, add it.${toolNote}`,
+      copy: `Idioms, slang, and dialect often confuse translation tools. Double-check spelling on both sides before adding.${toolNote}`,
     };
   }
 
@@ -5108,7 +5480,7 @@ function getTranslationReviewSummary(foreign, native, suggestedNative, suggested
       targetField: null,
       suggestedValue: null,
       title: "Couldn't double-check",
-      copy: "No strong online match. That's normal for rare phrases. Add it if it looks right.",
+      copy: "No strong online match. Check spelling carefully — only add it if you know both sides are exact.",
     };
   }
 
@@ -5148,6 +5520,7 @@ function renderAddCardReviewContext({
   suggestedForeign,
   related,
   localPair = null,
+  spellingCorrectedNative = null,
 }) {
   const container = document.getElementById("add-card-review-context");
   if (!container) return;
@@ -5158,7 +5531,8 @@ function renderAddCardReviewContext({
     native,
     suggestedNative,
     suggestedForeign,
-    localPair
+    localPair,
+    spellingCorrectedNative
   );
 
   if (duplicate) {
@@ -5271,6 +5645,7 @@ function renderAddCardReviewContext({
     suggestedForeign,
     related,
     localPair,
+    spellingCorrectedNative,
     translation,
   };
 }
@@ -5367,12 +5742,30 @@ async function openAddCardReview() {
   const related = getRelatedEntriesForReview(foreign, native);
   const localPair = findLocalDeckPair(foreign, native);
   const { foreignCode, nativeCode } = getCategoryLanguageCodes();
-  const [suggestedNative, suggestedForeign] = await Promise.all([
+  // Spell-check English in parallel with MT — MT alone often echoes typos ("feal").
+  const [suggestedNative, suggestedForeignRaw, spellingCorrectedNative] = await Promise.all([
     fetchTranslationSuggestion(foreign, foreignCode, nativeCode),
     fetchTranslationSuggestion(native, nativeCode, foreignCode),
+    fetchEnglishSpellingCorrection(native),
   ]);
 
   if (!addCardReviewOpen || reviewForeign.textContent.trim() !== foreign) return;
+
+  // When English was misspelled, re-translate from the corrected form so the
+  // learning-language side is a real gloss — not MT of "feal".
+  let suggestedForeign = suggestedForeignRaw;
+  if (
+    spellingCorrectedNative &&
+    normalizeAnswer(spellingCorrectedNative) !== normalizeAnswer(native)
+  ) {
+    const fromCorrected = await fetchTranslationSuggestion(
+      spellingCorrectedNative,
+      nativeCode,
+      foreignCode
+    );
+    if (!addCardReviewOpen || reviewForeign.textContent.trim() !== foreign) return;
+    if (fromCorrected) suggestedForeign = fromCorrected;
+  }
 
   renderAddCardReviewContext({
     foreign,
@@ -5382,6 +5775,7 @@ async function openAddCardReview() {
     suggestedForeign,
     related,
     localPair,
+    spellingCorrectedNative,
   });
 }
 
