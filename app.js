@@ -2556,10 +2556,10 @@ function enableThematicPack(packId, options = {}) {
     // non-fatal
   }
 
-  // Focus Library on this pack so “what did I just add?” is obvious.
-  if (options.focusLibrary !== false) {
+  // Stay put in Library — live line + Study on the pack card is enough.
+  // Optional focusLibrary: true jumps to Themes filter (rare / tests).
+  if (options.focusLibrary === true) {
     libraryFilter = "themes";
-    libraryThemePackFilter = packId;
     document.querySelectorAll(".filter-chip").forEach((el) => {
       el.classList.toggle("active", el.dataset.band === "themes");
     });
@@ -2578,12 +2578,10 @@ function enableThematicPack(packId, options = {}) {
 function renderThemePackCard(pack, category) {
   const coverage = countPackCoverage(pack, category.id);
   const enabled = isPackEnabled(pack.id);
-  // Short status — title carries the identity; skip blurbs and long “in your deck” copy.
+  // One quiet fraction — title is the identity; no “N left” admin tone.
   const status = enabled
-    ? coverage.missing > 0
-      ? `${coverage.present}/${coverage.total} · ${coverage.missing} left`
-      : `${coverage.present} cards`
-    : `${coverage.total} cards`;
+    ? `${coverage.present}/${coverage.total}`
+    : `${coverage.total}`;
 
   let actions = "";
   if (enabled) {
@@ -2637,10 +2635,6 @@ function renderThematicPacks() {
 
   const enabledPacks = packs.filter((pack) => isPackEnabled(pack.id));
   const morePacks = packs.filter((pack) => !isPackEnabled(pack.id));
-  // Keep the pack you just focused visible even if list is long.
-  const openMore =
-    libraryThemePackFilter &&
-    morePacks.some((pack) => pack.id === libraryThemePackFilter);
 
   const enabledList = enabledPacks.length
     ? `<ul class="library-themes-list" role="list">${enabledPacks
@@ -2648,10 +2642,10 @@ function renderThematicPacks() {
         .join("")}</ul>`
     : "";
 
-  // If nothing enabled yet, show the catalog open — one list, no empty pep-talk.
+  // Catalog of unadded packs — collapsed when something is already on.
   const moreBlock = morePacks.length
     ? enabledPacks.length
-      ? `<details class="library-themes-more"${openMore ? " open" : ""}>
+      ? `<details class="library-themes-more">
         <summary class="library-themes-more-summary">
           <span>More</span>
           <span class="library-themes-more-count">${morePacks.length}</span>
@@ -2666,10 +2660,8 @@ function renderThematicPacks() {
     : "";
 
   root.classList.remove("hidden");
+  // No second “Themes” heading — the section aria-label + filter chip carry identity.
   root.innerHTML = `
-    <div class="library-themes-head">
-      <h3 class="library-themes-title">Themes</h3>
-    </div>
     ${enabledList}
     ${moreBlock}
   `;
@@ -5701,10 +5693,7 @@ function isWordBand(band) {
 function matchesLibraryFilter(card) {
   if (libraryFilter === "phrase" && card.band !== "phrase") return false;
   if (libraryFilter === "yours" && card.band) return false;
-  if (libraryFilter === "themes") {
-    if (!card.packId) return false;
-    if (libraryThemePackFilter && card.packId !== libraryThemePackFilter) return false;
-  }
+  if (libraryFilter === "themes" && !card.packId) return false;
 
   if (!librarySearch.trim()) return true;
 
@@ -9391,71 +9380,24 @@ function setActiveLibraryJump(key) {
 
 function setLibraryFilterChip(filter) {
   libraryFilter = filter;
-  if (filter !== "themes") libraryThemePackFilter = null;
+  libraryThemePackFilter = null;
   document.querySelectorAll(".filter-chip").forEach((el) => {
     el.classList.toggle("active", el.dataset.band === filter);
   });
-  renderThemePackFilterChips();
+  hideThemePackFilterChips();
 }
 
-function setLibraryThemePackFilter(packId) {
-  libraryThemePackFilter = packId || null;
-  renderThemePackFilterChips();
-  renderCardList();
-}
-
-/** Sub-chips under Themes: All themes · Airport · Café · … */
-function renderThemePackFilterChips() {
+/** Pack sub-chips removed — Themes list groups by pack; one filter is enough. */
+function hideThemePackFilterChips() {
   const host = document.getElementById("library-theme-pack-filters");
   if (!host) return;
+  host.classList.add("hidden");
+  host.innerHTML = "";
+}
 
-  if (libraryFilter !== "themes") {
-    host.classList.add("hidden");
-    host.innerHTML = "";
-    return;
-  }
-
-  const packIdsInDeck = [
-    ...new Set(deck.map((card) => card.packId).filter(Boolean)),
-  ];
-  const known = getThematicPackList();
-  const order = known.map((pack) => pack.id);
-  const ordered = [
-    ...order.filter((id) => packIdsInDeck.includes(id)),
-    ...packIdsInDeck.filter((id) => !order.includes(id)),
-  ];
-
-  if (!ordered.length) {
-    host.classList.add("hidden");
-    host.innerHTML = "";
-    return;
-  }
-
-  const chips = [
-    {
-      id: "",
-      label: "All themes",
-      active: !libraryThemePackFilter,
-    },
-    ...ordered.map((id) => ({
-      id,
-      label: getThemeSectionLabel(id),
-      active: libraryThemePackFilter === id,
-    })),
-  ];
-
-  host.classList.remove("hidden");
-  host.innerHTML = chips
-    .map(
-      (chip) => `
-      <button
-        type="button"
-        class="filter-chip library-theme-pack-chip${chip.active ? " active" : ""}"
-        data-theme-pack="${escapeAttr(chip.id)}"
-        aria-pressed="${chip.active ? "true" : "false"}"
-      >${escapeHtml(chip.label)}</button>`
-    )
-    .join("");
+/** @deprecated alias — sub-chip row retired */
+function renderThemePackFilterChips() {
+  hideThemePackFilterChips();
 }
 
 /** Deck-band sections for the jump bar (always A–G that have cards). */
@@ -9792,7 +9734,7 @@ function renderCardList() {
     return;
   }
 
-  // Themes: group by pack title (Airport, Café, …), or one pack when sub-filtered.
+  // Themes: group by pack title (Airport, Café, …) — jump chips use those sections.
   if (libraryFilter === "themes") {
     const packOrder = getThematicPackList().map((pack) => pack.id);
     const byPack = new Map();
@@ -9801,13 +9743,10 @@ function renderCardList() {
       if (!byPack.has(key)) byPack.set(key, []);
       byPack.get(key).push(card);
     });
-    let orderedIds = [
+    const orderedIds = [
       ...packOrder.filter((id) => byPack.has(id)),
       ...[...byPack.keys()].filter((id) => !packOrder.includes(id)),
     ];
-    if (libraryThemePackFilter) {
-      orderedIds = orderedIds.filter((id) => id === libraryThemePackFilter);
-    }
     const sections = orderedIds.map((packId) => ({
       band: packId,
       label: getThemeSectionLabel(packId),
@@ -10998,6 +10937,7 @@ function renderProgressSummary() {
 
 /**
  * Quiet glance at *enabled* theme packs only.
+ * Coverage truth here; Study lives in Library (one action surface).
  * No empty-state marketing — discovery lives in Library.
  */
 function renderProgressThemes() {
@@ -11032,16 +10972,8 @@ function renderProgressThemes() {
       return `
         <div class="progress-themes-row">
           <div class="progress-themes-row-top">
-            <div class="progress-themes-title-block">
-              <span class="progress-themes-name">${escapeHtml(pack.title)}</span>
-              <span class="progress-themes-status">${escapeHtml(status)}</span>
-            </div>
-            <button
-              type="button"
-              class="progress-themes-study"
-              data-pack-study="${escapeAttr(pack.id)}"
-              aria-label="${escapeAttr(`Study ${pack.title}`)}"
-            >Study</button>
+            <span class="progress-themes-name">${escapeHtml(pack.title)}</span>
+            <span class="progress-themes-status">${escapeHtml(status)}</span>
           </div>
           <div class="progress-themes-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${escapeAttr(pack.title)}: ${prog.introduced} of ${denom} introduced">
             <div class="progress-themes-fill${barClass}" style="width: ${pct}%"></div>
@@ -11787,12 +11719,6 @@ function initEventListeners() {
   });
 
   document.getElementById("progress-themes")?.addEventListener("click", (e) => {
-    const studyBtn = e.target.closest("[data-pack-study]");
-    if (studyBtn) {
-      const packId = studyBtn.getAttribute("data-pack-study");
-      if (packId) startThemePracticeSession(packId);
-      return;
-    }
     const btn = e.target.closest("[data-tab-jump]");
     if (!btn) return;
     switchTab(btn.dataset.tabJump);
@@ -12004,13 +11930,6 @@ function initEventListeners() {
       setLibraryFilterChip(chip.dataset.band);
       renderCardList();
     });
-  });
-
-  document.getElementById("library-theme-pack-filters")?.addEventListener("click", (e) => {
-    const chip = e.target.closest("[data-theme-pack]");
-    if (!chip) return;
-    const packId = chip.getAttribute("data-theme-pack") || "";
-    setLibraryThemePackFilter(packId);
   });
 
   document.getElementById("library-jump")?.addEventListener("click", (e) => {

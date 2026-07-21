@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=256" />
+    <link rel="stylesheet" href="styles.css?v=257" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -519,16 +519,12 @@
               <button class="filter-chip" data-band="themes" type="button">Themes</button>
               <button class="filter-chip" data-band="yours" type="button">Yours</button>
             </div>
-            <div
-              id="library-theme-pack-filters"
-              class="filter-chips library-theme-pack-filters hidden"
-              role="group"
-              aria-label="Filter by theme pack"
-            ></div>
+            <!-- Pack sub-filter host kept for safe no-op hide; row retired -->
+            <div id="library-theme-pack-filters" class="filter-chips library-theme-pack-filters hidden" hidden></div>
           </div>
 
-          <!-- Themes after the primary job (add + search); opt-in, not the front door -->
-          <section id="library-themes" class="library-themes hidden" aria-label="Theme packs">
+          <!-- Opt-in situational packs — quiet catalog under search, not a second app -->
+          <section id="library-themes" class="library-themes hidden" aria-label="Themes">
             <p id="library-themes-live" class="library-themes-live" aria-live="polite"></p>
           </section>
 
@@ -893,6 +889,6 @@
     <script src="lang/pl-pack.js?v=6"></script>
     <script src="mini-packs.js?v=9"></script>
     <script src="srs-core.js?v=3"></script>
-    <script src="app.js?v=344"></script>
+    <script src="app.js?v=345"></script>
   </body>
 </html>
