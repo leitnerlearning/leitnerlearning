@@ -9788,7 +9788,7 @@ function renderCardList() {
               : libraryFilter === "phrase"
                 ? "No phrases in this deck yet."
                 : libraryFilter === "themes"
-                  ? "Add a theme pack above to see those cards here."
+                  ? "Add a theme to put those cards in your deck."
                   : "No cards in this view."
         }</p>
       </div>`;
