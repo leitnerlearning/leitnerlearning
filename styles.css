@@ -6333,6 +6333,11 @@ html.needs-welcome body {
   transition: width 0.35s var(--ease);
 }
 
+/* Hairline when share is real but sub-pixel (e.g. 1 of 1000) — not a fake % floor */
+.box-stat-bar--has {
+  min-width: 3px;
+}
+
 .band-stat-row {
   display: grid;
   grid-template-columns: 1fr 100px 32px;

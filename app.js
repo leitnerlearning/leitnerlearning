@@ -9900,8 +9900,10 @@ function renderProgressBoxStats() {
     .map((count, index) => {
       const box = index + 1;
       const level = getLearningLevel(box);
-      const width = count ? Math.max(8, Math.round((count / total) * 100)) : 0;
+      // True share of the deck (no 8% floor that made 1/1000 look huge).
+      const width = count && total ? (count / total) * 100 : 0;
       const emptyClass = count === 0 ? " box-stat-row--empty" : "";
+      const barClass = count > 0 ? " box-stat-bar--has" : "";
       return `
         <div class="box-stat-row${emptyClass}">
           <div class="box-stat-label">
@@ -9909,7 +9911,7 @@ function renderProgressBoxStats() {
             <span class="box-stat-interval">${escapeHtml(formatInterval(box))}</span>
           </div>
           <div class="box-stat-bar-wrap" role="presentation">
-            <div class="box-stat-bar" style="width: ${width}%"></div>
+            <div class="box-stat-bar${barClass}" style="width: ${width}%"></div>
           </div>
           <span class="box-stat-count">${count}</span>
         </div>`;
