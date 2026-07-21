@@ -5657,6 +5657,7 @@ function renderPractice() {
   ensureCardAttemptState();
   setAnswerFieldHighlight(false);
   setAnswerReceivedState(false);
+  setAnswerIncorrectState(false);
 
   const input = document.getElementById("answer-input");
   input.value = "";
@@ -10452,10 +10453,21 @@ function openReadGloss(button) {
   const meaningEl = document.getElementById("read-gloss-meaning");
   if (!glossEl || !meaningEl) return;
 
-  const lemma = payload.matchedLemma;
-  meaningEl.textContent = lemma
-    ? `${payload.native} (from ${lemma})`
-    : payload.native;
+  const native = String(payload.native || "").trim();
+  const lemma = String(payload.matchedLemma || "").trim();
+  const surface = String(payload.foreign || button.textContent || "").trim();
+  const inDeck = Boolean(payload.cardId || payload.source === "deck");
+
+  // Calm structure: English meaning primary; lemma only when form differs.
+  let html = `<span class="read-gloss-en">${escapeHtml(native || "—")}</span>`;
+  if (lemma && normalizeAnswer(lemma) !== normalizeAnswer(surface)) {
+    html += `<span class="read-gloss-lemma">${escapeHtml(lemma)}</span>`;
+  } else if (inDeck && surface && normalizeAnswer(surface) !== normalizeAnswer(native)) {
+    // Surface L2 already in the sentence — no need to repeat unless helpful
+  }
+  meaningEl.innerHTML = html;
+  glossEl.classList.toggle("is-deck", inDeck);
+  glossEl.classList.toggle("is-extra", !inDeck);
   glossEl.classList.remove("is-collapsed");
   glossEl.hidden = false;
 }
@@ -11804,6 +11816,8 @@ function initEventListeners() {
   document.getElementById("reveal-btn")?.addEventListener("click", () => {
     if (!currentCard) return;
     const answerText = getAnswerTargetText(currentCard);
+    setAnswerReceivedState(false);
+    setAnswerIncorrectState(true);
     handleIncorrect();
     const withExample = showIncorrectWithExample(currentCard, answerText);
     finishCardAndContinue(

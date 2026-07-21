@@ -2501,17 +2501,21 @@ main {
   border-color: rgba(255, 149, 0, 0.28);
 }
 
-/* Post-miss story line — calm context, no extra chrome */
+/* Post-miss context — calm teaching beat under the answer pill */
 .feedback-example {
   width: 100%;
-  margin: -0.15rem 0 0.45rem;
-  padding: 0 0.5rem;
+  margin: 0.1rem 0 0.5rem;
+  padding: 0.45rem 0.65rem 0.4rem;
   text-align: center;
   font-size: clamp(0.88rem, 2.8vw, 1rem);
   line-height: 1.4;
   letter-spacing: -0.01em;
-  color: var(--muted, #5c6570);
+  color: var(--text-secondary);
   pointer-events: none;
+  border-radius: var(--radius-xs);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--border);
+  box-sizing: border-box;
 }
 
 .feedback-example.hidden {
@@ -2520,17 +2524,18 @@ main {
 
 .feedback-example-l2 {
   display: block;
-  color: var(--text, #1a1f26);
-  font-weight: 550;
+  color: var(--ink);
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .feedback-example-en {
   display: block;
-  margin-top: 0.12rem;
-  font-size: 0.92em;
-  opacity: 0.82;
+  margin-top: 0.15rem;
+  font-size: 0.9em;
+  opacity: 0.88;
   font-weight: 450;
+  color: var(--text-secondary);
 }
 
 .answer-form input[type="text"].received {
@@ -7585,13 +7590,13 @@ html.needs-welcome body {
   white-space: nowrap;
 }
 
-/* Status pill: hugs text, same scale as other compact chips (a step above filters) */
+/* Gloss under the sentence — teach beat, not a loud chip */
 .read-gloss-slot {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--status-min-h);
-  margin-top: 0.35rem;
+  min-height: 2.35rem;
+  margin-top: 0.45rem;
 }
 
 .read-gloss {
@@ -7599,14 +7604,28 @@ html.needs-welcome body {
   align-items: center;
   justify-content: center;
   width: auto;
-  max-width: 100%;
-  min-height: var(--status-min-h);
-  padding: var(--status-pad-y) var(--status-pad-x);
+  max-width: min(100%, 22rem);
+  min-height: 2.15rem;
+  padding: 0.4rem 0.9rem;
   border-radius: var(--chip-radius);
-  background: linear-gradient(135deg, rgba(91, 154, 255, 0.12), rgba(54, 95, 207, 0.06));
-  border: 1px solid var(--brand-ring);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border);
   text-align: center;
   box-sizing: border-box;
+  transition:
+    border-color 0.15s var(--ease),
+    background 0.15s var(--ease),
+    opacity 0.15s var(--ease);
+}
+
+.read-gloss.is-deck {
+  border-color: var(--brand-ring);
+  background: color-mix(in srgb, var(--brand) 8%, white);
+}
+
+.read-gloss.is-extra {
+  border-color: var(--border);
+  background: rgba(255, 255, 255, 0.65);
 }
 
 .read-gloss.is-collapsed {
@@ -7615,12 +7634,33 @@ html.needs-welcome body {
 
 .read-gloss-meaning {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
   font-size: var(--status-font);
   line-height: var(--lh-tight);
   letter-spacing: -0.015em;
-  color: var(--brand-deep);
-  font-weight: 600;
   word-break: break-word;
+}
+
+.read-gloss-en {
+  color: var(--brand-deep);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.read-gloss-lemma {
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: -0.01em;
+}
+
+.read-gloss-lemma::before {
+  content: "from ";
+  font-weight: 450;
+  opacity: 0.85;
 }
 
 .read-focus-en-slot {
