@@ -2066,7 +2066,7 @@
     ['los planes', 'the plans'],
     ['muy agradable', 'really nice'],
     ['mantener el contacto', 'to stay in touch'],
-    ['Estamos en contacto', 'We'll stay in touch'],
+    ['Estamos en contacto', 'We\'ll stay in touch'],
     ['cita', 'date (meetup)'],
   ]);
 
