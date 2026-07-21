@@ -5314,7 +5314,7 @@ function setEmptyStatePowerAction(
   {
     show = false,
     mode = "start",
-    ariaLabel = "Start Review",
+    ariaLabel = "Start review",
     hint = "",
     celebrate = false,
     enabled = true,
