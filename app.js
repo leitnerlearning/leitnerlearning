@@ -2544,9 +2544,10 @@ function renderThemePackWordList(pack, category) {
     .join("");
   if (!rows) return "";
   // Preview before Add (and quick reference after) — collapsed by default.
+  // Scroll fades (more above/below) mirror the language menu: 20 words never look “complete” at a glance.
   return `<details class="library-theme-preview">
     <summary class="library-theme-preview-summary">${entries.length}</summary>
-    <ul class="library-theme-word-list" role="list">${rows}</ul>
+    <ul class="library-theme-word-list" role="list" data-pack-word-scroll>${rows}</ul>
   </details>`;
 }
 
@@ -2651,24 +2652,62 @@ function renderThematicPacks() {
 }
 
 /**
+ * Fade when more pack words sit above/below the fold (same lesson as the language menu).
+ * Classes only — no extra chrome that jumps layout.
+ */
+function updatePackWordListScrollHints(list) {
+  if (!list) return;
+  const canScroll = list.scrollHeight > list.clientHeight + 4;
+  const atTop = list.scrollTop <= 2;
+  const atBottom =
+    list.scrollTop + list.clientHeight >= list.scrollHeight - 4;
+  list.classList.toggle("is-scrollable", canScroll);
+  list.classList.toggle("has-more-below", canScroll && !atBottom);
+  list.classList.toggle("has-more-above", canScroll && !atTop);
+}
+
+/**
  * Pack word previews: exclusive open. Keeps the Packs grid calm when
  * scanning — one expanded list, not a page of open columns.
  * Always start the open list at the top (not mid-scroll from a prior peek).
+ * Scroll fades show “more words” above/below — same as language picker.
  */
 function bindLibraryThemePreviewAccordion(scope) {
   if (!scope) return;
   scope.querySelectorAll(".library-theme-preview").forEach((details) => {
+    const list =
+      details.querySelector("[data-pack-word-scroll]") ||
+      details.querySelector(".library-theme-word-list");
+    if (list && list.dataset.scrollHintsBound !== "1") {
+      list.dataset.scrollHintsBound = "1";
+      list.addEventListener(
+        "scroll",
+        () => updatePackWordListScrollHints(list),
+        { passive: true }
+      );
+    }
+
     details.addEventListener("toggle", () => {
-      if (!details.open) return;
+      if (!details.open) {
+        if (list) {
+          list.classList.remove(
+            "is-scrollable",
+            "has-more-below",
+            "has-more-above"
+          );
+        }
+        return;
+      }
       scope.querySelectorAll(".library-theme-preview[open]").forEach((other) => {
         if (other !== details) other.open = false;
       });
-      const list = details.querySelector(".library-theme-word-list");
       if (!list) return;
-      // After layout — otherwise the first row can still look clipped mid-open.
+      // After layout — top of list + fade cue for “more below.”
       list.scrollTop = 0;
       requestAnimationFrame(() => {
         list.scrollTop = 0;
+        updatePackWordListScrollHints(list);
+        requestAnimationFrame(() => updatePackWordListScrollHints(list));
       });
     });
   });
