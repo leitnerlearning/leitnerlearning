@@ -101,6 +101,12 @@ let libraryFilter = "all";
 let librarySearch = "";
 let libraryRenderToken = 0;
 let libraryJumpObserver = null;
+/**
+ * Quiet post-action line on a pack tile (not a toast).
+ * { packId, message, expiresAt }
+ */
+let lastPackActionNote = null;
+const PACK_ACTION_NOTE_MS = 7000;
 const LIBRARY_BATCH_SIZE = 35;
 const LIBRARY_SCROLL_TOP_THRESHOLD = 360;
 /** Rank ranges shown next to section titles and in jump-chip tooltips. */
@@ -2423,15 +2429,97 @@ function countNewPackCardsAvailable(pack, categoryId = activeCategoryId, cards =
   return countPackCoverage(pack, categoryId, cards).missing;
 }
 
+function setPackActionNote(packId, message) {
+  if (!packId || !message) return;
+  lastPackActionNote = {
+    packId: String(packId),
+    message: String(message),
+    expiresAt: Date.now() + PACK_ACTION_NOTE_MS,
+  };
+  window.setTimeout(() => {
+    if (
+      lastPackActionNote &&
+      lastPackActionNote.packId === String(packId) &&
+      Date.now() >= lastPackActionNote.expiresAt
+    ) {
+      lastPackActionNote = null;
+      if (libraryFilter === "themes") renderThematicPacks();
+    }
+  }, PACK_ACTION_NOTE_MS + 80);
+}
+
+function getPackActionNote(packId) {
+  if (!lastPackActionNote || lastPackActionNote.packId !== String(packId || "")) {
+    return "";
+  }
+  if (Date.now() > lastPackActionNote.expiresAt) {
+    lastPackActionNote = null;
+    return "";
+  }
+  return lastPackActionNote.message;
+}
+
+/**
+ * Before merge: how many pack forms already sit in the deck, and how many
+ * would disagree on English (we keep the user’s gloss).
+ */
+function analyzePackOverlap(pack, categoryId = activeCategoryId, cards = deck) {
+  const entries = getPackEntriesForCategory(pack, categoryId);
+  let already = 0;
+  let glossKept = 0;
+  const byKey = new Map();
+  cards.forEach((card) => {
+    const key = normalizeAnswer(card.foreign);
+    if (key && !byKey.has(key)) byKey.set(key, card);
+  });
+  for (const entry of entries) {
+    const key = normalizeAnswer(entry.foreign);
+    if (!key) continue;
+    const existing = byKey.get(key);
+    if (!existing) continue;
+    already += 1;
+    if (
+      entry.native &&
+      existing.native &&
+      !glossPartsMatch(existing.native, entry.native)
+    ) {
+      glossKept += 1;
+    }
+  }
+  return { total: entries.length, already, glossKept };
+}
+
+function formatPackAddNote({ added, already, glossKept, total }) {
+  const glossBit =
+    glossKept > 0 ? `kept your English on ${glossKept}` : null;
+  if (added > 0 && already > 0) {
+    return [`Added ${added}`, `${already} already yours`, glossBit]
+      .filter(Boolean)
+      .join(" · ");
+  }
+  if (added > 0) {
+    const base =
+      total && added < total ? `Added ${added} of ${total}` : `Added ${added}`;
+    return glossBit ? `${base} · ${glossBit}` : base;
+  }
+  if (already > 0) {
+    return glossBit
+      ? `All already in your deck · ${glossBit}`
+      : "All already in your deck";
+  }
+  return total ? `Added 0 of ${total}` : "Added";
+}
+
 /**
  * Enable a pack and merge its cards into the live deck.
  * One full Add — no partial “Add rest” second step.
- * Returns { added, total, already, packId, title }.
+ * Returns { added, total, already, glossKept, packId, title }.
  */
 function enableThematicPack(packId, options = {}) {
   const pack = getThematicPackById(packId);
-  if (!pack) return { added: 0, total: 0, already: true, packId, title: packId };
+  if (!pack) return { added: 0, total: 0, already: 0, glossKept: 0, packId, title: packId };
 
+  const overlap = analyzePackOverlap(pack);
   const beforeKeys = new Set(
     deck.map((card) => normalizeAnswer(card.foreign)).filter(Boolean)
   );
@@ -2469,14 +2557,18 @@ function enableThematicPack(packId, options = {}) {
     });
   }
 
-  renderAll();
-  return {
+  const result = {
     added,
-    total: getPackEntriesForCategory(pack).length,
-    already: added === 0 && isPackEnabled(packId),
+    total: overlap.total || getPackEntriesForCategory(pack).length,
+    already: overlap.already,
+    glossKept: overlap.glossKept,
     packId,
     title: pack.title || packId,
   };
+  setPackActionNote(packId, formatPackAddNote(result));
+
+  renderAll();
+  return result;
 }
 
 /**
@@ -2554,10 +2646,11 @@ function renderThemePackWordList(pack, category) {
 function renderThemePackCard(pack, category) {
   const coverage = countPackCoverage(pack, category.id);
   const enabled = isPackEnabled(pack.id);
-  // Only show a status when it adds information beyond “N words” below.
-  // Enabled: how many of the pack forms are in the deck (e.g. 18/20).
-  const status =
-    enabled && coverage.total > 0
+  // Ephemeral Add result wins briefly; else coverage when enabled.
+  const actionNote = getPackActionNote(pack.id);
+  const status = actionNote
+    ? actionNote
+    : enabled && coverage.total > 0
       ? `${coverage.present}/${coverage.total}`
       : "";
 
@@ -5780,8 +5873,35 @@ function getCategoryLanguageCodes(category = getActiveCategory()) {
 
 function findDeckCardByForeign(foreign, excludeId = null) {
   const key = normalizeAnswer(foreign);
-  return deck.find(
+  if (!key) return null;
+  // Exact normalized form first
+  const exact = deck.find(
     (card) => card.id !== excludeId && normalizeAnswer(card.foreign) === key
+  );
+  if (exact) return exact;
+
+  // Soft: orthography / typing-equivalent L2 is the same card (kafé ≈ kafe).
+  // Prevents silent doubles; review shows the stored form.
+  const foreignCode = getActiveCategory()?.foreignLang || "";
+  return (
+    deck.find((card) => {
+      if (card.id === excludeId) return false;
+      const other = card.foreign;
+      if (!other) return false;
+      return (
+        norwegianTypingMatches(other, foreign) ||
+        foreignOrthographyMatches(other, foreign, foreignCode)
+      );
+    }) || null
+  );
+}
+
+/** True when stored L2 display form differs from what the user typed (soft match). */
+function deckCardIsNearSpelling(card, foreign) {
+  if (!card || !foreign) return false;
+  return (
+    stripFlashcardPunctuation(card.foreign) !==
+    stripFlashcardPunctuation(foreign)
   );
 }
 
@@ -6122,13 +6242,17 @@ function getStarterSuggestions(query, limit = 5) {
   const q = normalizeAnswer(query);
   if (!q || q.length < 2) return [];
 
-  const entries = getStarterDeckEntries().map((entry) => ({
-    foreign: entry.foreign,
-    native: entry.native,
-    rank: entry.rank,
-    meta: "In your deck",
-    selectable: true,
-  }));
+  const entries = getStarterDeckEntries().map((entry) => {
+    const inDeck = Boolean(findDeckCardByForeign(entry.foreign));
+    return {
+      foreign: entry.foreign,
+      native: entry.native,
+      rank: entry.rank,
+      // Honest label — starter catalog is not always already in the live deck.
+      meta: inDeck ? "In your deck" : "Essentials",
+      selectable: true,
+    };
+  });
 
   return rankSuggestionEntries(entries, query, limit);
 }
@@ -6143,10 +6267,40 @@ function getLibrarySuggestions(query, limit = 5) {
       foreign: card.foreign,
       native: card.native,
       rank: card.rank,
-      meta: "In your deck",
+      meta: card.packId
+        ? `In your deck · ${getPackDisplayTitle(card.packId) || "Pack"}`
+        : "In your deck",
       selectable: true,
     }));
 
+  return rankSuggestionEntries(entries, query, limit);
+}
+
+/**
+ * Words from packs the user has not Added yet — discoverable in typeahead,
+ * never auto-enables the pack.
+ */
+function getPackCatalogSuggestions(query, limit = 5) {
+  const q = normalizeAnswer(query);
+  if (!q || q.length < 2) return [];
+
+  const entries = [];
+  for (const pack of getThematicPackList()) {
+    if (isPackEnabled(pack.id)) continue;
+    const title = getPackDisplayTitle(pack.id) || pack.id;
+    for (const entry of getPackEntriesForCategory(pack)) {
+      if (!entry?.foreign) continue;
+      // Skip forms already in the deck (those surface via library suggestions).
+      if (findDeckCardByForeign(entry.foreign)) continue;
+      entries.push({
+        foreign: entry.foreign,
+        native: entry.native,
+        rank: 8000,
+        meta: `In ${title}`,
+        selectable: true,
+      });
+    }
+  }
   return rankSuggestionEntries(entries, query, limit);
 }
 
@@ -6155,10 +6309,11 @@ function findLocalDeckPair(foreign, native) {
   const candidates = [];
 
   getStarterDeckEntries().forEach((entry) => {
+    const inDeck = Boolean(findDeckCardByForeign(entry.foreign));
     candidates.push({
       foreign: entry.foreign,
       native: entry.native,
-      meta: "In your deck",
+      meta: inDeck ? "In your deck" : "Essentials",
       source: "starter",
     });
   });
@@ -6168,7 +6323,9 @@ function findLocalDeckPair(foreign, native) {
     candidates.push({
       foreign: card.foreign,
       native: card.native,
-      meta: "In your deck",
+      meta: card.packId
+        ? `In your deck · ${getPackDisplayTitle(card.packId) || "Pack"}`
+        : "In your deck",
       source: "library",
     });
   });
@@ -7858,6 +8015,7 @@ async function updateForeignSuggestions() {
   // Local deck first — do not wait on MyMemory or nothing shows while the network spins
   getStarterSuggestions(query, 6).forEach(addSuggestion);
   getLibrarySuggestions(query, 6).forEach(addSuggestion);
+  getPackCatalogSuggestions(query, 4).forEach(addSuggestion);
   paint();
 
   // Don't advertise a "translation" of keyboard mash — it only creates false confidence later.
@@ -8074,6 +8232,7 @@ async function updateNativeSuggestions() {
 
   getStarterSuggestions(query, 6).forEach(addSuggestion);
   getLibrarySuggestions(query, 6).forEach(addSuggestion);
+  getPackCatalogSuggestions(query, 4).forEach(addSuggestion);
   paint();
 
   if (shouldRequestTranslation(query)) {
@@ -8203,6 +8362,7 @@ function getRelatedEntriesForReview(foreign, native, limit = 5) {
   terms.forEach((term) => {
     getStarterSuggestions(term, 6).forEach((item) => consider(item, term));
     getLibrarySuggestions(term, 6).forEach((item) => consider(item, term));
+    getPackCatalogSuggestions(term, 4).forEach((item) => consider(item, term));
   });
 
   return results.slice(0, limit);
@@ -8950,10 +9110,16 @@ function renderAddCardReviewContext({
 
   if (duplicate) {
     const packSource = describeDeckCardPackSource(duplicate);
+    const nearSpell = deckCardIsNearSpelling(duplicate, foreign);
     blocks.push(`
       <section class="review-context-block is-warning">
         <h4 class="review-context-title">Already in your deck</h4>
         <p class="review-context-copy">“${escapeHtml(stripFlashcardPunctuation(duplicate.native))}” · “${escapeHtml(preferDisplayForm(duplicate.foreign))}”</p>
+        ${
+          nearSpell
+            ? `<p class="review-context-hint">Close spelling to what you typed</p>`
+            : ""
+        }
         ${
           packSource
             ? `<p class="review-context-hint">${escapeHtml(packSource)}</p>`
@@ -9395,8 +9561,16 @@ function saveLibraryCard(foreign, native) {
   if (editingCardId) {
     const card = deck.find((entry) => entry.id === editingCardId);
     if (!card) return false;
+    const foreignChanged =
+      normalizeAnswer(card.foreign) !== normalizeAnswer(trimmedForeign);
+    const nativeChanged =
+      normalizeAnswer(card.native) !== normalizeAnswer(trimmedNative);
     card.foreign = trimmedForeign;
     card.native = trimmedNative;
+    // Editing a pack-owned card makes it Yours — Remove pack must not delete it later.
+    if (card.packId && (foreignChanged || nativeChanged)) {
+      card.packId = null;
+    }
   } else {
     deck.push(createCard(trimmedForeign, trimmedNative));
   }

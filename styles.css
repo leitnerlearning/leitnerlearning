@@ -4924,10 +4924,13 @@ html.needs-welcome body {
   grid-row: 2;
   margin: 0;
   font-size: 0.68rem;
-  line-height: 1.1;
+  line-height: 1.15;
   color: var(--muted, #5c6570);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
+  /* Pack Add notes can be longer than “20/20” */
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .library-theme-card.is-enabled .library-theme-status {
