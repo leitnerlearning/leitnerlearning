@@ -2645,6 +2645,25 @@ function renderThematicPacks() {
   root.classList.toggle("has-enabled", enabledCount > 0);
   if (body) body.innerHTML = grid;
   else root.innerHTML = grid;
+
+  // One peek at a time — opening Bank closes Dining (and vice versa).
+  bindLibraryThemePreviewAccordion(body || root);
+}
+
+/**
+ * Pack word previews: exclusive open. Keeps the Packs grid calm when
+ * scanning — one expanded list, not a page of open columns.
+ */
+function bindLibraryThemePreviewAccordion(scope) {
+  if (!scope) return;
+  scope.querySelectorAll(".library-theme-preview").forEach((details) => {
+    details.addEventListener("toggle", () => {
+      if (!details.open) return;
+      scope.querySelectorAll(".library-theme-preview[open]").forEach((other) => {
+        if (other !== details) other.open = false;
+      });
+    });
+  });
 }
 
 function migrateLegacyStorage(categoryId) {
