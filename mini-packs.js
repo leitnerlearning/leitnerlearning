@@ -193,7 +193,7 @@
     ['vol retardé', 'delayed flight'],
     ['porte d\'embarquement', 'boarding gate'],
     ['passeport biométrique', 'biometric passport'],
-    ['duty free', 'duty-free shop'],
+    ['boutique hors taxes', 'duty-free shop'],
     ['navette aéroport', 'airport shuttle'],
     ['comptoir d\'information', 'information desk'],
     ['hall d\'embarquement', 'boarding lounge'],
@@ -202,9 +202,9 @@
     ['carte d\'embarquement', 'boarding pass'],
     ['détecteur de métaux', 'metal detector'],
     ['escale', 'layover'],
-    ['terminal 2', 'terminal 2'],
+    ['porte d\'embarquement', 'boarding gate'],
     ['douane', 'customs'],
-    ['bus Air France', 'Air France bus'],
+    ['navette aéroport', 'airport shuttle'],
   ]);
 
   packs.airport.byCategory["es"] = buildEntries([
@@ -893,7 +893,7 @@
     ['salle de travaux pratiques', 'lab room'],
     ['CROUS', 'student services (CROUS)'],
     ['bourse', 'scholarship'],
-    ['syllabus', 'course outline'],
+    ['plan de cours', 'course outline'],
     ['orientation', 'academic advising'],
   ]);
 
@@ -2042,7 +2042,7 @@
     ['fête d\'anniversaire', 'birthday party'],
     ['café entre amis', 'coffee with friends'],
     ['discussion', 'discussion'],
-    ['groupe WhatsApp', 'WhatsApp group'],
+    ['groupe de discussion', 'chat group'],
     ['poignée de main', 'handshake'],
     ['week-end en famille', 'family weekend'],
   ]);

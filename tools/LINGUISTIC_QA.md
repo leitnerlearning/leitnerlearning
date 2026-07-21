@@ -8,7 +8,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 | Swedish | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; weak top-100 replaced; gloss fixes; packs + 12 stories polished 2026-07-21 |
 | Danish | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; weak top-100 replaced; survival adds; packs + 12 stories polished 2026-07-21 |
 | German | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; weak fillers out; groß/klein/schlecht early; packs + 12 stories 2026-07-21 |
-| French | PASS | OPEN | |
+| French | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; peut-être; gloss fixes; packs + stories 2026-07-21 |
 | Spanish | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; malo/lo siento; gloss fixes; packs + stories 2026-07-21 |
 | Italian | PASS | OPEN | |
 | Dutch | PASS | OPEN | |
@@ -71,12 +71,22 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 - [x] 12 stories light EN polish
 - [x] Unique forms still 1000
 
+## French — pass 1 checklist
+
+- [x] Mechanical 1000 + 200 + 12 stories
+- [x] POS honesty (not all `noun`)
+- [x] `peut-être` fixed; strong survival phrase ladder kept
+- [x] Gloss fixes (`pas`, `plus`, `son`, `mal`, ser/avoir forms, …)
+- [x] Packs polish (navette, hors taxes, plan de cours, chat group)
+- [x] 12 stories light EN polish
+- [x] Unique forms still 1000
+
 ## Ship rule
 
-- **NB + SV + DA + DE + ES:** trustworthy for “exact forms” on certified spines.
-- **Other 5 languages:** structure only until certified the same way (FR, IT, NL, PT, PL).
+- **NB + SV + DA + DE + ES + FR:** trustworthy for “exact forms” on certified spines.
+- **Other 4 languages:** structure only until certified (IT, NL, PT, PL).
 - Continuous improvement always welcome; do not re-open thrash without a named defect.
-- **Next:** French.
+- **Next:** Italian, then NL → PT → PL.
 
 ## How to re-verify
 
