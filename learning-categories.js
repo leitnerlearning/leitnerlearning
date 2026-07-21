@@ -329,7 +329,8 @@ const LEARNING_CATEGORIES = [
     // Teaching standard: Brazilian Portuguese (school/formal). Flag matches.
     // European Portuguese spellings may soft-match later (like BE/AE for English).
     id: "pt",
-    label: "Portuguese (Brazil)",
+    // Standard: Brazilian Portuguese (flag 🇧🇷 + speech pt-BR). Label stays plain “Portuguese”.
+    label: "Portuguese",
     flag: "🇧🇷",
     available: true,
     checkStrength: "full",
@@ -338,7 +339,7 @@ const LEARNING_CATEGORIES = [
     answerLang: "en-US",
     promptLabel: "Portuguese → English",
     reversePromptLabel: "English → Portuguese",
-    deckTitle: "Portuguese essentials (Brazil)",
+    deckTitle: "Portuguese essentials",
     deckBlurb: "from everyday Brazilian Portuguese",
     starterPreviewLead: "Core words to get started.",
     foreignFieldLabel: "Portuguese word or phrase",
