@@ -4722,34 +4722,94 @@ function pickBestTranslationSuggestion(data, sourceText, toLang = "en") {
   return best ? preferDisplayForm(best) : null;
 }
 
+/** Session cache so Check card / suggestions don't burn rate limits on the same phrase. */
+const translationSuggestionCache = new Map();
+
+function translationSuggestionCacheKey(text, from, to) {
+  return `${from}|${to}|${normalizeAnswer(text)}`;
+}
+
+function acceptTranslationCandidate(picked, sourceText) {
+  if (!picked || looksLikeGibberish(picked) || !isPlausibleCardText(picked)) return null;
+  const sourceCompact = normalizeAnswer(sourceText).replace(/\s+/g, "");
+  const pickedCompact = normalizeAnswer(picked).replace(/\s+/g, "");
+  // Refuse absurd compressions: resumekeieie → CV-en
+  if (
+    sourceCompact.length >= 9 &&
+    pickedCompact.length <= 6 &&
+    sourceCompact.length >= pickedCompact.length * 2
+  ) {
+    return null;
+  }
+  return preferDisplayForm(stripFlashcardPunctuation(picked));
+}
+
+async function fetchMyMemoryTranslation(trimmed, from, to) {
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(trimmed)}&langpair=${encodeURIComponent(`${from}|${to}`)}`;
+  try {
+    const response = await fetch(url);
+    if (response.status === 429) return { rateLimited: true, text: null };
+    if (!response.ok) return { rateLimited: false, text: null };
+    const data = await response.json();
+    if (data.responseStatus !== 200) return { rateLimited: false, text: null };
+    const picked = pickBestTranslationSuggestion(data, trimmed, to);
+    return { rateLimited: false, text: acceptTranslationCandidate(picked, trimmed) };
+  } catch {
+    return { rateLimited: false, text: null };
+  }
+}
+
+/**
+ * Fallback when MyMemory is rate-limited or empty.
+ * Unofficial Google translate endpoint (client=gtx) — used only as backup.
+ */
+async function fetchGoogleTranslateFallback(trimmed, from, to) {
+  try {
+    const url =
+      `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${encodeURIComponent(from)}` +
+      `&tl=${encodeURIComponent(to)}&dt=t&q=${encodeURIComponent(trimmed)}`;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (!Array.isArray(data) || !Array.isArray(data[0])) return null;
+    const translated = data[0]
+      .map((part) => (Array.isArray(part) ? part[0] : ""))
+      .filter(Boolean)
+      .join("");
+    return acceptTranslationCandidate(translated, trimmed);
+  } catch {
+    return null;
+  }
+}
+
 async function fetchTranslationSuggestion(text, fromLang, toLang) {
   const trimmed = text.trim();
   if (!trimmed || !shouldRequestTranslation(trimmed)) return null;
 
   const from = toMyMemoryLangCode(fromLang);
   const to = toMyMemoryLangCode(toLang);
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(trimmed)}&langpair=${encodeURIComponent(`${from}|${to}`)}`;
-  try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const data = await response.json();
-    if (data.responseStatus !== 200) return null;
-    const picked = pickBestTranslationSuggestion(data, trimmed, to);
-    if (!picked || looksLikeGibberish(picked) || !isPlausibleCardText(picked)) return null;
-    // Refuse absurd compressions: resumekeieie → CV-en (API guessing from a stem)
-    const sourceCompact = normalizeAnswer(trimmed).replace(/\s+/g, "");
-    const pickedCompact = normalizeAnswer(picked).replace(/\s+/g, "");
-    if (
-      sourceCompact.length >= 9 &&
-      pickedCompact.length <= 6 &&
-      sourceCompact.length >= pickedCompact.length * 2
-    ) {
-      return null;
-    }
-    return picked;
-  } catch {
-    return null;
+  const cacheKey = translationSuggestionCacheKey(trimmed, from, to);
+  if (translationSuggestionCache.has(cacheKey)) {
+    return translationSuggestionCache.get(cacheKey);
   }
+
+  // 1) MyMemory (primary)
+  let result = await fetchMyMemoryTranslation(trimmed, from, to);
+  // 2) Brief retry after rate limit
+  if (result.rateLimited || !result.text) {
+    if (result.rateLimited) {
+      await new Promise((resolve) => window.setTimeout(resolve, 450));
+      result = await fetchMyMemoryTranslation(trimmed, from, to);
+    }
+  }
+  // 3) Google fallback so Check card can still offer epler/jenter etc.
+  let picked = result.text;
+  if (!picked) {
+    picked = await fetchGoogleTranslateFallback(trimmed, from, to);
+  }
+
+  if (picked) translationSuggestionCache.set(cacheKey, picked);
+  return picked;
 }
 
 /** Small Levenshtein for spelling picks (short tokens only). */
