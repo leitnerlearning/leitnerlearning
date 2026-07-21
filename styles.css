@@ -3685,26 +3685,25 @@ html.needs-welcome body {
   flex: 1;
 }
 
+/* Flag is decorative next to the title — not a control (no pill/bubble) */
 .basics-hero-flag {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.15rem;
-  height: 3.15rem;
-  border-radius: 1rem;
-  font-size: 1.65rem;
+  width: auto;
+  height: auto;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  font-size: 2rem;
   line-height: 1;
-  background:
-    linear-gradient(
-      145deg,
-      color-mix(in srgb, white 88%, var(--brand)) 0%,
-      color-mix(in srgb, var(--brand-soft) 70%, white) 100%
-    );
-  border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
-  box-shadow:
-    0 6px 16px color-mix(in srgb, var(--brand) 14%, transparent),
-    0 0 0 1px color-mix(in srgb, white 55%, transparent) inset;
+  background: none;
+  box-shadow: none;
+  pointer-events: none;
+  user-select: none;
 }
 
 .basics-hero-copy {
