@@ -1883,7 +1883,7 @@
     ['prijskaartje', 'price tag'],
     ['herbruikbare tas', 'reusable bag'],
     ['hypermarkt', 'hypermarket'],
-    ['korting', 'discount'],
+    ['korting', 'discount / sale'],
   ]);
 
   packs.shopping.byCategory["pt"] = buildEntries([
@@ -2110,7 +2110,7 @@
     ['verjaardag', 'birthday'],
     ['koffie met vrienden', 'coffee with friends'],
     ['discussie', 'discussion'],
-    ['WhatsApp-groep', 'WhatsApp group'],
+    ['chatgroep', 'chat group'],
     ['handdruk', 'handshake'],
     ['weekend met familie', 'family weekend'],
     ['oude vrienden', 'old friends'],

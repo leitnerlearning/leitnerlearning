@@ -11,7 +11,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 | French | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; peut-être; gloss fixes; packs + stories 2026-07-21 |
 | Spanish | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; malo/lo siento; gloss fixes; packs + stories 2026-07-21 |
 | Italian | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; prego/cattivo/lavorare; packs + stories 2026-07-21 |
-| Dutch | PASS | OPEN | |
+| Dutch | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; bedankt/graag/pardon; packs + stories 2026-07-21 |
 | Portuguese | PASS | OPEN | |
 | Polish | PASS | OPEN | |
 
@@ -91,12 +91,22 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 - [x] 12 stories light EN polish
 - [x] Unique forms still 1000
 
+## Dutch — pass 1 checklist
+
+- [x] Mechanical 1000 + 200 + 12 stories
+- [x] POS honesty (not all `noun`)
+- [x] Survival: `bedankt`, `graag`, `pardon`, `vriendin`, `hond`, …
+- [x] Gloss fixes (`zijn`, `van`, `voor`, `je`/`ze`/`zij`, …)
+- [x] Packs polish (chatgroep, korting; OV-chipkaart culture kept)
+- [x] 12 stories light EN polish
+- [x] Unique forms still 1000
+
 ## Ship rule
 
-- **NB + SV + DA + DE + ES + FR + IT:** trustworthy for “exact forms” on certified spines.
-- **Other 3 languages:** structure only until certified (NL, PT, PL).
+- **NB + SV + DA + DE + ES + FR + IT + NL:** trustworthy for “exact forms” on certified spines.
+- **Other 2 languages:** structure only until certified (PT, PL).
 - Continuous improvement always welcome; do not re-open thrash without a named defect.
-- **Next:** Dutch → Portuguese → Polish.
+- **Next:** Portuguese → Polish.
 
 ## How to re-verify
 
