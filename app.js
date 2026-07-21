@@ -10867,11 +10867,8 @@ function getBoxCounts() {
 
 function renderProgressSummary() {
   const container = document.getElementById("stats-summary");
-  const dailyEl = document.getElementById("progress-daily");
   const coverageEl = document.getElementById("progress-coverage");
 
-  const daily = ensureDailyPracticeState();
-  const practiceStat = getProgressPracticeStat();
   const streakStat = getHomeStreakStat();
   const total = deck.length;
   const introduced = getIntroducedCount();
@@ -10880,93 +10877,7 @@ function renderProgressSummary() {
   const masteredPct = total ? Math.round((mastered / total) * 100) : 0;
   const deckLabel = total === 1 ? "1 card" : `${total.toLocaleString("en-US")} cards`;
 
-  // —— Review strip: same language as Review tab (fraction chip + bar), not prose.
-  if (dailyEl) {
-    const cap = getDailyPracticeCap();
-    const hasGoal = daily.goal > 0 && !daily.extraMode;
-    // Prefer real daily goal fraction; otherwise soft 0/cap when work is waiting.
-    let done = hasGoal ? daily.reviewed : 0;
-    let goalTotal = hasGoal ? daily.goal : 0;
-    if (!hasGoal && practiceStat.actionable && practiceStat.kind !== "caught-up") {
-      done = 0;
-      goalTotal = cap > 0 ? cap : 0;
-    }
-    if (daily.extraMode && daily.goal > 0) {
-      // Goal already met — keep the completed fraction visible.
-      done = daily.reviewed;
-      goalTotal = daily.goal;
-    }
-    if (practiceStat.kind === "done-today" || (daily.goalMet && daily.goal > 0)) {
-      done = daily.reviewed;
-      goalTotal = daily.goal;
-    }
-    if (practiceStat.kind === "caught-up" && daily.goal > 0) {
-      done = daily.reviewed;
-      goalTotal = daily.goal;
-    }
-
-    const showMeter = goalTotal > 0;
-    const pct = showMeter ? Math.min(100, Math.round((done / goalTotal) * 100)) : 0;
-    const isDone =
-      practiceStat.kind === "done-today" ||
-      practiceStat.kind === "caught-up" ||
-      practiceStat.value === "✓" ||
-      (showMeter && daily.goalMet && !daily.extraMode);
-    const isLive = showMeter && done > 0 && !isDone;
-    const isQuiet = !practiceStat.highlight && !practiceStat.actionable;
-
-    dailyEl.classList.toggle("hidden", false);
-    dailyEl.classList.toggle("is-complete", Boolean(isDone));
-    dailyEl.classList.toggle("is-quiet", Boolean(isQuiet) && !isDone);
-    dailyEl.classList.toggle("is-live", Boolean(isLive));
-
-    let aria = practiceStat.ariaLabel;
-    if (showMeter) {
-      aria = isDone
-        ? `Review goal complete: ${done} of ${goalTotal}`
-        : `Review ${done} of ${goalTotal} today`;
-      if (practiceStat.actionable && !isDone) {
-        aria += ". Open Review.";
-      }
-    }
-
-    // Dense strip like Deck: REVIEW · 1/20 · bar. No prose, no tall glass card.
-    const countText = showMeter ? `${done}/${goalTotal}` : "—";
-    const body = showMeter
-      ? `<div class="progress-daily-head">
-          <span class="progress-daily-label">Review</span>
-          <span class="progress-daily-count${isLive ? " is-live" : ""}${isDone ? " is-complete" : ""}">${escapeHtml(countText)}</span>
-        </div>
-        <div
-          class="progress-daily-bar${isDone ? " is-complete" : ""}"
-          role="progressbar"
-          aria-valuemin="0"
-          aria-valuenow="${done}"
-          aria-valuemax="${goalTotal}"
-          aria-label="${escapeAttr(aria)}"
-        >
-          <div class="progress-daily-fill" style="width: ${pct}%"></div>
-        </div>`
-      : `<div class="progress-daily-head">
-          <span class="progress-daily-label">Review</span>
-          <span class="progress-daily-count">—</span>
-        </div>`;
-
-    if (practiceStat.actionable) {
-      dailyEl.innerHTML = `
-        <button type="button" class="progress-daily-action" data-tab-jump="practice" aria-label="${escapeAttr(aria)}">
-          ${body}
-        </button>`;
-    } else {
-      dailyEl.innerHTML = `
-        <div class="progress-daily-static" aria-label="${escapeAttr(aria)}">
-          ${body}
-        </div>`;
-    }
-  }
-
-  // —— Deck coverage: quiet truth strip (not a second glass card).
-  // Card count rides the head line; % + bar carry the progress fact.
+  // Deck coverage only — Review truth lives on the Review tab (default home).
   if (coverageEl) {
     coverageEl.classList.toggle("hidden", total === 0);
     if (total > 0) {
@@ -10987,7 +10898,6 @@ function renderProgressSummary() {
 
   if (!container) return;
 
-  // Two long-game stats only — daily/introduced live in the strips above.
   const streakRisk = streakStat.atRisk ? " stat-card--risk" : "";
   const streakHighlight = streakStat.highlight ? " highlight" : "";
   container.innerHTML = `
@@ -11716,12 +11626,6 @@ function initEventListeners() {
   });
 
   document.getElementById("stats-summary")?.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-tab-jump]");
-    if (!btn) return;
-    switchTab(btn.dataset.tabJump);
-  });
-
-  document.getElementById("progress-daily")?.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-tab-jump]");
     if (!btn) return;
     switchTab(btn.dataset.tabJump);

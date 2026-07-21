@@ -5880,18 +5880,16 @@ html.needs-welcome body {
   width: 100%;
 }
 
-/* Progress stack: one rhythm so truth reads as one calm column */
-#progress-daily,
+/* Progress stack: Deck coverage leads into long-game stats */
 #progress-coverage {
   margin-bottom: 0.65rem;
 }
 
-#progress-coverage:not(.hidden) + .stats-summary,
-#progress-daily:not(.hidden) + .stats-summary {
+#progress-coverage:not(.hidden) + .stats-summary {
   margin-top: 0.15rem;
 }
 
-/* Deck strip: flat truth under Review */
+/* Deck strip: flat truth */
 .progress-coverage {
   margin-bottom: 0.55rem;
   padding: 0.55rem 0 0.35rem;
@@ -5944,119 +5942,6 @@ html.needs-welcome body {
   border-radius: inherit;
   background: linear-gradient(90deg, var(--brand), #5b9aff);
   transition: width 0.35s var(--ease);
-}
-
-/* Progress → Review: same density as Deck strip (label · fraction · bar) */
-.progress-daily {
-  margin-bottom: 0.55rem;
-  padding: 0.55rem 0 0.35rem;
-  border-radius: 0;
-  background: transparent;
-  border: none;
-  border-top: 1px solid var(--border);
-  box-shadow: none;
-  overflow: visible;
-}
-
-.progress-daily.hidden {
-  display: none;
-}
-
-.progress-daily-action,
-.progress-daily-static {
-  display: block;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  color: inherit;
-  text-align: left;
-  box-sizing: border-box;
-}
-
-.progress-daily-action {
-  cursor: pointer;
-  touch-action: manipulation;
-  border-radius: 8px;
-  transition: background 0.15s var(--ease);
-}
-
-.progress-daily-action:hover,
-.progress-daily-action:focus-visible {
-  background: color-mix(in srgb, var(--brand) 5%, transparent);
-  outline: none;
-}
-
-.progress-daily-action:focus-visible {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 30%, transparent);
-}
-
-.progress-daily-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.4rem;
-}
-
-.progress-daily-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-}
-
-.progress-daily.is-complete .progress-daily-label {
-  color: color-mix(in srgb, #1f6b45 65%, var(--text-tertiary));
-}
-
-/* Fraction only — same fact as Review chip, without the tall pill chrome */
-.progress-daily-count {
-  font-size: 0.95rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.progress-daily-count.is-live {
-  color: var(--brand-deep, #2a4a9b);
-}
-
-.progress-daily-count.is-complete,
-.progress-daily.is-complete .progress-daily-count {
-  color: #1f6b45;
-}
-
-.progress-daily-bar {
-  width: 100%;
-  height: 0.3rem;
-  border-radius: 999px;
-  background: rgba(54, 95, 207, 0.08);
-  overflow: hidden;
-}
-
-.progress-daily-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--brand), #5b9aff);
-  transition: width 0.35s var(--ease);
-  min-width: 0;
-}
-
-.progress-daily-bar.is-complete,
-.progress-daily.is-complete .progress-daily-bar {
-  background: rgba(56, 161, 105, 0.14);
-}
-
-.progress-daily-bar.is-complete .progress-daily-fill,
-.progress-daily.is-complete .progress-daily-fill {
-  background: linear-gradient(90deg, #3a9e62, #48bb78);
 }
 
 .progress-coverage.hidden {
