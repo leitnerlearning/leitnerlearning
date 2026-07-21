@@ -13,7 +13,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 | Italian | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
 | Dutch | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
 | Portuguese | PASS | **PASS 1 COMPLETE** | BR standard; POS; packs; stories |
-| Polish | PASS | **PASS 1 COMPLETE** | POS; zła/przepraszam; packs; stories |
+| Polish | PASS | **PASS 1 COMPLETE** | POS; zła/przepraszam; packs; **story pass 1** |
 
 ## Polish — pass 1 checklist
 
@@ -38,12 +38,13 @@ Goal: natural dialogue that weaves high-frequency **core** and **theme** forms s
 | French (fr) | **PASS 1 COMPLETE** | 12 stories; theme weave densified; FR forms (Navigo, carte Vitale, CROUS, Vélib') |
 | Italian (it) | **PASS 1 COMPLETE** | 12 stories; theme weave ~94% of 200; IT forms (Freccia Rossa, tessera sanitaria, smart working) |
 | Dutch (nl) | **PASS 1 COMPLETE** | 12 stories; theme weave ~94% of 200; NL forms (OV-chipkaart, DigiD, NS, vrijmibo) |
-| Other 3 | pending | Same ladder; next on go |
+| Polish (pl) | **PASS 1 COMPLETE** | 12 stories; theme weave ~81%+ stem-aware; PL forms (BLIK, NFZ, PESEL, Pendolino) |
+| Other 2 | pending | Same ladder; next on go |
 
 ## Ship rule
 
 - **All 10 languages:** structure PASS + linguistic PASS 1 (NB PASS 2).
-- **NB + DA + DE + ES + FR + IT + NL story pass 1** shipped; remaining on go (order: pl → pt → sv).
+- **NB + DA + DE + ES + FR + IT + NL + PL story pass 1** shipped; remaining on go (order: pt → sv).
 - Continuous improvement always welcome; re-open a language only for a **named defect**.
 - Do not thrash certified decks without evidence.
 
