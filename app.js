@@ -2613,10 +2613,12 @@ function renderThemePackWordList(pack, category) {
 function renderThemePackCard(pack, category) {
   const coverage = countPackCoverage(pack, category.id);
   const enabled = isPackEnabled(pack.id);
-  // Quiet fraction — forms already in the core deck count toward the theme.
-  const status = enabled
-    ? `${coverage.present}/${coverage.total}`
-    : String(coverage.total);
+  // Only show a status when it adds information beyond “N words” below.
+  // Enabled: how many of the pack forms are in the deck (e.g. 18/20).
+  const status =
+    enabled && coverage.total > 0
+      ? `${coverage.present}/${coverage.total}`
+      : "";
 
   let actions = "";
   if (enabled) {
@@ -2647,7 +2649,11 @@ function renderThemePackCard(pack, category) {
       <div class="library-theme-main">
         <div class="library-theme-copy">
           <p class="library-theme-name">${escapeHtml(pack.title)}</p>
-          <p class="library-theme-status">${escapeHtml(status)}</p>
+          ${
+            status
+              ? `<p class="library-theme-status">${escapeHtml(status)}</p>`
+              : ""
+          }
         </div>
         <div class="library-theme-actions">${actions}</div>
       </div>
