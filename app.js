@@ -254,7 +254,7 @@ function updateBasicsButtonVisibility(categoryId = activeCategoryId) {
   const label =
     glyphs.length > 0 ? `Basics: ${glyphs.join(", ")}` : "Basics";
   btn.setAttribute("aria-label", label);
-  btn.title = label;
+  btn.removeAttribute("title");
 }
 
 function buildStarterDeck(category = getActiveCategory()) {
@@ -2439,12 +2439,7 @@ function updateSpeakButtonUI() {
   btn.textContent = speakListening ? "Listening…" : "Speak";
   btn.classList.toggle("listening", speakListening);
 
-  // Hover only when mode is on — off state is obvious from the label "Speak".
-  if (speakModeActive) {
-    btn.title = "Speak mode on · tap to turn off";
-  } else {
-    btn.removeAttribute("title");
-  }
+  btn.removeAttribute("title");
 }
 
 function setListeningUI(active) {
@@ -4549,7 +4544,7 @@ function renderPractice() {
         "aria-label",
         `${status}. Tap to change daily target.`
       );
-      goalChip.title = "Change daily goal";
+      goalChip.removeAttribute("title");
     }
   }
 
@@ -8488,20 +8483,11 @@ function renderLibraryJumpNav(sections) {
   const chips = jumpSections
     .map(({ band, label }) => {
       const key = librarySectionKey(band);
-      const range = LIBRARY_JUMP_RANGE[key];
       const full = BAND_LABELS[key] || label;
       const chipLabel = compact
         ? BAND_JUMP_LABELS_COMPACT[key] || full
         : full;
-      // Hover only when the chip is shortened — expand the full band name + range.
-      const tip =
-        compact && range
-          ? `${full} · ${range}`
-          : compact
-            ? full
-            : "";
-      const titleAttr = tip ? ` title="${escapeAttr(tip)}"` : "";
-      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}"${titleAttr}>${escapeHtml(chipLabel)}</button>`;
+      return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}">${escapeHtml(chipLabel)}</button>`;
     })
     .join("");
   // Inner track = horizontal scroll on mobile only; outer nav stays sticky.
@@ -9343,12 +9329,7 @@ function updateReadEnglishToggle() {
   toggle.classList.toggle("is-on", Boolean(readShowEnglish));
   // Short label; pressed/on state carries the meaning.
   toggle.textContent = "English";
-  // Hover only when English is on (label alone doesn't say "hide").
-  if (readShowEnglish) {
-    toggle.title = "Hide English translation";
-  } else {
-    toggle.removeAttribute("title");
-  }
+  toggle.removeAttribute("title");
   toggle.setAttribute(
     "aria-label",
     readShowEnglish ? "Hide English translation" : "Show English translation"
@@ -9837,7 +9818,6 @@ function renderProgressReadStats() {
                       class="read-stat-reset-btn"
                       data-reset-story-id="${escapeAttr(story.id)}"
                       aria-label="Reset ${escapeAttr(story.title)}"
-                      title="Reset story"
                     >↺</button>`
                   : `<span class="read-stat-reset-spacer" aria-hidden="true"></span>`
               }
@@ -9910,7 +9890,7 @@ function applyPracticeDirectionUI() {
     const dirTitle = isReversePractice()
       ? `Tap to review ${learningName} → English`
       : `Tap to review English → ${learningName}`;
-    directionBtn.title = dirTitle;
+    directionBtn.removeAttribute("title");
     directionBtn.setAttribute("aria-label", `Review direction: ${labels.promptLabel}. ${dirTitle}`);
   }
 
@@ -9929,11 +9909,7 @@ function applyPracticeDirectionUI() {
     const speakAria = speakModeActive
       ? "Speak mode on. Tap to turn off"
       : labels.speakTitle;
-    if (speakModeActive) {
-      speakBtn.title = "Speak mode on · tap to turn off";
-    } else {
-      speakBtn.removeAttribute("title");
-    }
+    speakBtn.removeAttribute("title");
     speakBtn.setAttribute("aria-pressed", String(speakModeActive));
     speakBtn.setAttribute("aria-label", speakAria);
     speakBtn.classList.toggle("is-active", Boolean(speakModeActive));
