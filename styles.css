@@ -262,8 +262,11 @@ main,
   z-index: 40;
 }
 
-/* Language — primary control (flag + name on desktop) */
-.category-picker-btn--progress {
+/*
+ * Language — same neutral pill as Basics / About in this row.
+ * Must beat the later .category-picker-btn blue chip (same specificity, later in file).
+ */
+.category-picker-btn.category-picker-btn--progress {
   min-width: 0;
   min-height: var(--prefs-h);
   height: var(--prefs-h);
@@ -274,7 +277,7 @@ main,
   text-transform: none;
   letter-spacing: -0.01em;
   font-size: var(--prefs-font);
-  font-weight: 650;
+  font-weight: 600;
   line-height: 1;
   color: var(--text-secondary);
   background: var(--surface-glass-strong);
@@ -287,27 +290,29 @@ main,
     box-shadow 0.15s var(--ease, ease);
 }
 
-.category-picker-btn--progress:hover,
-.category-picker-btn--progress:focus-visible,
-.category-picker-btn--progress[aria-expanded="true"] {
+.category-picker-btn.category-picker-btn--progress:hover,
+.category-picker-btn.category-picker-btn--progress:focus-visible,
+.category-picker-btn.category-picker-btn--progress[aria-expanded="true"] {
   color: var(--brand-deep);
   background: var(--brand-soft);
   border-color: transparent;
   outline: none;
+  box-shadow: none;
 }
 
-.category-picker-btn--progress:focus-visible {
+.category-picker-btn.category-picker-btn--progress:focus-visible {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
 }
 
-.category-picker-btn--progress.is-flashing {
+/* Brief attention after a language switch — not a permanent selected look */
+.category-picker-btn.category-picker-btn--progress.is-flashing {
   color: var(--brand-deep);
   background: var(--brand-soft);
   border-color: transparent;
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
-.category-picker-btn--progress .category-flag {
+.category-picker-btn.category-picker-btn--progress .category-flag {
   font-size: 1.12rem;
 }
 
@@ -320,7 +325,7 @@ main,
   text-align: left;
 }
 
-.category-picker-btn--progress .category-picker-chevron {
+.category-picker-btn.category-picker-btn--progress .category-picker-chevron {
   flex-shrink: 0;
   opacity: 0.55;
 }
@@ -1381,7 +1386,7 @@ main,
    * Mobile language: fixed flag chip — never grows with "Norwegian".
    * Name lives in aria-label + open menu.
    */
-  .category-picker-btn--progress {
+  .category-picker-btn.category-picker-btn--progress {
     flex: 0 0 auto;
     width: var(--prefs-h);
     min-width: var(--prefs-h);
@@ -1393,7 +1398,7 @@ main,
     justify-content: center;
   }
 
-  .category-picker-btn--progress .category-picker-lang {
+  .category-picker-btn.category-picker-btn--progress .category-picker-lang {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -1405,11 +1410,11 @@ main,
     border: 0;
   }
 
-  .category-picker-btn--progress .category-flag {
+  .category-picker-btn.category-picker-btn--progress .category-flag {
     font-size: 1.2rem;
   }
 
-  .category-picker-btn--progress .category-picker-chevron {
+  .category-picker-btn.category-picker-btn--progress .category-picker-chevron {
     width: 0.36rem;
     height: 0.36rem;
   }
