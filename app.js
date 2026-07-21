@@ -5138,7 +5138,8 @@ function toLanguageToolCode(langCode) {
     nl: "nl",
     "nl-nl": "nl",
     "nl-be": "nl-BE",
-    pt: "pt",
+    // Brazilian Portuguese is our teaching standard (flag 🇧🇷 / speech pt-BR)
+    pt: "pt-BR",
     "pt-pt": "pt-PT",
     "pt-br": "pt-BR",
     pl: "pl",

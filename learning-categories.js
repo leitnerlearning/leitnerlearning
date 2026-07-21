@@ -7,6 +7,7 @@
  */
 const LEARNING_CATEGORIES = [
   {
+    // Teaching standard: Bokmål (school/written). Not every Norwegian dialect.
     id: "nb-bokmal",
     label: "Norwegian",
     flag: "🇳🇴",
@@ -325,8 +326,10 @@ const LEARNING_CATEGORIES = [
     },
   },
   {
+    // Teaching standard: Brazilian Portuguese (school/formal). Flag matches.
+    // European Portuguese spellings may soft-match later (like BE/AE for English).
     id: "pt",
-    label: "Portuguese",
+    label: "Portuguese (Brazil)",
     flag: "🇧🇷",
     available: true,
     checkStrength: "full",
@@ -335,8 +338,8 @@ const LEARNING_CATEGORIES = [
     answerLang: "en-US",
     promptLabel: "Portuguese → English",
     reversePromptLabel: "English → Portuguese",
-    deckTitle: "Portuguese essentials",
-    deckBlurb: "from everyday Portuguese",
+    deckTitle: "Portuguese essentials (Brazil)",
+    deckBlurb: "from everyday Brazilian Portuguese",
     starterPreviewLead: "Core words to get started.",
     foreignFieldLabel: "Portuguese word or phrase",
     nativeFieldLabel: "English meaning",
