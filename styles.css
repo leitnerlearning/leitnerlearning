@@ -2470,6 +2470,38 @@ main {
   border-color: rgba(255, 149, 0, 0.28);
 }
 
+/* Post-miss story line — calm context, no extra chrome */
+.feedback-example {
+  width: 100%;
+  margin: -0.15rem 0 0.45rem;
+  padding: 0 0.5rem;
+  text-align: center;
+  font-size: clamp(0.88rem, 2.8vw, 1rem);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--muted, #5c6570);
+  pointer-events: none;
+}
+
+.feedback-example.hidden {
+  display: none;
+}
+
+.feedback-example-l2 {
+  display: block;
+  color: var(--text, #1a1f26);
+  font-weight: 550;
+  letter-spacing: -0.02em;
+}
+
+.feedback-example-en {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.92em;
+  opacity: 0.82;
+  font-weight: 450;
+}
+
 .answer-form input[type="text"].received {
   background: linear-gradient(135deg, rgba(91, 154, 255, 0.16), rgba(54, 95, 207, 0.09));
   color: var(--brand-deep);

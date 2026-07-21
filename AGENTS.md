@@ -138,6 +138,8 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - **Leitner intervals** stay: boxes 1→6 with 0 / 1 / 3 / 7 / 14 / 30 day steps; wrong answers demote to box 1.
 - **Due reviews always before new cards** in the daily queue.
 - **Early “hook mix”** (first ~40 introductions): interleave high-frequency *glue* (pronouns, articles, particles) with *hooks* (phrases + mid-rank content words). Pure rank-1-only order is coverage-optimal but demotivating and brutal for isolated connectors (et/a/the). Aligns with formulaic-sequence / usage-based practice.
+- **Glue recognition-first**: weak glue cards (new / boxes 1–2) practice **L2→EN** even if the user toggle is EN→L2. Exact production waits until the form is less brittle.
+- **Post-wrong context**: on miss/reveal, when a Read story uses the word, show that short L2 line + English under the answer pill.
 - **Later spice**: after the hook phase, small random pulls from slightly ahead of the frequency frontier.
 - Daily goal remains a **small bite** (cap 10–30, default 20) — never dump the whole unpaid mountain into the UI.
 - Exact-form checking stays strict; soft-accept only true orthographic variants, not wrong articles.

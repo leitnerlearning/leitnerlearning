@@ -1702,12 +1702,14 @@ const SPEECH_HOMOPHONE_LOOKUP = (() => {
   return out;
 })();
 
-function getAnswerSpeechLang() {
-  const lang = getDirectionLabels().answerLang || "en-US";
-  if (String(lang).toLowerCase().startsWith("nb") || String(lang).toLowerCase().startsWith("no")) {
-    return "nb";
-  }
-  return "en";
+function getAnswerSpeechLang(card = currentCard) {
+  const lang = getDirectionLabels(getActiveCategory(), card).answerLang || "en-US";
+  const lower = String(lang).toLowerCase();
+  if (lower.startsWith("nb") || lower.startsWith("no")) return "nb";
+  // Map speech BCP-47-ish tags to our homophone tables
+  if (lower.startsWith("en")) return "en";
+  const short = lower.split("-")[0];
+  return short || "en";
 }
 
 function sameSpeechHomophoneGroup(a, b, lang) {
@@ -1896,13 +1898,46 @@ function isReversePractice() {
   return practiceDirection === "native-to-foreign";
 }
 
+/**
+ * Glue = high-frequency connectors/pronouns/articles (rank &lt; ~36, not phrases).
+ * Isolation production (EN→L2) is brutal early; recognition (L2→EN) teaches meaning first.
+ */
+function isGluePracticeCard(card) {
+  if (!card) return false;
+  if (window.SrsCore && typeof SrsCore.isGlueCard === "function") {
+    return Boolean(SrsCore.isGlueCard(card));
+  }
+  if (card.band === "phrase") return false;
+  const foreign = String(card.foreign || "").trim();
+  if (/\s/.test(foreign)) return false;
+  const rank = Number(card.rank);
+  return Number.isFinite(rank) && rank < 36;
+}
+
+/** Weak = not yet stable in Leitner (new or boxes 1–2). */
+function isWeakCard(card) {
+  if (!card) return false;
+  if (isNewCard(card)) return true;
+  const box = Number(card.box) || 1;
+  return box <= 2;
+}
+
+/**
+ * Per-card direction. Weak glue forces L2→EN (recognition) even if the user
+ * toggle is English → language — exact-form production waits until the form sticks.
+ */
+function isEffectiveReversePractice(card = currentCard) {
+  if (card && isGluePracticeCard(card) && isWeakCard(card)) return false;
+  return isReversePractice();
+}
+
 function updateAnswerInputPlaceholder() {
   const answerInput = document.getElementById("answer-input");
   if (answerInput) answerInput.placeholder = "";
 }
 
-function getDirectionLabels(category = getActiveCategory()) {
-  if (isReversePractice()) {
+function getDirectionLabels(category = getActiveCategory(), card = currentCard) {
+  if (isEffectiveReversePractice(card)) {
     return {
       promptLabel: category.reversePromptLabel || "English → " + category.label.split(" · ")[0],
       answerLang: category.reverseAnswerLang || category.speechLang || "nb-NO",
@@ -1924,11 +1959,11 @@ function getDirectionLabels(category = getActiveCategory()) {
 }
 
 function getPromptDisplayText(card) {
-  return isReversePractice() ? card.native.split("/")[0].trim() : card.foreign;
+  return isEffectiveReversePractice(card) ? card.native.split("/")[0].trim() : card.foreign;
 }
 
 function getAnswerTargetText(card) {
-  return isReversePractice() ? card.foreign : card.native;
+  return isEffectiveReversePractice(card) ? card.foreign : card.native;
 }
 
 function getExpectedAnswers(card) {
@@ -2418,7 +2453,7 @@ function getSpeakRecognition() {
   }
 
   const rec = speakRecInstance;
-  rec.lang = getDirectionLabels().answerLang || "en-US";
+  rec.lang = getDirectionLabels(getActiveCategory(), currentCard).answerLang || "en-US";
   rec.interimResults = true;
   // one-shot: reliable hearing on mobile Chrome (continuous broke pickup there)
   rec.continuous = false;
@@ -2647,8 +2682,8 @@ function handleSpeakAttemptTimeout() {
 
   const answerText = getAnswerTargetText(currentCard);
   handleIncorrect();
-  showFeedback(answerText, "incorrect");
-  finishCardAndContinue(SPEAK_ADVANCE_WRONG_MS);
+  const withExample = showIncorrectWithExample(currentCard, answerText);
+  finishCardAndContinue(getAdvanceDelay(false, true, { withExample }));
 }
 
 function bestTranscriptFromSpeechEvent(event) {
@@ -2837,11 +2872,17 @@ function beginSpeakAttempt() {
   }
 }
 
-function getAdvanceDelay(correct, fromSpeech = false) {
+function getAdvanceDelay(correct, fromSpeech = false, options = {}) {
+  const withExample = Boolean(options.withExample);
+  let ms;
   if (fromSpeech || speakModeActive) {
-    return correct ? SPEAK_ADVANCE_CORRECT_MS : SPEAK_ADVANCE_WRONG_MS;
+    ms = correct ? SPEAK_ADVANCE_CORRECT_MS : SPEAK_ADVANCE_WRONG_MS;
+  } else {
+    ms = correct ? TYPING_ADVANCE_CORRECT_MS : TYPING_ADVANCE_WRONG_MS;
   }
-  return correct ? TYPING_ADVANCE_CORRECT_MS : TYPING_ADVANCE_WRONG_MS;
+  // Give time to read a story line after a miss.
+  if (!correct && withExample) ms += 2200;
+  return ms;
 }
 
 function finishCardAndContinue(delayMs) {
@@ -4177,7 +4218,7 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
 }
 
 function speakPromptForCard(card) {
-  const labels = getDirectionLabels();
+  const labels = getDirectionLabels(getActiveCategory(), card);
   speakText(getPromptDisplayText(card), labels.promptSpeechLang);
 }
 
@@ -4202,15 +4243,123 @@ function showFeedback(message, type, options = {}) {
   }
 }
 
+function hideFeedbackExample() {
+  const el = document.getElementById("feedback-example");
+  if (!el) return;
+  el.classList.add("hidden");
+  el.innerHTML = "";
+  el.removeAttribute("lang");
+}
+
+/**
+ * Whole-token / whole-phrase match in a story line (case-insensitive).
+ * Avoids "en" matching inside "venstre".
+ */
+function sentenceContainsForm(sentenceText, form) {
+  const hay = String(sentenceText || "").trim();
+  const needle = String(form || "").trim();
+  if (!hay || !needle) return false;
+  try {
+    const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`(?:^|[^\\p{L}\\p{N}_])${escaped}(?:[^\\p{L}\\p{N}_]|$)`, "iu");
+    return re.test(hay);
+  } catch {
+    // Older engines without Unicode property escapes
+    const lower = hay.toLowerCase();
+    const n = needle.toLowerCase();
+    const idx = lower.indexOf(n);
+    if (idx < 0) return false;
+    const before = idx === 0 ? " " : lower[idx - 1];
+    const after = idx + n.length >= lower.length ? " " : lower[idx + n.length];
+    return /[^\wà-ÿ]/i.test(before) && /[^\wà-ÿ]/i.test(after);
+  }
+}
+
+/**
+ * Pull a short natural sentence from Read stories that uses this card's L2 form.
+ * Prefer easier trails and shorter lines so the teaching beat stays calm.
+ */
+function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
+  if (!card?.foreign) return null;
+  const form = String(card.foreign).trim();
+  if (!form) return null;
+
+  const stories = typeof getStoriesForCategory === "function" ? getStoriesForCategory(categoryId) : [];
+  if (!stories.length) return null;
+
+  const trailScore = (trail) => {
+    if (trail === "green-circle" || trail === "Starter") return 0;
+    if (trail === "blue-square" || trail === "blue-circle") return 1;
+    if (trail === "black-diamond") return 2;
+    return 3;
+  };
+
+  let best = null;
+  let bestScore = Infinity;
+
+  for (const story of stories) {
+    const sentences = story.sentences || [];
+    for (const s of sentences) {
+      const foreign = sentenceForeignText(s);
+      if (!sentenceContainsForm(foreign, form)) continue;
+      const en = String(s.en || "").trim();
+      if (!en) continue;
+      // Prefer short, easy lines; slight penalty if form is only a tiny substring of a long line
+      const score =
+        trailScore(story.trail) * 1000 +
+        foreign.length +
+        (form.length <= 2 && foreign.length > 40 ? 80 : 0);
+      if (score < bestScore) {
+        bestScore = score;
+        best = { foreign, en, storyId: story.id };
+      }
+    }
+  }
+
+  return best;
+}
+
+function showFeedbackExample(example, card = currentCard) {
+  const el = document.getElementById("feedback-example");
+  if (!el) return;
+  if (!example?.foreign || !example?.en) {
+    hideFeedbackExample();
+    return;
+  }
+  const foreignLang = getActiveCategory().foreignLang || "nb";
+  el.classList.remove("hidden");
+  el.setAttribute("lang", foreignLang);
+  el.innerHTML = `<span class="feedback-example-l2" lang="${escapeAttr(foreignLang)}">${escapeHtml(
+    example.foreign
+  )}</span><span class="feedback-example-en">${escapeHtml(example.en)}</span>`;
+}
+
+/**
+ * After a miss/reveal: show the answer pill, plus a real-sentence beat when we have one.
+ * Especially valuable for glue words that only make sense in use.
+ */
+function showIncorrectWithExample(card, answerText) {
+  showFeedback(answerText, "incorrect");
+  const example = findExampleSentenceForCard(card);
+  if (example) {
+    showFeedbackExample(example, card);
+    return true;
+  }
+  hideFeedbackExample();
+  return false;
+}
+
 function hideFeedback() {
   if (feedbackHideTimer) {
     window.clearTimeout(feedbackHideTimer);
     feedbackHideTimer = null;
   }
   const el = document.getElementById("feedback");
-  if (!el) return;
-  el.textContent = "";
-  el.className = "feedback is-empty";
+  if (el) {
+    el.textContent = "";
+    el.className = "feedback is-empty";
+  }
+  hideFeedbackExample();
 }
 
 function renderBoxDots(box) {
@@ -4665,7 +4814,7 @@ function renderPractice() {
   activeEl.classList.remove("hidden");
   updatePracticeFocusClass();
 
-  const labels = getDirectionLabels();
+  const labels = getDirectionLabels(getActiveCategory(), currentCard);
   const promptEl = document.getElementById("prompt-text");
   promptEl.textContent = getPromptDisplayText(currentCard);
   promptEl.lang = labels.promptLang;
@@ -4673,6 +4822,7 @@ function renderPractice() {
 
   const promptHint = document.getElementById("prompt-hint");
   if (promptHint) {
+    // Quiet: no coaching chrome. Glue recognition is enforced in direction logic.
     promptHint.textContent = "";
     promptHint.classList.add("hidden");
   }
@@ -4684,6 +4834,9 @@ function renderPractice() {
 
   const input = document.getElementById("answer-input");
   input.value = "";
+  if (input) {
+    input.lang = String(labels.answerLang || "en").split("-")[0];
+  }
   if (!speakModeActive) focusAnswerInput();
 }
 
@@ -10511,6 +10664,7 @@ function submitAnswer(options = {}) {
     resetCardAttempts();
     setAnswerFieldHighlight(false);
     setAnswerReceivedState(true);
+    hideFeedbackExample();
     // Prefer the card's spelling when speech picked a homophone (two → to).
     if (result.matched && answerInput && normalizeAnswer(answer) !== result.matched) {
       answerInput.value = result.matched;
@@ -10526,6 +10680,7 @@ function submitAnswer(options = {}) {
   if (speakModeActive && result.near) {
     currentCardAttempts += 1;
     setAnswerFieldHighlight(true);
+    hideFeedbackExample();
 
     if (currentCardAttempts <= MAX_CLOSE_RETRIES) {
       const triesLeft = MAX_CLOSE_RETRIES - currentCardAttempts + 1;
@@ -10540,9 +10695,9 @@ function submitAnswer(options = {}) {
   setAnswerFieldHighlight(false);
   setAnswerReceivedState(true);
   handleIncorrect();
-  showFeedback(answerText, "incorrect");
+  const withExample = showIncorrectWithExample(currentCard, answerText);
 
-  finishCardAndContinue(getAdvanceDelay(false, options.fromSpeech));
+  finishCardAndContinue(getAdvanceDelay(false, options.fromSpeech, { withExample }));
 }
 
 function switchTab(tabName) {
@@ -10627,9 +10782,11 @@ function initEventListeners() {
   document.getElementById("reveal-btn")?.addEventListener("click", () => {
     if (!currentCard) return;
     const answerText = getAnswerTargetText(currentCard);
-    showFeedback(answerText, "incorrect");
     handleIncorrect();
-    finishCardAndContinue(speakModeActive ? SPEAK_ADVANCE_WRONG_MS : TYPING_ADVANCE_WRONG_MS);
+    const withExample = showIncorrectWithExample(currentCard, answerText);
+    finishCardAndContinue(
+      getAdvanceDelay(false, speakModeActive, { withExample })
+    );
   });
 
   document.getElementById("speak-btn")?.addEventListener("click", toggleSpeakMode);
