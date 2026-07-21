@@ -5748,7 +5748,126 @@ html.needs-welcome body {
   color: var(--text-secondary);
 }
 
+/* Progress → Themes glance (opt-in packs only) */
+.progress-themes {
+  margin-bottom: 1.1rem;
+  padding: 0.9rem 1rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-glass-strong);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
 
+.progress-themes.hidden {
+  display: none;
+}
+
+.progress-themes-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.55rem;
+}
+
+.progress-themes-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.progress-themes-count {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-themes-empty {
+  margin: 0 0 0.55rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.progress-themes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-bottom: 0.55rem;
+}
+
+.progress-themes-row-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.28rem;
+}
+
+.progress-themes-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink, var(--text));
+  min-width: 0;
+}
+
+.progress-themes-status {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.progress-themes-bar {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: rgba(54, 95, 207, 0.08);
+  overflow: hidden;
+}
+
+.progress-themes-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6b8fd4, #8eb0f0);
+  min-width: 0;
+  transition: width 0.35s var(--ease);
+}
+
+.progress-themes-fill--has {
+  min-width: 3px;
+}
+
+.progress-themes-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--brand-deep, #2a4a9b);
+  cursor: pointer;
+}
+
+.progress-themes-link:hover,
+.progress-themes-link:focus-visible {
+  color: var(--brand, #365fcf);
+  outline: none;
+}
+
+.progress-themes-link:focus-visible {
+  box-shadow: 0 0 0 3px var(--brand-soft, rgba(54, 95, 207, 0.2));
+  border-radius: 4px;
+}
 
 .progress-daily {
   margin-bottom: 0.75rem;

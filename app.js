@@ -2451,6 +2451,41 @@ function countNewPackCardsAvailable(pack, categoryId = activeCategoryId, cards =
 }
 
 /**
+ * Progress for one theme pack: how many of its forms are in the deck and learning.
+ * Uses foreign-form match so core overlaps still count toward the theme.
+ */
+function getPackLearningProgress(pack, categoryId = activeCategoryId, cards = deck) {
+  const entries = getPackEntriesForCategory(pack, categoryId);
+  const byKey = new Map();
+  cards.forEach((card) => {
+    const key = normalizeAnswer(card.foreign);
+    if (key && !byKey.has(key)) byKey.set(key, card);
+  });
+
+  let present = 0;
+  let introduced = 0;
+  let mastered = 0;
+  for (const entry of entries) {
+    const key = normalizeAnswer(entry.foreign);
+    if (!key) continue;
+    const card = byKey.get(key);
+    if (!card) continue;
+    present += 1;
+    if (!isNewCard(card)) introduced += 1;
+    if (Number(card.box) === BOX_COUNT) mastered += 1;
+  }
+
+  return {
+    total: entries.length,
+    present,
+    missing: Math.max(0, entries.length - present),
+    introduced,
+    mastered,
+    introPct: present ? Math.round((introduced / present) * 100) : 0,
+  };
+}
+
+/**
  * Enable a pack and merge its cards into the live deck.
  * Returns { added, total, already }.
  */
@@ -10398,6 +10433,8 @@ function renderProgressSummary() {
     }
   }
 
+  renderProgressThemes();
+
   if (!container) return;
 
   // Two long-game stats only — daily/introduced live in the strips above.
@@ -10412,6 +10449,93 @@ function renderProgressSummary() {
       <span class="stat-value">${masteredPct}%</span>
       <span class="stat-label">Mastered</span>
     </div>`;
+}
+
+/**
+ * Quiet glance at enabled theme packs. Hidden until the learner opts into at least one.
+ */
+function renderProgressThemes() {
+  const el = document.getElementById("progress-themes");
+  if (!el) return;
+
+  const category = getActiveCategory();
+  const packs = getThematicPackList().filter(
+    (pack) => getPackEntriesForCategory(pack, category.id).length > 0
+  );
+  const enabledIds = new Set(getEnabledPackIds(category.id));
+  const enabledPacks = packs.filter((pack) => enabledIds.has(pack.id));
+
+  if (!enabledPacks.length) {
+    // Soft discoverability only when packs exist and none are on yet.
+    if (!packs.length) {
+      el.classList.add("hidden");
+      el.innerHTML = "";
+      return;
+    }
+    el.classList.remove("hidden");
+    el.innerHTML = `
+      <div class="progress-themes-head">
+        <span class="progress-themes-label">Themes</span>
+      </div>
+      <p class="progress-themes-empty">Optional packs live in Library — Airport, Café, Campus, and more.</p>
+      <button type="button" class="progress-themes-link" data-tab-jump="cards" aria-label="Open Library themes">
+        Browse themes
+        <span aria-hidden="true">→</span>
+      </button>`;
+    return;
+  }
+
+  const rows = enabledPacks
+    .map((pack) => {
+      const prog = getPackLearningProgress(pack, category.id);
+      let status;
+      if (prog.present === 0) {
+        status = "Not in deck yet";
+      } else if (prog.introduced === 0) {
+        status = `${prog.present} in deck · not started`;
+      } else if (prog.introduced >= prog.present) {
+        status = `${prog.introduced} of ${prog.present} introduced`;
+      } else {
+        status = `${prog.introduced} of ${prog.present} introduced`;
+      }
+      if (prog.missing > 0 && prog.present > 0) {
+        status += ` · ${prog.missing} left to add`;
+      }
+      const pct = prog.present ? prog.introPct : 0;
+      const barClass = pct > 0 ? " progress-themes-fill--has" : "";
+      return `
+        <div class="progress-themes-row">
+          <div class="progress-themes-row-top">
+            <span class="progress-themes-name">${escapeHtml(pack.title)}</span>
+            <span class="progress-themes-status">${escapeHtml(status)}</span>
+          </div>
+          <div class="progress-themes-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${escapeAttr(pack.title)}: ${prog.introduced} of ${prog.present || prog.total} introduced">
+            <div class="progress-themes-fill${barClass}" style="width: ${pct}%"></div>
+          </div>
+        </div>`;
+    })
+    .join("");
+
+  const moreCount = packs.length - enabledPacks.length;
+  const moreLink =
+    moreCount > 0
+      ? `<button type="button" class="progress-themes-link" data-tab-jump="cards" aria-label="Open Library for more theme packs">
+          ${moreCount} more in Library
+          <span aria-hidden="true">→</span>
+        </button>`
+      : `<button type="button" class="progress-themes-link" data-tab-jump="cards" aria-label="Open Library themes">
+          Library
+          <span aria-hidden="true">→</span>
+        </button>`;
+
+  el.classList.remove("hidden");
+  el.innerHTML = `
+    <div class="progress-themes-head">
+      <span class="progress-themes-label">Themes</span>
+      <span class="progress-themes-count">${enabledPacks.length} active</span>
+    </div>
+    <div class="progress-themes-list">${rows}</div>
+    ${moreLink}`;
 }
 
 function renderProgressBoxStats() {
