@@ -4738,6 +4738,129 @@ html.needs-welcome body {
   gap: 0.5rem;
 }
 
+/* Library → Themes (opt-in mini-packs) */
+.library-themes {
+  margin: 0 0 1.1rem;
+  padding: 0.95rem 1rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(54, 95, 207, 0.12);
+  background: linear-gradient(
+    165deg,
+    rgba(91, 154, 255, 0.06),
+    rgba(255, 255, 255, 0.55)
+  );
+}
+
+.library-themes.hidden {
+  display: none;
+}
+
+.library-themes-live {
+  margin: 0 0 0.55rem;
+  min-height: 0;
+  font-size: 0.88rem;
+  color: var(--brand-deep, #2a4a9b);
+  font-weight: 500;
+}
+
+.library-themes-live:empty {
+  display: none;
+}
+
+.library-themes-head {
+  margin: 0 0 0.7rem;
+}
+
+.library-themes-title {
+  margin: 0 0 0.2rem;
+  font-size: 0.98rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text, #1a1f26);
+}
+
+.library-themes-lead {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--muted, #5c6570);
+}
+
+.library-themes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.library-theme-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(26, 31, 38, 0.06);
+}
+
+.library-theme-card.is-enabled {
+  border-color: rgba(54, 95, 207, 0.18);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.library-theme-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.library-theme-name {
+  margin: 0 0 0.12rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text, #1a1f26);
+}
+
+.library-theme-blurb {
+  margin: 0 0 0.2rem;
+  font-size: 0.86rem;
+  line-height: 1.35;
+  color: var(--muted, #5c6570);
+}
+
+.library-theme-status {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--brand-deep, #2a4a9b);
+  font-weight: 500;
+}
+
+.library-theme-btn {
+  flex-shrink: 0;
+  min-height: 2.35rem;
+  padding-inline: 0.9rem;
+  font-size: 0.88rem;
+}
+
+.library-theme-btn:disabled {
+  opacity: 0.72;
+  cursor: default;
+}
+
+@media (max-width: 520px) {
+  .library-theme-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .library-theme-btn {
+    width: 100%;
+  }
+}
+
 .library-header {
   display: flex;
   align-items: center;

@@ -342,6 +342,7 @@ function createCard(foreign, native, meta = {}) {
     rank: meta.rank ?? null,
     category: meta.category ?? null,
     band: meta.band ?? null,
+    packId: meta.packId ?? null,
   };
 }
 
@@ -731,17 +732,81 @@ function sortCardIdsByPracticePriority(cardIds, completed = new Set()) {
   return cards.map((card) => card.id);
 }
 
+/** How many new thematic-pack cards to prefer per day after the early hook phase. */
+const THEMATIC_PACK_NEW_PER_DAY = 2;
+
 function buildDailyQueue(dueCards, goal) {
-  if (window.SrsCore) {
-    return SrsCore.buildDailyQueue(dueCards, goal, deck);
-  }
   if (!goal) return [];
 
+  const packNewCards = getEnabledPackNewCards(dueCards);
+  const packNewIds = new Set(packNewCards.map((card) => card.id));
+  const introduced = getIntroducedCount(deck);
+  const hookThreshold =
+    (window.SrsCore && Number(SrsCore.HOOK_INTRO_THRESHOLD)) || 40;
+  // Keep day-one hook mix pure; after that, sprinkle pack cards into new slots.
+  const includePackBias = introduced >= hookThreshold && packNewCards.length > 0;
+
+  let queue;
+  if (window.SrsCore) {
+    queue = SrsCore.buildDailyQueue(dueCards, goal, deck, {
+      excludedIds: includePackBias ? packNewIds : new Set(),
+    });
+  } else {
+    queue = dueCards
+      .slice()
+      .sort(compareCardsForPractice)
+      .slice(0, goal)
+      .map((card) => card.id);
+  }
+
+  if (!includePackBias) return queue;
+
+  return injectPackNewIntoQueue(queue, dueCards, goal, packNewCards);
+}
+
+function getEnabledPackNewCards(dueCards) {
+  const enabled = new Set(getEnabledPackIds());
+  if (!enabled.size) return [];
   return dueCards
+    .filter(
+      (card) =>
+        isNewCard(card) && card.packId && enabled.has(card.packId)
+    )
     .slice()
-    .sort(compareCardsForPractice)
-    .slice(0, goal)
-    .map((card) => card.id);
+    .sort((a, b) => (Number(a.rank) || 99999) - (Number(b.rank) || 99999));
+}
+
+function injectPackNewIntoQueue(queue, dueCards, goal, packNewCards) {
+  const want = Math.min(THEMATIC_PACK_NEW_PER_DAY, packNewCards.length);
+  if (want <= 0) return queue;
+
+  const byId = new Map(dueCards.map((card) => [card.id, card]));
+  const deckById = new Map(deck.map((card) => [card.id, card]));
+  const resolve = (id) => byId.get(id) || deckById.get(id);
+  const isReviewId = (id) => {
+    const card = resolve(id);
+    return Boolean(card && !isNewCard(card));
+  };
+
+  const ids = queue.slice();
+  let capacity = Math.max(0, goal - ids.length);
+
+  if (capacity < want) {
+    let need = want - capacity;
+    for (let i = ids.length - 1; i >= 0 && need > 0; i -= 1) {
+      if (!isReviewId(ids[i])) {
+        ids.splice(i, 1);
+        need -= 1;
+      }
+    }
+    capacity = Math.max(0, goal - ids.length);
+  }
+
+  const add = Math.min(want, packNewCards.length, capacity);
+  for (let i = 0; i < add; i += 1) {
+    ids.push(packNewCards[i].id);
+  }
+  return ids;
 }
 
 function loadDailyPractice(categoryId = activeCategoryId) {
@@ -825,9 +890,8 @@ function refreshDailyPracticeQueue(state) {
     if (slotsOpen > 0) {
       const inQueue = new Set(state.dailyQueue);
       const pool = due.filter((card) => !completed.has(card.id) && !inQueue.has(card.id));
-      const additions = window.SrsCore
-        ? SrsCore.buildDailyQueue(pool, slotsOpen, deck, { excludedIds: inQueue })
-        : buildDailyQueue(pool, slotsOpen);
+      // Use app queue (hook mix + thematic pack bias), not raw SrsCore alone.
+      const additions = buildDailyQueue(pool, slotsOpen).filter((id) => !inQueue.has(id));
       state.dailyQueue.push(...additions);
     }
   }
@@ -2109,6 +2173,7 @@ function sanitizeDeck(cards) {
         rank: card.rank ?? null,
         category: card.category ?? null,
         band: card.band ?? null,
+        packId: card.packId ?? null,
       };
     });
 }
@@ -2190,12 +2255,13 @@ function mergeStarterIntoDeck(existing, category = getActiveCategory()) {
     merged.push(entry);
   }
 
-  // Leftovers: user cards, or old starter words the user has already studied.
+  // Leftovers: user cards, thematic pack cards, or studied old starter words.
   for (const card of existingByKey.values()) {
     const key = normalizeAnswer(card.foreign);
     if (!key || usedKeys.has(key)) continue;
     const isUserCard = card.rank == null;
-    if (isUserCard || cardHasLearningProgress(card)) {
+    const isPackCard = Boolean(card.packId);
+    if (isUserCard || isPackCard || cardHasLearningProgress(card)) {
       usedKeys.add(key);
       merged.push(card);
     }
@@ -2227,6 +2293,262 @@ function ensureDeckIsUsable(cards) {
   }
 
   return sanitized;
+}
+
+/* —— Thematic mini-packs (opt-in from Library → Themes) —— */
+
+function getThematicPackList() {
+  if (typeof window !== "undefined" && Array.isArray(window.THEMATIC_PACK_LIST)) {
+    return window.THEMATIC_PACK_LIST;
+  }
+  if (typeof window !== "undefined" && window.THEMATIC_PACKS) {
+    return Object.values(window.THEMATIC_PACKS);
+  }
+  return [];
+}
+
+function getThematicPackById(packId) {
+  if (!packId) return null;
+  if (typeof window !== "undefined" && window.THEMATIC_PACKS?.[packId]) {
+    return window.THEMATIC_PACKS[packId];
+  }
+  return getThematicPackList().find((pack) => pack.id === packId) || null;
+}
+
+function getPackEntriesForCategory(pack, categoryId = activeCategoryId) {
+  if (!pack?.byCategory) return [];
+  const entries = pack.byCategory[categoryId];
+  return Array.isArray(entries) ? entries : [];
+}
+
+function getEnabledPacksStorageKey(categoryId = activeCategoryId) {
+  return `leitner-learning-enabled-packs-v1-${categoryId}`;
+}
+
+function getEnabledPackIds(categoryId = activeCategoryId) {
+  const raw = storageGet(getEnabledPacksStorageKey(categoryId));
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map(String).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function setEnabledPackIds(ids, categoryId = activeCategoryId) {
+  const clean = [...new Set((ids || []).map(String).filter(Boolean))];
+  warnIfStorageFailed(
+    storageSet(getEnabledPacksStorageKey(categoryId), JSON.stringify(clean))
+  );
+  return clean;
+}
+
+function isPackEnabled(packId, categoryId = activeCategoryId) {
+  return getEnabledPackIds(categoryId).includes(packId);
+}
+
+function clearEnabledPacks(categoryId = activeCategoryId) {
+  try {
+    localStorage.removeItem(getEnabledPacksStorageKey(categoryId));
+  } catch {
+    // ignore
+  }
+}
+
+/** Stable ranks after the 1–1000 core so packs never steal day-one order. */
+function getPackRankBase(packId) {
+  const list = getThematicPackList();
+  const index = Math.max(
+    0,
+    list.findIndex((pack) => pack.id === packId)
+  );
+  return 1001 + index * 200;
+}
+
+function buildPackCards(pack, categoryId = activeCategoryId) {
+  const entries = getPackEntriesForCategory(pack, categoryId);
+  const base = getPackRankBase(pack.id);
+  return entries.map((entry, index) =>
+    createCard(entry.foreign, entry.native, {
+      rank: base + index,
+      category: entry.category || "noun",
+      band: entry.band || "C",
+      packId: pack.id,
+    })
+  );
+}
+
+/**
+ * Merge enabled thematic packs into the deck.
+ * - Skips foreign forms already present (keeps progress)
+ * - Tags new cards with packId + high ranks
+ * - Does not remove pack cards when a pack is disabled (progress stays)
+ */
+function mergeEnabledThematicPacks(cards, category = getActiveCategory()) {
+  const categoryId = category?.id || activeCategoryId;
+  const enabled = getEnabledPackIds(categoryId);
+  if (!enabled.length) return cards;
+
+  const byKey = new Map();
+  cards.forEach((card) => {
+    const key = normalizeAnswer(card.foreign);
+    if (key) byKey.set(key, card);
+  });
+
+  let changed = false;
+  const next = cards.slice();
+
+  for (const packId of enabled) {
+    const pack = getThematicPackById(packId);
+    if (!pack) continue;
+    const packCards = buildPackCards(pack, categoryId);
+    for (const entry of packCards) {
+      const key = normalizeAnswer(entry.foreign);
+      if (!key) continue;
+      const existing = byKey.get(key);
+      if (existing) {
+        // Leave core/user cards alone — only brand-new rows get packId,
+        // so frequency intro order is never hijacked by theme tagging.
+        continue;
+      }
+      byKey.set(key, entry);
+      next.push(entry);
+      changed = true;
+    }
+  }
+
+  if (!changed) return cards;
+  return next.sort((a, b) => (a.rank ?? 99999) - (b.rank ?? 99999));
+}
+
+function countPackCardsInDeck(packId, cards = deck) {
+  if (!packId) return 0;
+  return cards.filter((card) => card.packId === packId).length;
+}
+
+function countPackCoverage(pack, categoryId = activeCategoryId, cards = deck) {
+  const entries = getPackEntriesForCategory(pack, categoryId);
+  if (!entries.length) return { total: 0, present: 0, missing: 0 };
+  const existing = new Set(
+    cards.map((card) => normalizeAnswer(card.foreign)).filter(Boolean)
+  );
+  let present = 0;
+  for (const entry of entries) {
+    const key = normalizeAnswer(entry.foreign);
+    if (key && existing.has(key)) present += 1;
+  }
+  return {
+    total: entries.length,
+    present,
+    missing: entries.length - present,
+  };
+}
+
+function countNewPackCardsAvailable(pack, categoryId = activeCategoryId, cards = deck) {
+  return countPackCoverage(pack, categoryId, cards).missing;
+}
+
+/**
+ * Enable a pack and merge its cards into the live deck.
+ * Returns { added, total, already }.
+ */
+function enableThematicPack(packId) {
+  const pack = getThematicPackById(packId);
+  if (!pack) return { added: 0, total: 0, already: true };
+
+  const beforeKeys = new Set(
+    deck.map((card) => normalizeAnswer(card.foreign)).filter(Boolean)
+  );
+  const enabled = getEnabledPackIds();
+  if (!enabled.includes(packId)) {
+    setEnabledPackIds([...enabled, packId]);
+  }
+
+  const merged = mergeEnabledThematicPacks(deck, getActiveCategory());
+  let added = 0;
+  merged.forEach((card) => {
+    const key = normalizeAnswer(card.foreign);
+    if (key && !beforeKeys.has(key) && card.packId === packId) added += 1;
+  });
+
+  deck = ensureDeckIsUsable(merged);
+  saveDeck();
+  // Rebuild today's queue so pack cards can enter when appropriate.
+  try {
+    const daily = ensureDailyPracticeState();
+    if (daily && !daily.goalMet) {
+      refreshDailyPracticeQueue(daily);
+      saveDailyPractice(daily);
+    }
+  } catch {
+    // non-fatal
+  }
+  renderAll();
+  return {
+    added,
+    total: getPackEntriesForCategory(pack).length,
+    already: added === 0 && isPackEnabled(packId),
+  };
+}
+
+function renderThematicPacks() {
+  const root = document.getElementById("library-themes");
+  if (!root) return;
+
+  const category = getActiveCategory();
+  const packs = getThematicPackList().filter(
+    (pack) => getPackEntriesForCategory(pack, category.id).length > 0
+  );
+
+  if (!packs.length) {
+    root.classList.add("hidden");
+    root.innerHTML = "";
+    return;
+  }
+
+  root.classList.remove("hidden");
+  root.innerHTML = `
+    <div class="library-themes-head">
+      <h3 class="library-themes-title">Themes</h3>
+      <p class="library-themes-lead">Optional packs. Add when you need them — they won’t replace your essentials.</p>
+    </div>
+    <ul class="library-themes-list" role="list">
+      ${packs
+        .map((pack) => {
+          const coverage = countPackCoverage(pack, category.id);
+          const enabled = isPackEnabled(pack.id);
+          const status = enabled
+            ? coverage.missing > 0
+              ? `${coverage.present} of ${coverage.total} in deck · ${coverage.missing} left`
+              : `${coverage.present} of ${coverage.total} in your deck`
+            : `${coverage.total} cards · not added`;
+          const actionLabel = enabled
+            ? coverage.missing > 0
+              ? "Add rest"
+              : "Added"
+            : "Add to deck";
+          const disabled = enabled && coverage.missing === 0;
+          return `
+            <li class="library-theme-card${enabled ? " is-enabled" : ""}" data-pack-id="${escapeAttr(pack.id)}">
+              <div class="library-theme-copy">
+                <p class="library-theme-name">${escapeHtml(pack.title)}</p>
+                <p class="library-theme-blurb">${escapeHtml(pack.blurb || "")}</p>
+                <p class="library-theme-status">${escapeHtml(status)}</p>
+              </div>
+              <button
+                type="button"
+                class="btn ${disabled ? "ghost" : "secondary"} library-theme-btn"
+                data-pack-enable="${escapeAttr(pack.id)}"
+                ${disabled ? "disabled" : ""}
+                aria-label="${escapeAttr(`${actionLabel}: ${pack.title}`)}"
+              >${escapeHtml(actionLabel)}</button>
+            </li>`;
+        })
+        .join("")}
+    </ul>
+  `;
 }
 
 function migrateLegacyStorage(categoryId) {
@@ -2268,6 +2590,13 @@ function loadDeck(categoryId = activeCategoryId) {
         if (merged !== usable) {
           usable = ensureDeckIsUsable(merged);
         }
+        const withPacks = mergeEnabledThematicPacks(
+          usable,
+          getCategoryById(categoryId)
+        );
+        if (withPacks !== usable) {
+          usable = ensureDeckIsUsable(withPacks);
+        }
         if (usable.length) {
           storageSet(storageKey, JSON.stringify(usable));
           return usable;
@@ -2299,6 +2628,7 @@ async function resetToStarter() {
     { confirmLabel: "Reset deck", cancelLabel: "Cancel", compact: true }
   );
   if (!confirmed) return;
+  clearEnabledPacks(category.id);
   deck = buildStarterDeck(category);
   saveDeck();
   resetDailyPractice();
@@ -8846,6 +9176,7 @@ function renderCardListSections(sections, list, token) {
 function renderCardList() {
   const list = document.getElementById("card-list");
   updateDeckCount();
+  renderThematicPacks();
   if (!list || !isCardsPanelActive()) return;
 
   libraryRenderToken += 1;
@@ -10923,6 +11254,25 @@ function initEventListeners() {
   });
 
   document.getElementById("reset-deck-btn")?.addEventListener("click", resetToStarter);
+
+  document.getElementById("library-themes")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-pack-enable]");
+    if (!btn || btn.disabled) return;
+    const packId = btn.getAttribute("data-pack-enable");
+    if (!packId) return;
+    const result = enableThematicPack(packId);
+    // Quiet status on the card itself via re-render; optional brief live message
+    const live = document.getElementById("library-themes-live");
+    if (live) {
+      if (result.added > 0) {
+        live.textContent = `Added ${result.added} cards to your deck.`;
+      } else if (result.already) {
+        live.textContent = "Already in your deck.";
+      } else {
+        live.textContent = "";
+      }
+    }
+  });
 
   document.getElementById("library-search")?.addEventListener("input", (e) => {
     librarySearch = e.target.value;

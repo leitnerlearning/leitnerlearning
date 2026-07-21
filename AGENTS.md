@@ -105,6 +105,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - `norwegian-frequency-deck.js` + `norwegian-reading-vocab.js` — NB 500+500
 - `learning-categories.js` — language registry (speechLang, checkStrength, flags)
 - `read-stories.js` — Norwegian READ_STORIES + trail helpers
+- `mini-packs.js` — opt-in thematic packs (e.g. Airport & travel)
 - `tools/` — generation/cleanup scripts (not required at runtime)
 
 ### Shipping checklist
@@ -148,7 +149,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 
 1. Quality of existing 10 languages (lemmas vs noise, story naturalness).  
 2. More **phrases** and concrete hooks in ranks ~36–260 (feeds early mix).  
-3. Thematic mini-packs (e.g. Airport 80) only with clear UX to enable them.  
+3. Thematic mini-packs (Airport & travel first) — **opt-in** from Library → Themes; never auto-dump into day one. Enabled packs merge unique cards (ranks 1001+) and get a small daily intro bias after the hook phase.  
 4. New full language only after LT/TTS/content research + founder OK.
 
 ---
