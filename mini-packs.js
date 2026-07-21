@@ -250,7 +250,7 @@
     ['dogana', 'customs'],
     ['area partenze', 'departures area'],
     ['area arrivi', 'arrivals area'],
-    ['bus di linea', 'airport bus'],
+    ['navetta aeroportuale', 'airport shuttle'],
   ]);
 
   packs.airport.byCategory["nl"] = buildEntries([
@@ -1860,7 +1860,7 @@
     ['etichette', 'price tags'],
     ['borsa riutilizzabile', 'reusable bag'],
     ['ipermercato', 'hypermarket'],
-    ['sconto', 'discount'],
+    ['sconto', 'discount / sale'],
   ]);
 
   packs.shopping.byCategory["nl"] = buildEntries([
@@ -2087,7 +2087,7 @@
     ['festa di compleanno', 'birthday party'],
     ['caffè con amici', 'coffee with friends'],
     ['discussione', 'discussion'],
-    ['gruppo WhatsApp', 'WhatsApp group'],
+    ['gruppo chat', 'chat group'],
     ['stretta di mano', 'handshake'],
     ['weekend in famiglia', 'family weekend'],
     ['amici di lunga data', 'long-time friends'],
