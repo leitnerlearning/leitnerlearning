@@ -1,0 +1,184 @@
+# Leitner Learning — Agent Guide
+
+This file is the product law for anyone (human or AI) working in this repository.
+Read it before shipping. Prefer judgment over thrash.
+
+**Live site:** https://leitnerlearning.com  
+**Repo:** github.com/leitnerlearning/leitnerlearning  
+**Stack:** static SPA (HTML/CSS/JS), GitHub Pages, no account required, data in `localStorage`
+
+---
+
+## North star
+
+**Trust + clarity + craft.**  
+The serious, beautiful way to actually learn a language — not noisy gamification.
+
+We sell:
+- Exact correct forms (no false “Looks good”)
+- Calm, readable UX
+- Real high-frequency decks (1,000 unique cards per language)
+- Stories that sound like people
+- Safety (including photosensitive-friendly motion)
+
+We do **not** sell: streak guilt, gem shops, leaderboard theater, or AI that invents “correct” answers.
+
+---
+
+## Product spine (what exists)
+
+| Area | Intent |
+|------|--------|
+| **Review** | Leitner SRS; type/speak; direction toggle L2↔EN |
+| **Library** | Full deck, add/edit/delete, Check card, filters, live **N cards** count |
+| **Read** | Trail difficulties (green → double-black); natural dialogue stories |
+| **Progress** | Boxes, reading stats, Basics modal, voice gender |
+| **Portal** | Welcome ceremony (music/flag); no seizure-risk flashes |
+
+**Languages (each ~1,000 unique starter cards):**  
+Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portuguese (Brazil standard), Polish.
+
+---
+
+## Hard rules (non-negotiable)
+
+### Correctness
+- Teach **exact correct forms** only.
+- Never mark wrong L2 as LOOKS GOOD.
+- Soft-accept **major orthographic variants** of the *same* word (e.g. BE/AE English, German ß/ss, EP→BR Portuguese clusters) — not false friends or different lemmas.
+- Library Check: strong match required for LOOKS GOOD; Save Anyway is OK for the user.
+
+### Content quality
+- No placeholder junk (`woche 1`, `fr-extra-976`, `kapitel 3`, etc.).
+- Starter decks target **1,000 unique** foreign forms per language.
+- Read stories: clear L2 title + English subtitle, natural dialogue, glosses, 3 stories per trail × 4 trails when using the standard ladder.
+- Prefer school/standard variety + matching flag (e.g. Portuguese = **Brazil**, label “Portuguese”, 🇧🇷, `pt-BR`).
+
+### UX
+- **Quiet chrome.** No hover `title` tooltips that restate visible labels (we removed them on purpose).
+- Flag can replace written language name where the flag is already shown (e.g. Read story bar).
+- Keep `aria-label`s for accessibility; do not reintroduce mouse tooltips for “helpfulness.”
+- Prefer discovery by use over instructional popups.
+
+### Safety & motion
+- Photosensitive-safe: soft motion only; no full-screen strobes.
+- Respect `prefers-reduced-motion` where relevant.
+
+### Languages
+- Prefer **Latin-script** languages with solid LanguageTool + MT + TTS.
+- Do **not** add CJK / complex-script languages without explicit founder approval and a quality plan.
+- Nordic languages: keep with honest Check strength (`spell` where grammar is thin) — do not delete for weak LT.
+
+---
+
+## Autonomy charter (decentralized control)
+
+### Ship alone (no need to wait)
+- Bug fixes, UX polish, content quality within existing languages
+- Deck/story/Basics improvements under hard rules
+- Cache version bumps (`app.js?v=`, `styles.css?v=`, pack `?v=`)
+- Commits + push to `main` with clear messages
+- Small design tweaks consistent with quiet craft
+- Opening/updating GitHub Issues or Linear items for tracked work
+- Draft Notion/Drive notes when asked or when documenting decisions
+
+### Ask first
+- **New language** or major new learning category
+- Paid services, Stripe, auth, backend, user accounts
+- Public posts or email **as the founder**
+- Destructive git (force-push, history rewrite) or wiping user data models
+- Final logo / brand lock (propose freely; founder blesses)
+- Anything that changes the product’s moral center (e.g. “AI grades freeform L2 as correct”)
+
+### Partner tone
+- Founder is building skill as a coder — explain clearly when teaching, ship decisively when executing.
+- Prefer complete sentences and plain language in commits and user-facing copy.
+- One focused change set > drive-by refactors.
+
+---
+
+## Engineering conventions
+
+### Layout
+- `index.html`, `app.js`, `styles.css` — main app
+- `lang/*-pack.js` — STARTER_DECKS + LANGUAGE_BASICS + EXTRA_READ_STORIES
+- `norwegian-frequency-deck.js` + `norwegian-reading-vocab.js` — NB 500+500
+- `learning-categories.js` — language registry (speechLang, checkStrength, flags)
+- `read-stories.js` — Norwegian READ_STORIES + trail helpers
+- `tools/` — generation/cleanup scripts (not required at runtime)
+
+### Shipping checklist
+1. Change code/content.
+2. Bump cache query strings for every touched static asset.
+3. Sanity-check: unique deck counts, no junk patterns, structure (`{}` balance) for packs.
+4. Commit with a complete-sentence message (what + why).
+5. `git push origin main` (GitHub Pages).
+
+### Library deck count
+- `#deck-count` shows **live** `deck.length` as “N cards” (user’s deck, not a fixed marketing number).
+
+### Speech / voices
+- Prefer school-region tags (`pt-BR`, `de-DE`, etc.).
+- Prefer neural/premium system voices; gender toggle is user preference.
+
+---
+
+## Design direction (craft)
+
+- Calm surfaces, strong typography, minimal chrome.
+- Trail marks: ski-run metaphor (green-circle → double-black-diamond).
+- Brand motion: portal ceremony is special; never flash-heavy.
+- Visual experiments (Imagine/Canva) → **implement winners as SVG/CSS** in production (avoid soft AI mush in UI chrome).
+- Next craft priorities when free: identity kit, story covers, calm finish states, share cards — without breaking quiet UX.
+
+---
+
+## Content expansion priorities
+
+1. Quality of existing 10 languages (lemmas vs noise, story naturalness).  
+2. Thematic mini-packs (e.g. Airport 80) only with clear UX to enable them.  
+3. New full language only after LT/TTS/content research + founder OK.
+
+---
+
+## External tools (founder-connected)
+
+Use when helpful; do not spam:
+
+| Tool | Use for |
+|------|---------|
+| **GitHub** | Code, PRs, issues |
+| **Linear** | Backlog / P0–P1 execution |
+| **Notion** | Product notes, longer specs |
+| **Canva** | Marketing/layout experiments |
+| **Google Drive** | Shared QA docs |
+| **Gmail / Calendar** | Only when the task needs them |
+| **Vercel** | Optional deploy experiments; primary site is GitHub Pages |
+| **Grok Imagine** | Moodboards, icons, covers → hand into sharp assets |
+
+Grok.com skill **Leitner Learning Product Partner** encodes the same judgment for chat sessions.
+
+---
+
+## Anti-goals
+
+- Fake engagement metrics and dark patterns  
+- Expanding language count for screenshots  
+- LLM-as-oracle for student correctness in the client  
+- Reintroducing tooltip clutter  
+- “Week N / extra-N” filler cards  
+
+---
+
+## When unsure
+
+1. Does this increase **trust** or only **noise**?  
+2. Would a tired student understand it without a tutorial?  
+3. Can we ship a smaller slice that preserves the spine?
+
+If still unsure on a hard-rule boundary → ask the founder.  
+If it’s craft within the spine → ship.
+
+---
+
+*Last updated: Phase 0 product law — autonomous partnership enabled.*
