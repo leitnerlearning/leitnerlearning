@@ -3549,7 +3549,7 @@ function pulseWelcomeBeat(el) {
 async function loadWelcomePortalBeatmap() {
   if (welcomePortalBeatmap) return welcomePortalBeatmap;
   try {
-    const res = await fetch("assets/welcome-portal-beats.json?v=3", { cache: "force-cache" });
+    const res = await fetch("assets/welcome-portal-beats.json?v=4", { cache: "force-cache" });
     if (!res.ok) return null;
     welcomePortalBeatmap = await res.json();
     return welcomePortalBeatmap;
