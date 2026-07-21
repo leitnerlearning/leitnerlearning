@@ -2632,6 +2632,29 @@ function setLibraryThemesLive(messageHtmlOrText, { html = false } = {}) {
   else live.textContent = messageHtmlOrText;
 }
 
+function renderThemePackWordList(pack, category) {
+  const entries = getPackEntriesForCategory(pack, category.id);
+  if (!entries.length) return "";
+  const rows = entries
+    .map((entry) => {
+      const foreign = String(entry.foreign || "").trim();
+      const native = String(entry.native || "").trim();
+      if (!foreign) return "";
+      return `<li class="library-theme-word">
+        <span class="library-theme-word-l2" lang="${escapeAttr(category.foreignLang || "nb")}">${escapeHtml(foreign)}</span>
+        <span class="library-theme-word-en">${escapeHtml(native)}</span>
+      </li>`;
+    })
+    .filter(Boolean)
+    .join("");
+  if (!rows) return "";
+  // Preview before Add (and quick reference after) — collapsed by default.
+  return `<details class="library-theme-preview">
+    <summary class="library-theme-preview-summary">${entries.length} words</summary>
+    <ul class="library-theme-word-list" role="list">${rows}</ul>
+  </details>`;
+}
+
 function renderThemePackCard(pack, category) {
   const coverage = countPackCoverage(pack, category.id);
   const enabled = isPackEnabled(pack.id);
@@ -2666,11 +2689,14 @@ function renderThemePackCard(pack, category) {
 
   return `
     <li class="library-theme-card${enabled ? " is-enabled" : ""}" data-pack-id="${escapeAttr(pack.id)}">
-      <div class="library-theme-copy">
-        <p class="library-theme-name">${escapeHtml(pack.title)}</p>
-        <p class="library-theme-status">${escapeHtml(status)}</p>
+      <div class="library-theme-main">
+        <div class="library-theme-copy">
+          <p class="library-theme-name">${escapeHtml(pack.title)}</p>
+          <p class="library-theme-status">${escapeHtml(status)}</p>
+        </div>
+        <div class="library-theme-actions">${actions}</div>
       </div>
-      <div class="library-theme-actions">${actions}</div>
+      ${renderThemePackWordList(pack, category)}
     </li>`;
 }
 
@@ -11980,7 +12006,13 @@ function initEventListeners() {
 
   document.querySelectorAll(".filter-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
-      setLibraryFilterChip(chip.dataset.band);
+      const band = chip.dataset.band;
+      // Tap active filter again → back to All (Themes especially felt “stuck open”).
+      if (band && band === libraryFilter && band !== "all") {
+        setLibraryFilterChip("all");
+      } else {
+        setLibraryFilterChip(band);
+      }
       renderCardList();
     });
   });
