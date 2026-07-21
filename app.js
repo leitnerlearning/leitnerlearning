@@ -85,6 +85,9 @@ let currentCard = null;
 let sessionReviewed = 0;
 let sessionCorrect = 0;
 let sessionJustCompleted = false;
+/** When set, Review runs a focused theme set instead of the daily queue. */
+let themeSessionPackId = null;
+const THEME_SESSION_CAP = 12;
 let recognition = null;
 let speakModeActive = false;
 let speakListening = false;
@@ -2565,6 +2568,14 @@ function renderThematicPacks() {
               : "Added"
             : "Add to deck";
           const disabled = enabled && coverage.missing === 0;
+          const studyBtn = enabled
+            ? `<button
+                type="button"
+                class="btn primary library-theme-btn library-theme-btn--study"
+                data-pack-study="${escapeAttr(pack.id)}"
+                aria-label="${escapeAttr(`Study ${pack.title} now`)}"
+              >Study</button>`
+            : "";
           return `
             <li class="library-theme-card${enabled ? " is-enabled" : ""}" data-pack-id="${escapeAttr(pack.id)}">
               <div class="library-theme-copy">
@@ -2572,13 +2583,16 @@ function renderThematicPacks() {
                 <p class="library-theme-blurb">${escapeHtml(pack.blurb || "")}</p>
                 <p class="library-theme-status">${escapeHtml(status)}</p>
               </div>
-              <button
-                type="button"
-                class="btn ${disabled ? "ghost" : "secondary"} library-theme-btn"
-                data-pack-enable="${escapeAttr(pack.id)}"
-                ${disabled ? "disabled" : ""}
-                aria-label="${escapeAttr(`${actionLabel}: ${pack.title}`)}"
-              >${escapeHtml(actionLabel)}</button>
+              <div class="library-theme-actions">
+                ${studyBtn}
+                <button
+                  type="button"
+                  class="btn ${disabled ? "ghost" : "secondary"} library-theme-btn"
+                  data-pack-enable="${escapeAttr(pack.id)}"
+                  ${disabled ? "disabled" : ""}
+                  aria-label="${escapeAttr(`${actionLabel}: ${pack.title}`)}"
+                >${escapeHtml(actionLabel)}</button>
+              </div>
             </li>`;
         })
         .join("")}
@@ -2694,6 +2708,16 @@ function syncPracticeSessionDay() {
 
 function buildSessionQueue() {
   syncPracticeSessionDay();
+
+  // Theme focus session owns the queue until it empties.
+  if (themeSessionPackId) {
+    if (!sessionQueue.length && !currentCard) {
+      themeSessionPackId = null;
+    } else {
+      return;
+    }
+  }
+
   const state = ensureDailyPracticeState();
   const due = getDueCards(deck);
   const completed = new Set(state.completedIds);
@@ -2715,11 +2739,128 @@ function buildSessionQueue() {
 function nextInSession() {
   if (sessionQueue.length === 0) {
     currentCard = null;
+    if (themeSessionPackId) themeSessionPackId = null;
     return null;
   }
   const id = sessionQueue.shift();
   currentCard = deck.find((c) => c.id === id) || null;
   return currentCard;
+}
+
+function clearThemePracticeSession() {
+  themeSessionPackId = null;
+}
+
+/**
+ * Cards belonging to a theme: packId tag or matching foreign form from the pack list.
+ */
+function getDeckCardsForPack(packId, categoryId = activeCategoryId, cards = deck) {
+  const pack = getThematicPackById(packId);
+  if (!pack) return [];
+  const keys = new Set(
+    getPackEntriesForCategory(pack, categoryId)
+      .map((entry) => normalizeAnswer(entry.foreign))
+      .filter(Boolean)
+  );
+  return cards.filter((card) => {
+    if (card.packId === packId) return true;
+    const key = normalizeAnswer(card.foreign);
+    return key && keys.has(key);
+  });
+}
+
+/** Ensure pack is enabled and its unique cards are merged into the deck. */
+function ensurePackInDeck(packId) {
+  const pack = getThematicPackById(packId);
+  if (!pack) return false;
+  const enabled = getEnabledPackIds();
+  if (!enabled.includes(packId)) {
+    setEnabledPackIds([...enabled, packId]);
+  }
+  const merged = mergeEnabledThematicPacks(deck, getActiveCategory());
+  if (merged !== deck) {
+    deck = ensureDeckIsUsable(merged);
+    saveDeck();
+  }
+  return true;
+}
+
+/**
+ * Start a short focused Review set for one theme (due first, then new).
+ * Caps at THEME_SESSION_CAP so it stays a small bite.
+ */
+function startThemePracticeSession(packId) {
+  if (!packId || !ensurePackInDeck(packId)) {
+    return { ok: false, reason: "missing", count: 0 };
+  }
+
+  const packCards = getDeckCardsForPack(packId);
+  if (!packCards.length) {
+    return { ok: false, reason: "empty", count: 0 };
+  }
+
+  const dueReviews = packCards
+    .filter((card) => isDue(card) && !isNewCard(card))
+    .sort(compareCardsForPractice);
+  const dueNew = packCards
+    .filter((card) => isDue(card) && isNewCard(card))
+    .sort((a, b) => (Number(a.rank) || 99999) - (Number(b.rank) || 99999));
+  const waiting = packCards
+    .filter((card) => !isDue(card))
+    .sort(compareCardsForPractice);
+
+  const cap = Math.min(THEME_SESSION_CAP, getDailyPracticeCap() || THEME_SESSION_CAP);
+  const ordered = [...dueReviews, ...dueNew];
+  // If nothing is due, still offer a small intentional set from waiting cards.
+  if (!ordered.length) {
+    ordered.push(...waiting.slice(0, Math.min(6, cap)));
+  } else if (ordered.length < cap) {
+    // Light fill only when the due set is short.
+    for (const card of waiting) {
+      if (ordered.length >= cap) break;
+      ordered.push(card);
+    }
+  }
+
+  const picked = [];
+  const seen = new Set();
+  for (const card of ordered) {
+    if (seen.has(card.id)) continue;
+    picked.push(card.id);
+    seen.add(card.id);
+    if (picked.length >= cap) break;
+  }
+
+  if (!picked.length) {
+    return { ok: false, reason: "empty", count: 0 };
+  }
+
+  // Make any waiting cards in this bite due now (user asked to study them).
+  const now = Date.now();
+  let touched = false;
+  picked.forEach((id) => {
+    const card = deck.find((c) => c.id === id);
+    if (card && card.nextReviewAt > now) {
+      card.nextReviewAt = now;
+      touched = true;
+    }
+  });
+  if (touched) saveDeck();
+
+  themeSessionPackId = packId;
+  sessionJustCompleted = false;
+  sessionReviewed = 0;
+  sessionCorrect = 0;
+  sessionQueue = picked.slice();
+  currentCard = null;
+  currentCardId = null;
+  resetCardAttempts();
+  hideFeedback();
+  setSpeakMode(false);
+  nextInSession();
+  switchTab("practice");
+  renderPractice();
+  return { ok: true, reason: "started", count: picked.length };
 }
 
 function updateCardInDeck(updated) {
@@ -5187,9 +5328,16 @@ function renderPractice() {
 
   const promptHint = document.getElementById("prompt-hint");
   if (promptHint) {
-    // Quiet: no coaching chrome. Glue recognition is enforced in direction logic.
-    promptHint.textContent = "";
-    promptHint.classList.add("hidden");
+    if (themeSessionPackId) {
+      const pack = getThematicPackById(themeSessionPackId);
+      const left = sessionQueue.length + 1; // current + remaining
+      const title = pack?.title || "Theme";
+      promptHint.textContent = `${title} · ${left} left`;
+      promptHint.classList.remove("hidden");
+    } else {
+      promptHint.textContent = "";
+      promptHint.classList.add("hidden");
+    }
   }
 
   hideFeedback();
@@ -10512,6 +10660,12 @@ function renderProgressThemes() {
           <div class="progress-themes-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${escapeAttr(pack.title)}: ${prog.introduced} of ${prog.present || prog.total} introduced">
             <div class="progress-themes-fill${barClass}" style="width: ${pct}%"></div>
           </div>
+          <button
+            type="button"
+            class="progress-themes-study"
+            data-pack-study="${escapeAttr(pack.id)}"
+            aria-label="${escapeAttr(`Study ${pack.title} now`)}"
+          >Study</button>
         </div>`;
     })
     .join("");
@@ -11041,6 +11195,7 @@ function applyCategorySwitch(nextCategoryId, { announce = true } = {}) {
   sessionReviewed = 0;
   sessionCorrect = 0;
   sessionJustCompleted = false;
+  clearThemePracticeSession();
   libraryFilter = "all";
   librarySearch = "";
 
@@ -11122,6 +11277,8 @@ function startPractice() {
 
 function beginPracticeSession() {
   sessionJustCompleted = false;
+  // Leaving a theme set when starting normal Review keeps the daily spine honest.
+  clearThemePracticeSession();
   const daily = ensureDailyPracticeState();
   if (
     !daily.extraMode &&
@@ -11258,6 +11415,12 @@ function initEventListeners() {
   });
 
   document.getElementById("progress-themes")?.addEventListener("click", (e) => {
+    const studyBtn = e.target.closest("[data-pack-study]");
+    if (studyBtn) {
+      const packId = studyBtn.getAttribute("data-pack-study");
+      if (packId) startThemePracticeSession(packId);
+      return;
+    }
     const btn = e.target.closest("[data-tab-jump]");
     if (!btn) return;
     switchTab(btn.dataset.tabJump);
@@ -11427,6 +11590,20 @@ function initEventListeners() {
   document.getElementById("reset-deck-btn")?.addEventListener("click", resetToStarter);
 
   document.getElementById("library-themes")?.addEventListener("click", (e) => {
+    const studyBtn = e.target.closest("[data-pack-study]");
+    if (studyBtn) {
+      const packId = studyBtn.getAttribute("data-pack-study");
+      if (!packId) return;
+      const result = startThemePracticeSession(packId);
+      const live = document.getElementById("library-themes-live");
+      if (live) {
+        live.textContent = result.ok
+          ? `Starting ${result.count} cards from this theme.`
+          : "No cards ready in this theme yet.";
+      }
+      return;
+    }
+
     const btn = e.target.closest("[data-pack-enable]");
     if (!btn || btn.disabled) return;
     const packId = btn.getAttribute("data-pack-enable");

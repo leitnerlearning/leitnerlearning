@@ -4838,11 +4838,23 @@ html.needs-welcome body {
   font-weight: 500;
 }
 
+.library-theme-actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
 .library-theme-btn {
   flex-shrink: 0;
   min-height: 2.35rem;
   padding-inline: 0.9rem;
   font-size: 0.88rem;
+}
+
+.library-theme-btn--study {
+  min-width: 4.5rem;
 }
 
 .library-theme-btn:disabled {
@@ -4856,8 +4868,12 @@ html.needs-welcome body {
     align-items: stretch;
   }
 
-  .library-theme-btn {
+  .library-theme-actions {
     width: 100%;
+  }
+
+  .library-theme-btn {
+    flex: 1;
   }
 }
 
@@ -5841,6 +5857,29 @@ html.needs-welcome body {
 
 .progress-themes-fill--has {
   min-width: 3px;
+}
+
+.progress-themes-study {
+  margin-top: 0.4rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--brand-deep, #2a4a9b);
+  cursor: pointer;
+}
+
+.progress-themes-study:hover,
+.progress-themes-study:focus-visible {
+  color: var(--brand, #365fcf);
+  outline: none;
+}
+
+.progress-themes-study:focus-visible {
+  box-shadow: 0 0 0 3px var(--brand-soft, rgba(54, 95, 207, 0.2));
+  border-radius: 4px;
 }
 
 .progress-themes-link {
