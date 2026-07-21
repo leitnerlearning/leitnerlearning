@@ -2655,9 +2655,11 @@ function renderThemePackCard(pack, category) {
               : ""
           }
         </div>
-        <div class="library-theme-actions">${actions}</div>
+        <div class="library-theme-side">
+          ${renderThemePackWordList(pack, category)}
+          <div class="library-theme-actions">${actions}</div>
+        </div>
       </div>
-      ${renderThemePackWordList(pack, category)}
     </li>`;
 }
 
