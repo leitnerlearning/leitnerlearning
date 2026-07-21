@@ -2646,7 +2646,7 @@ function renderThemePackCard(pack, category) {
 
   return `
     <li class="library-theme-card${enabled ? " is-enabled" : ""}" data-pack-id="${escapeAttr(pack.id)}">
-      <div class="library-theme-main">
+      <div class="library-theme-top">
         <div class="library-theme-copy">
           <p class="library-theme-name">${escapeHtml(pack.title)}</p>
           ${
@@ -2655,11 +2655,9 @@ function renderThemePackCard(pack, category) {
               : ""
           }
         </div>
-        <div class="library-theme-side">
-          ${renderThemePackWordList(pack, category)}
-          <div class="library-theme-actions">${actions}</div>
-        </div>
+        <div class="library-theme-actions">${actions}</div>
       </div>
+      ${renderThemePackWordList(pack, category)}
     </li>`;
 }
 
@@ -2668,8 +2666,7 @@ function renderThematicPacks() {
   const body = document.getElementById("library-themes-body");
   if (!root) return;
 
-  // Constraint as kindness: pack management only on Themes filter.
-  // All / Phrases / Yours stay about the deck — no chevron catalog under search.
+  // Packs filter only — never under All / Phrases / Yours.
   if (libraryFilter !== "themes") {
     root.classList.add("hidden");
     root.classList.remove("has-enabled");
@@ -2678,9 +2675,17 @@ function renderThematicPacks() {
   }
 
   const category = getActiveCategory();
-  const packs = getThematicPackList().filter(
-    (pack) => getPackEntriesForCategory(pack, category.id).length > 0
-  );
+  // Alphabetical — stable, scannable; not “random” pack-definition order.
+  const packs = getThematicPackList()
+    .filter((pack) => getPackEntriesForCategory(pack, category.id).length > 0)
+    .slice()
+    .sort((a, b) =>
+      String(a.title || a.id || "").localeCompare(
+        String(b.title || b.id || ""),
+        "en",
+        { sensitivity: "base" }
+      )
+    );
 
   if (!packs.length) {
     root.classList.add("hidden");
@@ -2688,29 +2693,15 @@ function renderThematicPacks() {
     return;
   }
 
-  const enabledPacks = packs.filter((pack) => isPackEnabled(pack.id));
-  const availablePacks = packs.filter((pack) => !isPackEnabled(pack.id));
-
-  // Open lists only — no <details> mystery. Enabled first (Study / Remove), then Add.
-  const enabledList = enabledPacks.length
-    ? `<ul class="library-themes-list" role="list">${enabledPacks
-        .map((pack) => renderThemePackCard(pack, category))
-        .join("")}</ul>`
-    : "";
-
-  const availableList = availablePacks.length
-    ? `<ul class="library-themes-list${enabledPacks.length ? " library-themes-list--available" : ""}" role="list">${availablePacks
-        .map((pack) => renderThemePackCard(pack, category))
-        .join("")}</ul>`
-    : "";
+  const enabledCount = packs.filter((pack) => isPackEnabled(pack.id)).length;
+  const grid = `<ul class="library-themes-grid" role="list">${packs
+    .map((pack) => renderThemePackCard(pack, category))
+    .join("")}</ul>`;
 
   root.classList.remove("hidden");
-  root.classList.toggle("has-enabled", enabledPacks.length > 0);
-  if (body) {
-    body.innerHTML = `${enabledList}${availableList}`;
-  } else {
-    root.innerHTML = `${enabledList}${availableList}`;
-  }
+  root.classList.toggle("has-enabled", enabledCount > 0);
+  if (body) body.innerHTML = grid;
+  else root.innerHTML = grid;
 }
 
 function migrateLegacyStorage(categoryId) {
@@ -9756,7 +9747,7 @@ function renderCardList() {
               : libraryFilter === "phrase"
                 ? "No phrases in this deck yet."
                 : libraryFilter === "themes"
-                  ? "Add a theme to put those cards in your deck."
+                  ? "Add a pack to put those cards in your deck."
                   : "No cards in this view."
         }</p>
       </div>`;
@@ -11539,6 +11530,17 @@ function switchTab(tabName) {
     panel.classList.toggle("active", isActive);
     panel.hidden = !isActive;
   });
+
+  // Leaving Library collapses Packs view — don’t leave it “stuck open.”
+  if (tabName !== "cards") {
+    if (libraryFilter !== "all" || librarySearch) {
+      librarySearch = "";
+      const searchInput = document.getElementById("library-search");
+      if (searchInput) searchInput.value = "";
+      setLibraryFilterChip("all");
+    }
+    renderThematicPacks();
+  }
 
   if (tabName !== "practice") {
     setSpeakMode(false);
