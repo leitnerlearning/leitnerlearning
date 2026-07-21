@@ -267,11 +267,14 @@ main {
   left: 0;
   right: auto;
   transform: none;
-  min-width: 14.5rem;
-  max-width: min(20rem, 94vw);
+  /* Match the language chip width — no wide empty panel */
+  width: 100%;
+  min-width: 100%;
+  max-width: none;
   /* Tall enough to show most of the 10 languages without a secretive peephole */
   max-height: min(28rem, 72dvh);
   z-index: 40;
+  box-sizing: border-box;
 }
 
 /*
@@ -366,10 +369,12 @@ main {
   text-align: center;
 }
 
-.category-option--compact {
+/* Higher specificity so later .category-option { column } cannot stack flag over name */
+.category-option.category-option--compact {
   flex-direction: row;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.45rem;
+  padding: 0.45rem 0.55rem;
 }
 
 .visually-hidden {
@@ -1371,14 +1376,17 @@ main {
   background: rgba(18, 24, 38, 0.05);
 }
 
-/* Current language: brand fill + left bar — clearly “selected,” not a scrollbar */
+/* Current language: full wrap (all sides), not a left-only accent bar */
 .category-option.active {
-  background: color-mix(in srgb, var(--brand-soft) 70%, white);
-  box-shadow: inset 3px 0 0 0 var(--brand, #365fcf);
+  background: color-mix(in srgb, var(--brand-soft) 75%, white);
+  box-shadow: none;
+  border: 1.5px solid color-mix(in srgb, var(--brand, #365fcf) 48%, transparent);
+  border-radius: 0.75rem;
 }
 
 .category-option.active:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--brand-soft) 82%, white);
+  background: color-mix(in srgb, var(--brand-soft) 88%, white);
+  border-color: color-mix(in srgb, var(--brand, #365fcf) 58%, transparent);
 }
 
 .category-option.active .category-option-label {
@@ -1390,8 +1398,7 @@ main {
   cursor: not-allowed;
 }
 
-.category-option--soon,
-.category-option--compact {
+.category-option--soon {
   padding: 0.5rem 0.85rem;
 }
 
