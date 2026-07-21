@@ -273,15 +273,22 @@ main {
    * Open list: same size on mobile + desktop (flag + full names).
    * Fixed width - never inherit the closed chip (flag-only on phone).
    * Longest labels: Portuguese, Norwegian, Italian…
+   * max-height is a fallback only — openCategoryMenu fits remaining viewport
+   * (and uses position:fixed so the list is never clipped by the page).
    */
   width: 14rem;
   min-width: 14rem;
   max-width: min(14rem, calc(100vw - 1.25rem));
-  max-height: min(28rem, 72dvh);
+  max-height: min(28rem, 50dvh);
   z-index: 40;
   box-sizing: border-box;
   overflow-x: hidden;
   overflow-y: hidden;
+}
+
+.category-picker--progress .category-picker-menu.is-open-up {
+  top: auto;
+  bottom: calc(100% + 0.45rem);
 }
 
 /*
@@ -3453,11 +3460,12 @@ html.needs-welcome body {
 }
 
 .category-picker--progress .category-picker-menu.is-scrollable {
-  max-height: min(28rem, 72dvh);
+  /* Fallback; JS max-height from remaining viewport wins via inline style */
+  max-height: min(28rem, 50dvh);
 }
 
 .category-picker-menu.is-scrollable {
-  max-height: min(28rem, 72dvh);
+  max-height: min(28rem, 50dvh);
 }
 
 /* Primary door: large “Choose a Language” control */

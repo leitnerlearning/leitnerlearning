@@ -11514,8 +11514,9 @@ function scrollCategoryMenuToActive(menu) {
 
 /**
  * Cap the open language menu to remaining viewport space so all languages
- * stay reachable (welcome gate was clipping Spanish/Portuguese/Swedish).
+ * stay reachable (welcome gate + Progress language chip).
  * Prefer opening downward; flip upward when more room above the button.
+ * Progress uses position:fixed so page scroll / parent overflow never clips it.
  */
 function fitCategoryMenuToViewport(menu, btn) {
   if (!menu || !btn) return;
@@ -11523,18 +11524,60 @@ function fitCategoryMenuToViewport(menu, btn) {
   const edgePad = 12;
   const hardCap = 28 * 16; // 28rem
   const rect = btn.getBoundingClientRect();
-  const vh =
-    window.visualViewport?.height ||
-    document.documentElement.clientHeight ||
-    window.innerHeight;
-  const roomBelow = Math.max(0, vh - rect.bottom - gap - edgePad);
-  const roomAbove = Math.max(0, rect.top - gap - edgePad);
-  const openUp = roomBelow < 12 * 16 && roomAbove > roomBelow + 24;
+  const vv = window.visualViewport;
+  const vh = vv?.height || document.documentElement.clientHeight || window.innerHeight;
+  const vOffsetTop = vv?.offsetTop || 0;
+  const viewTop = vOffsetTop;
+  const viewBottom = vOffsetTop + vh;
+  const roomBelow = Math.max(0, viewBottom - rect.bottom - gap - edgePad);
+  const roomAbove = Math.max(0, rect.top - viewTop - gap - edgePad);
+  // Flip up when below is tight (short screens / Progress scrolled mid-page)
+  const openUp = roomBelow < 14 * 16 && roomAbove > roomBelow + 16;
   const room = openUp ? roomAbove : roomBelow;
   const maxH = Math.max(9 * 16, Math.min(hardCap, room));
+  const maxHpx = `${Math.round(maxH)}px`;
 
-  menu.style.maxHeight = `${Math.round(maxH)}px`;
+  const forProgress = Boolean(menu.closest(".category-picker--progress"));
   menu.classList.toggle("is-open-up", openUp);
+  menu.style.maxHeight = maxHpx;
+
+  if (forProgress) {
+    // Fixed to the viewport so the list is never clipped by main/panel scroll.
+    const menuWidth = Math.min(
+      14 * 16,
+      Math.max(rect.width, Math.min(14 * 16, window.documentElement.clientWidth - 1.25 * 16))
+    );
+    let left = rect.left;
+    const maxLeft = document.documentElement.clientWidth - menuWidth - edgePad;
+    left = Math.max(edgePad, Math.min(left, maxLeft));
+
+    menu.style.position = "fixed";
+    menu.style.left = `${Math.round(left)}px`;
+    menu.style.right = "auto";
+    menu.style.width = `${Math.round(menuWidth)}px`;
+    menu.style.minWidth = `${Math.round(menuWidth)}px`;
+    menu.style.maxWidth = `${Math.round(menuWidth)}px`;
+    menu.style.transform = "none";
+    menu.style.zIndex = "60";
+    if (openUp) {
+      menu.style.top = "auto";
+      menu.style.bottom = `${Math.round(vh - (rect.top - vOffsetTop) + gap)}px`;
+    } else {
+      menu.style.top = `${Math.round(rect.bottom - vOffsetTop + gap)}px`;
+      menu.style.bottom = "auto";
+    }
+    return;
+  }
+
+  // Welcome (and any other absolute menus): keep in-flow under the control.
+  menu.style.position = "";
+  menu.style.left = "";
+  menu.style.right = "";
+  menu.style.width = "";
+  menu.style.minWidth = "";
+  menu.style.maxWidth = "";
+  menu.style.transform = "";
+  menu.style.zIndex = "";
   if (openUp) {
     menu.style.top = "auto";
     menu.style.bottom = "calc(100% + 0.45rem)";
@@ -11549,6 +11592,14 @@ function clearCategoryMenuViewportFit(menu) {
   menu.style.maxHeight = "";
   menu.style.top = "";
   menu.style.bottom = "";
+  menu.style.position = "";
+  menu.style.left = "";
+  menu.style.right = "";
+  menu.style.width = "";
+  menu.style.minWidth = "";
+  menu.style.maxWidth = "";
+  menu.style.transform = "";
+  menu.style.zIndex = "";
   menu.classList.remove("is-open-up");
 }
 
