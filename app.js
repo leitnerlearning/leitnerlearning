@@ -9952,10 +9952,12 @@ function renderProgressReadStats() {
       .map((story) => {
         const pos = getStoryPosition(story.id);
         const pct = getStoryProgressPercent(story, pos.furthest);
-        const width = pct > 0 ? Math.max(6, pct) : 0;
+        // True percent (no 6% floor). Tiny non-zero fill uses CSS min-width.
+        const width = pct > 0 ? pct : 0;
         const completed = isStoryComplete(story, pos.furthest);
         const progressLabel = formatStoryProgressCount(story, pos.furthest);
         const hasProgress = storyHasReadProgress(story.id);
+        const barClass = pct > 0 ? " box-stat-bar--has" : "";
         return `
           <div class="read-stat-row-wrap${completed ? " read-stat-row-wrap--completed" : ""}">
             <button
@@ -9969,7 +9971,7 @@ function renderProgressReadStats() {
                 ${story.subtitle ? `<span class="read-stat-trail">${escapeHtml(story.subtitle)}</span>` : ""}
               </div>
               <div class="box-stat-bar-wrap" role="presentation">
-                <div class="box-stat-bar" style="width: ${width}%"></div>
+                <div class="box-stat-bar${barClass}" style="width: ${width}%"></div>
               </div>
             </button>
             <div class="read-stat-actions">
