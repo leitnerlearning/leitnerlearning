@@ -6927,7 +6927,7 @@ function renderProgressSummary() {
     </div>
     <div class="stat-card" aria-label="${reviewedToday} card${reviewedToday === 1 ? "" : "s"} reviewed today">
       <span class="stat-value">${reviewedToday}</span>
-      <span class="stat-label">Reviewed today</span>
+      <span class="stat-label">Reviewed Today</span>
     </div>
     <div class="stat-card" aria-label="${introduced} of ${total} words introduced (${introducedPct}%)">
       <span class="stat-value">${introducedPct}%</span>
@@ -6950,9 +6950,10 @@ function renderProgressBoxStats() {
     .map((count, index) => {
       const box = index + 1;
       const level = getLearningLevel(box);
-      const width = count ? Math.max(6, Math.round((count / total) * 100)) : 0;
+      const width = count ? Math.max(8, Math.round((count / total) * 100)) : 0;
+      const emptyClass = count === 0 ? " box-stat-row--empty" : "";
       return `
-        <div class="box-stat-row">
+        <div class="box-stat-row${emptyClass}">
           <div class="box-stat-label">
             <span class="box-stat-name">${escapeHtml(level.short)}</span>
             <span class="box-stat-interval">${escapeHtml(formatInterval(box))}</span>
