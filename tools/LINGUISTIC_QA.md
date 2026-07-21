@@ -6,7 +6,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 |----------|-----------|---------------|--------|
 | Norwegian (nb-bokmal) | PASS | **PASS 2 COMPLETE** (spine certified for ship-trust) | Full POS honesty; top-1000 gloss/POS sweep; 10 packs polished; 12 stories L2/EN pass. Open only for future continuous improvement. |
 | Swedish | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; weak top-100 replaced; gloss fixes; packs + 12 stories polished 2026-07-21 |
-| Danish | PASS | OPEN | |
+| Danish | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; weak top-100 replaced; survival adds; packs + 12 stories polished 2026-07-21 |
 | German | PASS | OPEN | |
 | French | PASS | OPEN | |
 | Spanish | PASS | OPEN | |
@@ -38,12 +38,23 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 - [x] 12 EXTRA stories light L2/EN polish
 - [x] Unique forms still 1000
 
+## Danish — pass 1 checklist
+
+- [x] Mechanical 1000 + 200 + 12 stories
+- [x] POS honesty (not all `noun`)
+- [x] Drop weak early fillers (dark mode, log ind/ud, cover letter, lost keys, …)
+- [x] Add survival: `farvel`, `vær sød`, `dårlig`, `politiet`, `sød`, `middag`, `sjældent`, …
+- [x] Gloss fixes (`ved`, `var`, `tog`/`tag`, …)
+- [x] Packs polish (Rejsekort/MobilePay/Dankort culture; airport told not double carousel)
+- [x] 12 stories light polish
+- [x] Unique forms still 1000
+
 ## Ship rule
 
-- **Norwegian + Swedish:** trustworthy for “exact forms” on the live spine.
-- **Other 8 languages:** structure only until certified the same way.
+- **Norwegian + Swedish + Danish:** trustworthy for “exact forms” on the Nordic spine.
+- **Other 7 languages:** structure only until certified the same way.
 - Continuous improvement always welcome; do not re-open thrash without a named defect.
-- **Next:** Danish (closest to NB/SV) or Spanish/German by demand.
+- **Next:** German or Spanish (larger markets), or keep Nordic and do DE.
 
 ## How to re-verify
 

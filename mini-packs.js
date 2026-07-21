@@ -158,7 +158,7 @@
     ['enkeltbillet', 'one-way ticket'],
     ['at lande', 'to land'],
     ['boardinggate', 'boarding gate'],
-    ['bagagebånd', 'baggage carousel'],
+    ['told', 'customs'],
   ]);
 
   packs.airport.byCategory["de"] = buildEntries([
@@ -614,7 +614,7 @@
     ['bordbestilling', 'table reservation'],
     ['takeaway', 'takeaway'],
     ['reservation', 'reservation'],
-    ['stærk', 'spicy'],
+    ['stærk', 'strong / spicy'],
     ['mæt', 'full (from food)'],
     ['uden mælk', 'without milk'],
     ['forretter', 'starters / appetizers'],
@@ -839,7 +839,7 @@
     ['studiegruppe', 'study group'],
     ['vejledning', 'academic advising'],
     ['lab', 'lab'],
-    ['speciale', 'master\'s thesis'],
+    ['speciale', 'master’s thesis'],
     ['at dumpe', 'to fail (an exam)'],
     ['udveksling', 'exchange program'],
     ['at notere', 'to take notes'],
@@ -1751,7 +1751,7 @@
   packs.shopping.byCategory["da"] = buildEntries([
     ['discountbutik', 'discount store'],
     ['billig', 'cheap'],
-    ['nedsat', 'reduced (on sale)'],
+    ['nedsat', 'on sale / reduced'],
     ['mønter', 'coins'],
     ['pose', 'shopping bag'],
     ['indkøbsvogn', 'shopping cart'],
@@ -1994,7 +1994,7 @@
     ['indbydelse', 'invitation'],
     ['jubilæum', 'anniversary / jubilee'],
     ['at hænge ud', 'to hang out'],
-    ['planerne', 'the plans'],
+    ['planer', 'plans'],
     ['mega hyggeligt', 'really nice'],
     ['at holde kontakten', 'to stay in touch'],
     ['kammerat', 'buddy / mate'],
