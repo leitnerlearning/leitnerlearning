@@ -184,6 +184,16 @@ Grok.com skill **Leitner Learning Product Partner** encodes the same judgment fo
 
 ---
 
+## Craft skills (Grok)
+
+- **Essential Craft** (`essential-craft`) — subtraction, 80/20, MED, Jobs/Rams lineage; default product philosophy.
+- **Leitner Product Partner** (`leitner-learning-product-partner`) — this product’s judgment layer on top of Essential Craft.
+- This **AGENTS.md** remains **hard law** for correctness, autonomy, and anti-goals.
+
+When the founder says **go**, prefer 80/20 + subtraction before expansion.
+
+---
+
 ## When unsure
 
 1. Does this increase **trust** or only **noise**?  
