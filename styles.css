@@ -5474,14 +5474,15 @@ body.welcome-open .app {
 
 .box-stat-name,
 .read-stat-title {
-  color: var(--text);
-  font-weight: 600;
+  color: var(--ink);
+  font-weight: 650;
   line-height: 1.25;
+  letter-spacing: -0.015em;
 }
 
 .box-stat-interval,
 .read-stat-trail {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-tertiary);
   line-height: 1.3;
 }
