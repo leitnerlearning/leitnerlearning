@@ -5890,12 +5890,58 @@ function hideLibrarySuggestions() {
 }
 
 function markSuggestionPicked() {
-  suppressAddCardSuggestions = true;
+  // Keep suggestions available while editing / refining a card.
+  // Only hide the open list so the pick doesn't leave a stale menu open.
   hideLibrarySuggestions();
 }
 
 function shouldShowAddCardSuggestions() {
   return !suppressAddCardSuggestions;
+}
+
+/**
+ * One-pass spelling + capitalization polish for both sides.
+ * Used after picks/applies so Check card is not a multi-step casing treadmill.
+ */
+async function polishCardPair(foreign, native) {
+  const f0 = stripFlashcardPunctuation(foreign);
+  const n0 = stripFlashcardPunctuation(native);
+  if (!f0 && !n0) return { foreign: f0, native: n0 };
+
+  const { foreignCode } = getCategoryLanguageCodes();
+  const [nFix, fFix] = await Promise.all([
+    n0 ? fetchEnglishSpellingCorrection(n0) : Promise.resolve(null),
+    f0 ? fetchLearningSpellingCorrection(f0, foreignCode) : Promise.resolve(null),
+  ]);
+
+  let nextNative = n0;
+  let nextForeign = f0;
+  if (nFix && orthographyFixIsPlausible(n0, nFix)) {
+    nextNative = stripFlashcardPunctuation(nFix);
+  }
+  if (fFix && orthographyFixIsPlausible(f0, fFix)) {
+    nextForeign = stripFlashcardPunctuation(fFix);
+  } else if (fFix && isCasingOnlyDiff(f0, fFix)) {
+    nextForeign = stripFlashcardPunctuation(fFix);
+  }
+  if (nFix && isCasingOnlyDiff(n0, nFix)) {
+    nextNative = stripFlashcardPunctuation(nFix);
+  }
+
+  // Prefer display form for learning side (cv → CV) without re-uppercasing normal words
+  nextForeign = preferDisplayForm(nextForeign);
+  return {
+    foreign: nextForeign,
+    native: stripFlashcardPunctuation(nextNative),
+  };
+}
+
+/** Queue suggestions for the active field after edit load / focus settle. */
+function refreshAddCardSuggestions(preferField = "native") {
+  suppressAddCardSuggestions = false;
+  activeSuggestField = preferField === "foreign" ? "foreign" : "native";
+  if (preferField === "foreign") queueForeignSuggestions();
+  else queueNativeSuggestions();
 }
 
 function renderSuggestionOption(item, index) {
@@ -5974,12 +6020,16 @@ async function updateForeignSuggestions() {
     if (token !== foreignSuggestToken || activeSuggestField !== "foreign") return;
     if (input.value.trim() !== query) return;
     renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
-      document.getElementById("new-foreign").value = item.foreign;
-      document.getElementById("new-native").value = item.native;
-      // User started from the learning-language field
-      addCardLastEditedSide = "foreign";
-      syncAddCardResetButton();
-      document.getElementById("new-foreign")?.focus();
+      void (async () => {
+        const polished = await polishCardPair(item.foreign, item.native);
+        if (token !== foreignSuggestToken) return;
+        document.getElementById("new-foreign").value = polished.foreign;
+        document.getElementById("new-native").value = polished.native;
+        addCardLastEditedSide = "foreign";
+        markSuggestionPicked();
+        syncAddCardResetButton();
+        document.getElementById("new-foreign")?.focus({ preventScroll: true });
+      })();
     });
   };
 
@@ -6144,12 +6194,17 @@ async function updateNativeSuggestions() {
     if (token !== nativeSuggestToken || activeSuggestField !== "native") return;
     if (input.value.trim() !== query) return;
     renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
-      document.getElementById("new-foreign").value = item.foreign;
-      document.getElementById("new-native").value = item.native;
-      // User started from the English field
-      addCardLastEditedSide = "native";
-      syncAddCardResetButton();
-      document.getElementById("new-foreign")?.focus();
+      void (async () => {
+        // Polish spelling + casing on pick so Check card isn't a multi-step treadmill
+        const polished = await polishCardPair(item.foreign, item.native);
+        if (token !== nativeSuggestToken) return;
+        document.getElementById("new-foreign").value = polished.foreign;
+        document.getElementById("new-native").value = polished.native;
+        addCardLastEditedSide = "native";
+        markSuggestionPicked();
+        syncAddCardResetButton();
+        document.getElementById("new-foreign")?.focus({ preventScroll: true });
+      })();
     });
   };
 
@@ -7121,7 +7176,7 @@ function renderAddCardReviewContext({
   };
 }
 
-function applyReviewSuggestion() {
+async function applyReviewSuggestion() {
   const state = addCardReviewState;
   if (!state?.translation || state.translation.matches) return;
 
@@ -7163,6 +7218,15 @@ function applyReviewSuggestion() {
   // Light display form only for acronyms (cv→CV)
   if (targetField === "swap" || targetField === "pair" || targetField === "foreign") {
     nextForeign = preferDisplayForm(nextForeign);
+  }
+
+  // Fold remaining spelling/casing into this same apply (fewer Check card hops)
+  try {
+    const polished = await polishCardPair(nextForeign, nextNative);
+    nextForeign = polished.foreign;
+    nextNative = polished.native;
+  } catch {
+    /* keep unpolished pair */
   }
 
   const sig = `${normalizeAnswer(nextForeign)}|${normalizeAnswer(nextNative)}|${nextForeign}|${nextNative}`;
@@ -7344,15 +7408,35 @@ function resetAddCardForm() {
   syncAddCardResetButton();
 }
 
-function startEditCard(cardId) {
+/**
+ * Load a card into the editor.
+ * options.seedNative / seedForeign: keep the pair the user just refined (e.g. from
+ * Check card) instead of overwriting with the old wrong deck text.
+ * options.autoReview: run Check card after load so translation fixes stay available.
+ */
+function startEditCard(cardId, options = {}) {
   const card = deck.find((entry) => entry.id === cardId);
   if (!card) return;
 
   suppressAddCardSuggestions = false;
   editingCardId = card.id;
-  document.getElementById("new-foreign").value = card.foreign;
-  document.getElementById("new-native").value = card.native;
-  setAddCardFormBaseline(card.foreign, card.native);
+
+  const seedForeign = stripFlashcardPunctuation(
+    options.seedForeign != null && String(options.seedForeign).trim()
+      ? options.seedForeign
+      : card.foreign
+  );
+  const seedNative = stripFlashcardPunctuation(
+    options.seedNative != null && String(options.seedNative).trim()
+      ? options.seedNative
+      : card.native
+  );
+
+  const foreignInput = document.getElementById("new-foreign");
+  const nativeInput = document.getElementById("new-native");
+  if (foreignInput) foreignInput.value = seedForeign;
+  if (nativeInput) nativeInput.value = seedNative;
+  setAddCardFormBaseline(seedForeign, seedNative);
   closeAddCardReview();
   hideLibrarySuggestions();
   applyAddCardFormUI();
@@ -7361,8 +7445,17 @@ function startEditCard(cardId) {
   document.querySelector(`.card-item[data-card-id="${card.id}"]`)?.classList.add("is-editing");
 
   document.getElementById("add-card-form")?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  document.getElementById("new-native")?.focus();
   syncAddCardResetButton();
+
+  // After the click that opened edit settles, restore suggestions (document click
+  // used to clear them immediately). Prefer English field for MT of learning side.
+  window.setTimeout(() => {
+    nativeInput?.focus({ preventScroll: true });
+    refreshAddCardSuggestions("native");
+    if (options.autoReview && seedForeign && seedNative) {
+      openAddCardReview();
+    }
+  }, 0);
 }
 
 function saveLibraryCard(foreign, native) {
@@ -9582,10 +9675,19 @@ function initEventListeners() {
   });
 
   document.getElementById("add-card-edit-existing")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     const cardId = e.currentTarget.dataset.cardId;
     if (!cardId) return;
+    // Keep the pair the user just refined (correct EN + NB), edit the old card id.
+    const seedForeign = document.getElementById("new-foreign")?.value.trim() || "";
+    const seedNative = document.getElementById("new-native")?.value.trim() || "";
     closeAddCardReview();
-    startEditCard(cardId);
+    startEditCard(cardId, {
+      seedForeign,
+      seedNative,
+      autoReview: true,
+    });
   });
 
   document.getElementById("add-card-edit-review")?.addEventListener("click", () => {
@@ -9595,14 +9697,14 @@ function initEventListeners() {
 
   document.getElementById("add-card-review-context")?.addEventListener("click", (e) => {
     if (!e.target.closest('[data-action="apply-suggestion"]')) return;
-    applyReviewSuggestion();
+    void applyReviewSuggestion();
   });
 
   document.getElementById("add-card-review-context")?.addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
     if (!e.target.closest('[data-action="apply-suggestion"]')) return;
     e.preventDefault();
-    applyReviewSuggestion();
+    void applyReviewSuggestion();
   });
 
   document.getElementById("add-card-confirm")?.addEventListener("click", () => {
@@ -9664,7 +9766,12 @@ function initEventListeners() {
   });
 
   document.addEventListener("click", (e) => {
-    if (!e.target.closest(".add-card-field")) hideLibrarySuggestions();
+    // Don't kill suggestions when using review/edit chrome in the same form
+    if (e.target.closest(".add-card-field")) return;
+    if (e.target.closest("#add-card-edit-existing")) return;
+    if (e.target.closest("#add-card-review")) return;
+    if (e.target.closest(".library-suggest")) return;
+    hideLibrarySuggestions();
   });
 
   document.getElementById("reset-deck-btn")?.addEventListener("click", resetToStarter);
