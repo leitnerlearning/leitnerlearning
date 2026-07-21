@@ -5,7 +5,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 | Language | Structure | Linguistic QA | Notes |
 |----------|-----------|---------------|--------|
 | Norwegian (nb-bokmal) | PASS | **PASS 2 COMPLETE** | Full spine; packs; **story pass 1** (Read → 1,200) |
-| Swedish | PASS | **PASS 1 COMPLETE** | POS; survival; packs; stories |
+| Swedish | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
 | Danish | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
 | German | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
 | Spanish | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
@@ -40,12 +40,12 @@ Goal: natural dialogue that weaves high-frequency **core** and **theme** forms s
 | Dutch (nl) | **PASS 1 COMPLETE** | 12 stories; theme weave ~94% of 200; NL forms (OV-chipkaart, DigiD, NS, vrijmibo) |
 | Polish (pl) | **PASS 1 COMPLETE** | 12 stories; theme weave ~81%+ stem-aware; PL forms (BLIK, NFZ, PESEL, Pendolino) |
 | Portuguese (pt) | **PASS 1 COMPLETE** | 12 stories; theme weave ~100% of 200; BR forms (PIX, SUS, CPTM, Bilhete Único) |
-| Other 1 | pending | Same ladder; next on go |
+| Swedish (sv) | **PASS 1 COMPLETE** | 12 stories; theme weave ~100% of 200; SV forms (SL-kort, Swish, BankID, X2000) |
 
 ## Ship rule
 
 - **All 10 languages:** structure PASS + linguistic PASS 1 (NB PASS 2).
-- **NB + DA + DE + ES + FR + IT + NL + PL + PT story pass 1** shipped; remaining on go: **sv** only.
+- **All 10 languages: story pass 1 COMPLETE** (nb…sv). Re-open only for a named defect.
 - Continuous improvement always welcome; re-open a language only for a **named defect**.
 - Do not thrash certified decks without evidence.
 
