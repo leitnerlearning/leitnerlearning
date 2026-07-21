@@ -420,22 +420,32 @@ function getOutstandingDueCount(daily = ensureDailyPracticeState(), cards = deck
   return getDueCards(cards).filter((card) => !completed.has(card.id)).length;
 }
 
+/**
+ * Human-facing practice status for Review home + Progress.
+ * Never dump the full unpaid mountain (e.g. 976 due) — the daily cap is
+ * the honest "today" size. Big queues become calm labels + small sets.
+ */
 function getProgressPracticeStat() {
   const daily = ensureDailyPracticeState();
+  const cap = getDailyPracticeCap();
   const remainingToday = getDailyRemainingCount(daily);
   const outstanding = getOutstandingDueCount(daily);
   const reviewDue = getReviewDueCards().length;
   const newDue = getDueCards().filter(
     (card) => isNewCard(card) && !daily.completedIds.includes(card.id)
   ).length;
+  const setWord = cap === 1 ? "card" : "cards";
 
+  // In-progress daily goal (normal mode only — extra mode can make remaining = full backlog)
   if (!daily.extraMode && remainingToday > 0) {
     return {
       value: remainingToday,
       label: "Left today",
+      line: `${remainingToday} left today`,
       ariaLabel: `${remainingToday} card${remainingToday === 1 ? "" : "s"} left in today's review`,
       highlight: true,
       actionable: true,
+      kind: "left-today",
     };
   }
 
@@ -443,42 +453,115 @@ function getProgressPracticeStat() {
     return {
       value: `${daily.reviewed}/${daily.goal}`,
       label: "Done today",
+      line: `Today's goal done · ${daily.reviewed}/${daily.goal}`,
       ariaLabel: `Completed today's goal: ${daily.reviewed} of ${daily.goal} cards reviewed`,
       highlight: false,
       actionable: false,
+      kind: "done-today",
     };
   }
 
+  // Extra practice after goal — never "976 left today"
+  if (daily.extraMode && outstanding > 0) {
+    return {
+      value: "→",
+      label: "Extras",
+      line: "Extras open · keep going if you like",
+      ariaLabel: `Extra practice available. Work in small sets of about ${cap} ${setWord}.`,
+      highlight: true,
+      actionable: true,
+      kind: "extras",
+    };
+  }
+
+  // Goal complete, extras available (not yet in extra mode)
+  // Note: "Done today" branch above already handles goalMet+goal>0 for Progress;
+  // this catches edge cases (goal 0) without huge counts.
+  if (outstanding > 0 && daily.goalMet) {
+    return {
+      value: "→",
+      label: "Extras ready",
+      line: "Goal done · extras ready if you want",
+      ariaLabel: `Today's goal is done. Extra practice is available in small sets.`,
+      highlight: false,
+      actionable: true,
+      kind: "extras-ready",
+    };
+  }
+
+  // Reviews waiting (not yet framed as today's goal) — hide mountain size
   if (reviewDue > 0) {
+    if (reviewDue > cap) {
+      return {
+        value: String(cap),
+        label: "Today's set",
+        line: `Reviews ready · up to ${cap} today`,
+        ariaLabel: `Reviews are ready. Today's set is up to ${cap} ${setWord}.`,
+        highlight: true,
+        actionable: true,
+        kind: "reviews-soft",
+      };
+    }
     return {
       value: reviewDue,
       label: "Due for review",
+      line: `${reviewDue} due for review`,
       ariaLabel: `Review ${reviewDue} card${reviewDue === 1 ? "" : "s"} due for review`,
       highlight: true,
       actionable: true,
+      kind: "reviews",
     };
   }
 
+  // New cards / mixed outstanding — invite, don't intimidate
   if (outstanding > 0) {
-    const label = newDue === outstanding ? "Ready to learn" : "Due now";
+    const allNew = newDue === outstanding;
+    if (allNew || outstanding > cap) {
+      return {
+        value: String(cap),
+        label: "Today's set",
+        line: allNew
+          ? `Ready when you are · up to ${cap} today`
+          : `Cards waiting · up to ${cap} today`,
+        ariaLabel: allNew
+          ? `New cards are waiting. Today's set is up to ${cap} ${setWord}.`
+          : `Cards are waiting. Today's set is up to ${cap} ${setWord}.`,
+        highlight: true,
+        actionable: true,
+        kind: "start-soft",
+      };
+    }
     return {
       value: outstanding,
-      label,
-      ariaLabel: `${outstanding} card${outstanding === 1 ? "" : "s"} ${label.toLowerCase()}`,
+      label: "Due now",
+      line: `${outstanding} ready now`,
+      ariaLabel: `${outstanding} card${outstanding === 1 ? "" : "s"} ready now`,
       highlight: true,
       actionable: true,
+      kind: "due-now",
     };
   }
 
   const nextReview = getNextReviewStat();
-  if (nextReview) return nextReview;
+  if (nextReview) {
+    return {
+      ...nextReview,
+      line:
+        nextReview.label === "Next review"
+          ? `Next review · ${nextReview.value}`
+          : `${nextReview.value} · ${nextReview.label}`,
+      kind: "next",
+    };
+  }
 
   return {
     value: "✓",
     label: "Caught up",
+    line: "All caught up for now",
     ariaLabel: "All caught up for now",
     highlight: false,
     actionable: false,
+    kind: "caught-up",
   };
 }
 
@@ -9721,46 +9804,34 @@ function renderProgressSummary() {
   // —— Practice truth strip (due / left today / caught up) ——
   if (dailyEl) {
     const isDone =
-      practiceStat.label === "Done today" ||
-      practiceStat.label === "Caught up" ||
+      practiceStat.kind === "done-today" ||
+      practiceStat.kind === "caught-up" ||
       practiceStat.value === "✓";
     const isQuiet = !practiceStat.highlight && !practiceStat.actionable;
     dailyEl.classList.toggle("hidden", false);
     dailyEl.classList.toggle("is-complete", Boolean(isDone));
     dailyEl.classList.toggle("is-quiet", Boolean(isQuiet) && !isDone);
 
-    const valueText = String(practiceStat.value);
+    // Prefer shared soft line from getProgressPracticeStat; add done count when helpful.
     const doneBit =
-      reviewedToday > 0 ? ` · ${reviewedToday} done` : "";
-    let line;
+      reviewedToday > 0 &&
+      practiceStat.kind !== "done-today" &&
+      practiceStat.kind !== "caught-up"
+        ? ` · ${reviewedToday} done`
+        : practiceStat.kind === "caught-up" && reviewedToday > 0
+          ? ` · ${reviewedToday} reviewed today`
+          : "";
+    let line = practiceStat.line || `${practiceStat.value} · ${practiceStat.label}`;
+    if (doneBit && !String(line).includes("done") && !String(line).includes("reviewed today")) {
+      line = `${line}${doneBit}`;
+    }
     let aria = practiceStat.ariaLabel;
-    if (practiceStat.label === "Left today") {
-      line = `${valueText} left today${doneBit}`;
-      aria = `${valueText} left in today's review${
-        reviewedToday > 0 ? `, ${reviewedToday} already reviewed` : ""
-      }`;
-    } else if (practiceStat.label === "Done today") {
-      line = `Today's goal done · ${valueText}`;
-    } else if (
-      practiceStat.label === "Due for review" ||
-      practiceStat.label === "Due now"
-    ) {
-      line = `${valueText} due for review${doneBit}`;
-    } else if (practiceStat.label === "Ready to learn") {
-      line = `${valueText} ready to learn${doneBit}`;
-    } else if (practiceStat.label === "Caught up") {
-      line =
-        reviewedToday > 0
-          ? `All caught up · ${reviewedToday} reviewed today`
-          : "All caught up for now";
-      aria =
-        reviewedToday > 0
-          ? `All caught up. ${reviewedToday} reviewed today.`
-          : practiceStat.ariaLabel;
-    } else if (practiceStat.label === "Next review") {
-      line = `Next review · ${valueText}${doneBit}`;
-    } else {
-      line = `${valueText} · ${practiceStat.label}${doneBit}`;
+    if (practiceStat.kind === "left-today" && reviewedToday > 0) {
+      aria = `${practiceStat.ariaLabel}, ${reviewedToday} already reviewed`;
+    }
+    if (practiceStat.kind === "caught-up" && reviewedToday > 0) {
+      line = `All caught up · ${reviewedToday} reviewed today`;
+      aria = `All caught up. ${reviewedToday} reviewed today.`;
     }
 
     if (practiceStat.actionable) {
