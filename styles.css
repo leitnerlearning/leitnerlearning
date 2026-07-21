@@ -4804,39 +4804,6 @@ html.needs-welcome body {
   display: none;
 }
 
-.library-themes-live {
-  margin: 0 0 0.55rem;
-  min-height: 0;
-  font-size: 0.88rem;
-  color: var(--brand-deep, #2a4a9b);
-  font-weight: 500;
-}
-
-.library-themes-live:empty {
-  display: none;
-}
-
-.library-themes-study-now {
-  margin-left: 0.35rem;
-  padding: 0.12rem 0.55rem;
-  border: 1px solid rgba(54, 95, 207, 0.28);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.85);
-  font-family: inherit;
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: var(--brand-deep, #2a4a9b);
-  cursor: pointer;
-  vertical-align: baseline;
-}
-
-.library-themes-study-now:hover,
-.library-themes-study-now:focus-visible {
-  border-color: rgba(54, 95, 207, 0.45);
-  color: var(--brand, #365fcf);
-  outline: none;
-}
-
 .library-themes-list {
   list-style: none;
   margin: 0;

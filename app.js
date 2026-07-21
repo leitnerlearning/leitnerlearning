@@ -2586,17 +2586,6 @@ function removeThematicPack(packId) {
   return { removed, packId, title };
 }
 
-function setLibraryThemesLive(messageHtmlOrText, { html = false } = {}) {
-  const live = document.getElementById("library-themes-live");
-  if (!live) return;
-  if (!messageHtmlOrText) {
-    live.textContent = "";
-    return;
-  }
-  if (html) live.innerHTML = messageHtmlOrText;
-  else live.textContent = messageHtmlOrText;
-}
-
 function renderThemePackWordList(pack, category) {
   const entries = getPackEntriesForCategory(pack, category.id);
   if (!entries.length) return "";
@@ -2709,13 +2698,10 @@ function renderThematicPacks() {
 
   root.classList.remove("hidden");
   root.classList.toggle("has-enabled", enabledPacks.length > 0);
-  // Only rewrite the body — never wipe #library-themes-live (feedback / a11y).
   if (body) {
     body.innerHTML = `${enabledList}${availableList}`;
   } else {
-    const live = document.getElementById("library-themes-live");
-    const liveHtml = live ? live.outerHTML : "";
-    root.innerHTML = `${liveHtml}${enabledList}${availableList}`;
+    root.innerHTML = `${enabledList}${availableList}`;
   }
 }
 
@@ -11750,12 +11736,7 @@ function initEventListeners() {
     if (studyBtn) {
       const packId = studyBtn.getAttribute("data-pack-study");
       if (!packId) return;
-      const result = startThemePracticeSession(packId);
-      setLibraryThemesLive(
-        result.ok
-          ? `Starting ${result.count} from this theme`
-          : "No cards ready in this theme yet"
-      );
+      startThemePracticeSession(packId);
       return;
     }
 
@@ -11763,12 +11744,7 @@ function initEventListeners() {
     if (removeBtn) {
       const packId = removeBtn.getAttribute("data-pack-remove");
       if (!packId) return;
-      const result = removeThematicPack(packId);
-      setLibraryThemesLive(
-        result.removed > 0
-          ? `Removed ${result.removed} · ${result.title}`
-          : `Removed · ${result.title}`
-      );
+      removeThematicPack(packId);
       return;
     }
 
@@ -11776,18 +11752,7 @@ function initEventListeners() {
     if (!btn || btn.disabled) return;
     const packId = btn.getAttribute("data-pack-enable");
     if (!packId) return;
-    const result = enableThematicPack(packId);
-    // Feedback after renderAll — live node is preserved in the section shell.
-    if (result.added > 0) {
-      setLibraryThemesLive(
-        `+${result.added} <button type="button" class="library-themes-study-now" data-pack-study="${escapeAttr(packId)}">Study</button>`,
-        { html: true }
-      );
-    } else {
-      setLibraryThemesLive(
-        `In deck · ${result.title}`
-      );
-    }
+    enableThematicPack(packId);
   });
 
   document.getElementById("library-search")?.addEventListener("input", (e) => {
