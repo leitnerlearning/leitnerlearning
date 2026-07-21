@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=224" />
+    <link rel="stylesheet" href="styles.css?v=225" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -72,31 +72,39 @@
     >
       <div class="track-switch-veil" aria-hidden="true"></div>
       <div class="track-switch-overlay-inner">
-        <div class="track-switch-logo-wrap" aria-hidden="true">
-          <span class="track-switch-logo-ring"></span>
-          <span class="track-switch-logo-bloom"></span>
-          <img
-            class="track-switch-logo"
-            src="brand/logo-icon.svg"
-            alt=""
-            width="72"
-            height="98"
-            decoding="async"
-          />
+        <div class="track-switch-stage" aria-hidden="true">
+          <span class="portal-ripple portal-ripple--a"></span>
+          <span class="portal-ripple portal-ripple--b"></span>
+          <span class="portal-flash"></span>
+          <div class="track-switch-logo-wrap">
+            <span class="track-switch-logo-ring"></span>
+            <span class="track-switch-logo-bloom"></span>
+            <img
+              class="track-switch-logo"
+              src="brand/logo-icon.svg"
+              alt=""
+              width="72"
+              height="98"
+              decoding="async"
+            />
+          </div>
+          <p
+            class="track-switch-overlay-flag"
+            id="track-switch-overlay-flag"
+            aria-hidden="true"
+            hidden
+          ></p>
         </div>
-        <p
-          class="track-switch-overlay-flag"
-          id="track-switch-overlay-flag"
-          aria-hidden="true"
-          hidden
-        ></p>
+        <p class="track-switch-overlay-kicker" id="track-switch-overlay-kicker" hidden>
+          Now learning
+        </p>
         <p class="track-switch-overlay-name" id="track-switch-overlay-name"></p>
       </div>
     </div>
-    <!-- First-entry portal music (silent preload; play starts on language pick) -->
+    <!-- Language portal music bed (cut from assets/source/Music-for-Leitner.MP4) -->
     <audio
       id="welcome-portal-audio"
-      src="assets/welcome-portal.m4a?v=18"
+      src="assets/welcome-portal.m4a?v=19"
       preload="auto"
       playsinline
     ></audio>
@@ -821,6 +829,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=306"></script>
+    <script src="app.js?v=307"></script>
   </body>
 </html>
