@@ -133,11 +133,21 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 
 ---
 
+## Learning algorithm (SRS + introduction order)
+
+- **Leitner intervals** stay: boxes 1→6 with 0 / 1 / 3 / 7 / 14 / 30 day steps; wrong answers demote to box 1.
+- **Due reviews always before new cards** in the daily queue.
+- **Early “hook mix”** (first ~40 introductions): interleave high-frequency *glue* (pronouns, articles, particles) with *hooks* (phrases + mid-rank content words). Pure rank-1-only order is coverage-optimal but demotivating and brutal for isolated connectors (et/a/the). Aligns with formulaic-sequence / usage-based practice.
+- **Later spice**: after the hook phase, small random pulls from slightly ahead of the frequency frontier.
+- Daily goal remains a **small bite** (cap 10–30, default 20) — never dump the whole unpaid mountain into the UI.
+- Exact-form checking stays strict; soft-accept only true orthographic variants, not wrong articles.
+
 ## Content expansion priorities
 
 1. Quality of existing 10 languages (lemmas vs noise, story naturalness).  
-2. Thematic mini-packs (e.g. Airport 80) only with clear UX to enable them.  
-3. New full language only after LT/TTS/content research + founder OK.
+2. More **phrases** and concrete hooks in ranks ~36–260 (feeds early mix).  
+3. Thematic mini-packs (e.g. Airport 80) only with clear UX to enable them.  
+4. New full language only after LT/TTS/content research + founder OK.
 
 ---
 

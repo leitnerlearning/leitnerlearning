@@ -13,10 +13,22 @@
   const BOX_COUNT = 6;
   const BOX_INTERVALS_DAYS = [0, 1, 3, 7, 14, 30];
   const DAILY_PRACTICE_CAP = 20;
-  const SPICE_MAX_PER_DAY = 2;
-  const SPICE_MIN_INTRODUCED = 12;
-  const SPICE_RANK_BUFFER = 30;
-  const SPICE_RANK_FLOOR = 60;
+  /** After the hook phase: sprinkle slightly-ahead words into the day. */
+  const SPICE_MAX_PER_DAY = 3;
+  const SPICE_MIN_INTRODUCED = 25;
+  const SPICE_RANK_BUFFER = 25;
+  const SPICE_RANK_FLOOR = 45;
+  /**
+   * Early sessions: interleave memorable "hooks" (phrases + mid-rank content)
+   * with high-frequency glue (pronouns, articles, particles). Pure rank-1-only
+   * order is coverage-optimal but demotivating and hard for isolated connectors.
+   * Research-aligned: formulaic sequences + usage-based chunks alongside frequency.
+   */
+  const HOOK_INTRO_THRESHOLD = 40;
+  const HOOK_RANK_MIN = 36;
+  const HOOK_RANK_MAX = 260;
+  /** Share of *new* slots that prefer hooks during the early phase (~half). */
+  const HOOK_NEW_RATIO = 0.5;
 
   function daysToMs(days) {
     return days * 24 * 60 * 60 * 1000;
@@ -136,36 +148,142 @@
     return queue;
   }
 
+  /** Phrases + mid-rank content: easier to care about and remember in isolation. */
+  function isHookCard(card) {
+    if (!card) return false;
+    if (card.band === "phrase") return true;
+    const foreign = String(card.foreign || "").trim();
+    if (/\s/.test(foreign)) return true;
+    const rank = Number(card.rank);
+    if (!Number.isFinite(rank)) return false;
+    return rank >= HOOK_RANK_MIN && rank <= HOOK_RANK_MAX;
+  }
+
+  /** Ultra-high-frequency connectors / pronouns / articles (hard in isolation). */
+  function isGlueCard(card) {
+    if (!card || isHookCard(card)) return false;
+    const rank = Number(card.rank);
+    return Number.isFinite(rank) && rank < HOOK_RANK_MIN;
+  }
+
+  function sortByRank(cards) {
+    return cards.slice().sort((a, b) => {
+      const rankA = Number(a.rank);
+      const rankB = Number(b.rank);
+      if (Number.isFinite(rankA) && Number.isFinite(rankB) && rankA !== rankB) {
+        return rankA - rankB;
+      }
+      if (Number.isFinite(rankA) && !Number.isFinite(rankB)) return -1;
+      if (!Number.isFinite(rankA) && Number.isFinite(rankB)) return 1;
+      return String(a.foreign || "").localeCompare(String(b.foreign || ""));
+    });
+  }
+
+  /**
+   * Build new-card IDs for early sessions: ~half hooks, ~half glue, alternating
+   * so day 1 is not twenty particles in a row.
+   */
+  function buildHookMixedNewIds(newCards, slots) {
+    if (slots <= 0 || !newCards.length) return [];
+
+    const hooks = sortByRank(newCards.filter(isHookCard));
+    const glue = sortByRank(newCards.filter(isGlueCard));
+    const rest = sortByRank(
+      newCards.filter((card) => !isHookCard(card) && !isGlueCard(card))
+    );
+
+    const hookTarget = Math.max(1, Math.round(slots * HOOK_NEW_RATIO));
+    const ids = [];
+    let hi = 0;
+    let gi = 0;
+    let ri = 0;
+    let hooksTaken = 0;
+
+    while (ids.length < slots) {
+      const preferHook = hooksTaken < hookTarget;
+      if (preferHook && hi < hooks.length) {
+        ids.push(hooks[hi].id);
+        hi += 1;
+        hooksTaken += 1;
+        continue;
+      }
+      if (gi < glue.length) {
+        ids.push(glue[gi].id);
+        gi += 1;
+        continue;
+      }
+      if (hi < hooks.length) {
+        ids.push(hooks[hi].id);
+        hi += 1;
+        hooksTaken += 1;
+        continue;
+      }
+      if (ri < rest.length) {
+        ids.push(rest[ri].id);
+        ri += 1;
+        continue;
+      }
+      break;
+    }
+
+    return ids;
+  }
+
   function buildDailyQueue(dueCards, goal, allCards = dueCards, options = {}) {
     if (!goal) return [];
 
     const randomFn = options.randomFn || Math.random;
     const excludedIds = options.excludedIds || new Set();
     const introducedCount = getIntroducedCount(allCards);
-    const spiceSlots = getSpiceSlotCount(introducedCount, goal, randomFn);
-    const coreSlots = Math.max(0, goal - spiceSlots);
 
     const eligible = dueCards
       .filter((card) => !excludedIds.has(card.id))
       .slice()
       .sort(compareCardsForPractice);
 
-    const coreCards = eligible.slice(0, coreSlots);
-    const coreIds = coreCards.map((card) => card.id);
-    const usedIds = new Set(coreIds);
+    // Due reviews first (true Leitner pressure), then new introductions.
+    const dueReviews = eligible.filter((card) => !isNewCard(card));
+    const dueNew = eligible.filter((card) => isNewCard(card));
+    const reviewIds = dueReviews.slice(0, goal).map((card) => card.id);
+    const newSlots = Math.max(0, goal - reviewIds.length);
 
-    if (!spiceSlots) return coreIds;
+    if (newSlots <= 0) return reviewIds;
+
+    // —— Early "hook mix": memorable content + necessary glue ——
+    if (introducedCount < HOOK_INTRO_THRESHOLD) {
+      const hookIds = buildHookMixedNewIds(dueNew, newSlots);
+      // Light shuffle of pairs so it doesn't feel like a rigid template
+      const mixed = hookIds.slice();
+      for (let i = mixed.length - 1; i > 0; i -= 1) {
+        if (randomFn() < 0.35) {
+          const j = Math.floor(randomFn() * (i + 1));
+          const tmp = mixed[i];
+          mixed[i] = mixed[j];
+          mixed[j] = tmp;
+        }
+      }
+      return reviewIds.concat(mixed);
+    }
+
+    // —— Mature path: frequency core + small spice ——
+    const spiceSlots = getSpiceSlotCount(introducedCount, newSlots, randomFn);
+    const coreSlots = Math.max(0, newSlots - spiceSlots);
+    const coreNew = sortByRank(dueNew).slice(0, coreSlots);
+    const coreIds = coreNew.map((card) => card.id);
+    const usedIds = new Set(coreIds.concat(reviewIds));
+
+    if (!spiceSlots) return reviewIds.concat(coreIds);
 
     const spiceRankMin = getSpiceRankThreshold(allCards);
-    const spiceCandidates = eligible.filter(
+    const spiceCandidates = dueNew.filter(
       (card) =>
         !usedIds.has(card.id) &&
-        isNewCard(card) &&
         (Number(card.rank) || 99999) >= spiceRankMin
     );
 
     const spiceIds = pickSpiceCardIds(spiceCandidates, spiceSlots, randomFn);
-    return interleaveQueueIds(coreIds, spiceIds, randomFn);
+    const newIds = interleaveQueueIds(coreIds, spiceIds, randomFn);
+    return reviewIds.concat(newIds);
   }
 
   function promote(card, now = Date.now()) {
@@ -308,12 +426,17 @@
     DAILY_PRACTICE_CAP,
     SPICE_MAX_PER_DAY,
     SPICE_MIN_INTRODUCED,
+    HOOK_INTRO_THRESHOLD,
+    HOOK_RANK_MIN,
+    HOOK_RANK_MAX,
     daysToMs,
     getLocalDayStartAfterDays,
     getLocalDayKey,
     scheduleNextReview,
     isNewCard,
     isDue,
+    isHookCard,
+    isGlueCard,
     compareCardsForPractice,
     getDueCards,
     getIntroducedCount,

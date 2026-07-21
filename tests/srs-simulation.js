@@ -40,40 +40,42 @@ function testSchedulingIntervals() {
   );
 }
 
-function testFrequencyOrdering() {
-  const cards = Srs.createStarterDeck(40, now);
-  const queue = Srs.buildDailyQueue(Srs.getDueCards(cards, now), 10, cards, { randomFn: () => 1 });
-  const ranks = queue
-    .map((id) => cards.find((card) => card.id === id))
-    .filter((card) => Srs.isNewCard(card))
-    .map((card) => card.rank);
-
-  for (let i = 1; i < ranks.length; i += 1) {
-    assert(ranks[i] >= ranks[i - 1], "core new cards stay frequency-ordered");
-  }
-}
-
-function testSpiceProgression() {
+function testEarlyHookMix() {
   const cards = Srs.createStarterDeck(300, now);
-  for (let i = 0; i < 20; i += 1) {
-    cards[i] = Srs.promote(cards[i], now);
-  }
+  // Real decks mark phrases; tag a few mid-rank cards as phrases for the mix.
+  cards[79].band = "phrase";
+  cards[99].band = "phrase";
+  cards[119].foreign = "god morgen";
+  cards[119].native = "good morning";
+  cards[119].band = "phrase";
 
-  const due = Srs.getDueCards(cards, now);
-  const queue = Srs.buildDailyQueue(due, 20, cards, { randomFn: random });
-  const threshold = Srs.getSpiceRankThreshold(cards);
-  const spiceCount = queue.filter((id) => {
-    const card = cards.find((entry) => entry.id === id);
-    return card && Srs.isNewCard(card) && card.rank >= threshold;
-  }).length;
+  const queue = Srs.buildDailyQueue(Srs.getDueCards(cards, now), 20, cards, {
+    randomFn: () => 0.5,
+  });
+  const picked = queue
+    .map((id) => cards.find((card) => card.id === id))
+    .filter(Boolean);
 
-  assert(spiceCount > 0, "spice appears after enough introductions");
-  assert(spiceCount <= Srs.SPICE_MAX_PER_DAY, "spice respects daily cap");
+  const hooks = picked.filter((card) => Srs.isHookCard(card)).length;
+  const glue = picked.filter((card) => Srs.isGlueCard(card)).length;
+
+  assert(picked.length === 20, "day-one queue fills the goal");
+  assert(hooks >= 6, "early queue mixes in memorable hooks (phrases / mid-rank)");
+  assert(glue >= 4, "early queue still teaches necessary glue words");
+  assert(
+    picked.some((card) => Number(card.rank) <= 20),
+    "core high-frequency glue still appears early"
+  );
+  assert(
+    picked.some((card) => Number(card.rank) >= Srs.HOOK_RANK_MIN),
+    "hooks pull mid-rank content into day one"
+  );
 }
 
-function testNoEarlySpice() {
-  const cards = Srs.createStarterDeck(120, now);
-  for (let i = 0; i < 5; i += 1) {
+function testSpiceAfterHookPhase() {
+  const cards = Srs.createStarterDeck(300, now);
+  // Past hook threshold — spice path should activate.
+  for (let i = 0; i < Srs.HOOK_INTRO_THRESHOLD + 5; i += 1) {
     cards[i] = Srs.promote(cards[i], now);
   }
 
@@ -85,7 +87,20 @@ function testNoEarlySpice() {
     return card && Srs.isNewCard(card) && card.rank >= threshold;
   }).length;
 
-  assert(spiceCount === 0, "no spice before introduction threshold");
+  assert(spiceCount <= Srs.SPICE_MAX_PER_DAY, "spice respects daily cap after hook phase");
+}
+
+function testReviewsBeforeNew() {
+  const cards = Srs.createStarterDeck(80, now);
+  // One due review + many new
+  cards[0] = {
+    ...Srs.promote(cards[0], now),
+    nextReviewAt: now,
+  };
+  const queue = Srs.buildDailyQueue(Srs.getDueCards(cards, now), 10, cards, {
+    randomFn: () => 0.2,
+  });
+  assert(queue[0] === cards[0].id, "due reviews come before new introductions");
 }
 
 function testLongRunSimulation() {
@@ -118,9 +133,9 @@ function testPromotionAndDemotion() {
 }
 
 testSchedulingIntervals();
-testFrequencyOrdering();
-testNoEarlySpice();
-testSpiceProgression();
+testEarlyHookMix();
+testSpiceAfterHookPhase();
+testReviewsBeforeNew();
 testPromotionAndDemotion();
 testLongRunSimulation();
 
