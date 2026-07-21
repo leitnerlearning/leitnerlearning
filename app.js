@@ -5137,7 +5137,7 @@ function getAddCardConfirmLabel(translation) {
     return editing ? "Save" : "Add";
   }
 
-  return editing ? "Save anyway" : "Add anyway";
+  return editing ? "Save Anyway" : "Add Anyway";
 }
 
 function renderAddCardReviewContext({
@@ -5185,14 +5185,15 @@ function renderAddCardReviewContext({
           ? "Use suggested pair on both sides"
           : "Use suggested translation";
     // Skip extra hint when the copy already says "Tap to…"
+    // Actionable blocks are tappable; skip extra "Tap to…" line when title is enough
     const actionHint =
-      translation.copy && /^Tap to\b/i.test(translation.copy.trim())
+      !actionable || (translation.copy && /^Tap to\b/i.test(translation.copy.trim()))
         ? ""
         : translation.targetField === "swap"
-          ? "Tap to swap the two sides"
+          ? "Tap to swap sides"
           : translation.targetField === "pair"
-            ? "Tap the box to apply"
-            : "Tap to use the suggested translation";
+            ? "Tap to apply both"
+            : "Tap to use suggestion";
     blocks.push(`
       <section
         class="review-context-block ${translation.matches ? "is-match" : "is-differs"}${actionable ? " is-actionable" : ""}"
@@ -5209,7 +5210,6 @@ function renderAddCardReviewContext({
   }
 
   if (related.length) {
-    // Section title already says where these are from — chips show only the pair
     const items = related
       .map(
         (item) => `
@@ -5225,8 +5225,16 @@ function renderAddCardReviewContext({
 
     blocks.push(`
       <section class="review-context-block is-info">
-        <h4 class="review-context-title">Related in your deck</h4>
+        <h4 class="review-context-title">Related in deck</h4>
         <ul class="review-context-list">${items}</ul>
+      </section>`);
+  }
+
+  // Quiet success when the pair looks fine and nothing else to show
+  if (!blocks.length && !duplicate) {
+    blocks.push(`
+      <section class="review-context-block is-match">
+        <h4 class="review-context-title">Looks good</h4>
       </section>`);
   }
 
@@ -5250,12 +5258,6 @@ function renderAddCardReviewContext({
       editExistingBtn.classList.add("hidden");
       editExistingBtn.dataset.cardId = "";
     }
-  }
-
-  if (!blocks.length) {
-    container.innerHTML = "";
-    container.classList.add("hidden");
-    return;
   }
 
   container.classList.remove("hidden");
@@ -5339,7 +5341,7 @@ async function openAddCardReview() {
   reviewForeign.textContent = stripFlashcardPunctuation(foreign);
   reviewNative.textContent = stripFlashcardPunctuation(native);
   context.classList.remove("hidden");
-  context.innerHTML = `<p class="review-context-loading">Checking…</p>`;
+  context.innerHTML = `<p class="review-context-loading"><span class="review-context-loading-dot" aria-hidden="true"></span>Checking translation…</p>`;
 
   const duplicate = findDeckCardByForeign(foreign, editingCardId);
   const editExistingBtn = document.getElementById("add-card-edit-existing");
