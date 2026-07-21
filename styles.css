@@ -2553,6 +2553,20 @@ main {
   background: rgba(255, 248, 235, 0.95);
 }
 
+/* Soft truth on miss — calm red, not alarm */
+.answer-form input[type="text"].incorrect {
+  border-color: rgba(215, 0, 21, 0.35);
+  box-shadow: 0 0 0 3px rgba(215, 0, 21, 0.08);
+  background: rgba(255, 248, 248, 0.96);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.answer-form input[type="text"].incorrect:focus {
+  border-color: rgba(215, 0, 21, 0.45);
+  box-shadow: 0 0 0 4px rgba(215, 0, 21, 0.1);
+}
+
 /* Levels */
 .level-indicator {
   display: flex;

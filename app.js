@@ -3263,7 +3263,14 @@ function setAnswerReceivedState(received) {
   const input = document.getElementById("answer-input");
   if (!input) return;
   input.classList.toggle("received", received);
-  if (received) input.classList.remove("near-miss");
+  if (received) input.classList.remove("near-miss", "incorrect");
+}
+
+function setAnswerIncorrectState(on) {
+  const input = document.getElementById("answer-input");
+  if (!input) return;
+  input.classList.toggle("incorrect", on);
+  if (on) input.classList.remove("received", "near-miss");
 }
 
 function scheduleSpeakForCurrentCard(delayMs = SPEAK_CARD_DELAY_MS) {
@@ -3284,6 +3291,7 @@ function handleSpeakAttemptTimeout() {
   setListeningUI(false);
 
   const answerText = getAnswerTargetText(currentCard);
+  setAnswerIncorrectState(true);
   handleIncorrect();
   const withExample = showIncorrectWithExample(currentCard, answerText);
   finishCardAndContinue(getAdvanceDelay(false, true, { withExample }));
@@ -4938,8 +4946,8 @@ function showFeedbackExample(example, card = currentCard) {
 }
 
 /**
- * Prefer: Read story line → stored pack example → phrase-as-example → simple
- * theme template → quiet pack label.
+ * Prefer: Read story → stored example → phrase → simple in-language line → honest pair.
+ * Every miss should leave the learner with *something* true — not a blank slot.
  */
 function getCardContextExample(card) {
   if (!card) return null;
@@ -4964,22 +4972,19 @@ function getCardContextExample(card) {
     return { foreign, en: native };
   }
 
-  if (card.packId) {
-    const built = buildSimpleThemeExample(
-      foreign,
-      native,
-      getActiveCategory().foreignLang || "nb"
-    );
-    if (built) return built;
-
-    const pack = getThematicPackById(card.packId);
-    return {
-      foreign: `${foreign} · ${native}`,
-      en: pack?.title || "Theme",
-    };
+  // Tiny glue words: honest pair only (fake “I need et” sentences hurt trust).
+  if (isGluePracticeCard(card) || foreign.length <= 2) {
+    return { foreign, en: native };
   }
 
-  return null;
+  const built = buildSimpleThemeExample(
+    foreign,
+    native,
+    getActiveCategory().foreignLang || "nb"
+  );
+  if (built) return built;
+
+  return { foreign, en: native };
 }
 
 /**
@@ -11665,6 +11670,7 @@ function submitAnswer(options = {}) {
   if (result.correct) {
     resetCardAttempts();
     setAnswerFieldHighlight(false);
+    setAnswerIncorrectState(false);
     setAnswerReceivedState(true);
     hideFeedbackExample();
     // Prefer the card's spelling when speech picked a homophone (two → to).
@@ -11682,6 +11688,7 @@ function submitAnswer(options = {}) {
   if (speakModeActive && result.near) {
     currentCardAttempts += 1;
     setAnswerFieldHighlight(true);
+    setAnswerIncorrectState(false);
     hideFeedbackExample();
 
     if (currentCardAttempts <= MAX_CLOSE_RETRIES) {
@@ -11695,7 +11702,8 @@ function submitAnswer(options = {}) {
 
   resetCardAttempts();
   setAnswerFieldHighlight(false);
-  setAnswerReceivedState(true);
+  setAnswerReceivedState(false);
+  setAnswerIncorrectState(true);
   handleIncorrect();
   const withExample = showIncorrectWithExample(currentCard, answerText);
 
