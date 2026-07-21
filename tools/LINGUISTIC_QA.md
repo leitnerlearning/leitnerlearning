@@ -7,7 +7,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 | Norwegian (nb-bokmal) | PASS | **PASS 2 COMPLETE** (spine certified for ship-trust) | Full POS honesty; top-1000 gloss/POS sweep; 10 packs polished; 12 stories L2/EN pass. Open only for future continuous improvement. |
 | Swedish | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; weak top-100 replaced; gloss fixes; packs + 12 stories polished 2026-07-21 |
 | Danish | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; weak top-100 replaced; survival adds; packs + 12 stories polished 2026-07-21 |
-| German | PASS | OPEN | |
+| German | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; weak fillers out; groß/klein/schlecht early; packs + 12 stories 2026-07-21 |
 | French | PASS | OPEN | |
 | Spanish | PASS | OPEN | |
 | Italian | PASS | OPEN | |
@@ -49,12 +49,23 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 - [x] 12 stories light polish
 - [x] Unique forms still 1000
 
+## German — pass 1 checklist
+
+- [x] Mechanical 1000 + 200 + 12 stories
+- [x] POS honesty (not all `noun`)
+- [x] Drop weak early fillers (lost keys, gym membership, unavailable)
+- [x] Add survival adjectives early: `groß`, `klein`, `schlecht`
+- [x] Gloss fixes (`sie`, `weiß`, `sein`, `ihr`, …)
+- [x] Packs polish (Gate/Gepäckband; Pläne; Angebot)
+- [x] 12 stories light EN polish
+- [x] Unique forms still 1000
+
 ## Ship rule
 
-- **Norwegian + Swedish + Danish:** trustworthy for “exact forms” on the Nordic spine.
-- **Other 7 languages:** structure only until certified the same way.
+- **NB + SV + DA + DE:** trustworthy for “exact forms” on certified spines.
+- **Other 6 languages:** structure only until certified the same way.
 - Continuous improvement always welcome; do not re-open thrash without a named defect.
-- **Next:** German or Spanish (larger markets), or keep Nordic and do DE.
+- **Next:** Spanish (large market) or French.
 
 ## How to re-verify
 

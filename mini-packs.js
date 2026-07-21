@@ -1790,7 +1790,7 @@
     ['zu klein', 'too small'],
     ['Kartenzahlung', 'card payment'],
     ['Farbe', 'color'],
-    ['Angebot', 'discount'],
+    ['Angebot', 'offer / deal'],
     ['umtauschen', 'to exchange / return'],
   ]);
 
@@ -2017,7 +2017,7 @@
     ['Einladung', 'invitation'],
     ['Geburtstag', 'birthday'],
     ['abhängen', 'to hang out'],
-    ['die Pläne', 'the plans'],
+    ['Pläne', 'plans'],
     ['super nett', 'really nice'],
     ['in Kontakt bleiben', 'to stay in touch'],
     ['Kumpel', 'buddy / mate'],
