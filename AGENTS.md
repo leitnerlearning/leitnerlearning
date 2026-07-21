@@ -59,6 +59,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - Flag can replace written language name where the flag is already shown (e.g. Read story bar).
 - Keep `aria-label`s for accessibility; do not reintroduce mouse tooltips for “helpfulness.”
 - Prefer discovery by use over instructional popups.
+- **Subtraction over addition.** Prefer removing restated copy, duplicate progress chrome, and empty-state marketing. One status surface per fact (e.g. theme set progress in the Review strip only — not also under the prompt).
 
 ### Safety & motion
 - Photosensitive-safe: soft motion only; no full-screen strobes.

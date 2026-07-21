@@ -4813,22 +4813,15 @@ html.needs-welcome body {
 }
 
 .library-themes-head {
-  margin: 0 0 0.7rem;
+  margin: 0 0 0.55rem;
 }
 
 .library-themes-title {
-  margin: 0 0 0.2rem;
+  margin: 0;
   font-size: 0.98rem;
   font-weight: 650;
   letter-spacing: -0.02em;
   color: var(--text, #1a1f26);
-}
-
-.library-themes-lead {
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.4;
-  color: var(--muted, #5c6570);
 }
 
 .library-themes-list {
@@ -4933,15 +4926,8 @@ html.needs-welcome body {
   color: var(--text, #1a1f26);
 }
 
-.library-theme-blurb {
-  margin: 0 0 0.2rem;
-  font-size: 0.86rem;
-  line-height: 1.35;
-  color: var(--muted, #5c6570);
-}
-
 .library-theme-status {
-  margin: 0;
+  margin: 0.15rem 0 0;
   font-size: 0.8rem;
   color: var(--brand-deep, #2a4a9b);
   font-weight: 500;
@@ -5939,7 +5925,7 @@ html.needs-welcome body {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0;
 }
 
 .progress-themes-title-block {

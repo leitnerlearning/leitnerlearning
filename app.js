@@ -2578,42 +2578,45 @@ function enableThematicPack(packId, options = {}) {
 function renderThemePackCard(pack, category) {
   const coverage = countPackCoverage(pack, category.id);
   const enabled = isPackEnabled(pack.id);
+  // Short status — title carries the identity; skip blurbs and long “in your deck” copy.
   const status = enabled
     ? coverage.missing > 0
-      ? `${coverage.present} of ${coverage.total} in deck · ${coverage.missing} left`
-      : `${coverage.present} of ${coverage.total} in your deck`
+      ? `${coverage.present}/${coverage.total} · ${coverage.missing} left`
+      : `${coverage.present} cards`
     : `${coverage.total} cards`;
-  const actionLabel = enabled
-    ? coverage.missing > 0
-      ? "Add rest"
-      : "Added"
-    : "Add to deck";
-  const disabled = enabled && coverage.missing === 0;
-  const studyBtn = enabled
-    ? `<button
+
+  let actions = "";
+  if (enabled) {
+    actions = `<button
         type="button"
         class="btn primary library-theme-btn library-theme-btn--study"
         data-pack-study="${escapeAttr(pack.id)}"
-        aria-label="${escapeAttr(`Study ${pack.title} now`)}"
-      >Study</button>`
-    : "";
+        aria-label="${escapeAttr(`Study ${pack.title}`)}"
+      >Study</button>`;
+    if (coverage.missing > 0) {
+      actions += `<button
+          type="button"
+          class="btn secondary library-theme-btn"
+          data-pack-enable="${escapeAttr(pack.id)}"
+          aria-label="${escapeAttr(`Add remaining ${pack.title} cards`)}"
+        >Add rest</button>`;
+    }
+  } else {
+    actions = `<button
+        type="button"
+        class="btn secondary library-theme-btn"
+        data-pack-enable="${escapeAttr(pack.id)}"
+        aria-label="${escapeAttr(`Add ${pack.title} to deck`)}"
+      >Add</button>`;
+  }
+
   return `
     <li class="library-theme-card${enabled ? " is-enabled" : ""}" data-pack-id="${escapeAttr(pack.id)}">
       <div class="library-theme-copy">
         <p class="library-theme-name">${escapeHtml(pack.title)}</p>
-        <p class="library-theme-blurb">${escapeHtml(pack.blurb || "")}</p>
         <p class="library-theme-status">${escapeHtml(status)}</p>
       </div>
-      <div class="library-theme-actions">
-        ${studyBtn}
-        <button
-          type="button"
-          class="btn ${disabled ? "ghost" : "secondary"} library-theme-btn"
-          data-pack-enable="${escapeAttr(pack.id)}"
-          ${disabled ? "disabled" : ""}
-          aria-label="${escapeAttr(`${actionLabel}: ${pack.title}`)}"
-        >${escapeHtml(actionLabel)}</button>
-      </div>
+      <div class="library-theme-actions">${actions}</div>
     </li>`;
 }
 
@@ -2643,25 +2646,29 @@ function renderThematicPacks() {
     ? `<ul class="library-themes-list" role="list">${enabledPacks
         .map((pack) => renderThemePackCard(pack, category))
         .join("")}</ul>`
-    : `<p class="library-themes-none">No packs in your deck yet — add one below.</p>`;
+    : "";
 
+  // If nothing enabled yet, show the catalog open — one list, no empty pep-talk.
   const moreBlock = morePacks.length
-    ? `<details class="library-themes-more"${openMore ? " open" : ""}>
+    ? enabledPacks.length
+      ? `<details class="library-themes-more"${openMore ? " open" : ""}>
         <summary class="library-themes-more-summary">
-          <span>More packs</span>
+          <span>More</span>
           <span class="library-themes-more-count">${morePacks.length}</span>
         </summary>
         <ul class="library-themes-list library-themes-list--more" role="list">${morePacks
           .map((pack) => renderThemePackCard(pack, category))
           .join("")}</ul>
       </details>`
+      : `<ul class="library-themes-list" role="list">${morePacks
+          .map((pack) => renderThemePackCard(pack, category))
+          .join("")}</ul>`
     : "";
 
   root.classList.remove("hidden");
   root.innerHTML = `
     <div class="library-themes-head">
       <h3 class="library-themes-title">Themes</h3>
-      <p class="library-themes-lead">Optional packs. Add when you need them — they won’t replace your essentials.</p>
     </div>
     ${enabledList}
     ${moreBlock}
@@ -5330,13 +5337,9 @@ function renderEmptyState() {
     const correct =
       sessionCorrect === 1 ? "1 right this round" : `${sessionCorrect} right this round`;
 
-    // Theme set just finished — keep the daily spine, name the set calmly.
+    // Theme set finished — name it once; skip a second “N right this round” paragraph.
     if (lastThemeSessionNote) {
-      const themeLine = `${lastThemeSessionNote.title} set done`;
-      const themeDetail =
-        lastThemeSessionNote.reviewed > 0
-          ? `${lastThemeSessionNote.reviewed} cards · ${correct}`
-          : correct;
+      const themeLine = `${lastThemeSessionNote.title} done`;
       showPowerHome({
         mode: remainingToday > 0 || extraDue > 0 ? "continue" : "complete",
         enabled: remainingToday > 0 || extraDue > 0 || hasDailyGoalRemaining(daily),
@@ -5345,7 +5348,6 @@ function renderEmptyState() {
           remainingToday > 0
             ? `${themeLine}. Continue daily review`
             : themeLine,
-        detail: themeDetail,
       });
       return;
     }
@@ -5516,7 +5518,8 @@ function renderPractice() {
       const done = getThemeSessionDoneCount();
       const total = themeSessionTotal;
       const left = getThemeSessionRemaining();
-      const countText = `${done}/${total}`;
+      const name = (pack?.title || "Theme").split(/[&·]/)[0].trim();
+      const countText = `${name} ${done}/${total}`;
       const countEl = document.getElementById("daily-goal-count");
       if (countEl) countEl.textContent = countText;
       else goalChip.textContent = countText;
@@ -5525,7 +5528,7 @@ function renderPractice() {
       // Theme set is not the daily-cap control — keep it non-interactive look via aria only.
       goalChip.setAttribute(
         "aria-label",
-        `${pack?.title || "Theme"} set: ${done} of ${total}, ${left} left`
+        `${pack?.title || "Theme"}: ${done} of ${total}, ${left} left`
       );
       goalChip.removeAttribute("title");
     } else {
@@ -5613,18 +5616,11 @@ function renderPractice() {
   promptEl.lang = labels.promptLang;
   promptEl.className = "prompt norwegian";
 
+  // Theme progress lives in the goal strip — no second “N left” line under the prompt.
   const promptHint = document.getElementById("prompt-hint");
   if (promptHint) {
-    if (themeSessionPackId) {
-      const pack = getThematicPackById(themeSessionPackId);
-      const left = getThemeSessionRemaining();
-      const title = pack?.title || "Theme";
-      promptHint.textContent = left === 1 ? `${title} · last card` : `${title} · ${left} left`;
-      promptHint.classList.remove("hidden");
-    } else {
-      promptHint.textContent = "";
-      promptHint.classList.add("hidden");
-    }
+    promptHint.textContent = "";
+    promptHint.classList.add("hidden");
   }
 
   // Direction chip shows *this* card’s effective direction (glue may force L2→EN).
@@ -10966,7 +10962,8 @@ function renderProgressSummary() {
 }
 
 /**
- * Quiet glance at enabled theme packs. Hidden until the learner opts into at least one.
+ * Quiet glance at *enabled* theme packs only.
+ * No empty-state marketing — discovery lives in Library.
  */
 function renderProgressThemes() {
   const el = document.getElementById("progress-themes");
@@ -10980,41 +10977,21 @@ function renderProgressThemes() {
   const enabledPacks = packs.filter((pack) => enabledIds.has(pack.id));
 
   if (!enabledPacks.length) {
-    // Soft discoverability only when packs exist and none are on yet.
-    if (!packs.length) {
-      el.classList.add("hidden");
-      el.innerHTML = "";
-      return;
-    }
-    el.classList.remove("hidden");
-    el.innerHTML = `
-      <div class="progress-themes-head">
-        <span class="progress-themes-label">Themes</span>
-      </div>
-      <p class="progress-themes-empty">Optional packs live in Library — travel, food, campus, work, and more.</p>
-      <button type="button" class="progress-themes-link" data-tab-jump="cards" aria-label="Open Library themes">
-        Browse themes
-        <span aria-hidden="true">→</span>
-      </button>`;
+    el.classList.add("hidden");
+    el.innerHTML = "";
     return;
   }
 
   const rows = enabledPacks
     .map((pack) => {
       const prog = getPackLearningProgress(pack, category.id);
-      let status;
-      if (prog.present === 0) {
-        status = "Not in deck yet";
-      } else if (prog.introduced === 0) {
-        status = `${prog.present} in deck · not started`;
-      } else if (prog.introduced >= prog.present) {
-        status = `${prog.introduced} of ${prog.present} introduced`;
-      } else {
-        status = `${prog.introduced} of ${prog.present} introduced`;
-      }
-      if (prog.missing > 0 && prog.present > 0) {
-        status += ` · ${prog.missing} left to add`;
-      }
+      const denom = prog.present || prog.total || 0;
+      const status =
+        denom <= 0
+          ? "—"
+          : prog.introduced === 0
+            ? `${denom} ready`
+            : `${prog.introduced}/${denom}`;
       const pct = prog.present ? prog.introPct : 0;
       const barClass = pct > 0 ? " progress-themes-fill--has" : "";
       return `
@@ -11028,36 +11005,22 @@ function renderProgressThemes() {
               type="button"
               class="progress-themes-study"
               data-pack-study="${escapeAttr(pack.id)}"
-              aria-label="${escapeAttr(`Study ${pack.title} now`)}"
+              aria-label="${escapeAttr(`Study ${pack.title}`)}"
             >Study</button>
           </div>
-          <div class="progress-themes-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${escapeAttr(pack.title)}: ${prog.introduced} of ${prog.present || prog.total} introduced">
+          <div class="progress-themes-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${escapeAttr(pack.title)}: ${prog.introduced} of ${denom} introduced">
             <div class="progress-themes-fill${barClass}" style="width: ${pct}%"></div>
           </div>
         </div>`;
     })
     .join("");
 
-  const moreCount = packs.length - enabledPacks.length;
-  const moreLink =
-    moreCount > 0
-      ? `<button type="button" class="progress-themes-link" data-tab-jump="cards" aria-label="Open Library for more theme packs">
-          ${moreCount} more in Library
-          <span aria-hidden="true">→</span>
-        </button>`
-      : `<button type="button" class="progress-themes-link" data-tab-jump="cards" aria-label="Open Library themes">
-          Library
-          <span aria-hidden="true">→</span>
-        </button>`;
-
   el.classList.remove("hidden");
   el.innerHTML = `
     <div class="progress-themes-head">
       <span class="progress-themes-label">Themes</span>
-      <span class="progress-themes-count">${enabledPacks.length} active</span>
     </div>
-    <div class="progress-themes-list">${rows}</div>
-    ${moreLink}`;
+    <div class="progress-themes-list">${rows}</div>`;
 }
 
 function renderProgressBoxStats() {
@@ -11980,13 +11943,11 @@ function initEventListeners() {
     const packId = btn.getAttribute("data-pack-enable");
     if (!packId) return;
     const result = enableThematicPack(packId);
-    // Quiet status + one-tap Study so add → practice is one calm step.
+    // One short live line + Study — pack cards already show Study once enabled.
     const live = document.getElementById("library-themes-live");
     if (live) {
       if (result.added > 0) {
-        live.innerHTML = `Added ${result.added} cards. <button type="button" class="library-themes-study-now" data-pack-study="${escapeAttr(packId)}">Study now</button>`;
-      } else if (result.already) {
-        live.innerHTML = `Already in your deck. <button type="button" class="library-themes-study-now" data-pack-study="${escapeAttr(packId)}">Study</button>`;
+        live.innerHTML = `+${result.added} <button type="button" class="library-themes-study-now" data-pack-study="${escapeAttr(packId)}">Study</button>`;
       } else {
         live.textContent = "";
       }
