@@ -451,13 +451,13 @@ function getProgressPracticeStat() {
   const setWord = cap === 1 ? "card" : "cards";
 
   // In-progress daily goal (normal mode only — extra mode can make remaining = full backlog)
-  // Home chips: one-word labels (LEFT · STREAK). Aria keeps the full sentence.
+  // Home chips: one-word labels. Prefer REMAINING over LEFT (LEFT is ambiguous).
   if (!daily.extraMode && remainingToday > 0) {
     return {
       value: remainingToday,
-      label: "Left",
-      line: `${remainingToday} left`,
-      ariaLabel: `${remainingToday} card${remainingToday === 1 ? "" : "s"} left in today's review`,
+      label: "Remaining",
+      line: `${remainingToday} remaining`,
+      ariaLabel: `${remainingToday} card${remainingToday === 1 ? "" : "s"} remaining in today's review`,
       highlight: true,
       actionable: true,
       kind: "left-today",
