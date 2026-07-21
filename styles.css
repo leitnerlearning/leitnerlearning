@@ -4837,7 +4837,8 @@ html.needs-welcome body {
 /* Library → Packs filter only: compact optional grid (not a second product) */
 .library-themes {
   margin: 0 0 0.55rem;
-  padding: 0;
+  /* Room so fixed TOP doesn’t sit on the last Add / Study pills */
+  padding: 0 0 3.75rem;
   border: none;
   background: transparent;
 }
@@ -5030,28 +5031,30 @@ html.needs-welcome body {
   width: 100%;
   max-width: 100%;
   margin: 0.12rem 0 0;
-  padding: 0.12rem 0.38rem;
+  padding: 0.12rem 0.35rem;
   border-radius: 8px;
   background: color-mix(in srgb, var(--brand, #365fcf) 4%, var(--surface, #fff));
   border: 1px solid rgba(54, 95, 207, 0.08);
   /* Short peek — scroll inside for the rest; one open pack at a time */
   max-height: 8.25rem;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   text-align: left;
+  box-sizing: border-box;
 }
 
 .library-theme-word {
-  /* Fixed columns so EN and L2 each form a straight vertical edge */
+  /* Two flexible columns inside the tile — long words wrap, never clip mid-glyph */
   display: grid;
-  grid-template-columns: minmax(6.75rem, 9.25rem) minmax(5.5rem, max-content);
-  column-gap: 0.85rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  column-gap: 0.45rem;
   align-items: baseline;
-  padding: 0.18rem 0;
+  padding: 0.16rem 0;
   border-bottom: 1px solid rgba(26, 31, 38, 0.05);
-  font-size: 0.86rem;
-  line-height: 1.28;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  min-width: 0;
 }
 
 .library-theme-word:last-child {
@@ -5063,23 +5066,28 @@ html.needs-welcome body {
   padding-top: 0.04rem;
 }
 
-/* English — left column, fixed width → one vertical line */
+/* English — quieter anchor */
 .library-theme-word-en {
   min-width: 0;
   font-weight: 450;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   color: var(--muted, #5c6570);
   text-align: left;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-/* Target language — right column, same start edge every row */
+/* Target language — slightly stronger; wraps instead of cutting off */
 .library-theme-word-l2 {
   min-width: 0;
   font-weight: 600;
+  font-size: 0.78rem;
   letter-spacing: -0.01em;
   color: var(--ink, #1a1f26);
   text-align: left;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .library-theme-btn {
@@ -5183,8 +5191,8 @@ html.needs-welcome body {
   }
 
   .library-theme-word {
-    grid-template-columns: minmax(5rem, 7rem) minmax(4rem, max-content);
-    column-gap: 0.55rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    column-gap: 0.4rem;
   }
 }
 

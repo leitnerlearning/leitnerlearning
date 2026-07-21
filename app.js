@@ -2653,6 +2653,7 @@ function renderThematicPacks() {
 /**
  * Pack word previews: exclusive open. Keeps the Packs grid calm when
  * scanning — one expanded list, not a page of open columns.
+ * Always start the open list at the top (not mid-scroll from a prior peek).
  */
 function bindLibraryThemePreviewAccordion(scope) {
   if (!scope) return;
@@ -2662,6 +2663,8 @@ function bindLibraryThemePreviewAccordion(scope) {
       scope.querySelectorAll(".library-theme-preview[open]").forEach((other) => {
         if (other !== details) other.open = false;
       });
+      const list = details.querySelector(".library-theme-word-list");
+      if (list) list.scrollTop = 0;
     });
   });
 }
