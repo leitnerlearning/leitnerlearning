@@ -10425,8 +10425,11 @@ function closeReadGloss() {
   const glossEl = document.getElementById("read-gloss");
   if (glossEl) {
     glossEl.classList.add("is-collapsed");
+    glossEl.classList.remove("is-deck", "is-extra");
     glossEl.hidden = true;
   }
+  const meaningEl = document.getElementById("read-gloss-meaning");
+  if (meaningEl) meaningEl.textContent = "";
   document.querySelectorAll(".read-word--active").forEach((el) => el.classList.remove("read-word--active"));
 }
 

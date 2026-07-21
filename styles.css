@@ -7704,12 +7704,12 @@ html.needs-welcome body {
   text-underline-offset: 0.18em;
 }
 
-/* Deck words: solid brand underline + light wash (ties Read to Review) */
+/* Deck words: light wash + soft underline (ties Read to Review without shouting) */
 .read-word--deck {
   text-decoration: underline;
-  text-decoration-thickness: 1.5px;
-  text-decoration-color: rgba(54, 95, 207, 0.48);
-  background: color-mix(in srgb, var(--brand) 9%, transparent);
+  text-decoration-thickness: 1.25px;
+  text-decoration-color: rgba(54, 95, 207, 0.38);
+  background: color-mix(in srgb, var(--brand) 7%, transparent);
   border-radius: 0.28rem;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
@@ -7717,7 +7717,7 @@ html.needs-welcome body {
 
 .read-word--deck:hover,
 .read-word--deck:focus-visible {
-  background: color-mix(in srgb, var(--brand) 16%, transparent);
+  background: color-mix(in srgb, var(--brand) 13%, transparent);
   text-decoration-color: var(--brand);
   outline: none;
 }
@@ -7725,13 +7725,13 @@ html.needs-welcome body {
 /* Story-only words: dotted underline, no wash */
 .read-word--extra {
   text-decoration: underline dotted;
-  text-decoration-thickness: 1.25px;
-  text-decoration-color: color-mix(in srgb, var(--text-secondary) 55%, transparent);
+  text-decoration-thickness: 1.15px;
+  text-decoration-color: color-mix(in srgb, var(--text-secondary) 48%, transparent);
 }
 
 .read-word--extra:hover,
 .read-word--extra:focus-visible {
-  background: color-mix(in srgb, var(--text-secondary) 8%, transparent);
+  background: color-mix(in srgb, var(--text-secondary) 7%, transparent);
   text-decoration-color: var(--text-secondary);
   outline: none;
 }
@@ -7739,6 +7739,7 @@ html.needs-welcome body {
 .read-word--active {
   text-decoration-thickness: 2px;
   text-decoration-color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
 }
 
 .read-word--deck.read-word--active {
