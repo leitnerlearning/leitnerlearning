@@ -179,6 +179,15 @@ function hasLanguageBasics(categoryId = activeCategoryId) {
   return Boolean(data?.sections?.length);
 }
 
+/** Map Basics item size from glyphSize or pack glyphClass. */
+function basicsGlyphSizeClass(item) {
+  const size = String(item?.glyphSize || "");
+  const cls = String(item?.glyphClass || "");
+  if (size === "sm" || /--sm\b/.test(cls)) return " basics-glyph--sm";
+  if (size === "pair" || /--pair\b/.test(cls)) return " basics-glyph--pair";
+  return "";
+}
+
 /**
  * Signature letters for the Progress Basics chip (max 3).
  * Prefer data from LANGUAGE_BASICS; fall back per language when digraphs dominate.
@@ -1355,6 +1364,156 @@ function englishDialectSpellingMatches(a, b) {
   if (!x || !y) return false;
   if (x === y) return true;
   return foldEnglishDialectSpelling(x) === foldEnglishDialectSpelling(y);
+}
+
+/**
+ * Major regional / orthographic variants of the *same* word.
+ * School standard stays on the card; Check may soft-accept the other form
+ * (like BE/AE for English). Never maps true false friends or different lemmas.
+ */
+const PT_BR_EP_WORD_MAP = {
+  // European Portuguese → Brazilian teaching standard (lemma pairs)
+  facto: "fato",
+  factos: "fatos",
+  acção: "ação",
+  acções: "ações",
+  óptimo: "ótimo",
+  óptima: "ótima",
+  óptimos: "ótimos",
+  óptimas: "ótimas",
+  actual: "atual",
+  actuals: "atuais",
+  actuais: "atuais",
+  actualidade: "atualidade",
+  actualização: "atualização",
+  actualizar: "atualizar",
+  actualizado: "atualizado",
+  actualizada: "atualizada",
+  eléctrico: "elétrico",
+  eléctrica: "elétrica",
+  eléctricos: "elétricos",
+  eléctricas: "elétricas",
+  eléctricidade: "eletricidade",
+  eletricidade: "eletricidade",
+  contracção: "contração",
+  direcção: "direção",
+  direcções: "direções",
+  objecto: "objeto",
+  objectos: "objetos",
+  projecto: "projeto",
+  projectos: "projetos",
+  secção: "seção",
+  secções: "seções",
+  selecção: "seleção",
+  selecções: "seleções",
+  colecção: "coleção",
+  colecções: "coleções",
+  protecção: "proteção",
+  protecções: "proteções",
+  óptico: "ótico",
+  óptica: "ótica",
+};
+
+/** Fold one token for orthography-equivalence (lowercase, already normalized). */
+function foldForeignOrthographyToken(word, langCode) {
+  if (!word) return word;
+  const code = String(langCode || "")
+    .toLowerCase()
+    .split(/[-_]/)[0];
+
+  if (code === "en") return foldEnglishDialectWord(word);
+
+  let w = word;
+
+  // German: ß↔ss, and common umlaut digraphs (ae/oe/ue) when comparing
+  if (code === "de") {
+    w = w.replace(/ß/g, "ss");
+    // Only expand digraphs that typically stand for umlauts (not every "ae")
+    // Compare both sides after normalizing ß; also map äöü ↔ ae/oe/ue
+    w = w
+      .replace(/ä/g, "ae")
+      .replace(/ö/g, "oe")
+      .replace(/ü/g, "ue")
+      .replace(/Ä/g, "ae")
+      .replace(/Ö/g, "oe")
+      .replace(/Ü/g, "ue");
+    return w;
+  }
+
+  // Dutch: ĳ / ij
+  if (code === "nl") {
+    return w.replace(/ĳ/g, "ij").replace(/Ĳ/g, "ij");
+  }
+
+  // French: œ/æ ligatures
+  if (code === "fr") {
+    return w.replace(/œ/g, "oe").replace(/æ/g, "ae").replace(/Œ/g, "oe").replace(/Æ/g, "ae");
+  }
+
+  // Portuguese (Brazil teaching standard): EP spellings fold to BR
+  if (code === "pt") {
+    if (PT_BR_EP_WORD_MAP[w]) return PT_BR_EP_WORD_MAP[w];
+    // Safe cluster patterns only (not free-for-all letter deletion)
+    w = w.replace(/cç/g, "ç"); // acção → ação
+    w = w.replace(/ópt/g, "ót").replace(/opt(?=[ií])/g, "ot"); // óptimo / optimismo-ish
+    w = w.replace(/ct(?=[aoãõeéiíuú])/g, "t"); // actual → atual, objecto → objeto
+    w = w.replace(/pç/g, "ç"); // concepções edge cases
+    return w;
+  }
+
+  // Norwegian / Danish / Swedish: common ASCII fallbacks for special letters
+  if (code === "nb" || code === "no" || code === "nn" || code === "da") {
+    return w
+      .replace(/æ/g, "ae")
+      .replace(/ø/g, "oe")
+      .replace(/å/g, "aa");
+  }
+  if (code === "sv") {
+    return w
+      .replace(/ä/g, "ae")
+      .replace(/ö/g, "oe")
+      .replace(/å/g, "aa");
+  }
+
+  // Polish: rarely need soft-accept beyond case; keep exact forms
+  return w;
+}
+
+function foldForeignOrthography(text, langCode) {
+  const normalized = normalizeAnswer(text);
+  if (!normalized) return "";
+  return normalized
+    .split(/\s+/)
+    .map((word) => foldForeignOrthographyToken(word, langCode))
+    .join(" ");
+}
+
+/**
+ * True when a and b are the same word under major orthographic variants
+ * for the given language (or English BE/AE when lang is en).
+ */
+function foreignOrthographyMatches(a, b, langCode) {
+  if (!a || !b) return false;
+  const x = normalizeAnswer(a);
+  const y = normalizeAnswer(b);
+  if (!x || !y) return false;
+  if (x === y) return true;
+
+  const code = String(langCode || "")
+    .toLowerCase()
+    .split(/[-_]/)[0];
+
+  if (code === "en" || !code) {
+    if (englishDialectSpellingMatches(x, y)) return true;
+  }
+
+  const fx = foldForeignOrthography(x, code || langCode);
+  const fy = foldForeignOrthography(y, code || langCode);
+  if (fx && fy && fx === fy) return true;
+
+  // English side of cards often mixed into comparisons
+  if (englishDialectSpellingMatches(x, y)) return true;
+  return false;
 }
 
 /** Spoken forms that should count as the same answer (ASR often picks the wrong spelling). */
@@ -2784,7 +2943,13 @@ function detectVoiceGender(voice) {
     /\b(female|woman|girl|fiona|samantha|karen|moira|tessa|veena|zira|susan|hazel|serena|martha|catherine|victoria)\b/.test(
       hay
     ) ||
-    /\b(nora|hulda|pernille|iselin|kari|liv|astrid|freja|freya|sonia|jenny|sara|emma|ava)\b/.test(hay)
+    /\b(nora|hulda|pernille|iselin|kari|liv|astrid|freja|freya|sonia|jenny|sara|emma|ava)\b/.test(
+      hay
+    ) ||
+    // DE / FR / ES / IT / NL / PT / PL / SV / DA common system-voice names
+    /\b(anna|hedda|katja|vicki|hedda|amelie|julie|paulina|hortense|denise|eloise|brigitte|celine|marie|lucia|elsa|bianca|paola|cosima|elsa|alva|klara|sofie|naja|sara|ellen|fiona|monica|paulina|zira|helena|joana|raquel|maria|ines|inês|fernanda|luciana|vitória|vitoria|zira|maja|zosia|agnieszka|zofia)\b/.test(
+      hay
+    )
   ) {
     return "female";
   }
@@ -2793,7 +2958,10 @@ function detectVoiceGender(voice) {
     /\b(male|man|boy|david|daniel|james|mark|george|fred|ravi|thomas|arthur|aaron|guy|ryan|eric)\b/.test(
       hay
     ) ||
-    /\b(henrik|finn|jon|olav|lars|anders|bjorn|bjørn|magnus|erik|nils)\b/.test(hay)
+    /\b(henrik|finn|jon|olav|lars|anders|bjorn|bjørn|magnus|erik|nils)\b/.test(hay) ||
+    /\b(stefan|hedda|stefan|yannick|claude|jacques|pierre|enrique|pablo|jorge|diego|alvaro|álvaro|luca|diego|cosimo|giorgio|rinaldo|xander|ruben|ruud|lucas|francisco|duarte|antonio|antónio|cristiano|marek|adam|jakub|szymon|mattias|erik|oskar|mikkel|magnus|jeppe)\b/.test(
+      hay
+    )
   ) {
     return "male";
   }
@@ -2802,6 +2970,66 @@ function detectVoiceGender(voice) {
   if (/microsoft\s+(finn|henrik|jon|olav)\b/.test(hay)) return "male";
 
   return "unknown";
+}
+
+/**
+ * Preferred BCP-47 tags for a learning language (first = school standard).
+ * Used so pt-BR wins over pt-PT, de-DE over de-AT, etc.
+ */
+function preferredSpeechLangTags(wantedLang) {
+  const raw = String(wantedLang || "")
+    .toLowerCase()
+    .replace(/_/g, "-");
+  const base = raw.split("-")[0] || "";
+  const map = {
+    nb: ["nb-no", "nb", "no-no", "no"],
+    nn: ["nn-no", "nn", "nb-no", "no"],
+    no: ["nb-no", "nb", "no-no", "no"],
+    sv: ["sv-se", "sv"],
+    da: ["da-dk", "da"],
+    de: ["de-de", "de-at", "de-ch", "de"],
+    fr: ["fr-fr", "fr-ca", "fr-be", "fr-ch", "fr"],
+    es: ["es-es", "es-mx", "es-us", "es-ar", "es"],
+    it: ["it-it", "it"],
+    nl: ["nl-nl", "nl-be", "nl"],
+    pt: ["pt-br", "pt-pt", "pt"],
+    pl: ["pl-pl", "pl"],
+    en: ["en-us", "en-gb", "en-au", "en"],
+  };
+  if (map[raw]) return map[raw];
+  if (map[base]) {
+    // Prefer exact regional tag first when provided (pt-BR, es-ES…)
+    if (raw.includes("-")) return [raw, ...map[base].filter((t) => t !== raw)];
+    return map[base];
+  }
+  return raw ? [raw, base] : [];
+}
+
+/** Named premium / natural voices per language (boost score). */
+function premiumVoiceNameBonus(voice, wantedLang) {
+  const hay = `${voice.name || ""} ${voice.voiceURI || ""}`.toLowerCase();
+  const base = String(wantedLang || "")
+    .toLowerCase()
+    .replace(/_/g, "-")
+    .split("-")[0];
+
+  const names = {
+    nb: /\b(nora|pernille|finn|henrik|hulda|iselin)\b/,
+    no: /\b(nora|pernille|finn|henrik|hulda|iselin)\b/,
+    sv: /\b(alva|klara|oskar|mattias|sofie)\b/,
+    da: /\b(naja|sara|mikkel|magnus)\b/,
+    de: /\b(anna|hedda|katja|stefan|hedda|vicki|google deutsch)\b/,
+    fr: /\b(thomas|aurelie|aurélie|julie|paulina|denise|hortense|google français)\b/,
+    es: /\b(paulina|monica|enrique|jorge|pablo|google español)\b/,
+    it: /\b(elsa|bianca|cosimo|diego|google italiano)\b/,
+    nl: /\b(xander|claire|google nederlands)\b/,
+    pt: /\b(luciana|fernanda|vitória|vitoria|raquel|google português|google portugues)\b/,
+    pl: /\b(maja|zosia|adam|google polski)\b/,
+    en: /\b(samantha|karen|moira|daniel|google us english|google uk english)\b/,
+  };
+  const re = names[base];
+  if (re && re.test(hay)) return 50;
+  return 0;
 }
 
 function voiceQualityBonus(voice) {
@@ -2823,8 +3051,19 @@ function langMatchScore(voiceLang, wantedLang) {
     .replace(/_/g, "-");
   if (!v || !w) return 0;
   if (v === w) return 100;
+
+  // Prefer school-standard region tags (pt-BR over pt-PT when wanted is pt-BR)
+  const preferred = preferredSpeechLangTags(wantedLang);
+  const prefIdx = preferred.indexOf(v);
+  if (prefIdx === 0) return 100;
+  if (prefIdx === 1) return 92;
+  if (prefIdx > 1) return 86;
+
   if (v.split("-")[0] === w.split("-")[0]) return 80;
   if (isNorwegianLangTag(v) && isNorwegianLangTag(w)) return 70;
+  // Same base language as any preferred tag
+  const base = w.split("-")[0];
+  if (base && v.split("-")[0] === base) return 78;
   return 0;
 }
 
@@ -2835,6 +3074,7 @@ function pickBestVoice(lang, gender = preferredVoiceGender) {
   const wantNb = isNorwegianLangTag(lang);
   const wantEn = isEnglishLangTag(lang);
   const preferred = gender === "male" ? "male" : "female";
+  const preferredTags = preferredSpeechLangTags(lang);
 
   let best = null;
   let bestScore = -Infinity;
@@ -2844,10 +3084,34 @@ function pickBestVoice(lang, gender = preferredVoiceGender) {
     if (score <= 0) {
       if (wantNb && isNorwegianLangTag(voice.lang)) score = 60;
       else if (wantEn && isEnglishLangTag(voice.lang)) score = 50;
-      else continue;
+      else {
+        // Accept same base language even if region tag missing from map
+        const vBase = String(voice.lang || "")
+          .toLowerCase()
+          .split(/[-_]/)[0];
+        const wBase = String(lang || "")
+          .toLowerCase()
+          .split(/[-_]/)[0];
+        if (vBase && wBase && vBase === wBase) score = 70;
+        else continue;
+      }
     }
 
     score += voiceQualityBonus(voice);
+    score += premiumVoiceNameBonus(voice, lang);
+
+    // Exact preferred regional tag on the voice
+    const vTag = String(voice.lang || "")
+      .toLowerCase()
+      .replace(/_/g, "-");
+    if (preferredTags[0] && vTag === preferredTags[0]) score += 18;
+    else if (preferredTags.includes(vTag)) score += 8;
+
+    // Portuguese: strongly prefer Brazilian when teaching pt-BR
+    if (String(lang || "").toLowerCase().startsWith("pt-br") || String(lang || "").toLowerCase() === "pt") {
+      if (vTag.startsWith("pt-br")) score += 22;
+      else if (vTag.startsWith("pt-pt")) score -= 12;
+    }
 
     const g = detectVoiceGender(voice);
     if (g === preferred) score += 55;
@@ -2895,7 +3159,39 @@ function splitTtsChunks(text, maxLen = 160) {
 }
 
 function googleTtsUrl(text, langTag) {
-  const tl = isNorwegianLangTag(langTag) ? "nb" : String(langTag || "en").split(/[-_]/)[0] || "en";
+  // Prefer full regional tags Google understands (pt-BR, nb, es-ES…).
+  let tl;
+  if (isNorwegianLangTag(langTag)) {
+    tl = "nb";
+  } else {
+    const raw = String(langTag || "en").replace(/_/g, "-");
+    const preferred = preferredSpeechLangTags(raw);
+    // Google TTS: use regional when we teach a specific standard
+    if (/^(pt-BR|pt-br|es-ES|es-MX|es-es|es-mx|zh-CN|zh-TW|en-US|en-GB)$/i.test(raw)) {
+      tl = raw;
+    } else if (preferred[0] && preferred[0].includes("-")) {
+      // pt-br → pt-BR style
+      const p = preferred[0];
+      const [b, r] = p.split("-");
+      tl = r ? `${b}-${r.toUpperCase()}` : b;
+      // Google expects pt-BR, es-ES, en-US specifically
+      if (p === "pt-br") tl = "pt-BR";
+      else if (p === "es-es") tl = "es";
+      else if (p === "es-mx") tl = "es-MX";
+      else if (p === "en-us") tl = "en";
+      else if (p === "en-gb") tl = "en-GB";
+      else if (p === "nl-nl") tl = "nl";
+      else if (p === "de-de") tl = "de";
+      else if (p === "fr-fr") tl = "fr";
+      else if (p === "it-it") tl = "it";
+      else if (p === "pl-pl") tl = "pl";
+      else if (p === "sv-se") tl = "sv";
+      else if (p === "da-dk") tl = "da";
+      else tl = b || "en";
+    } else {
+      tl = raw.split("-")[0] || "en";
+    }
+  }
   return (
     "https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl=" +
     encodeURIComponent(tl) +
@@ -4393,6 +4689,12 @@ function glossPartsMatch(a, b) {
   if (normalizeAnswer(a) === normalizeAnswer(b)) return true;
   if (norwegianTypingMatches(a, b)) return true;
   if (englishDialectSpellingMatches(a, b)) return true;
+  if (
+    foreignOrthographyMatches(a, b, getActiveCategory()?.foreignLang || "") ||
+    foreignOrthographyMatches(a, b, "en")
+  ) {
+    return true;
+  }
   if (particleAnswerMatches(a, b)) return true;
 
   const partsA = String(a)
@@ -4404,12 +4706,15 @@ function glossPartsMatch(a, b) {
     .map((part) => normalizeAnswer(part))
     .filter(Boolean);
 
+  const foreignCode = getActiveCategory()?.foreignLang || "";
   for (const left of partsA) {
     for (const right of partsB) {
       if (
         left === right ||
         norwegianTypingMatches(left, right) ||
         englishDialectSpellingMatches(left, right) ||
+        foreignOrthographyMatches(left, right, foreignCode) ||
+        foreignOrthographyMatches(left, right, "en") ||
         particleAnswerMatches(left, right)
       ) {
         return true;
@@ -4490,6 +4795,12 @@ function softTokenMatch(a, b, minEditLen = 5) {
   if (x === y) return true;
   if (norwegianTypingMatches(x, y)) return true;
   if (englishDialectSpellingMatches(x, y)) return true;
+  if (
+    foreignOrthographyMatches(x, y, getActiveCategory()?.foreignLang || "") ||
+    foreignOrthographyMatches(x, y, "en")
+  ) {
+    return true;
+  }
   if (englishInflectionMatch(x, y)) return true;
   if (withinOneEdit(x, y, minEditLen)) return true;
   return false;
@@ -4517,6 +4828,18 @@ function reviewGlossCompare(user, suggested) {
 
   // Slash / particle / dialect exact-enough (still may differ in display form)
   if (glossPartsMatch(u, s) || particleAnswerMatches(u, s)) {
+    return { exact: true, soft: true, spellingOnly: false };
+  }
+
+  // BE/AE English + major L2 orthography variants count as exact for Check
+  if (englishDialectSpellingMatches(u, s)) {
+    return { exact: true, soft: true, spellingOnly: false };
+  }
+  const foreignCode = getActiveCategory()?.foreignLang || "";
+  if (
+    foreignOrthographyMatches(u, s, foreignCode) ||
+    foreignOrthographyMatches(u, s, "en")
+  ) {
     return { exact: true, soft: true, spellingOnly: false };
   }
 
@@ -6470,8 +6793,17 @@ function isSafeSoftSpellingFix(userText, suggestedText) {
   const ws = reviewTokens(suggestedText);
   if (!wu.length || wu.length !== ws.length) return false;
   let diffs = 0;
+  const foreignCode = getActiveCategory()?.foreignLang || "";
   for (let i = 0; i < wu.length; i += 1) {
     if (wu[i] === ws[i]) continue;
+    // Major orthography variants (ß/ss, BE/AE, EP/BR) count as the same form
+    if (
+      foreignOrthographyMatches(wu[i], ws[i], foreignCode) ||
+      foreignOrthographyMatches(wu[i], ws[i], "en") ||
+      englishDialectSpellingMatches(wu[i], ws[i])
+    ) {
+      continue;
+    }
     const common = COMMON_ENGLISH_TYPOS[wu[i]] === ws[i];
     const trans = isAdjacentTransposition(wu[i], ws[i]);
     const insert =
@@ -6522,7 +6854,7 @@ function isPlausibleTranslationAlternative(userText, suggestedText) {
  * Exact letters (ignoring case) or casing/apostrophe-only — NOT soft one-edit
  * neighbors (epler ≉ eller, jenter ≉ jente). Those used to false-approve bad cards.
  */
-function isStrongTranslationMatch(userText, suggestedText) {
+function isStrongTranslationMatch(userText, suggestedText, langCode = null) {
   if (!userText || !suggestedText) return false;
   if (!isPlausibleCardText(suggestedText)) return false;
   const u = stripFlashcardPunctuation(userText);
@@ -6531,6 +6863,14 @@ function isStrongTranslationMatch(userText, suggestedText) {
   if (normalizeAnswer(u) === normalizeAnswer(s)) return true;
   if (isCasingOnlyDiff(u, s)) return true;
   if (isApostropheGrammarDiff(u, s)) return true;
+  // Major dialect / orthography variants (BE/AE, ß/ss, EP/BR Portuguese…)
+  const code =
+    langCode ||
+    getActiveCategory()?.foreignLang ||
+    getCategoryLanguageCodes?.()?.foreignCode ||
+    "";
+  if (foreignOrthographyMatches(u, s, code)) return true;
+  if (foreignOrthographyMatches(u, s, "en")) return true;
   return false;
 }
 
@@ -6919,12 +7259,21 @@ function isApostropheGrammarDiff(a, b) {
  * letter typos, casing, OR apostrophe/possessive grammar (banana's → bananas).
  * Not: MT junk, symbols, empty, or aet→AET acronym shouting.
  */
-function orthographyFixIsPlausible(userText, correctedText) {
+function orthographyFixIsPlausible(userText, correctedText, langCode = null) {
   if (!userText || !correctedText) return false;
   if (!isPlausibleCardText(correctedText)) return false;
   const userClean = stripFlashcardPunctuation(userText);
   const fixClean = stripFlashcardPunctuation(correctedText);
   if (!userClean || !fixClean || userClean === fixClean) return false;
+
+  // School-standard vs major regional variant (Straße/Strasse, color/colour…)
+  // is not a "fix" — Check should soft-accept, not nag.
+  const code =
+    langCode ||
+    getActiveCategory()?.foreignLang ||
+    "";
+  if (foreignOrthographyMatches(userClean, fixClean, code)) return false;
+  if (foreignOrthographyMatches(userClean, fixClean, "en")) return false;
 
   // Reject pure acronym shouting of a lowercase typo (aet → AET)
   const uTokens = reviewTokens(userClean);
@@ -7061,9 +7410,14 @@ function getTranslationReviewSummary(
   };
 
   const nativeNeedsOrtho =
-    safeSpellingNative && orthographyFixIsPlausible(native, safeSpellingNative);
+    safeSpellingNative && orthographyFixIsPlausible(native, safeSpellingNative, "en");
   const foreignNeedsOrtho =
-    safeSpellingForeign && orthographyFixIsPlausible(foreign, safeSpellingForeign);
+    safeSpellingForeign &&
+    orthographyFixIsPlausible(
+      foreign,
+      safeSpellingForeign,
+      getActiveCategory()?.foreignLang || ""
+    );
 
   if (nativeNeedsOrtho || foreignNeedsOrtho) {
     const pairNative = nativeNeedsOrtho
@@ -7176,11 +7530,16 @@ function getTranslationReviewSummary(
   // Soft = fuzzy (epler≈eller). Never use soft alone for LOOKS GOOD.
   const foreignSoft = foreignCmp.soft || foreignCmp.exact;
   const nativeSoft = nativeCmp.soft || nativeCmp.exact;
-  // Strong = exact / casing / apostrophe only
+  // Strong = exact / casing / apostrophe / major orthography variants only
   const foreignStrong =
-    usableSuggestedForeign && isStrongTranslationMatch(foreign, usableSuggestedForeign);
+    usableSuggestedForeign &&
+    isStrongTranslationMatch(
+      foreign,
+      usableSuggestedForeign,
+      getActiveCategory()?.foreignLang || ""
+    );
   const nativeStrong =
-    usableSuggestedNative && isStrongTranslationMatch(native, usableSuggestedNative);
+    usableSuggestedNative && isStrongTranslationMatch(native, usableSuggestedNative, "en");
 
   // Safe one-token spelling only (feal→feel). Never multi-word false friends.
   const nativeSafeSpell =
@@ -10616,12 +10975,8 @@ function renderLanguageBasics(category = getActiveCategory()) {
       const items = (section.items || [])
         .map((item) => {
           const speak = item.speak || item.glyph || "";
-          const sizeClass =
-            item.glyphSize === "sm"
-              ? " basics-glyph--sm"
-              : item.glyphSize === "pair"
-                ? " basics-glyph--pair"
-                : "";
+          // Packs may use glyphClass ("basics-glyph--pair"); older data uses glyphSize.
+          const sizeClass = basicsGlyphSizeClass(item);
           const examples = (item.examples || [])
             .map((ex) => {
               const word = ex.text || ex.speak || "";
