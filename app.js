@@ -98,6 +98,8 @@ let speakCardDelayTimer = null;
 let speakAttemptTimer = null;
 let cardAdvanceTimer = null;
 let libraryFilter = "all";
+/** When libraryFilter is "themes", optional single pack id (null = all theme packs). */
+let libraryThemePackFilter = null;
 let librarySearch = "";
 let libraryRenderToken = 0;
 let libraryJumpObserver = null;
@@ -5389,7 +5391,10 @@ function isWordBand(band) {
 function matchesLibraryFilter(card) {
   if (libraryFilter === "phrase" && card.band !== "phrase") return false;
   if (libraryFilter === "yours" && card.band) return false;
-  if (libraryFilter === "themes" && !card.packId) return false;
+  if (libraryFilter === "themes") {
+    if (!card.packId) return false;
+    if (libraryThemePackFilter && card.packId !== libraryThemePackFilter) return false;
+  }
 
   if (!librarySearch.trim()) return true;
 
@@ -9076,9 +9081,71 @@ function setActiveLibraryJump(key) {
 
 function setLibraryFilterChip(filter) {
   libraryFilter = filter;
+  if (filter !== "themes") libraryThemePackFilter = null;
   document.querySelectorAll(".filter-chip").forEach((el) => {
     el.classList.toggle("active", el.dataset.band === filter);
   });
+  renderThemePackFilterChips();
+}
+
+function setLibraryThemePackFilter(packId) {
+  libraryThemePackFilter = packId || null;
+  renderThemePackFilterChips();
+  renderCardList();
+}
+
+/** Sub-chips under Themes: All themes · Airport · Café · … */
+function renderThemePackFilterChips() {
+  const host = document.getElementById("library-theme-pack-filters");
+  if (!host) return;
+
+  if (libraryFilter !== "themes") {
+    host.classList.add("hidden");
+    host.innerHTML = "";
+    return;
+  }
+
+  const packIdsInDeck = [
+    ...new Set(deck.map((card) => card.packId).filter(Boolean)),
+  ];
+  const known = getThematicPackList();
+  const order = known.map((pack) => pack.id);
+  const ordered = [
+    ...order.filter((id) => packIdsInDeck.includes(id)),
+    ...packIdsInDeck.filter((id) => !order.includes(id)),
+  ];
+
+  if (!ordered.length) {
+    host.classList.add("hidden");
+    host.innerHTML = "";
+    return;
+  }
+
+  const chips = [
+    {
+      id: "",
+      label: "All themes",
+      active: !libraryThemePackFilter,
+    },
+    ...ordered.map((id) => ({
+      id,
+      label: getThemeSectionLabel(id),
+      active: libraryThemePackFilter === id,
+    })),
+  ];
+
+  host.classList.remove("hidden");
+  host.innerHTML = chips
+    .map(
+      (chip) => `
+      <button
+        type="button"
+        class="filter-chip library-theme-pack-chip${chip.active ? " active" : ""}"
+        data-theme-pack="${escapeAttr(chip.id)}"
+        aria-pressed="${chip.active ? "true" : "false"}"
+      >${escapeHtml(chip.label)}</button>`
+    )
+    .join("");
 }
 
 /** Deck-band sections for the jump bar (always A–G that have cards). */
@@ -9378,6 +9445,7 @@ function renderCardList() {
   const list = document.getElementById("card-list");
   updateDeckCount();
   renderThematicPacks();
+  renderThemePackFilterChips();
   if (!list || !isCardsPanelActive()) return;
 
   libraryRenderToken += 1;
@@ -9414,7 +9482,7 @@ function renderCardList() {
     return;
   }
 
-  // Themes: group by pack title (Airport, Café, …).
+  // Themes: group by pack title (Airport, Café, …), or one pack when sub-filtered.
   if (libraryFilter === "themes") {
     const packOrder = getThematicPackList().map((pack) => pack.id);
     const byPack = new Map();
@@ -9423,10 +9491,13 @@ function renderCardList() {
       if (!byPack.has(key)) byPack.set(key, []);
       byPack.get(key).push(card);
     });
-    const orderedIds = [
+    let orderedIds = [
       ...packOrder.filter((id) => byPack.has(id)),
       ...[...byPack.keys()].filter((id) => !packOrder.includes(id)),
     ];
+    if (libraryThemePackFilter) {
+      orderedIds = orderedIds.filter((id) => id === libraryThemePackFilter);
+    }
     const sections = orderedIds.map((packId) => ({
       band: packId,
       label: getThemeSectionLabel(packId),
@@ -10627,7 +10698,7 @@ function renderProgressThemes() {
       <div class="progress-themes-head">
         <span class="progress-themes-label">Themes</span>
       </div>
-      <p class="progress-themes-empty">Optional packs live in Library — Airport, Café, Campus, and more.</p>
+      <p class="progress-themes-empty">Optional packs live in Library — travel, food, campus, work, and more.</p>
       <button type="button" class="progress-themes-link" data-tab-jump="cards" aria-label="Open Library themes">
         Browse themes
         <span aria-hidden="true">→</span>
@@ -11199,6 +11270,7 @@ function applyCategorySwitch(nextCategoryId, { announce = true } = {}) {
   sessionJustCompleted = false;
   clearThemePracticeSession();
   libraryFilter = "all";
+  libraryThemePackFilter = null;
   librarySearch = "";
 
   const searchInput = document.getElementById("library-search");
@@ -11207,6 +11279,7 @@ function applyCategorySwitch(nextCategoryId, { announce = true } = {}) {
   document.querySelectorAll(".filter-chip").forEach((chip) => {
     chip.classList.toggle("active", chip.dataset.band === "all");
   });
+  renderThemePackFilterChips();
 
   readStoryId = null;
   readSentenceIndex = 0;
@@ -11634,6 +11707,13 @@ function initEventListeners() {
       setLibraryFilterChip(chip.dataset.band);
       renderCardList();
     });
+  });
+
+  document.getElementById("library-theme-pack-filters")?.addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-theme-pack]");
+    if (!chip) return;
+    const packId = chip.getAttribute("data-theme-pack") || "";
+    setLibraryThemePackFilter(packId);
   });
 
   document.getElementById("library-jump")?.addEventListener("click", (e) => {

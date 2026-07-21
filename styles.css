@@ -4923,6 +4923,24 @@ html.needs-welcome body {
   background: color-mix(in srgb, var(--error, #d70015) 12%, transparent);
 }
 
+.library-theme-pack-filters {
+  width: 100%;
+  margin-top: 0.15rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.library-theme-pack-filters.hidden {
+  display: none;
+}
+
+.library-theme-pack-chip {
+  font-size: 0.82rem;
+  min-height: 2rem;
+  padding-inline: 0.7rem;
+}
+
 .library-controls {
   position: relative;
   z-index: 1;
