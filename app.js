@@ -8271,7 +8271,12 @@ function isCardsPanelActive() {
 
 function updateDeckCount() {
   const deckCount = document.getElementById("deck-count");
-  if (deckCount) deckCount.textContent = deck.length;
+  if (!deckCount) return;
+  const n = Array.isArray(deck) ? deck.length : 0;
+  const formatted = n.toLocaleString("en-US");
+  // Live size of the user's deck (starter + added − deleted), not a fixed pack size.
+  deckCount.textContent = n === 1 ? "1 card" : `${formatted} cards`;
+  deckCount.setAttribute("aria-label", `${formatted} cards in your deck`);
 }
 
 function getLibraryBandGroups() {
