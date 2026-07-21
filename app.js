@@ -8369,11 +8369,88 @@ function bindCategoryPickerMenu(menu, { forWelcome = false } = {}) {
   });
 }
 
+/**
+ * Show when the language list continues past the fold.
+ * Bottom cue + fade so Norwegian (etc.) is discoverable without guessing to scroll.
+ */
+function updateCategoryMenuScrollHints(menu) {
+  if (!menu) return;
+  const scroller =
+    menu.querySelector("[data-category-menu-scroll]") ||
+    menu.querySelector(".category-picker-menu-scroll");
+  if (!scroller) {
+    menu.classList.remove("is-scrollable", "has-more-below", "has-more-above");
+    return;
+  }
+
+  const canScroll = scroller.scrollHeight > scroller.clientHeight + 4;
+  const atTop = scroller.scrollTop <= 3;
+  const atBottom =
+    scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4;
+
+  menu.classList.toggle("is-scrollable", canScroll);
+  menu.classList.toggle("has-more-below", canScroll && !atBottom);
+  menu.classList.toggle("has-more-above", canScroll && !atTop);
+
+  const cue = menu.querySelector("[data-category-scroll-cue]");
+  if (cue) {
+    const show = canScroll && !atBottom;
+    cue.hidden = !show;
+    cue.setAttribute("aria-hidden", show ? "false" : "true");
+  }
+}
+
+function bindCategoryMenuScrollHints(menu) {
+  if (!menu || menu.dataset.scrollHintsBound === "1") return;
+  const scroller =
+    menu.querySelector("[data-category-menu-scroll]") ||
+    menu.querySelector(".category-picker-menu-scroll");
+  if (!scroller) return;
+  menu.dataset.scrollHintsBound = "1";
+  scroller.addEventListener(
+    "scroll",
+    () => {
+      updateCategoryMenuScrollHints(menu);
+    },
+    { passive: true }
+  );
+
+  const cue = menu.querySelector("[data-category-scroll-cue]");
+  if (cue && cue.dataset.cueBound !== "1") {
+    cue.dataset.cueBound = "1";
+    cue.setAttribute("role", "button");
+    cue.setAttribute("tabindex", "0");
+    cue.setAttribute("aria-label", "Scroll to see more languages");
+    const scrollMore = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const step = Math.max(72, Math.floor(scroller.clientHeight * 0.55));
+      scroller.scrollBy({ top: step, behavior: "smooth" });
+    };
+    cue.addEventListener("click", scrollMore);
+    cue.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") scrollMore(event);
+    });
+  }
+}
+
 function renderCategoryPicker() {
   document.querySelectorAll(".category-picker-menu").forEach((menu) => {
     const forWelcome = Boolean(menu.closest(".category-picker--welcome"));
-    menu.innerHTML = buildCategoryPickerMenuMarkup({ forWelcome });
+    const scroller =
+      menu.querySelector("[data-category-menu-scroll]") ||
+      menu.querySelector(".category-picker-menu-scroll");
+    const target = scroller || menu;
+    // Keep the scroll cue sibling outside the scrolling region
+    if (scroller) {
+      scroller.innerHTML = buildCategoryPickerMenuMarkup({ forWelcome });
+    } else {
+      menu.innerHTML = buildCategoryPickerMenuMarkup({ forWelcome });
+    }
     bindCategoryPickerMenu(menu, { forWelcome });
+    bindCategoryMenuScrollHints(menu);
+    // Measure after paint when open; harmless when hidden
+    requestAnimationFrame(() => updateCategoryMenuScrollHints(menu));
   });
 }
 
@@ -8412,6 +8489,16 @@ function openCategoryMenu(btn) {
   categoryMenuOpen = true;
   btn.setAttribute("aria-expanded", "true");
   menu.classList.remove("hidden");
+  // Reset scroll so the cue is honest, then measure overflow
+  const scroller =
+    menu.querySelector("[data-category-menu-scroll]") ||
+    menu.querySelector(".category-picker-menu-scroll");
+  if (scroller) scroller.scrollTop = 0;
+  requestAnimationFrame(() => {
+    updateCategoryMenuScrollHints(menu);
+    // Second frame: fonts/layout settled (esp. welcome on mobile)
+    requestAnimationFrame(() => updateCategoryMenuScrollHints(menu));
+  });
 }
 
 function closeCategoryMenu() {
@@ -8421,6 +8508,7 @@ function closeCategoryMenu() {
   });
   document.querySelectorAll(".category-picker-menu").forEach((menu) => {
     menu.classList.add("hidden");
+    menu.classList.remove("is-scrollable", "has-more-below", "has-more-above");
   });
 }
 

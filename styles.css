@@ -259,9 +259,6 @@ main,
   min-width: 12.5rem;
   max-width: min(18rem, 92vw);
   max-height: min(16.5rem, 52dvh);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
   z-index: 40;
 }
 
@@ -788,13 +785,11 @@ main,
   top: calc(100% + 0.45rem);
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
   min-width: min(18rem, 88vw);
   max-height: min(16.5rem, 52dvh);
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
+  overflow: hidden;
   background: var(--surface-glass-strong);
   backdrop-filter: blur(22px);
   -webkit-backdrop-filter: blur(22px);
@@ -803,6 +798,133 @@ main,
   box-shadow: var(--shadow-lg);
   padding: 0.35rem;
   z-index: 20;
+}
+
+/* Scrollable options only — cue stays pinned under the list */
+.category-picker-menu-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  /* Soft edge fades when more content exists above/below */
+  mask-image: linear-gradient(#000, #000);
+  -webkit-mask-image: linear-gradient(#000, #000);
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--brand) 35%, transparent) transparent;
+}
+
+.category-picker-menu-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.category-picker-menu-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--brand) 32%, transparent);
+  border-radius: 999px;
+}
+
+.category-picker-menu.has-more-below .category-picker-menu-scroll {
+  mask-image: linear-gradient(to bottom, #000 0%, #000 calc(100% - 1.75rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 calc(100% - 1.75rem),
+    transparent 100%
+  );
+}
+
+.category-picker-menu.has-more-above .category-picker-menu-scroll {
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 1.25rem, #000 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 1.25rem, #000 100%);
+}
+
+.category-picker-menu.has-more-above.has-more-below .category-picker-menu-scroll {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 1.1rem,
+    #000 calc(100% - 1.75rem),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 1.1rem,
+    #000 calc(100% - 1.75rem),
+    transparent 100%
+  );
+}
+
+/* Pinned affordance: there are languages below the fold */
+.category-picker-scroll-cue {
+  flex: 0 0 auto;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0.1rem 0 0;
+  padding: 0.28rem 0.4rem 0.12rem;
+  border-top: 1px solid color-mix(in srgb, var(--brand) 12%, var(--border));
+  color: color-mix(in srgb, var(--brand-deep) 72%, var(--muted));
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--surface-glass-strong) 0%, transparent),
+    var(--surface-glass-strong) 35%
+  );
+}
+
+.category-picker-menu.has-more-below .category-picker-scroll-cue {
+  display: flex;
+}
+
+.category-picker-scroll-cue:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 45%, transparent);
+  outline-offset: 1px;
+  border-radius: var(--radius-xs);
+}
+
+.category-picker-scroll-cue-text {
+  opacity: 0.9;
+}
+
+.category-picker-scroll-cue-chevrons {
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  margin-top: -0.12rem;
+  border-right: 1.6px solid currentColor;
+  border-bottom: 1.6px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.75;
+  animation: category-scroll-cue-bounce 1.35s var(--ease, ease) infinite;
+}
+
+@keyframes category-scroll-cue-bounce {
+  0%,
+  100% {
+    transform: rotate(45deg) translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: rotate(45deg) translateY(2px);
+    opacity: 0.95;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .category-picker-scroll-cue-chevrons {
+    animation: none;
+  }
 }
 
 .category-option {
@@ -2717,12 +2839,17 @@ body.welcome-open .app {
   left: 0;
   right: 0;
   transform: none;
-  /* Tall enough for most phones; always scrollable if more options */
+  /* Tall enough for most phones; scroll + cue when more options */
   max-height: min(20rem, 48dvh);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
+}
+
+/* Slightly clip the last row so it’s obvious the list continues */
+.category-picker--welcome .category-picker-menu.is-scrollable {
+  max-height: min(18.75rem, 46dvh);
+}
+
+.category-picker--progress .category-picker-menu.is-scrollable {
+  max-height: min(15.25rem, 50dvh);
 }
 
 /* Primary door: large “Choose a Language” control */
