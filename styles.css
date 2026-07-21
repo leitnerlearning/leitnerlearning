@@ -4941,18 +4941,25 @@ html.needs-welcome body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  align-items: flex-end;
+  align-items: stretch;
   justify-content: space-between;
   align-self: stretch;
-  gap: 0.12rem;
+  gap: 0.1rem;
   min-height: 100%;
+}
+
+/* Enabled: one right column — Study owns the width; Remove is a caption under it */
+.library-theme-card.is-enabled .library-theme-actions {
+  width: 2.85rem;
 }
 
 /* Not enabled: only Add — pin to upper right, don’t stretch */
 .library-theme-card:not(.is-enabled) .library-theme-actions {
   grid-row: 1;
+  width: auto;
   justify-content: flex-start;
   align-self: start;
+  align-items: flex-end;
 }
 
 /* › N tight under name/status; open list spans full tile */
@@ -5145,20 +5152,22 @@ html.needs-welcome body {
 }
 
 /*
- * Study — compact secondary to the category name.
- * Beat .btn.primary padding + brand shadow so the pill doesn’t dominate Dining/Health.
+ * Study — compact primary in the right column (fills the column width).
+ * Beat .btn.primary padding + brand shadow so the pill doesn’t dominate the name.
  */
 .btn.primary.library-theme-btn.library-theme-btn--study,
 .library-theme-btn--study {
-  min-width: 2.55rem;
+  width: 100%;
+  min-width: 0;
   min-height: 1.32rem;
   height: auto;
-  padding: 0.18rem 0.48rem;
+  padding: 0.18rem 0.35rem;
   font-size: 0.64rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.1;
   box-shadow: none;
+  justify-content: center;
 }
 
 .btn.primary.library-theme-btn.library-theme-btn--study:hover,
@@ -5174,25 +5183,28 @@ html.needs-welcome body {
 }
 
 /*
- * Remove — quiet reverse action (Reset Deck family).
- * Lower-right of the tile; Study stays the only attractive control.
+ * Remove — caption under Study, same column width (never wider than the pill).
+ * Smaller type + lighter weight so letter-count doesn’t beat Study.
  */
 .btn.ghost.library-theme-btn.library-theme-btn--remove,
 .library-theme-btn--remove {
-  min-width: auto;
-  min-height: 1.2rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 1.05rem;
   height: auto;
-  padding: 0.1rem 0.2rem;
+  padding: 0.08rem 0;
   margin-top: auto; /* pin to bottom of the actions column */
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   box-shadow: none;
   color: var(--text-tertiary);
-  font-size: 0.64rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  line-height: 1.15;
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-align: center;
+  justify-content: center;
 }
 
 .btn.ghost.library-theme-btn.library-theme-btn--remove:hover,
