@@ -1,25 +1,26 @@
 {
   "src": "assets/welcome-portal.m4a",
-  "duration": 5.1,
-  "switchAt": 2.04,
+  "duration": 5.08,
+  "switchAt": 2.4,
   "phase1Beats": [
-    0.24,
-    0.869,
-    1.454
+    0.36,
+    0.87,
+    1.439,
+    1.949
   ],
   "phase2Beats": [
-    2.04,
-    2.34,
-    2.683,
-    2.94,
-    3.283,
-    3.582,
-    3.897,
-    4.197,
-    4.497,
-    4.74,
-    5.04
+    2.4,
+    2.655,
+    2.91,
+    3.165,
+    3.42,
+    3.675,
+    3.882,
+    4.182,
+    4.482,
+    4.766,
+    4.95
   ],
   "volume": 0.78,
-  "notes": "Music for Leitner .MP4 4.67-9.77s \u2014 between speech parts. Logo phase1, language flag phase2."
+  "notes": "Music for Leitner .MP4 4.68-9.76s \u2014 between speech parts. Logo phase1, language flag phase2."
 }
