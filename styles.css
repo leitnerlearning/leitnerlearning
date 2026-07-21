@@ -858,28 +858,23 @@ main,
   );
 }
 
-/* Pinned affordance: there are languages below the fold */
+/* Pinned affordance: quiet down-arrow when languages continue below */
 .category-picker-scroll-cue {
   flex: 0 0 auto;
   display: none;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
-  margin: 0.1rem 0 0;
-  padding: 0.28rem 0.4rem 0.12rem;
-  border-top: 1px solid color-mix(in srgb, var(--brand) 12%, var(--border));
-  color: color-mix(in srgb, var(--brand-deep) 72%, var(--muted));
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
+  margin: 0.05rem 0 0;
+  padding: 0.22rem 0.4rem 0.18rem;
+  border-top: 1px solid color-mix(in srgb, var(--brand) 10%, var(--border));
+  color: color-mix(in srgb, var(--brand-deep) 68%, var(--muted));
   pointer-events: auto;
   cursor: pointer;
   user-select: none;
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--surface-glass-strong) 0%, transparent),
-    var(--surface-glass-strong) 35%
+    var(--surface-glass-strong) 40%
   );
 }
 
@@ -893,19 +888,15 @@ main,
   border-radius: var(--radius-xs);
 }
 
-.category-picker-scroll-cue-text {
-  opacity: 0.9;
-}
-
 .category-picker-scroll-cue-chevrons {
   display: inline-block;
-  width: 0.42rem;
-  height: 0.42rem;
-  margin-top: -0.12rem;
-  border-right: 1.6px solid currentColor;
-  border-bottom: 1.6px solid currentColor;
+  width: 0.48rem;
+  height: 0.48rem;
+  margin-top: -0.18rem;
+  border-right: 1.7px solid currentColor;
+  border-bottom: 1.7px solid currentColor;
   transform: rotate(45deg);
-  opacity: 0.75;
+  opacity: 0.8;
   animation: category-scroll-cue-bounce 1.35s var(--ease, ease) infinite;
 }
 
