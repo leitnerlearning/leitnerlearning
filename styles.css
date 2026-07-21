@@ -4827,9 +4827,9 @@ html.needs-welcome body {
 
 /* Library → Packs filter only: compact optional grid (not a second product) */
 .library-themes {
-  margin: 0 0 0.55rem;
-  /* Clear the fixed TOP float so Work’s Add stays tappable */
-  padding: 0 0 5.5rem;
+  /* Tight to the card sections below (DINING · 20…) — no dead air */
+  margin: 0 0 0.75rem;
+  padding: 0;
   border: none;
   background: transparent;
 }
@@ -5940,6 +5940,8 @@ html.needs-welcome body {
   display: flex;
   flex-direction: column;
   gap: 1.35rem;
+  /* End-of-page room for fixed TOP — not between packs and the first card group */
+  padding-bottom: 5rem;
 }
 
 .card-group {
