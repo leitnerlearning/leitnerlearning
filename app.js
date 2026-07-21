@@ -5785,6 +5785,43 @@ function findDeckCardByForeign(foreign, excludeId = null) {
   );
 }
 
+/** Pack title for quiet “From Dining” / “Also in Dining” copy. */
+function getPackDisplayTitle(packId) {
+  if (!packId) return "";
+  const pack = getThematicPackById(packId);
+  return String(pack?.title || packId || "").trim();
+}
+
+/**
+ * Match an L2 form to a thematic pack entry (enabled or not).
+ * Used for add-card feedback — not for auto-adding the pack.
+ */
+function findThematicPackMatch(foreign, categoryId = activeCategoryId) {
+  const key = normalizeAnswer(foreign);
+  if (!key) return null;
+  for (const pack of getThematicPackList()) {
+    const entries = getPackEntriesForCategory(pack, categoryId);
+    for (const entry of entries) {
+      if (normalizeAnswer(entry.foreign) !== key) continue;
+      return {
+        packId: pack.id,
+        title: getPackDisplayTitle(pack.id) || pack.id,
+        foreign: entry.foreign,
+        native: entry.native,
+        enabled: isPackEnabled(pack.id, categoryId),
+      };
+    }
+  }
+  return null;
+}
+
+/** Quiet source line when a deck card came from an optional pack. */
+function describeDeckCardPackSource(card) {
+  if (!card?.packId) return "";
+  const title = getPackDisplayTitle(card.packId);
+  return title ? `From ${title}` : "";
+}
+
 /** Slash glosses: "dog / hound" matches "dog". Case-insensitive. */
 function glossPartsMatch(a, b) {
   if (!a || !b) return false;
@@ -8912,10 +8949,16 @@ function renderAddCardReviewContext({
   );
 
   if (duplicate) {
+    const packSource = describeDeckCardPackSource(duplicate);
     blocks.push(`
       <section class="review-context-block is-warning">
-        <h4 class="review-context-title">Already in library</h4>
+        <h4 class="review-context-title">Already in your deck</h4>
         <p class="review-context-copy">“${escapeHtml(stripFlashcardPunctuation(duplicate.native))}” · “${escapeHtml(preferDisplayForm(duplicate.foreign))}”</p>
+        ${
+          packSource
+            ? `<p class="review-context-hint">${escapeHtml(packSource)}</p>`
+            : ""
+        }
       </section>`);
   } else if (translation) {
     const canApplyOne =
@@ -8980,12 +9023,24 @@ function renderAddCardReviewContext({
       </section>`);
   }
 
-  // Quiet success when the pair looks fine and nothing else to show
+  // Quiet success when the pair looks fine and nothing stronger is shown yet
   if (!blocks.length && !duplicate) {
     blocks.push(`
       <section class="review-context-block is-match">
         <h4 class="review-context-title">Looks good</h4>
       </section>`);
+  }
+
+  // Word lives in a pack the user hasn’t Added — allow free Add, quiet tip only.
+  if (!duplicate) {
+    const packMatch = findThematicPackMatch(foreign);
+    if (packMatch && !packMatch.enabled) {
+      blocks.push(`
+      <section class="review-context-block is-info">
+        <h4 class="review-context-title">Also in ${escapeHtml(packMatch.title)}</h4>
+        <p class="review-context-copy">Add this word alone, or Add the pack later.</p>
+      </section>`);
+    }
   }
 
   const confirmBtn = document.getElementById("add-card-confirm");
