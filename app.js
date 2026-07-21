@@ -9149,6 +9149,10 @@ function renderCardListSections(sections, list, token) {
     if (key === "yours" && cards.length > 0) {
       meta = String(cards.length);
     }
+    // Theme pack sections: show card count instead of rank range.
+    if (libraryFilter === "themes" && cards.length > 0) {
+      meta = String(cards.length);
+    }
     const metaHtml = meta
       ? ` <span class="card-group-range">${escapeHtml(meta)}</span>`
       : "";
@@ -9227,7 +9231,6 @@ function renderCardList() {
 
   // Themes: group by pack title (Airport, Café, …).
   if (libraryFilter === "themes") {
-    clearLibraryJumpNav();
     const packOrder = getThematicPackList().map((pack) => pack.id);
     const byPack = new Map();
     filtered.forEach((card) => {
