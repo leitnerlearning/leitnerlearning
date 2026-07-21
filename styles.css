@@ -248,7 +248,8 @@ main {
   --prefs-gap: 0.4rem;
   display: flex;
   flex-direction: row;
-  flex-wrap: nowrap;
+  /* Wrap on tight/uneven windows so controls never squash off-screen */
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--prefs-gap);
   width: 100%;
@@ -483,6 +484,22 @@ main {
   justify-content: flex-end;
   min-width: 0;
   margin-left: auto;
+}
+
+/* When the prefs row wraps, keep Voice + About together on the right */
+.progress-prefs .progress-about-btn {
+  margin-left: 0;
+}
+
+@media (min-width: 721px) and (max-width: 900px) {
+  .progress-prefs {
+    --prefs-gap: 0.35rem;
+    --prefs-font: 0.72rem;
+  }
+
+  .category-picker-btn.category-picker-btn--progress {
+    max-width: min(9.5rem, 36vw);
+  }
 }
 
 .category-picker--welcome {
@@ -1215,20 +1232,19 @@ main {
 }
 
 /*
- * Scroll-only cue: overlay (no layout height), never clickable.
- * Hiding at the bottom is opacity only so the list never jumps.
+ * Scroll-only cues: overlays (no layout height), never clickable.
+ * Opacity only — so the language list never jumps when cues appear.
  */
 .category-picker-scroll-cue {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0.15rem;
   z-index: 2;
   display: none;
   align-items: center;
   justify-content: center;
   margin: 0;
-  padding: 0.35rem 0.35rem 0.25rem;
+  padding: 0.3rem 0.35rem;
   border: none;
   border-radius: 0;
   color: color-mix(in srgb, var(--brand-deep) 78%, var(--muted));
@@ -1240,12 +1256,26 @@ main {
   transition: opacity 0.18s var(--ease, ease);
 }
 
-/* Reserve visibility when the menu can scroll; fade in only when more is below */
+.category-picker-scroll-cue--down {
+  bottom: 0.15rem;
+  padding-bottom: 0.25rem;
+}
+
+.category-picker-scroll-cue--up {
+  top: 0.1rem;
+  padding-top: 0.25rem;
+}
+
+/* Show when the list can scroll; fade in only when more content that way */
 .category-picker-menu.is-scrollable .category-picker-scroll-cue {
   display: flex;
 }
 
-.category-picker-menu.has-more-below .category-picker-scroll-cue {
+.category-picker-menu.has-more-below .category-picker-scroll-cue--down {
+  opacity: 1;
+}
+
+.category-picker-menu.has-more-above .category-picker-scroll-cue--up {
   opacity: 1;
 }
 
@@ -1256,7 +1286,13 @@ main {
   justify-content: center;
   gap: 0.08rem;
   line-height: 0;
-  animation: category-scroll-cue-bounce 1.3s var(--ease, ease) infinite;
+  animation: category-scroll-cue-bounce-down 1.3s var(--ease, ease) infinite;
+}
+
+.category-picker-scroll-cue--up .category-picker-scroll-cue-icon {
+  animation-name: category-scroll-cue-bounce-up;
+  /* Stack chevrons so they point up: rotate whole stack */
+  transform: rotate(180deg);
 }
 
 .category-picker-scroll-cue-chevron {
@@ -1275,7 +1311,7 @@ main {
   opacity: 0.45;
 }
 
-@keyframes category-scroll-cue-bounce {
+@keyframes category-scroll-cue-bounce-down {
   0%,
   100% {
     transform: translateY(0);
@@ -1287,6 +1323,18 @@ main {
   }
 }
 
+@keyframes category-scroll-cue-bounce-up {
+  0%,
+  100% {
+    transform: rotate(180deg) translateY(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: rotate(180deg) translateY(2px);
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .category-picker-scroll-cue {
     transition: none;
@@ -1294,6 +1342,10 @@ main {
 
   .category-picker-scroll-cue-icon {
     animation: none;
+  }
+
+  .category-picker-scroll-cue--up .category-picker-scroll-cue-icon {
+    transform: rotate(180deg);
   }
 }
 

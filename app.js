@@ -9627,8 +9627,9 @@ function bindCategoryPickerMenu(menu, { forWelcome = false } = {}) {
 }
 
 /**
- * Fade + overlay arrow when the language list continues past the fold.
- * Arrow is scroll-only (not clickable) and never changes list layout.
+ * Fade + overlay arrows when the language list continues past the fold.
+ * Down cue: more languages below. Up cue: more languages above (after scrolling).
+ * Cues are scroll-only (not clickable) and never change list layout.
  */
 function updateCategoryMenuScrollHints(menu) {
   if (!menu) return;
@@ -9649,12 +9650,13 @@ function updateCategoryMenuScrollHints(menu) {
   menu.classList.toggle("has-more-below", canScroll && !atBottom);
   menu.classList.toggle("has-more-above", canScroll && !atTop);
 
-  const cue = menu.querySelector("[data-category-scroll-cue]");
-  if (cue) {
-    // Keep in DOM always; CSS fades opacity. Never hidden=true (that caused jumps).
-    cue.hidden = false;
-    cue.setAttribute("aria-hidden", "true");
-  }
+  // Keep cues in the DOM; CSS fades opacity. Never hidden=true (that caused jumps).
+  menu
+    .querySelectorAll("[data-category-scroll-cue], [data-category-scroll-cue-up]")
+    .forEach((cue) => {
+      cue.hidden = false;
+      cue.setAttribute("aria-hidden", "true");
+    });
 }
 
 function bindCategoryMenuScrollHints(menu) {
@@ -9673,13 +9675,14 @@ function bindCategoryMenuScrollHints(menu) {
   );
 
   // Decorative only — no click/keyboard activation (avoids mis-taps on last language)
-  const cue = menu.querySelector("[data-category-scroll-cue]");
-  if (cue) {
-    cue.removeAttribute("role");
-    cue.removeAttribute("tabindex");
-    cue.removeAttribute("aria-label");
-    cue.setAttribute("aria-hidden", "true");
-  }
+  menu
+    .querySelectorAll("[data-category-scroll-cue], [data-category-scroll-cue-up]")
+    .forEach((cue) => {
+      cue.removeAttribute("role");
+      cue.removeAttribute("tabindex");
+      cue.removeAttribute("aria-label");
+      cue.setAttribute("aria-hidden", "true");
+    });
 }
 
 function renderCategoryPicker() {
