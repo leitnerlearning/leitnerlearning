@@ -101,8 +101,6 @@ let speakCardDelayTimer = null;
 let speakAttemptTimer = null;
 let cardAdvanceTimer = null;
 let libraryFilter = "all";
-/** When libraryFilter is "themes", optional single pack id (null = all theme packs). */
-let libraryThemePackFilter = null;
 let librarySearch = "";
 let libraryRenderToken = 0;
 let libraryJumpObserver = null;
@@ -9442,24 +9440,9 @@ function setActiveLibraryJump(key) {
 
 function setLibraryFilterChip(filter) {
   libraryFilter = filter;
-  libraryThemePackFilter = null;
   document.querySelectorAll(".filter-chip").forEach((el) => {
     el.classList.toggle("active", el.dataset.band === filter);
   });
-  hideThemePackFilterChips();
-}
-
-/** Pack sub-chips removed — Themes list groups by pack; one filter is enough. */
-function hideThemePackFilterChips() {
-  const host = document.getElementById("library-theme-pack-filters");
-  if (!host) return;
-  host.classList.add("hidden");
-  host.innerHTML = "";
-}
-
-/** @deprecated alias — sub-chip row retired */
-function renderThemePackFilterChips() {
-  hideThemePackFilterChips();
 }
 
 /** Deck-band sections for the jump bar (always A–G that have cards). */
@@ -9759,7 +9742,6 @@ function renderCardList() {
   const list = document.getElementById("card-list");
   updateDeckCount();
   renderThematicPacks();
-  renderThemePackFilterChips();
   if (!list || !isCardsPanelActive()) return;
 
   libraryRenderToken += 1;
@@ -11554,7 +11536,6 @@ function applyCategorySwitch(nextCategoryId, { announce = true } = {}) {
   sessionJustCompleted = false;
   clearThemePracticeSession();
   libraryFilter = "all";
-  libraryThemePackFilter = null;
   librarySearch = "";
 
   const searchInput = document.getElementById("library-search");
@@ -11563,7 +11544,6 @@ function applyCategorySwitch(nextCategoryId, { announce = true } = {}) {
   document.querySelectorAll(".filter-chip").forEach((chip) => {
     chip.classList.toggle("active", chip.dataset.band === "all");
   });
-  renderThemePackFilterChips();
 
   readStoryId = null;
   readSentenceIndex = 0;

@@ -4990,11 +4990,6 @@ html.needs-welcome body {
   background: color-mix(in srgb, var(--error, #d70015) 12%, transparent);
 }
 
-.library-theme-pack-filters,
-.library-theme-pack-filters.hidden {
-  display: none !important;
-}
-
 .library-controls {
   position: relative;
   z-index: 1;
