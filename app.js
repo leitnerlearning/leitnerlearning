@@ -334,7 +334,7 @@ function focusAnswerInput() {
 
 function createCard(foreign, native, meta = {}) {
   const now = Date.now();
-  return {
+  const card = {
     id: createId(),
     foreign: stripFlashcardPunctuation(foreign),
     native: stripFlashcardPunctuation(native),
@@ -349,6 +349,13 @@ function createCard(foreign, native, meta = {}) {
     band: meta.band ?? null,
     packId: meta.packId ?? null,
   };
+  if (meta.exampleForeign) {
+    card.exampleForeign = stripFlashcardPunctuation(meta.exampleForeign);
+  }
+  if (meta.exampleNative) {
+    card.exampleNative = stripFlashcardPunctuation(meta.exampleNative);
+  }
+  return card;
 }
 
 function daysToMs(days) {
@@ -2179,6 +2186,12 @@ function sanitizeDeck(cards) {
         category: card.category ?? null,
         band: card.band ?? null,
         packId: card.packId ?? null,
+        exampleForeign: card.exampleForeign
+          ? stripFlashcardPunctuation(card.exampleForeign)
+          : null,
+        exampleNative: card.exampleNative
+          ? stripFlashcardPunctuation(card.exampleNative)
+          : null,
       };
     });
 }
@@ -2381,6 +2394,8 @@ function buildPackCards(pack, categoryId = activeCategoryId) {
       category: entry.category || "noun",
       band: entry.band || "C",
       packId: pack.id,
+      exampleForeign: entry.exampleForeign || entry.example || null,
+      exampleNative: entry.exampleNative || entry.exampleEn || null,
     })
   );
 }
@@ -2416,6 +2431,18 @@ function mergeEnabledThematicPacks(cards, category = getActiveCategory()) {
       if (existing) {
         // Leave core/user cards alone — only brand-new rows get packId,
         // so frequency intro order is never hijacked by theme tagging.
+        // Pack-owned cards may pick up example lines when we add them.
+        if (
+          existing.packId === packId &&
+          entry.exampleForeign &&
+          entry.exampleNative &&
+          (existing.exampleForeign !== entry.exampleForeign ||
+            existing.exampleNative !== entry.exampleNative)
+        ) {
+          existing.exampleForeign = entry.exampleForeign;
+          existing.exampleNative = entry.exampleNative;
+          changed = true;
+        }
         continue;
       }
       byKey.set(key, entry);
@@ -4857,29 +4884,138 @@ function showFeedbackExample(example, card = currentCard) {
 }
 
 /**
+ * Prefer: Read story line → stored pack example → phrase-as-example → simple
+ * theme template → quiet pack label.
+ */
+function getCardContextExample(card) {
+  if (!card) return null;
+
+  const fromStory = findExampleSentenceForCard(card);
+  if (fromStory) return fromStory;
+
+  const storedL2 = String(card.exampleForeign || "").trim();
+  const storedEn = String(card.exampleNative || "").trim();
+  if (storedL2 && storedEn) {
+    return { foreign: storedL2, en: storedEn };
+  }
+
+  const foreign = String(card.foreign || "").trim();
+  const native = String(card.native || "")
+    .split("/")[0]
+    .trim();
+  if (!foreign || !native) return null;
+
+  // Multi-word / sentence cards already are usable context.
+  if (card.band === "phrase" || /\s|[?!…]/.test(foreign)) {
+    return { foreign, en: native };
+  }
+
+  if (card.packId) {
+    const built = buildSimpleThemeExample(
+      foreign,
+      native,
+      getActiveCategory().foreignLang || "nb"
+    );
+    if (built) return built;
+
+    const pack = getThematicPackById(card.packId);
+    return {
+      foreign: `${foreign} · ${native}`,
+      en: pack?.title || "Theme",
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Tiny in-context lines for single theme lemmas when Read has no match.
+ * Patterns stay honest and short — not full generative sentences.
+ */
+function buildSimpleThemeExample(foreign, native, langCode) {
+  const lang = String(langCode || "nb").split("-")[0].toLowerCase();
+  const f = foreign;
+  const n = native.replace(/^to\s+/i, "").trim();
+  const isVerb =
+    /^to\s+/i.test(native) ||
+    /^(å|att|at)\s+/i.test(foreign) ||
+    cardLooksLikeInfinitive(foreign, lang);
+  const isQuality =
+    /^(delayed|cancelled|canceled|expensive|cheap|open|closed|full|quiet|noisy|delicious|furnished|available)/i.test(
+      native
+    ) ||
+    /^(forsinket|kansellert|dyr|billig|åpen|stengt|mett|stille|støyende)/i.test(foreign);
+
+  const need = {
+    nb: [`Jeg trenger ${f}.`, `I need ${n}.`],
+    no: [`Jeg trenger ${f}.`, `I need ${n}.`],
+    sv: [`Jag behöver ${f}.`, `I need ${n}.`],
+    da: [`Jeg har brug for ${f}.`, `I need ${n}.`],
+    de: [`Ich brauche ${f}.`, `I need ${n}.`],
+    fr: [`J'ai besoin de ${f}.`, `I need ${n}.`],
+    es: [`Necesito ${f}.`, `I need ${n}.`],
+    it: [`Mi serve ${f}.`, `I need ${n}.`],
+    nl: [`Ik heb ${f} nodig.`, `I need ${n}.`],
+    pt: [`Preciso de ${f}.`, `I need ${n}.`],
+    pl: [`Potrzebuję: ${f}.`, `I need ${n}.`],
+  };
+  const quality = {
+    nb: [`Det er ${f}.`, `It is ${n}.`],
+    no: [`Det er ${f}.`, `It is ${n}.`],
+    sv: [`Det är ${f}.`, `It is ${n}.`],
+    da: [`Det er ${f}.`, `It is ${n}.`],
+    de: [`Es ist ${f}.`, `It is ${n}.`],
+    fr: [`C'est ${f}.`, `It is ${n}.`],
+    es: [`Está ${f}.`, `It is ${n}.`],
+    it: [`È ${f}.`, `It is ${n}.`],
+    nl: [`Het is ${f}.`, `It is ${n}.`],
+    pt: [`Está ${f}.`, `It is ${n}.`],
+    pl: [`To jest ${f}.`, `It is ${n}.`],
+  };
+  const verb = {
+    nb: [`Kan du ${f.replace(/^å\s+/i, "")}?`, `Can you ${n}?`],
+    no: [`Kan du ${f.replace(/^å\s+/i, "")}?`, `Can you ${n}?`],
+    sv: [`Kan du ${f.replace(/^att\s+/i, "")}?`, `Can you ${n}?`],
+    da: [`Kan du ${f.replace(/^at\s+/i, "")}?`, `Can you ${n}?`],
+    de: [`Kannst du ${f}?`, `Can you ${n}?`],
+    fr: [`Tu peux ${f}?`, `Can you ${n}?`],
+    es: [`¿Puedes ${f}?`, `Can you ${n}?`],
+    it: [`Puoi ${f}?`, `Can you ${n}?`],
+    nl: [`Kun je ${f}?`, `Can you ${n}?`],
+    pt: [`Você pode ${f}?`, `Can you ${n}?`],
+    pl: [`Czy możesz ${f}?`, `Can you ${n}?`],
+  };
+
+  let pair;
+  if (isVerb) pair = verb[lang] || verb.nb;
+  else if (isQuality) pair = quality[lang] || quality.nb;
+  else pair = need[lang] || need.nb;
+
+  if (!pair) return null;
+  return { foreign: pair[0], en: pair[1] };
+}
+
+function cardLooksLikeInfinitive(foreign, lang) {
+  const f = String(foreign || "").toLowerCase();
+  if (lang === "de") return /en$/.test(f) && f.length > 4;
+  if (lang === "fr") return /er$|ir$|re$/.test(f);
+  if (lang === "es" || lang === "pt") return /ar$|er$|ir$/.test(f);
+  if (lang === "it") return /are$|ere$|ire$/.test(f);
+  if (lang === "nl") return /en$/.test(f) && f.length > 3;
+  if (lang === "pl") return /ć$/.test(f);
+  return false;
+}
+
+/**
  * After a miss/reveal: show the answer pill, plus a real-sentence beat when we have one.
  * Especially valuable for glue words that only make sense in use.
- * Theme cards without a story line get a quiet pack label so the miss still has context.
  */
 function showIncorrectWithExample(card, answerText) {
   showFeedback(answerText, "incorrect");
-  const example = findExampleSentenceForCard(card);
+  const example = getCardContextExample(card);
   if (example) {
     showFeedbackExample(example, card);
     return true;
-  }
-  if (card?.packId) {
-    const pack = getThematicPackById(card.packId);
-    const title = pack?.title || "Theme";
-    const foreign = String(card.foreign || "").trim();
-    const native = String(card.native || "").split("/")[0].trim();
-    if (foreign && native) {
-      showFeedbackExample(
-        { foreign: `${foreign} · ${native}`, en: title },
-        card
-      );
-      return true;
-    }
   }
   hideFeedbackExample();
   return false;

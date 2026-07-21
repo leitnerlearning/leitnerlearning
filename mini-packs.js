@@ -56,16 +56,31 @@
     },
   };
 
+  /**
+   * forms: [foreign, native] or [foreign, native, exampleL2, exampleEn]
+   * Phrases without explicit examples use themselves as context on a miss.
+   */
   function buildEntries(forms) {
-    return forms.map(([foreign, native]) => {
-      const f = String(foreign || "").trim();
-      const isPhrase = /\s|[?!…]/.test(f);
-      return {
-        foreign: f,
-        native: String(native || "").trim(),
-        category: isPhrase ? "phrase" : (String(native).startsWith("to ") ? "verb" : "noun"),
+    return forms.map((row) => {
+      const foreign = String(row[0] || "").trim();
+      const native = String(row[1] || "").trim();
+      const exampleForeign = row[2] != null ? String(row[2]).trim() : "";
+      const exampleNative = row[3] != null ? String(row[3]).trim() : "";
+      const isPhrase = /\s|[?!…]/.test(foreign);
+      const entry = {
+        foreign,
+        native,
+        category: isPhrase ? "phrase" : native.startsWith("to ") ? "verb" : "noun",
         band: isPhrase ? "phrase" : "C",
       };
+      if (exampleForeign && exampleNative) {
+        entry.exampleForeign = exampleForeign;
+        entry.exampleNative = exampleNative;
+      } else if (isPhrase) {
+        entry.exampleForeign = foreign;
+        entry.exampleNative = native;
+      }
+      return entry;
     });
   }
 
