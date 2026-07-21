@@ -149,7 +149,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 
 1. Quality of existing 10 languages (lemmas vs noise, story naturalness).  
 2. More **phrases** and concrete hooks in ranks ~36–260 (feeds early mix).  
-3. Thematic mini-packs (Airport & travel first) — **opt-in** from Library → Themes; never auto-dump into day one. Enabled packs merge unique cards (ranks 1001+) and get a small daily intro bias after the hook phase.  
+3. Thematic mini-packs (Airport, Café, Campus) — **opt-in** from Library → Themes; never auto-dump into day one. Enabled packs merge unique cards (ranks 1001+) and get a small daily intro bias after the hook phase.  
 4. New full language only after LT/TTS/content research + founder OK.
 
 ---
