@@ -3280,9 +3280,8 @@ main {
 /* After Review - quiet door into Read (not a second hero CTA) */
 .read-bridge-btn {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
+  justify-content: center;
   width: 100%;
   max-width: 18rem;
   margin-inline: auto;
@@ -3315,12 +3314,6 @@ main {
   font-weight: 650;
   letter-spacing: -0.02em;
   color: var(--brand-deep);
-}
-
-.read-bridge-btn__meta {
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: var(--text-secondary);
 }
 
 .empty-state .btn + .btn {
