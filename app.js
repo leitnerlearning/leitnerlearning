@@ -4742,19 +4742,126 @@ function getKnownForeignForms() {
 }
 
 /**
+ * High-frequency English typos LanguageTool ranks poorly
+ * (e.g. aet → AET acronym instead of eat).
+ */
+const COMMON_ENGLISH_TYPOS = {
+  aet: "eat",
+  teh: "the",
+  adn: "and",
+  taht: "that",
+  waht: "what",
+  whta: "what",
+  wiht: "with",
+  whith: "with",
+  fro: "for",
+  formr: "from",
+  fomr: "form",
+  recieve: "receive",
+  beleive: "believe",
+  seperate: "separate",
+  definately: "definitely",
+  occured: "occurred",
+  untill: "until",
+  tommorrow: "tomorrow",
+  begining: "beginning",
+  enviroment: "environment",
+  goverment: "government",
+  langauge: "language",
+  lanugage: "language",
+  becuase: "because",
+  beacuse: "because",
+  freind: "friend",
+  peice: "piece",
+  thier: "their",
+  wierd: "weird",
+  acheive: "achieve",
+  truely: "truly",
+  realy: "really",
+  realyl: "really",
+  botom: "bottom",
+  resturant: "restaurant",
+  tommorow: "tomorrow",
+  hte: "the",
+  fo: "of",
+  ot: "to",
+  nad: "and",
+  yuo: "you",
+  yuor: "your",
+  jsut: "just",
+  dont: "don't",
+  wont: "won't",
+  cant: "can't",
+  didnt: "didn't",
+  isnt: "isn't",
+  wasnt: "wasn't",
+  hasnt: "hasn't",
+  havent: "haven't",
+  wouldnt: "wouldn't",
+  shouldnt: "shouldn't",
+  couldnt: "couldn't",
+};
+
+function commonEnglishTypoFix(word) {
+  const raw = String(word || "");
+  const key = normalizeAnswer(raw).replace(/'/g, "");
+  const fix = COMMON_ENGLISH_TYPOS[key];
+  if (!fix) return null;
+  // Keep natural casing: mid-sentence typos stay lowercase
+  if (raw === raw.toUpperCase() && raw.length <= 3 && FLASHCARD_ACRONYMS.has(key)) {
+    return fix.toUpperCase();
+  }
+  if (/^[A-Z][a-z]+$/.test(raw)) return titleCaseWord(fix);
+  return fix;
+}
+
+/** Adjacent letter swap (aet ↔ eat). */
+function isAdjacentTransposition(a, b) {
+  const s = normalizeAnswer(a);
+  const t = normalizeAnswer(b);
+  if (!s || !t || s.length !== t.length || s.length < 2) return false;
+  let i = -1;
+  for (let k = 0; k < s.length; k += 1) {
+    if (s[k] !== t[k]) {
+      if (i >= 0) return false;
+      i = k;
+    }
+  }
+  if (i < 0 || i >= s.length - 1) return false;
+  return s[i] === t[i + 1] && s[i + 1] === t[i] && s.slice(i + 2) === t.slice(i + 2);
+}
+
+/**
  * Pick the best spelling replacement from LanguageTool candidates.
- * Prefers: phrase context, learner deck, LanguageTool rank, near edits.
- * First-letter match is only a weak signal (Spanish yamo→llamo breaks it).
+ * Prefers: common typos, phrase context, real words over ALLCAPS acronym noise.
  */
 function pickSpellingReplacement(original, replacements, fullText, knownForms = null) {
-  if (!replacements?.length) return null;
   const o = normalizeAnswer(original);
   if (!o) return null;
+
+  const injected = [];
+  const common = commonEnglishTypoFix(original);
+  if (common) injected.push(common);
+  // Adjacent swaps as soft candidates (aet → eat)
+  const rawO = String(original || "");
+  for (let i = 0; i < rawO.length - 1; i += 1) {
+    const chars = rawO.split("");
+    const tmp = chars[i];
+    chars[i] = chars[i + 1];
+    chars[i + 1] = tmp;
+    injected.push(chars.join(""));
+  }
+
+  const pool = [...injected, ...(replacements || [])];
+  if (!pool.length) return null;
+
   const contextTokens = new Set(reviewTokens(fullText));
+  const inPhrase = reviewTokens(fullText).length >= 2;
+  const userLower = String(original || "") === String(original || "").toLowerCase();
   let best = null;
   let bestScore = -Infinity;
 
-  replacements.forEach((raw, index) => {
+  pool.forEach((raw, index) => {
     const candidate = String(raw || "").trim();
     // Allow accented single tokens; reject multi-word rewrites
     if (!candidate || /\s/.test(candidate)) return;
@@ -4763,32 +4870,57 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
     // Never accept symbol junk as a "spelling" fix
     if (!/[a-zæøåäöü]/i.test(candidate)) return;
     if (/[#@$%{}[\]\\|<>]/.test(candidate)) return;
-    // Same letters, different casing (norway→Norway) is a valid orthography pick
+
     const caseOnly = n === o && candidate !== original;
     if (n === o && !caseOnly) return;
-    const dist = caseOnly ? 0 : editDistance(o, n);
-    // Digraph fixes (yamo→llamo) need dist 2; allow up to 3 for accented forms
+
+    // aet → AET is almost never right mid-phrase (LT ranks org acronyms first)
+    const acronymCaseOnly =
+      caseOnly &&
+      userLower &&
+      /^[A-Z]{2,6}$/.test(candidate) &&
+      !FLASHCARD_ACRONYMS.has(n);
+    if (acronymCaseOnly && inPhrase) return;
+
+    const dist = caseOnly
+      ? 0
+      : isAdjacentTransposition(o, n)
+        ? 1
+        : editDistance(o, n);
     if (!caseOnly && dist > 3) return;
 
     let score = 0;
-    if (caseOnly) score += 50; // proper-noun capitalization from the speller
+    if (COMMON_ENGLISH_TYPOS[o] === n) score += 120;
+    if (isAdjacentTransposition(o, n) && n.length >= 3) score += 45;
+    if (caseOnly) score += 20;
+    // Prefer real lowercase word over shouting acronym when user typed lower
+    if (userLower && /^[a-z]/.test(candidate)) score += 18;
+    if (userLower && /^[A-Z]{2,}$/.test(candidate)) score -= 90;
     if (contextTokens.has(n)) score += 40;
     if (knownForms && knownForms.has(n)) score += 35;
-    // LanguageTool ranks best first — trust that more than first-letter heuristics
-    score += Math.max(0, 22 - index * 2.5);
+    // LanguageTool order — weaker than before so acronyms don't dominate
+    score += Math.max(0, 14 - index * 1.8);
     score += Math.max(0, 12 - dist * 3);
     if (n[0] === o[0]) score += 4;
     if (Math.abs(n.length - o.length) <= 1) score += 2;
-    // Prefer real Title/UPPER orthography over lowercase echo
-    if (caseOnly && candidate[0] && candidate[0] === candidate[0].toUpperCase()) score += 8;
+    // Proper noun Title Case only when user already used a capital
+    if (caseOnly && /^[A-Z][a-z]/.test(candidate) && /^[A-Z]/.test(String(original || ""))) {
+      score += 12;
+    }
     // Penalize "delete first letter only" (yamo→amo) — usually wrong
     if (dist === 1 && o.length === n.length + 1 && o.endsWith(n)) score -= 10;
     if (dist === 1 && n.length === o.length + 1 && n.endsWith(o)) score -= 4;
 
     if (score > bestScore) {
       bestScore = score;
-      // Prefer deck display form (accents/casing) when we know the word
-      best = knownForms && knownForms.has(n) ? knownForms.get(n) : candidate;
+      // Prefer deck display form; force lowercase for mid-phrase ordinary fixes
+      if (knownForms && knownForms.has(n)) {
+        best = knownForms.get(n);
+      } else if (userLower && inPhrase && !FLASHCARD_ACRONYMS.has(n)) {
+        best = n; // lowercase ordinary English in a phrase
+      } else {
+        best = candidate;
+      }
     }
   });
 
@@ -5252,10 +5384,17 @@ async function fetchSpellingCorrection(text, langCode) {
         let pick = null;
 
         if (issue === "misspelling") {
-          // Single-token typos: ranked pick; multi-word keep first plausible
+          // Single-token typos: ranked pick (blocks aet→AET acronym noise)
           if (!/\s/.test(original)) {
             pick = pickSpellingReplacement(original, reps, trimmed, knownForms);
-            if (pick && editDistance(original, pick) > 3) pick = null;
+            if (
+              pick &&
+              editDistance(original, pick) > 3 &&
+              !isAdjacentTransposition(original, pick) &&
+              COMMON_ENGLISH_TYPOS[normalizeAnswer(original)] !== normalizeAnswer(pick)
+            ) {
+              pick = null;
+            }
           } else {
             pick = reps.find((r) => isPlausibleCardText(r) && !/[#@$%{}[\]\\|<>]/.test(r)) || null;
           }
@@ -5264,6 +5403,15 @@ async function fetchSpellingCorrection(text, langCode) {
           for (const rep of reps) {
             if (!isPlausibleCardText(rep) && !/['’]/.test(rep)) continue;
             if (/[#@$%{}[\]\\|<>]/.test(rep)) continue;
+            // Never “fix” lowercase aet → AET mid-phrase via casing rules
+            if (
+              String(original) === String(original).toLowerCase() &&
+              /^[A-Z]{2,6}$/.test(rep) &&
+              normalizeAnswer(rep) === normalizeAnswer(original) &&
+              !FLASHCARD_ACRONYMS.has(normalizeAnswer(rep))
+            ) {
+              continue;
+            }
             // Skip wild expansions
             if (rep.length > original.length + 12) continue;
             if (rep === original) continue;
@@ -5275,8 +5423,15 @@ async function fetchSpellingCorrection(text, langCode) {
         if (!pick || pick === original) continue;
         result =
           result.slice(0, match.offset) + pick + result.slice(match.offset + match.length);
-        // Protect orthographically capitalized / possessive tokens from later lowercase pass
+        // Protect real orthography (I, Norway, girls') — not ALLCAPS noise for lower typos
         for (const tok of reviewTokens(pick)) {
+          if (
+            /^[A-Z]{2,}$/.test(tok) &&
+            String(original) === String(original).toLowerCase() &&
+            !FLASHCARD_ACRONYMS.has(normalizeAnswer(tok))
+          ) {
+            continue;
+          }
           if (tok !== tok.toLowerCase() || /['’]/.test(tok)) {
             protectedKeys.add(normalizeAnswer(tok));
           }
@@ -5288,6 +5443,14 @@ async function fetchSpellingCorrection(text, langCode) {
   } catch {
     return finalizeOrthographyCorrection(trimmed, langCode, knownForms, protectedKeys);
   }
+}
+
+/** Apply COMMON_ENGLISH_TYPOS across a phrase (aet → eat). */
+function applyCommonEnglishTypoPass(text) {
+  return String(text || "").replace(/[A-Za-z']+/g, (word) => {
+    const fixed = commonEnglishTypoFix(word);
+    return fixed || word;
+  });
 }
 
 /**
@@ -5308,8 +5471,11 @@ function finalizeOrthographyCorrection(
     .split("-")[0];
   const protected = protectedKeys || new Set();
 
-  // English: apostrophe / plural / possessive heuristics LT often misses in free phrases
+  // English: common typos first (aet→eat), then apostrophe / possessive heuristics
   if (base === "en") {
+    const typoFixed = applyCommonEnglishTypoPass(result);
+    if (typoFixed !== result) result = typoFixed;
+
     const grammarFixed = applyEnglishGrammarFixes(result);
     if (grammarFixed !== result) {
       result = grammarFixed;
@@ -5553,44 +5719,43 @@ async function updateForeignSuggestions() {
   // Don't advertise a "translation" of keyboard mash — it only creates false confidence later.
   if (shouldRequestTranslation(query)) {
     const { foreignCode, nativeCode } = getCategoryLanguageCodes();
-    // Spell-check the learning language first so we never pair a typo with English
-    const [translated, spellingFixedForeign] = await Promise.all([
-      fetchTranslationSuggestion(query, foreignCode, nativeCode),
-      fetchLearningSpellingCorrection(query, foreignCode),
-    ]);
-    if (token !== foreignSuggestToken) return;
-    if (input.value.trim() !== query || activeSuggestField !== "foreign") return;
+    // Spell learning language first, then translate once from the corrected form
+    const spellingFixedForeign = await fetchLearningSpellingCorrection(query, foreignCode);
+    if (token !== foreignSuggestToken || input.value.trim() !== query) return;
 
-    let foreignSide = query;
-    let nativeSide = translated;
-    let spellingFixed = false;
-
-    if (
+    const spellingFixed = Boolean(
       spellingFixedForeign &&
-      normalizeAnswer(spellingFixedForeign) !== normalizeAnswer(query)
-    ) {
-      foreignSide = preferDisplayForm(spellingFixedForeign);
-      spellingFixed = true;
-      // Re-translate from the corrected form so English is also legitimate
-      const retranslated = await fetchTranslationSuggestion(
-        foreignSide,
-        foreignCode,
-        nativeCode
-      );
-      if (token !== foreignSuggestToken || input.value.trim() !== query) return;
-      if (retranslated) nativeSide = retranslated;
-    } else if (translated) {
+        stripFlashcardPunctuation(spellingFixedForeign) !== stripFlashcardPunctuation(query)
+    );
+    const foreignForMt = spellingFixed
+      ? preferDisplayForm(spellingFixedForeign)
+      : query;
+    let nativeSide = await fetchTranslationSuggestion(foreignForMt, foreignCode, nativeCode);
+    if (token !== foreignSuggestToken || input.value.trim() !== query) return;
+
+    let foreignSide = foreignForMt;
+
+    if (!spellingFixed && nativeSide) {
       const correctedForeign = await correctSideViaRoundTrip(
         query,
-        translated,
+        nativeSide,
         foreignCode,
         nativeCode,
         "foreign"
       );
       if (token !== foreignSuggestToken || input.value.trim() !== query) return;
-      if (correctedForeign && normalizeAnswer(correctedForeign) !== normalizeAnswer(query)) {
+      if (
+        correctedForeign &&
+        stripFlashcardPunctuation(correctedForeign) !== stripFlashcardPunctuation(query)
+      ) {
         foreignSide = preferDisplayForm(correctedForeign);
-        spellingFixed = true;
+        const retranslated = await fetchTranslationSuggestion(
+          foreignSide,
+          foreignCode,
+          nativeCode
+        );
+        if (token !== foreignSuggestToken || input.value.trim() !== query) return;
+        if (retranslated) nativeSide = retranslated;
       }
     }
 
@@ -5598,7 +5763,11 @@ async function updateForeignSuggestions() {
       addSuggestion({
         foreign: foreignSide,
         native: nativeSide,
-        meta: spellingFixed ? "Suggested · spelling fixed" : "Suggested translation",
+        meta:
+          spellingFixed ||
+          normalizeAnswer(foreignSide) !== normalizeAnswer(query)
+            ? "Suggested · spelling fixed"
+            : "Suggested translation",
         selectable: true,
       });
       paint();
@@ -5621,7 +5790,14 @@ function isSafeSoftSpellingFix(userText, suggestedText) {
   let diffs = 0;
   for (let i = 0; i < wu.length; i += 1) {
     if (wu[i] === ws[i]) continue;
-    if (!softTokenMatch(wu[i], ws[i], 4)) return false;
+    const common = COMMON_ENGLISH_TYPOS[wu[i]] === ws[i];
+    if (
+      !common &&
+      !isAdjacentTransposition(wu[i], ws[i]) &&
+      !softTokenMatch(wu[i], ws[i], 3)
+    ) {
+      return false;
+    }
     diffs += 1;
     if (diffs > 1) return false;
   }
@@ -5711,45 +5887,42 @@ async function updateNativeSuggestions() {
 
   if (shouldRequestTranslation(query)) {
     const { foreignCode, nativeCode } = getCategoryLanguageCodes();
-    // Spell-check English first so we never offer a translation of "feal"
-    const [translated, spellingFixedNative] = await Promise.all([
-      fetchTranslationSuggestion(query, nativeCode, foreignCode),
-      fetchEnglishSpellingCorrection(query),
-    ]);
-    if (token !== nativeSuggestToken) return;
-    if (input.value.trim() !== query || activeSuggestField !== "native") return;
+    // Spell/grammar first, then translate the corrected English once.
+    // Avoids "aet" → translate junk → AET capitalization treadmill on Check card.
+    const spellingFixedNative = await fetchEnglishSpellingCorrection(query);
+    if (token !== nativeSuggestToken || input.value.trim() !== query) return;
 
-    let nativeSide = query;
-    let foreignSide = translated;
-    let spellingFixed = false;
-
-    if (
+    const spellingFixed = Boolean(
       spellingFixedNative &&
-      normalizeAnswer(spellingFixedNative) !== normalizeAnswer(query)
-    ) {
-      nativeSide = spellingFixedNative;
-      spellingFixed = true;
-      // Re-translate from the corrected English so the learning side is also legitimate
-      const retranslated = await fetchTranslationSuggestion(
-        spellingFixedNative,
-        nativeCode,
-        foreignCode
-      );
-      if (token !== nativeSuggestToken || input.value.trim() !== query) return;
-      if (retranslated) foreignSide = retranslated;
-    } else if (translated) {
-      // Fallback: round-trip may still polish rare cases
+        stripFlashcardPunctuation(spellingFixedNative) !== stripFlashcardPunctuation(query)
+    );
+    const englishForMt = spellingFixed ? spellingFixedNative : query;
+    let foreignSide = await fetchTranslationSuggestion(englishForMt, nativeCode, foreignCode);
+    if (token !== nativeSuggestToken || input.value.trim() !== query) return;
+
+    let nativeSide = spellingFixed ? spellingFixedNative : query;
+
+    if (!spellingFixed && foreignSide) {
       const correctedNative = await correctSideViaRoundTrip(
         query,
-        translated,
+        foreignSide,
         foreignCode,
         nativeCode,
         "native"
       );
       if (token !== nativeSuggestToken || input.value.trim() !== query) return;
-      if (correctedNative && normalizeAnswer(correctedNative) !== normalizeAnswer(query)) {
+      if (
+        correctedNative &&
+        stripFlashcardPunctuation(correctedNative) !== stripFlashcardPunctuation(query)
+      ) {
         nativeSide = correctedNative;
-        spellingFixed = true;
+        const retranslated = await fetchTranslationSuggestion(
+          correctedNative,
+          nativeCode,
+          foreignCode
+        );
+        if (token !== nativeSuggestToken || input.value.trim() !== query) return;
+        if (retranslated) foreignSide = retranslated;
       }
     }
 
@@ -5757,7 +5930,11 @@ async function updateNativeSuggestions() {
       addSuggestion({
         foreign: foreignSide,
         native: nativeSide,
-        meta: spellingFixed ? "Suggested · spelling fixed" : "Suggested translation",
+        meta:
+          spellingFixed ||
+          normalizeAnswer(nativeSide) !== normalizeAnswer(query)
+            ? "Suggested · spelling fixed"
+            : "Suggested translation",
         selectable: true,
       });
       paint();
@@ -6028,7 +6205,7 @@ function isApostropheGrammarDiff(a, b) {
 /**
  * Plausible orthography fix from the spell/grammar pipeline:
  * letter typos, casing, OR apostrophe/possessive grammar (banana's → bananas).
- * Not: MT junk, symbols, empty.
+ * Not: MT junk, symbols, empty, or aet→AET acronym shouting.
  */
 function orthographyFixIsPlausible(userText, correctedText) {
   if (!userText || !correctedText) return false;
@@ -6036,9 +6213,35 @@ function orthographyFixIsPlausible(userText, correctedText) {
   const userClean = stripFlashcardPunctuation(userText);
   const fixClean = stripFlashcardPunctuation(correctedText);
   if (!userClean || !fixClean || userClean === fixClean) return false;
-  // Pure capitalization / acronym form
+
+  // Reject pure acronym shouting of a lowercase typo (aet → AET)
+  const uTokens = reviewTokens(userClean);
+  const fTokens = reviewTokens(fixClean);
+  if (uTokens.length === fTokens.length) {
+    let onlyAcronymShout = true;
+    let anyDiff = false;
+    for (let i = 0; i < uTokens.length; i += 1) {
+      if (uTokens[i] === fTokens[i]) continue;
+      anyDiff = true;
+      const u = uTokens[i];
+      const f = fTokens[i];
+      if (
+        u === u.toLowerCase() &&
+        /^[A-Z]{2,6}$/.test(f) &&
+        normalizeAnswer(u) === normalizeAnswer(f) &&
+        !FLASHCARD_ACRONYMS.has(normalizeAnswer(f))
+      ) {
+        continue;
+      }
+      onlyAcronymShout = false;
+      break;
+    }
+    if (anyDiff && onlyAcronymShout) return false;
+  }
+
+  // Pure capitalization / acronym form (ATM, Norway) — not noise above
   if (isCasingOnlyDiff(userClean, fixClean)) return true;
-  // Grammar: apostrophe placement (trusted only when from orthography pipeline, not MT soft-match)
+  // Grammar: apostrophe placement
   if (isApostropheGrammarDiff(userClean, fixClean)) return true;
   // Other normalize-only noise still blocked
   if (isNormalizeOnlyDiff(userClean, fixClean)) return false;
