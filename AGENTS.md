@@ -11,17 +11,19 @@ Read it before shipping. Prefer judgment over thrash.
 
 ## North star
 
-**Trust + clarity + craft.**  
+**Trust + clarity + craft + beauty.**  
 The serious, beautiful way to actually learn a language — not noisy gamification.
 
 We sell:
 - Exact correct forms (no false “Looks good”)
-- Calm, readable UX
+- Calm, **beautiful**, readable UX (proportion and quiet life — not toy chrome, not sterile gray)
 - Real high-frequency decks (1,000 unique cards per language)
 - Stories that sound like people
 - Safety (including photosensitive-friendly motion)
 
 We do **not** sell: streak guilt, gem shops, leaderboard theater, or AI that invents “correct” answers.
+
+**Beauty is essential** (philosophy + nature + craft): wholeness, harmony, clarity — the result of subtraction *and* composition. Empty is not enough; resolved and alive is the bar.
 
 ---
 
@@ -186,11 +188,11 @@ Grok.com skill **Leitner Learning Product Partner** encodes the same judgment fo
 
 ## Craft skills (Grok)
 
-- **Essential Craft** (`essential-craft`) — subtraction, 80/20, MED, Jobs/Rams lineage; default product philosophy.
+- **Essential Craft** (`essential-craft`) — beauty + subtraction + 80/20 + MED; Jobs/Rams + philosophical/natural beauty; default product philosophy.
 - **Leitner Product Partner** (`leitner-learning-product-partner`) — this product’s judgment layer on top of Essential Craft.
 - This **AGENTS.md** remains **hard law** for correctness, autonomy, and anti-goals.
 
-When the founder says **go**, prefer 80/20 + subtraction before expansion.
+When the founder says **go**, prefer 80/20 + subtraction **and** beauty before expansion.
 
 ---
 
