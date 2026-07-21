@@ -81,6 +81,8 @@ let sessionDayKey = "";
 let currentCard = null;
 let sessionReviewed = 0;
 let sessionCorrect = 0;
+/** Real misses this queue (wrong answer or reveal) — for honest end-of-round copy. */
+let sessionIncorrect = 0;
 let sessionJustCompleted = false;
 /** When set, Review runs a focused theme set instead of the daily queue. */
 let themeSessionPackId = null;
@@ -2893,6 +2895,7 @@ async function resetToStarter() {
   sessionQueue = [];
   sessionReviewed = 0;
   sessionCorrect = 0;
+  sessionIncorrect = 0;
   sessionJustCompleted = false;
   clearThemePracticeSession();
   currentCard = null;
@@ -2908,6 +2911,7 @@ function syncPracticeSessionDay() {
     currentCard = null;
     sessionReviewed = 0;
     sessionCorrect = 0;
+    sessionIncorrect = 0;
     sessionJustCompleted = false;
     clearThemePracticeSession();
   }
@@ -3079,6 +3083,7 @@ function startThemePracticeSession(packId) {
   sessionJustCompleted = false;
   sessionReviewed = 0;
   sessionCorrect = 0;
+  sessionIncorrect = 0;
   sessionQueue = picked.slice();
   currentCard = null;
   currentCardId = null;
@@ -3113,6 +3118,7 @@ function handleIncorrect(requeue = true) {
   currentCard = updated;
   if (requeue) sessionQueue.push(updated.id);
   sessionReviewed += 1;
+  sessionIncorrect += 1;
   return updated;
 }
 
@@ -5511,10 +5517,16 @@ function renderEmptyState() {
   if (sessionJustCompleted) {
     emptyEl.classList.add("session-complete");
     emptyEl.classList.toggle("goal-met", daily.goalMet);
-    const correct =
-      sessionCorrect === 1 ? "1 right this round" : `${sessionCorrect} right this round`;
+    // Honest end line: never claim “N right” when misses happened.
+    // Perfect round only — soft note. Otherwise silence (DONE chip already tells truth).
+    const sessionLine =
+      sessionIncorrect === 0 && sessionCorrect > 0
+        ? sessionCorrect === 1
+          ? "1 right this round"
+          : `All ${sessionCorrect} right`
+        : "";
 
-    // Theme set finished - name it once; skip a second “N right this round” paragraph.
+    // Theme set finished - name it once; skip a second score paragraph.
     if (lastThemeSessionNote) {
       const themeLine = `${lastThemeSessionNote.title} done`;
       showPowerHome({
@@ -5537,7 +5549,7 @@ function renderEmptyState() {
         hint: formatPowerHomeHint({
           mode: "complete",
           extraDue,
-          sessionLine: correct,
+          sessionLine,
         }),
         ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for Today",
       });
@@ -5554,7 +5566,7 @@ function renderEmptyState() {
         hint: formatPowerHomeHint({
           mode: extraDue > 0 ? "continue" : "complete",
           extraDue,
-          sessionLine: correct,
+          sessionLine,
         }),
         ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for Today",
       });
@@ -11713,6 +11725,7 @@ function applyCategorySwitch(nextCategoryId, { announce = true } = {}) {
   currentCard = null;
   sessionReviewed = 0;
   sessionCorrect = 0;
+  sessionIncorrect = 0;
   sessionJustCompleted = false;
   clearThemePracticeSession();
   libraryFilter = "all";
@@ -11952,6 +11965,7 @@ function initEventListeners() {
     }
     sessionReviewed = 0;
     sessionCorrect = 0;
+    sessionIncorrect = 0;
     beginPracticeSession();
   });
 
