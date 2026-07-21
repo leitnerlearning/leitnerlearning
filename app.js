@@ -11257,6 +11257,12 @@ function initEventListeners() {
     switchTab(btn.dataset.tabJump);
   });
 
+  document.getElementById("progress-themes")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-tab-jump]");
+    if (!btn) return;
+    switchTab(btn.dataset.tabJump);
+  });
+
   document.getElementById("start-practice-btn")?.addEventListener("click", (e) => {
     if (e.currentTarget.disabled) return;
     const daily = ensureDailyPracticeState();
