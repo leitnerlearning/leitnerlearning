@@ -2484,41 +2484,6 @@ function countNewPackCardsAvailable(pack, categoryId = activeCategoryId, cards =
 }
 
 /**
- * Progress for one theme pack: how many of its forms are in the deck and learning.
- * Uses foreign-form match so core overlaps still count toward the theme.
- */
-function getPackLearningProgress(pack, categoryId = activeCategoryId, cards = deck) {
-  const entries = getPackEntriesForCategory(pack, categoryId);
-  const byKey = new Map();
-  cards.forEach((card) => {
-    const key = normalizeAnswer(card.foreign);
-    if (key && !byKey.has(key)) byKey.set(key, card);
-  });
-
-  let present = 0;
-  let introduced = 0;
-  let mastered = 0;
-  for (const entry of entries) {
-    const key = normalizeAnswer(entry.foreign);
-    if (!key) continue;
-    const card = byKey.get(key);
-    if (!card) continue;
-    present += 1;
-    if (!isNewCard(card)) introduced += 1;
-    if (Number(card.box) === BOX_COUNT) mastered += 1;
-  }
-
-  return {
-    total: entries.length,
-    present,
-    missing: Math.max(0, entries.length - present),
-    introduced,
-    mastered,
-    introPct: present ? Math.round((introduced / present) * 100) : 0,
-  };
-}
-
-/**
  * Enable a pack and merge its cards into the live deck.
  * One full Add — no partial “Add rest” second step.
  * Returns { added, total, already, packId, title }.
@@ -11020,8 +10985,6 @@ function renderProgressSummary() {
     }
   }
 
-  renderProgressThemes();
-
   if (!container) return;
 
   // Two long-game stats only — daily/introduced live in the strips above.
@@ -11036,61 +10999,6 @@ function renderProgressSummary() {
       <span class="stat-value">${masteredPct}%</span>
       <span class="stat-label">Mastered</span>
     </div>`;
-}
-
-/**
- * Quiet glance at *enabled* theme packs only.
- * Coverage truth here; Study lives in Library (one action surface).
- * No empty-state marketing — discovery lives in Library.
- */
-function renderProgressThemes() {
-  const el = document.getElementById("progress-themes");
-  if (!el) return;
-
-  const category = getActiveCategory();
-  const packs = getThematicPackList().filter(
-    (pack) => getPackEntriesForCategory(pack, category.id).length > 0
-  );
-  const enabledIds = new Set(getEnabledPackIds(category.id));
-  const enabledPacks = packs.filter((pack) => enabledIds.has(pack.id));
-
-  if (!enabledPacks.length) {
-    el.classList.add("hidden");
-    el.innerHTML = "";
-    return;
-  }
-
-  const rows = enabledPacks
-    .map((pack) => {
-      const prog = getPackLearningProgress(pack, category.id);
-      const denom = prog.present || prog.total || 0;
-      const status =
-        denom <= 0
-          ? "—"
-          : prog.introduced === 0
-            ? `${denom} ready`
-            : `${prog.introduced}/${denom}`;
-      const pct = prog.present ? prog.introPct : 0;
-      const barClass = pct > 0 ? " progress-themes-fill--has" : "";
-      return `
-        <div class="progress-themes-row">
-          <div class="progress-themes-row-top">
-            <span class="progress-themes-name">${escapeHtml(pack.title)}</span>
-            <span class="progress-themes-status">${escapeHtml(status)}</span>
-          </div>
-          <div class="progress-themes-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${escapeAttr(pack.title)}: ${prog.introduced} of ${denom} introduced">
-            <div class="progress-themes-fill${barClass}" style="width: ${pct}%"></div>
-          </div>
-        </div>`;
-    })
-    .join("");
-
-  el.classList.remove("hidden");
-  el.innerHTML = `
-    <div class="progress-themes-head">
-      <span class="progress-themes-label">Themes</span>
-    </div>
-    <div class="progress-themes-list">${rows}</div>`;
 }
 
 function renderProgressBoxStats() {
@@ -11814,12 +11722,6 @@ function initEventListeners() {
   });
 
   document.getElementById("progress-daily")?.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-tab-jump]");
-    if (!btn) return;
-    switchTab(btn.dataset.tabJump);
-  });
-
-  document.getElementById("progress-themes")?.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-tab-jump]");
     if (!btn) return;
     switchTab(btn.dataset.tabJump);

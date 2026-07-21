@@ -5882,18 +5882,16 @@ html.needs-welcome body {
 
 /* Progress stack: one rhythm so truth reads as one calm column */
 #progress-daily,
-#progress-coverage,
-#progress-themes {
+#progress-coverage {
   margin-bottom: 0.65rem;
 }
 
-#progress-themes:not(.hidden) + .stats-summary,
 #progress-coverage:not(.hidden) + .stats-summary,
 #progress-daily:not(.hidden) + .stats-summary {
   margin-top: 0.15rem;
 }
 
-/* Deck strip: flat truth under the Review action (same language as Themes) */
+/* Deck strip: flat truth under Review */
 .progress-coverage {
   margin-bottom: 0.55rem;
   padding: 0.55rem 0 0.35rem;
@@ -5946,89 +5944,6 @@ html.needs-welcome body {
   border-radius: inherit;
   background: linear-gradient(90deg, var(--brand), #5b9aff);
   transition: width 0.35s var(--ease);
-}
-
-/* Progress → Themes glance (opt-in packs only) */
-/* Progress Themes: coverage only — Study lives in Library */
-.progress-themes {
-  margin-bottom: 0.55rem;
-  padding: 0.65rem 0 0.35rem;
-  border-radius: 0;
-  background: transparent;
-  border: none;
-  border-top: 1px solid var(--border);
-  box-shadow: none;
-}
-
-.progress-themes.hidden {
-  display: none;
-}
-
-.progress-themes-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.45rem;
-}
-
-.progress-themes-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-}
-
-.progress-themes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 0;
-}
-
-.progress-themes-row-top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.65rem;
-  margin-bottom: 0.22rem;
-}
-
-.progress-themes-name {
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--ink, var(--text));
-  min-width: 0;
-}
-
-.progress-themes-status {
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  flex-shrink: 0;
-}
-
-.progress-themes-bar {
-  height: 0.28rem;
-  border-radius: 999px;
-  background: rgba(54, 95, 207, 0.08);
-  overflow: hidden;
-}
-
-.progress-themes-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #6b8fd4, #8eb0f0);
-  min-width: 0;
-  transition: width 0.35s var(--ease);
-}
-
-.progress-themes-fill--has {
-  min-width: 3px;
 }
 
 /* Progress → Review: same density as Deck strip (label · fraction · bar) */
