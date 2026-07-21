@@ -10965,44 +10965,37 @@ function renderProgressSummary() {
       }
     }
 
+    // Dense strip like Deck: REVIEW · 1/20 · bar. No prose, no tall glass card.
     const countText = showMeter ? `${done}/${goalTotal}` : "—";
-    const chipClass = [
-      "progress-daily-chip",
-      isDone ? "is-complete" : "",
-      isLive ? "is-live" : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-    const meterHtml = showMeter
-      ? `<div class="progress-daily-meter">
-          <span class="${chipClass}" aria-hidden="true">${escapeHtml(countText)}</span>
-          <div
-            class="progress-daily-bar${isDone ? " is-complete" : ""}"
-            role="progressbar"
-            aria-valuemin="0"
-            aria-valuenow="${done}"
-            aria-valuemax="${goalTotal}"
-            aria-label="${escapeAttr(aria)}"
-          >
-            <div class="progress-daily-fill" style="width: ${pct}%"></div>
-          </div>
+    const body = showMeter
+      ? `<div class="progress-daily-head">
+          <span class="progress-daily-label">Review</span>
+          <span class="progress-daily-count${isLive ? " is-live" : ""}${isDone ? " is-complete" : ""}">${escapeHtml(countText)}</span>
+        </div>
+        <div
+          class="progress-daily-bar${isDone ? " is-complete" : ""}"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuenow="${done}"
+          aria-valuemax="${goalTotal}"
+          aria-label="${escapeAttr(aria)}"
+        >
+          <div class="progress-daily-fill" style="width: ${pct}%"></div>
         </div>`
-      : `<div class="progress-daily-meter progress-daily-meter--empty">
-          <span class="progress-daily-chip">${escapeHtml(countText)}</span>
+      : `<div class="progress-daily-head">
+          <span class="progress-daily-label">Review</span>
+          <span class="progress-daily-count">—</span>
         </div>`;
 
     if (practiceStat.actionable) {
       dailyEl.innerHTML = `
         <button type="button" class="progress-daily-action" data-tab-jump="practice" aria-label="${escapeAttr(aria)}">
-          <span class="progress-daily-label">Review</span>
-          ${meterHtml}
+          ${body}
         </button>`;
     } else {
       dailyEl.innerHTML = `
         <div class="progress-daily-static" aria-label="${escapeAttr(aria)}">
-          <span class="progress-daily-label">Review</span>
-          ${meterHtml}
+          ${body}
         </div>`;
     }
   }

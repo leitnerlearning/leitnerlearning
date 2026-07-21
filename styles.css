@@ -6031,7 +6031,7 @@ html.needs-welcome body {
   min-width: 3px;
 }
 
-/* Progress → Review: same visual language as Review tab (chip + bar), not prose */
+/* Progress → Review: same density as Deck strip (label · fraction · bar) */
 .progress-daily {
   margin-bottom: 0.55rem;
   padding: 0.55rem 0 0.35rem;
@@ -6049,10 +6049,7 @@ html.needs-welcome body {
 
 .progress-daily-action,
 .progress-daily-static {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.55rem;
+  display: block;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -6069,7 +6066,7 @@ html.needs-welcome body {
 .progress-daily-action {
   cursor: pointer;
   touch-action: manipulation;
-  border-radius: 12px;
+  border-radius: 8px;
   transition: background 0.15s var(--ease);
 }
 
@@ -6080,7 +6077,15 @@ html.needs-welcome body {
 }
 
 .progress-daily-action:focus-visible {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 35%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 30%, transparent);
+}
+
+.progress-daily-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
 }
 
 .progress-daily-label {
@@ -6095,66 +6100,29 @@ html.needs-welcome body {
   color: color-mix(in srgb, #1f6b45 65%, var(--text-tertiary));
 }
 
-.progress-daily-meter {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.55rem;
-  width: 100%;
-  padding: 0.15rem 0 0.2rem;
-}
-
-.progress-daily-meter--empty {
-  padding-bottom: 0.1rem;
-}
-
-/* Match Review tab .daily-goal-chip */
-.progress-daily-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.15rem;
-  min-width: 3.5rem;
-  padding: 0.32rem 0.85rem;
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  background: var(--surface-glass-strong);
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.88rem;
-  font-weight: 700;
+/* Fraction only — same fact as Review chip, without the tall pill chrome */
+.progress-daily-count {
+  font-size: 0.95rem;
+  font-weight: 650;
   letter-spacing: -0.02em;
-  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
-.progress-daily-chip.is-live {
-  color: var(--brand-deep);
-  background: linear-gradient(
-    135deg,
-    rgba(91, 154, 255, 0.14),
-    rgba(54, 95, 207, 0.08)
-  );
-  border-color: color-mix(in srgb, var(--brand) 28%, transparent);
+.progress-daily-count.is-live {
+  color: var(--brand-deep, #2a4a9b);
 }
 
-.progress-daily-chip.is-complete,
-.progress-daily.is-complete .progress-daily-chip {
+.progress-daily-count.is-complete,
+.progress-daily.is-complete .progress-daily-count {
   color: #1f6b45;
-  background: linear-gradient(
-    135deg,
-    rgba(72, 187, 120, 0.16),
-    rgba(56, 161, 105, 0.08)
-  );
-  border-color: rgba(56, 161, 105, 0.35);
 }
 
-/* Match Review tab .daily-progress */
 .progress-daily-bar {
   width: 100%;
-  max-width: 16rem;
-  height: 0.28rem;
+  height: 0.3rem;
   border-radius: 999px;
-  background: rgba(54, 95, 207, 0.1);
+  background: rgba(54, 95, 207, 0.08);
   overflow: hidden;
 }
 
@@ -6174,15 +6142,6 @@ html.needs-welcome body {
 .progress-daily-bar.is-complete .progress-daily-fill,
 .progress-daily.is-complete .progress-daily-fill {
   background: linear-gradient(90deg, #3a9e62, #48bb78);
-}
-
-/* legacy hooks (unused after Review strip redesign) */
-.progress-daily-go {
-  flex-shrink: 0;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--brand);
-  opacity: 0.85;
 }
 
 .progress-coverage.hidden {
