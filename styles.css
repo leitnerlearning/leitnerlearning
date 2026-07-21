@@ -5104,7 +5104,7 @@ html.needs-welcome body {
   color: var(--text-tertiary);
 }
 
-/* All · Phrases · Themes · Yours — one row, equal segments */
+/* All · Phrases · Yours · Themes — one row, equal segments */
 .filter-chips {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -5149,6 +5149,19 @@ html.needs-welcome body {
   border-color: transparent;
   color: #fff;
   box-shadow: none;
+}
+
+/* Themes last: optional packs — quiet brand tint so it reads apart from deck filters */
+.filter-chip--themes:not(.active) {
+  color: var(--brand-deep, #2a4a9b);
+  border-color: color-mix(in srgb, var(--brand, #365fcf) 28%, transparent);
+  background: color-mix(in srgb, var(--brand, #365fcf) 6%, var(--surface-glass-strong, #fff));
+}
+
+.filter-chip--themes:not(.active):hover {
+  color: var(--brand-deep, #2a4a9b);
+  border-color: color-mix(in srgb, var(--brand, #365fcf) 40%, transparent);
+  background: var(--brand-soft);
 }
 
 
