@@ -8677,8 +8677,8 @@ function bindCategoryPickerMenu(menu, { forWelcome = false } = {}) {
 }
 
 /**
- * Show when the language list continues past the fold.
- * Bottom cue + fade so Norwegian (etc.) is discoverable without guessing to scroll.
+ * Fade + overlay arrow when the language list continues past the fold.
+ * Arrow is scroll-only (not clickable) and never changes list layout.
  */
 function updateCategoryMenuScrollHints(menu) {
   if (!menu) return;
@@ -8701,9 +8701,9 @@ function updateCategoryMenuScrollHints(menu) {
 
   const cue = menu.querySelector("[data-category-scroll-cue]");
   if (cue) {
-    const show = canScroll && !atBottom;
-    cue.hidden = !show;
-    cue.setAttribute("aria-hidden", show ? "false" : "true");
+    // Keep in DOM always; CSS fades opacity. Never hidden=true (that caused jumps).
+    cue.hidden = false;
+    cue.setAttribute("aria-hidden", "true");
   }
 }
 
@@ -8722,22 +8722,13 @@ function bindCategoryMenuScrollHints(menu) {
     { passive: true }
   );
 
+  // Decorative only — no click/keyboard activation (avoids mis-taps on last language)
   const cue = menu.querySelector("[data-category-scroll-cue]");
-  if (cue && cue.dataset.cueBound !== "1") {
-    cue.dataset.cueBound = "1";
-    cue.setAttribute("role", "button");
-    cue.setAttribute("tabindex", "0");
-    cue.setAttribute("aria-label", "Scroll to see more languages");
-    const scrollMore = (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const step = Math.max(72, Math.floor(scroller.clientHeight * 0.55));
-      scroller.scrollBy({ top: step, behavior: "smooth" });
-    };
-    cue.addEventListener("click", scrollMore);
-    cue.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" || event.key === " ") scrollMore(event);
-    });
+  if (cue) {
+    cue.removeAttribute("role");
+    cue.removeAttribute("tabindex");
+    cue.removeAttribute("aria-label");
+    cue.setAttribute("aria-hidden", "true");
   }
 }
 
