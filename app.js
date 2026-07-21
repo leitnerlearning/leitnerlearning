@@ -3491,14 +3491,20 @@ function showTrackSwitchOverlay(label, options = {}) {
   logoWrap?.classList.remove("is-beat-flash");
   flagEl?.classList.remove("is-beat-flash");
   nameEl?.classList.remove("is-beat-flash");
-  el.classList.remove("hidden");
+  el.classList.remove("hidden", "is-leaving");
   el.setAttribute("aria-hidden", "false");
 
   // restart:false keeps an already-visible veil stable (no opacity blink)
   if (restart || !el.classList.contains("is-visible")) {
-    el.classList.remove("is-visible");
-    void el.offsetWidth;
-    el.classList.add("is-visible");
+    if (isPortal) {
+      // Instant cover — never fade in over Review / welcome
+      el.classList.add("is-visible");
+      void el.offsetHeight;
+    } else {
+      el.classList.remove("is-visible");
+      void el.offsetWidth;
+      el.classList.add("is-visible");
+    }
   }
 
   scheduleTrackSwitchOverlayEnd(durationMs, { isPortal, shouldFlashProgress });
@@ -3525,6 +3531,8 @@ function scheduleTrackSwitchOverlayEnd(durationMs, options = {}) {
 
   trackSwitchOverlayTimer = window.setTimeout(() => {
     trackSwitchOverlayTimer = null;
+    // Soft exit for portal; keep cover opaque until fade starts
+    if (isPortal) el.classList.add("is-leaving");
     el.classList.remove("is-visible");
     if (isPortal) {
       clearWelcomePortalTimers();
@@ -3545,7 +3553,8 @@ function scheduleTrackSwitchOverlayEnd(durationMs, options = {}) {
           "is-welcome-enter",
           "is-welcome-portal",
           "is-phase-language",
-          "is-hide-kicker"
+          "is-hide-kicker",
+          "is-leaving"
         );
         el.setAttribute("aria-hidden", "true");
         el.querySelector(".track-switch-logo")?.classList.remove("is-beat-flash");
@@ -3559,6 +3568,8 @@ function scheduleTrackSwitchOverlayEnd(durationMs, options = {}) {
           flagEl.textContent = "";
           flagEl.classList.remove("is-beat-flash");
         }
+        // First-visit shell may still be hidden under the gate class
+        document.documentElement.classList.remove("needs-welcome");
       }
     }, 320);
     if (shouldFlashProgress) flashProgressLanguageControl();
@@ -9707,10 +9718,14 @@ function completeWelcomeWithLanguage(categoryId) {
   void ensureUiAudioReady();
   closeCategoryMenu();
 
-  // 1) Cover the screen immediately (sync veil + start music/beats)
+  // 1) Cover the screen immediately (sync solid veil + start music/beats)
   announceWelcomeEnter(nextCategory);
 
-  // 2) Swap language + land on Review underneath the veil
+  // Force a layout pass so the portal is painted before we drop the welcome gate
+  const portal = document.getElementById("track-switch-overlay");
+  if (portal) void portal.offsetHeight;
+
+  // 2) Swap language + land on Review underneath the solid portal cover
   if (categoryId !== activeCategoryId) {
     applyCategorySwitch(categoryId, { announce: false });
   } else {
@@ -9725,6 +9740,8 @@ function completeWelcomeWithLanguage(categoryId) {
   } catch {
     /* keep safe */
   }
+  // Keep html.needs-welcome until the portal ends so Review stays hidden if
+  // anything peeks around the ceremony card. Cleared in scheduleTrackSwitchOverlayEnd.
 }
 
 function openCategoryMenu(btn) {
@@ -10656,15 +10673,29 @@ function closeWelcomeModal(markSeen = true) {
       // storage blocked
     }
   }
+  // Only reveal the app shell once the portal is covering, or when no portal is up.
+  // (Portal end handler also clears needs-welcome.)
+  const portal = document.getElementById("track-switch-overlay");
+  const portalCovering =
+    portal &&
+    !portal.classList.contains("hidden") &&
+    portal.classList.contains("is-visible");
+  if (!portalCovering) {
+    document.documentElement.classList.remove("needs-welcome");
+  }
 }
 
 function maybeShowWelcome() {
   try {
-    if (localStorage.getItem(WELCOME_SEEN_KEY)) return;
+    if (localStorage.getItem(WELCOME_SEEN_KEY)) {
+      document.documentElement.classList.remove("needs-welcome");
+      return false;
+    }
   } catch {
-    return;
+    // storage blocked — treat as first visit
   }
   showWelcomeModal();
+  return true;
 }
 
 function bootApp() {
@@ -10692,7 +10723,11 @@ function bootApp() {
     initEventListeners();
     startPractice();
     renderAll();
-    maybeShowWelcome();
+    const showedWelcome = maybeShowWelcome();
+    // Returning visitors: ensure the app shell is visible even if a stale class stuck
+    if (!showedWelcome) {
+      document.documentElement.classList.remove("needs-welcome");
+    }
   } catch (error) {
     console.error("Leitner Learning failed to start:", error);
     const main = document.querySelector("main");

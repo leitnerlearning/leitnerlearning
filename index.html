@@ -48,13 +48,28 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=227" />
+    <link rel="stylesheet" href="styles.css?v=228" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <!--
+      First-visit: hide the app shell before any paint so Review never flashes
+      under the language gate. Returning visitors are unaffected.
+    -->
+    <script>
+      (function () {
+        try {
+          if (!localStorage.getItem("leitner-learning-welcome-seen")) {
+            document.documentElement.classList.add("needs-welcome");
+          }
+        } catch (e) {
+          document.documentElement.classList.add("needs-welcome");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div class="ambient-brand" aria-hidden="true">
@@ -691,6 +706,16 @@
         </div>
       </div>
     </div>
+    <!-- First visit: show the language gate as soon as it exists (before app.js boots). -->
+    <script>
+      (function () {
+        if (!document.documentElement.classList.contains("needs-welcome")) return;
+        var modal = document.getElementById("welcome-modal");
+        if (!modal) return;
+        modal.classList.remove("hidden");
+        document.body.classList.add("welcome-open", "modal-open");
+      })();
+    </script>
 
     <div
       class="goal-cap-modal hidden"
@@ -827,6 +852,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=310"></script>
+    <script src="app.js?v=311"></script>
   </body>
 </html>
