@@ -7920,9 +7920,25 @@ function hideLibrarySuggestions() {
 }
 
 function markSuggestionPicked() {
-  // Keep suggestions available while editing / refining a card.
-  // Only hide the open list so the pick doesn't leave a stale menu open.
+  // Pair is chosen — hide lists and don't auto-open the other side's menu.
+  // User can still get suggestions again by typing in either field.
   hideLibrarySuggestions();
+  suppressAddCardSuggestions = true;
+}
+
+/**
+ * After a suggestion pick fills both sides, land on Add — not L2 focus
+ * (which would immediately re-open “Suggested translation” for the same pair).
+ */
+function finishAddCardSuggestionPick(polished, editedSide = "native") {
+  const foreignInput = document.getElementById("new-foreign");
+  const nativeInput = document.getElementById("new-native");
+  if (foreignInput) foreignInput.value = polished.foreign;
+  if (nativeInput) nativeInput.value = polished.native;
+  addCardLastEditedSide = editedSide;
+  markSuggestionPicked();
+  syncAddCardResetButton();
+  document.getElementById("add-card-submit")?.focus({ preventScroll: true });
 }
 
 function shouldShowAddCardSuggestions() {
@@ -8053,12 +8069,7 @@ async function updateForeignSuggestions() {
       void (async () => {
         const polished = await polishCardPair(item.foreign, item.native);
         if (token !== foreignSuggestToken) return;
-        document.getElementById("new-foreign").value = polished.foreign;
-        document.getElementById("new-native").value = polished.native;
-        addCardLastEditedSide = "foreign";
-        markSuggestionPicked();
-        syncAddCardResetButton();
-        document.getElementById("new-foreign")?.focus({ preventScroll: true });
+        finishAddCardSuggestionPick(polished, "foreign");
       })();
     });
   };
@@ -8271,12 +8282,7 @@ async function updateNativeSuggestions() {
         // Polish spelling + casing on pick so Check card isn't a multi-step treadmill
         const polished = await polishCardPair(item.foreign, item.native);
         if (token !== nativeSuggestToken) return;
-        document.getElementById("new-foreign").value = polished.foreign;
-        document.getElementById("new-native").value = polished.native;
-        addCardLastEditedSide = "native";
-        markSuggestionPicked();
-        syncAddCardResetButton();
-        document.getElementById("new-foreign")?.focus({ preventScroll: true });
+        finishAddCardSuggestionPick(polished, "native");
       })();
     });
   };
