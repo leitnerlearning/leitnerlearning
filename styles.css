@@ -5255,9 +5255,15 @@ html.needs-welcome body {
   }
 }
 
+/*
+ * Keep 2 columns at every width while we have 10 packs.
+ * 3-col left Work alone on the last row — don’t invent packs just to “fill.”
+ * When pack count is a multiple of 3, we can revisit a wider grid.
+ */
 @media (min-width: 640px) {
   .library-themes-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.4rem;
   }
 }
 
