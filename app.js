@@ -5369,7 +5369,7 @@ function setEmptyStatePowerAction(
  *   continue  → Continue
  *   complete + extras → Extra
  *   complete + quiet  → (empty)
- *   perfect session   → All N Right / 1 Right (via sessionLine)
+ *   session end       → Perfect (0 misses) or Done (any miss)
  */
 function formatPowerHomeHint({
   mode = "start",
@@ -5526,29 +5526,29 @@ function renderEmptyState() {
   if (sessionJustCompleted) {
     emptyEl.classList.add("session-complete");
     emptyEl.classList.toggle("goal-met", daily.goalMet);
-    // Honest end line: never claim “right” when misses happened.
-    // Perfect round only — Title Case. Otherwise silence (Done chip already tells truth).
-    // "1 Right" is awkward; one clean card → "All Right", multi → "All 10 Right".
+    // End of a practice queue: Perfect only if zero misses; otherwise Done.
+    // (Wrong answers requeue — “right” counts were easy to misread.)
     const sessionLine =
-      sessionIncorrect === 0 && sessionCorrect > 0
-        ? sessionCorrect === 1
-          ? "All Right"
-          : `All ${sessionCorrect} Right`
-        : "";
+      sessionCorrect > 0 && sessionIncorrect === 0
+        ? "Perfect"
+        : sessionCorrect > 0 || sessionIncorrect > 0
+          ? "Done"
+          : "";
 
     // Theme / pack Study finished — not “Airport Done” (reads like a place closed).
     if (lastThemeSessionNote) {
       const packName = lastThemeSessionNote.title || "Pack";
-      const themeLine = "Pack Done";
       const moreDaily = remainingToday > 0 || extraDue > 0 || hasDailyGoalRemaining(daily);
       showPowerHome({
         mode: moreDaily ? "continue" : "complete",
         enabled: moreDaily,
-        // If daily still waits, prefer the spine verb over the pack note.
-        hint: moreDaily ? "Continue" : themeLine,
+        // Daily still waits → Continue. Otherwise same Perfect / Done rule.
+        hint: moreDaily ? "Continue" : sessionLine || "Done",
         ariaLabel: moreDaily
           ? `${packName} pack done. Continue daily review`
-          : `${packName} pack done`,
+          : sessionLine === "Perfect"
+            ? `${packName} pack perfect`
+            : `${packName} pack done`,
       });
       return;
     }
@@ -5561,7 +5561,8 @@ function renderEmptyState() {
         hint: formatPowerHomeHint({
           mode: "complete",
           extraDue,
-          sessionLine,
+          // Extras waiting → Extra; else Perfect / Done from this round.
+          sessionLine: extraDue > 0 ? "" : sessionLine,
         }),
         ariaLabel: extraDue > 0 ? "Keep reviewing extras" : "Done for today",
       });
@@ -5578,7 +5579,7 @@ function renderEmptyState() {
         hint: formatPowerHomeHint({
           mode: extraDue > 0 ? "continue" : "complete",
           extraDue,
-          sessionLine,
+          sessionLine: extraDue > 0 ? "" : sessionLine,
         }),
         ariaLabel: extraDue > 0 ? "Keep reviewing" : "Done for today",
       });
