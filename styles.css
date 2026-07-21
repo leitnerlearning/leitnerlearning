@@ -7345,10 +7345,6 @@ html.needs-welcome body {
     font-size: 1.05rem;
   }
 
-  .read-story-select-lang {
-    font-size: 0.7rem;
-  }
-
   .read-progress-row {
     min-height: 1.65rem;
     gap: 0.4rem;
@@ -7506,11 +7502,6 @@ html.needs-welcome body {
 
   .read-story-select-title {
     font-size: 0.94rem;
-  }
-
-  /* Flag carries language on phones — free vertical room for the title */
-  .read-story-select-lang {
-    display: none;
   }
 
   .read-progress-row {
