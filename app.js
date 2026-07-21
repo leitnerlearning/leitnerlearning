@@ -9704,9 +9704,11 @@ function getBoxCounts() {
 
 function renderProgressSummary() {
   const container = document.getElementById("stats-summary");
-  if (!container) return;
+  const dailyEl = document.getElementById("progress-daily");
+  const coverageEl = document.getElementById("progress-coverage");
 
   const daily = ensureDailyPracticeState();
+  const practiceStat = getProgressPracticeStat();
   const streakStat = getHomeStreakStat();
   const reviewedToday = daily.reviewed;
   const total = deck.length;
@@ -9714,6 +9716,82 @@ function renderProgressSummary() {
   const introducedPct = total ? Math.round((introduced / total) * 100) : 0;
   const mastered = deck.filter((card) => card.box === BOX_COUNT).length;
   const masteredPct = total ? Math.round((mastered / total) * 100) : 0;
+  const outstanding = getOutstandingDueCount(daily);
+  const deckLabel = total === 1 ? "1 card" : `${total.toLocaleString("en-US")} cards`;
+
+  // —— Practice truth strip (due / left today / caught up) ——
+  if (dailyEl) {
+    const isDone =
+      practiceStat.label === "Done today" ||
+      practiceStat.label === "Caught up" ||
+      practiceStat.value === "✓";
+    const isQuiet = !practiceStat.highlight && !practiceStat.actionable;
+    dailyEl.classList.toggle("hidden", false);
+    dailyEl.classList.toggle("is-complete", Boolean(isDone));
+    dailyEl.classList.toggle("is-quiet", Boolean(isQuiet) && !isDone);
+
+    const valueText = String(practiceStat.value);
+    const line =
+      practiceStat.label === "Left today"
+        ? `${valueText} left in today's review`
+        : practiceStat.label === "Done today"
+          ? `Today's goal done · ${valueText}`
+          : practiceStat.label === "Due for review" || practiceStat.label === "Due now"
+            ? `${valueText} due for review`
+            : practiceStat.label === "Ready to learn"
+              ? `${valueText} ready to learn`
+              : practiceStat.label === "Caught up"
+                ? "All caught up for now"
+                : practiceStat.label === "Next review"
+                  ? `Next review · ${valueText}`
+                  : `${valueText} · ${practiceStat.label}`;
+
+    if (practiceStat.actionable) {
+      dailyEl.innerHTML = `
+        <button type="button" class="progress-daily-action" data-tab-jump="practice" aria-label="${escapeAttr(practiceStat.ariaLabel)}">
+          <span class="progress-daily-kicker">Review</span>
+          <span class="progress-daily-line">${escapeHtml(line)}</span>
+          <span class="progress-daily-go" aria-hidden="true">→</span>
+        </button>`;
+    } else {
+      dailyEl.innerHTML = `
+        <div class="progress-daily-static" aria-label="${escapeAttr(practiceStat.ariaLabel)}">
+          <span class="progress-daily-kicker">Review</span>
+          <span class="progress-daily-line">${escapeHtml(line)}</span>
+        </div>`;
+    }
+  }
+
+  // —— Deck coverage (size + introduced + due residual) ——
+  if (coverageEl) {
+    coverageEl.classList.toggle("hidden", total === 0);
+    if (total > 0) {
+      const dueNote =
+        outstanding > 0
+          ? `${outstanding.toLocaleString("en-US")} due now`
+          : "nothing due now";
+      coverageEl.innerHTML = `
+        <div class="progress-coverage-head">
+          <span class="progress-coverage-label">Your deck</span>
+          <span class="progress-coverage-value">
+            ${escapeHtml(String(introducedPct))}<span class="progress-coverage-total">% introduced</span>
+          </span>
+        </div>
+        <div class="progress-coverage-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${introducedPct}" aria-label="${introduced} of ${total} cards introduced">
+          <div class="progress-coverage-fill" style="width: ${introducedPct}%"></div>
+        </div>
+        <div class="progress-coverage-meta">
+          <span>${escapeHtml(deckLabel)} in deck</span>
+          <span>${introduced.toLocaleString("en-US")} introduced</span>
+          <span>${escapeHtml(dueNote)}</span>
+        </div>`;
+    } else {
+      coverageEl.innerHTML = "";
+    }
+  }
+
+  if (!container) return;
+
   container.innerHTML = `
     <div class="stat-card" aria-label="${escapeAttr(streakStat.ariaLabel)}">
       <span class="stat-value">${streakStat.value}</span>
@@ -10435,6 +10513,12 @@ function initEventListeners() {
   });
 
   document.getElementById("stats-summary")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-tab-jump]");
+    if (!btn) return;
+    switchTab(btn.dataset.tabJump);
+  });
+
+  document.getElementById("progress-daily")?.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-tab-jump]");
     if (!btn) return;
     switchTab(btn.dataset.tabJump);

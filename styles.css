@@ -5595,8 +5595,8 @@ html.needs-welcome body {
 
 
 .progress-daily {
-  margin-bottom: 1.35rem;
-  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  padding: 0;
   border-radius: var(--radius-sm);
   background: var(--surface-glass-strong);
   border: 1px solid var(--border-strong);
@@ -5604,17 +5604,97 @@ html.needs-welcome body {
   line-height: 1.45;
   color: var(--text-secondary);
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.progress-daily.hidden {
+  display: none;
 }
 
 .progress-daily.is-complete {
   border-color: rgba(47, 179, 82, 0.28);
   background: rgba(240, 253, 244, 0.82);
   color: #1f6b45;
-  font-weight: 500;
 }
 
 .progress-daily.is-quiet {
   background: rgba(255, 255, 255, 0.42);
+}
+
+.progress-daily-action,
+.progress-daily-static {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.8rem 1rem;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.progress-daily-action {
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.15s var(--ease);
+}
+
+.progress-daily-action:hover,
+.progress-daily-action:focus-visible {
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+  outline: none;
+}
+
+.progress-daily-action:focus-visible {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--brand) 45%, transparent);
+}
+
+.progress-daily-kicker {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.progress-daily.is-complete .progress-daily-kicker {
+  color: color-mix(in srgb, #1f6b45 70%, var(--text-tertiary));
+}
+
+.progress-daily-line {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.progress-daily.is-complete .progress-daily-line {
+  color: #1f6b45;
+}
+
+.progress-daily-go {
+  flex-shrink: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--brand);
+  opacity: 0.85;
+}
+
+.progress-coverage.hidden {
+  display: none;
+}
+
+.progress-coverage {
+  margin-bottom: 1rem;
 }
 
 /* Soft section cards — desktop + mobile share the same language */
