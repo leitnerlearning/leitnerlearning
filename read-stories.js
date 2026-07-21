@@ -55,11 +55,11 @@ const READ_STORIES = [
     { nb: "Jeg ser folk og sykler overalt.", en: "I see people and bikes everywhere." },
     { nb: "Unnskyld, hvor er stasjonen?", en: "Excuse me, where is the station?" },
     { nb: "Rett fram og så til venstre.", en: "Straight ahead and then left." },
-    { nb: "Tusen takk. Jeg lærer fortsatt norsk.", en: "Thank you. I am still learning Norwegian." },
+    { nb: "Tusen takk. Ha en fin dag!", en: "Thank you. Have a nice day!" },
     { nb: "Ingen problem. Lykke til!", en: "No problem. Good luck!" },
     { nb: "Ha det!", en: "Goodbye!" }
   ],
-  glosses: {"kommet fram": "arrived", "overalt": "everywhere"}
+  glosses: {"nettopp": "just (recently)", "kommet fram": "arrived", "sola": "the sun", "skinner": "is shining", "overalt": "everywhere", "stasjonen": "the station", "venstre": "left", "lykke til": "good luck"}
   },
   {
   id: "nb-kaffe",
@@ -78,7 +78,7 @@ const READ_STORIES = [
     { nb: "Ja, selvfølgelig.", en: "Yes, of course." },
     { nb: "Takk. Ha en fin dag!", en: "Thanks. Have a nice day!" }
   ],
-  glosses: {"ostesmørbrød": "cheese sandwich", "kroner": "kroner (currency)"}
+  glosses: {"uten": "without", "ostesmørbrød": "cheese sandwich", "førtifem": "forty-five", "kroner": "kroner (currency)", "selvfølgelig": "of course"}
   },
   {
   id: "nb-tog",
@@ -97,7 +97,7 @@ const READ_STORIES = [
     { nb: "Omtrent to timer.", en: "About two hours." },
     { nb: "Takk for hjelpen.", en: "Thank you for the help." }
   ],
-  glosses: {"en vei": "one-way", "automat": "ticket machine"}
+  glosses: {"stemmer": "that's right / correct", "billett": "ticket", "automaten": "the ticket machine", "en vei": "one-way", "midtgang": "aisle", "omtrent": "about / approximately"}
   },
   {
   id: "nb-bibliotek",
