@@ -6518,8 +6518,8 @@ html.needs-welcome body {
   }
 
   .progress-coverage {
-    padding: 0.9rem 0.9rem 0.85rem;
-    margin-bottom: 0.85rem;
+    padding: 0.5rem 0 0.3rem;
+    margin-bottom: 0.55rem;
   }
 
   .box-stats {
