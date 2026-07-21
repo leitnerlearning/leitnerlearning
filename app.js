@@ -4714,12 +4714,16 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
     // Allow accented single tokens; reject multi-word rewrites
     if (!candidate || /\s/.test(candidate)) return;
     const n = normalizeAnswer(candidate);
-    if (!n || n === o) return;
-    const dist = editDistance(o, n);
+    if (!n) return;
+    // Same letters, different casing (norway→Norway) is a valid orthography pick
+    const caseOnly = n === o && candidate !== original;
+    if (n === o && !caseOnly) return;
+    const dist = caseOnly ? 0 : editDistance(o, n);
     // Digraph fixes (yamo→llamo) need dist 2; allow up to 3 for accented forms
-    if (dist > 3) return;
+    if (!caseOnly && dist > 3) return;
 
     let score = 0;
+    if (caseOnly) score += 50; // proper-noun capitalization from the speller
     if (contextTokens.has(n)) score += 40;
     if (knownForms && knownForms.has(n)) score += 35;
     // LanguageTool ranks best first — trust that more than first-letter heuristics
@@ -4727,6 +4731,8 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
     score += Math.max(0, 12 - dist * 3);
     if (n[0] === o[0]) score += 4;
     if (Math.abs(n.length - o.length) <= 1) score += 2;
+    // Prefer real Title/UPPER orthography over lowercase echo
+    if (caseOnly && candidate[0] && candidate[0] === candidate[0].toUpperCase()) score += 8;
     // Penalize "delete first letter only" (yamo→amo) — usually wrong
     if (dist === 1 && o.length === n.length + 1 && o.endsWith(n)) score -= 10;
     if (dist === 1 && n.length === o.length + 1 && n.endsWith(o)) score -= 4;
@@ -4742,9 +4748,336 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
 }
 
 /**
- * Spell-check via LanguageTool public API (CORS open).
- * Only applies misspelling fixes — not casing/style — so flashcards stay lemma-friendly.
- * langCode: app code (en, nb, sv, da, de, fr, es, it) or full BCP-47.
+ * Known acronyms that must stay UPPER on flashcards (ATM, not atm / Atm).
+ * Keep short and high-confidence — better miss than invent.
+ */
+const FLASHCARD_ACRONYMS = new Set(
+  [
+    "atm",
+    "ai",
+    "cv",
+    "id",
+    "pc",
+    "pdf",
+    "usb",
+    "tv",
+    "ok",
+    "gps",
+    "wifi",
+    "pin",
+    "sim",
+    "eu",
+    "un",
+    "uk",
+    "usa",
+    "us",
+    "dna",
+    "rna",
+    "phd",
+    "doi",
+    "http",
+    "https",
+    "url",
+    "app",
+    "api",
+    "faq",
+    "diy",
+    "asap",
+    "vip",
+    "am",
+    "pm",
+    "bc",
+    "ad",
+    "nrk",
+  ].map((w) => w.toLowerCase())
+);
+
+/** English days / months / common proper nouns that must be capitalized mid-card. */
+const ENGLISH_PROPER_LOWER = new Set(
+  [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+    "christmas",
+    "easter",
+    "europe",
+    "asia",
+    "africa",
+    "america",
+    "australia",
+    "antarctica",
+    "norway",
+    "sweden",
+    "denmark",
+    "finland",
+    "iceland",
+    "germany",
+    "france",
+    "spain",
+    "italy",
+    "england",
+    "scotland",
+    "ireland",
+    "britain",
+    "london",
+    "paris",
+    "berlin",
+    "madrid",
+    "rome",
+    "oslo",
+    "bergen",
+    "trondheim",
+    "stockholm",
+    "copenhagen",
+    "english",
+    "norwegian",
+    "swedish",
+    "danish",
+    "german",
+    "french",
+    "spanish",
+    "italian",
+    "american",
+    "british",
+    "european",
+  ].map((w) => w.toLowerCase())
+);
+
+/** LanguageTool rule ids that only force sentence-start caps — wrong for lemma flashcards. */
+const LT_SENTENCE_START_RULES = new Set([
+  "UPPERCASE_SENTENCE_START",
+  "SENTENCE_FRAGMENT",
+]);
+
+function isFlashcardAcronymToken(token) {
+  const t = String(token || "").trim();
+  if (!t) return false;
+  const bare = t.replace(/\./g, "");
+  const key = normalizeAnswer(bare);
+  if (FLASHCARD_ACRONYMS.has(key)) return true;
+  // Consonant-only 2–4 letter tokens (cv, pdf) — same idea as preferDisplayForm
+  if (/^[a-z]{2,4}$/i.test(bare) && !/[aeiouyæøåäöü]/i.test(bare)) return true;
+  // Short ALLCAPS only if consonant-heavy (ATM, not HUNGER / NORGE)
+  if (/^[A-Z]{2,5}$/.test(bare) && !/[AEIOUYaeiouy]/.test(bare)) return true;
+  return false;
+}
+
+function titleCaseWord(word) {
+  const s = String(word || "");
+  if (!s) return s;
+  // Preserve internal caps for known patterns like PhD after lower base
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
+function acronymDisplayForm(token) {
+  const bare = String(token || "").replace(/\./g, "");
+  const key = normalizeAnswer(bare);
+  if (key === "phd") return "PhD";
+  if (key === "wifi") return "WiFi";
+  return bare.toUpperCase();
+}
+
+/**
+ * Should we apply this LanguageTool match for flashcard orthography?
+ * - Misspellings: yes (incl. proper nouns norway→Norway)
+ * - Casing (German nouns, THE_FRENCH…): yes
+ * - Sentence-start capitalization: no (fights lemma/deck style)
+ */
+function isFlashcardOrthographyMatch(match) {
+  if (!match?.rule) return false;
+  const issue = match.rule.issueType || "";
+  const cat = match.rule.category?.id || "";
+  const id = match.rule.id || "";
+  if (LT_SENTENCE_START_RULES.has(id)) return false;
+  if (issue === "misspelling") return true;
+  if (cat === "CASING" || issue === "typographical" || issue === "uncategorized") {
+    // Only casing-ish rules; skip pure style/typography that isn't about letter case
+    if (/CASE|CAPITAL|GROSS|MAJUSCUL|MAYÚSCUL|STOR/i.test(`${id} ${match.message || ""}`)) {
+      return true;
+    }
+    if (cat === "CASING") return true;
+  }
+  return false;
+}
+
+/** German closed-class words — flashcard style keeps these lowercase. */
+const GERMAN_FUNCTION_LOWER = new Set(
+  [
+    "ich",
+    "du",
+    "er",
+    "sie",
+    "es",
+    "wir",
+    "ihr",
+    "mich",
+    "mir",
+    "dich",
+    "dir",
+    "ihm",
+    "ihn",
+    "uns",
+    "euch",
+    "ein",
+    "eine",
+    "einer",
+    "einem",
+    "einen",
+    "der",
+    "die",
+    "das",
+    "den",
+    "dem",
+    "des",
+    "und",
+    "oder",
+    "aber",
+    "nicht",
+    "auch",
+    "noch",
+    "nur",
+    "mit",
+    "von",
+    "zu",
+    "zum",
+    "zur",
+    "in",
+    "im",
+    "an",
+    "am",
+    "auf",
+    "für",
+    "ist",
+    "sind",
+    "war",
+    "hat",
+    "habe",
+    "haben",
+    "bin",
+    "bist",
+    "sein",
+  ].map((w) => w.toLowerCase())
+);
+
+/**
+ * True when token casing is wrong for a flashcard (not when Title Case is
+ * legitimate German noun / protected proper form).
+ */
+function flashcardTokenNeedsLower(core, langBase, key, protectedKeys) {
+  if (!core || protectedKeys.has(key)) return false;
+  // ALL CAPS long token that isn't an acronym → lower (or title in German below)
+  if (/^[A-ZÆØÅÄÖÜ]{5,}$/.test(core) && !isFlashcardAcronymToken(core)) {
+    // German: ALLCAPS noun-shaped → prefer Title (Hunger), not lower
+    if (langBase === "de") return false;
+    return true;
+  }
+  // Weird internal caps: hElLo
+  if (
+    /[a-zæøåäöü]/.test(core) &&
+    /[A-ZÆØÅÄÖÜ]/.test(core) &&
+    core !== titleCaseWord(core) &&
+    !/^PhD$/i.test(core) &&
+    !/^WiFi$/i.test(core)
+  ) {
+    return true;
+  }
+  // English: unnecessary Title Case on ordinary words (Hello → hello)
+  if (
+    langBase === "en" &&
+    /^[A-Z][a-z'+-]+$/.test(core) &&
+    !ENGLISH_PROPER_LOWER.has(key) &&
+    key !== "i"
+  ) {
+    return true;
+  }
+  // German: only force-lower known function words (Ich→ich), never nouns
+  if (langBase === "de") {
+    return GERMAN_FUNCTION_LOWER.has(key) && core !== core.toLowerCase();
+  }
+  // Other languages: Title Case ordinary words → lowercase for deck aesthetics
+  // (proper nouns should be protected via LT / deck forms / English list)
+  if (/^[A-ZÆØÅÄÖÜ][a-zæøåäöü'+-]+$/.test(core) && !protectedKeys.has(key)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Flashcard casing convention after spelling/orthography fixes:
+ * - acronyms → ATM / PhD
+ * - English "I" → I
+ * - English proper nouns (days, countries…) → Title
+ * - German nouns (Title) kept; function words lower
+ * - LanguageTool-protected tokens kept
+ * - unnecessary Title/ALLCAPS on ordinary words → lowercase (deck aesthetics)
+ * Never invent wrong language orthography.
+ */
+function applyFlashcardCasingConvention(text, langCode, protectedNormKeys = null) {
+  const trimmed = stripFlashcardPunctuation(text);
+  if (!trimmed) return trimmed;
+  const base = String(langCode || "en")
+    .toLowerCase()
+    .split("-")[0];
+  const isEnglish = base === "en";
+  const protectedKeys = protectedNormKeys || new Set();
+
+  const parts = trimmed.split(/(\s+|\/)/);
+  const out = parts.map((part) => {
+    if (!part || /^\s+$/.test(part) || part === "/") return part;
+    const core = part.replace(
+      /^[^A-Za-zÀ-ÖØ-öø-ÿÆØÅæøåÄÖäöÜü0-9]+|[^A-Za-zÀ-ÖØ-öø-ÿÆØÅæøåÄÖäöÜü0-9]+$/g,
+      ""
+    );
+    if (!core) return part;
+    const key = normalizeAnswer(core);
+
+    let replacement = core;
+    if (isFlashcardAcronymToken(core)) {
+      replacement = acronymDisplayForm(core);
+    } else if (isEnglish && key === "i") {
+      replacement = "I";
+    } else if (isEnglish && ENGLISH_PROPER_LOWER.has(key)) {
+      replacement = titleCaseWord(core);
+    } else if (protectedKeys.has(key)) {
+      replacement = core;
+    } else if (
+      base === "de" &&
+      /^[A-ZÄÖÜ]{2,}$/.test(core) &&
+      !isFlashcardAcronymToken(core)
+    ) {
+      // HUNGER → Hunger (German noun orthography), not hunger
+      replacement = titleCaseWord(core);
+    } else if (flashcardTokenNeedsLower(core, base, key, protectedKeys)) {
+      replacement = core.toLowerCase();
+    }
+
+    if (replacement === core) return part;
+    return part.replace(core, replacement);
+  });
+
+  return stripFlashcardPunctuation(out.join(""));
+}
+
+/**
+ * Full orthography pass via LanguageTool (CORS open):
+ * spelling + language-correct capitalization (not sentence-start style).
+ * Then flashcard casing convention (acronyms, proper nouns, lemma lowercase).
  * Returns corrected text, or null if unchanged / unavailable.
  */
 async function fetchSpellingCorrection(text, langCode) {
@@ -4752,10 +5085,15 @@ async function fetchSpellingCorrection(text, langCode) {
   if (!trimmed || trimmed.length < 2) return null;
   if (looksLikeGibberish(trimmed)) return null;
   const ltLang = toLanguageToolCode(langCode);
-  if (!ltLang) return null;
+  if (!ltLang) {
+    // Still apply local flashcard casing when LT has no language pack
+    const localOnly = applyFlashcardCasingConvention(trimmed, langCode);
+    return localOnly && localOnly !== stripFlashcardPunctuation(trimmed) ? localOnly : null;
+  }
 
   const knownForms =
     ltLang === "en-US" || ltLang === "en-GB" ? null : getKnownForeignForms();
+  const protectedKeys = new Set();
 
   try {
     const body = new URLSearchParams({
@@ -4767,51 +5105,116 @@ async function fetchSpellingCorrection(text, langCode) {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body,
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const localOnly = applyFlashcardCasingConvention(trimmed, langCode);
+      return localOnly && localOnly !== stripFlashcardPunctuation(trimmed) ? localOnly : null;
+    }
     const data = await response.json();
     const matches = (data.matches || []).filter(
       (m) =>
         m &&
-        m.rule?.issueType === "misspelling" &&
+        isFlashcardOrthographyMatch(m) &&
         Array.isArray(m.replacements) &&
         m.replacements.length > 0 &&
         Number.isFinite(m.offset) &&
         Number.isFinite(m.length) &&
         m.length > 0
     );
-    if (!matches.length) return null;
 
-    // Apply from the end so earlier offsets stay valid
     let result = trimmed;
-    const sorted = [...matches].sort((a, b) => b.offset - a.offset);
     let changed = false;
 
-    for (const match of sorted) {
-      if (match.offset < 0 || match.offset + match.length > result.length) continue;
-      const original = result.slice(match.offset, match.offset + match.length);
-      // Only fix plain word tokens — skip multi-word LT rewrites
-      if (/\s/.test(original)) continue;
-      const pick = pickSpellingReplacement(
-        original,
-        match.replacements.map((r) => r.value).filter(Boolean),
-        trimmed,
-        knownForms
-      );
-      if (!pick) continue;
-      if (normalizeAnswer(pick) === normalizeAnswer(original)) continue;
-      // Allow dist 3 for digraph/accent fixes (yamo→llamo, heise→heiße)
-      if (editDistance(original, pick) > 3) continue;
-      result =
-        result.slice(0, match.offset) + pick + result.slice(match.offset + match.length);
-      changed = true;
+    if (matches.length) {
+      const sorted = [...matches].sort((a, b) => b.offset - a.offset);
+      for (const match of sorted) {
+        if (match.offset < 0 || match.offset + match.length > result.length) continue;
+        const original = result.slice(match.offset, match.offset + match.length);
+        if (/\s/.test(original)) continue;
+        const reps = match.replacements.map((r) => r.value).filter(Boolean);
+        const isMisspelling = match.rule?.issueType === "misspelling";
+        let pick = null;
+
+        if (isMisspelling) {
+          pick = pickSpellingReplacement(original, reps, trimmed, knownForms);
+          if (pick && editDistance(original, pick) > 3) pick = null;
+        } else {
+          // Casing: prefer first single-token replacement that only changes case
+          // or is the language-correct form (German Hunger, etc.)
+          for (const rep of reps) {
+            if (/\s/.test(rep)) continue;
+            if (normalizeAnswer(rep) === normalizeAnswer(original)) {
+              pick = rep;
+              break;
+            }
+            // German etc.: sometimes casing rule still suggests same letters
+            if (editDistance(original, rep) <= 1 && rep[0] && rep[0] === rep[0].toUpperCase()) {
+              pick = rep;
+              break;
+            }
+          }
+          if (!pick) {
+            const first = reps.find((r) => r && !/\s/.test(r));
+            if (first && normalizeAnswer(first) === normalizeAnswer(original)) pick = first;
+          }
+        }
+
+        if (!pick) continue;
+        if (pick === original) continue;
+        result =
+          result.slice(0, match.offset) + pick + result.slice(match.offset + match.length);
+        changed = true;
+        // Protect orthographically capitalized tokens from the later lowercase pass
+        const pickKey = normalizeAnswer(pick);
+        if (pickKey && pick !== pick.toLowerCase()) {
+          protectedKeys.add(pickKey);
+        }
+      }
     }
 
-    if (!changed) return null;
+    // Deck-known display forms (Bodø, etc.) protect casing when letters match
+    if (knownForms) {
+      for (const tok of reviewTokens(result)) {
+        const key = normalizeAnswer(tok);
+        if (knownForms.has(key)) {
+          const display = knownForms.get(key);
+          if (display && display !== display.toLowerCase()) {
+            protectedKeys.add(key);
+          }
+        }
+      }
+      // Prefer deck display form token-for-token when available
+      result = result
+        .split(/(\s+|\/)/)
+        .map((part) => {
+          if (!part || /^\s+$/.test(part) || part === "/") return part;
+          const key = normalizeAnswer(part);
+          if (knownForms.has(key)) {
+            const display = knownForms.get(key);
+            if (display && display !== part) {
+              changed = true;
+              return display;
+            }
+          }
+          return part;
+        })
+        .join("");
+    }
+
+    const cased = applyFlashcardCasingConvention(result, langCode, protectedKeys);
+    if (cased && cased !== stripFlashcardPunctuation(result)) {
+      result = cased;
+      changed = true;
+    } else if (cased) {
+      result = cased;
+    }
+
     const cleaned = stripFlashcardPunctuation(result);
-    if (!cleaned || normalizeAnswer(cleaned) === normalizeAnswer(trimmed)) return null;
+    if (!cleaned) return null;
+    if (cleaned === stripFlashcardPunctuation(trimmed)) return null;
     return cleaned;
   } catch {
-    return null;
+    const localOnly = applyFlashcardCasingConvention(trimmed, langCode);
+    return localOnly && localOnly !== stripFlashcardPunctuation(trimmed) ? localOnly : null;
   }
 }
 
@@ -4882,13 +5285,22 @@ function correctForeignViaDeckNearMatch(text) {
 }
 
 /**
- * Best-effort learning-language spelling correction:
- * LanguageTool first, then deck near-match for words LT misses.
+ * Best-effort learning-language orthography:
+ * LanguageTool (spelling + correct casing) first, then deck near-match,
+ * then local flashcard casing convention.
  */
 async function fetchLearningSpellingCorrection(text, foreignCode) {
   const fromTool = await fetchSpellingCorrection(text, foreignCode);
   if (fromTool) return fromTool;
-  return correctForeignViaDeckNearMatch(text);
+  const fromDeck = correctForeignViaDeckNearMatch(text);
+  if (fromDeck) {
+    const cased = applyFlashcardCasingConvention(fromDeck, foreignCode);
+    if (cased && orthographyFixIsPlausible(text, cased)) return cased;
+    if (orthographyFixIsPlausible(text, fromDeck)) return fromDeck;
+  }
+  const localOnly = applyFlashcardCasingConvention(text, foreignCode);
+  if (localOnly && orthographyFixIsPlausible(text, localOnly)) return localOnly;
+  return null;
 }
 
 function syncAddCardSuggestingState() {
@@ -5386,6 +5798,83 @@ function spellingFixIsPlausible(userText, correctedText) {
   return tokenDist <= Math.max(2, Math.floor(reviewTokens(userText).length / 2));
 }
 
+/**
+ * Plausible orthography fix: spelling change OR display casing change
+ * (norway→Norway, atm→ATM, Hello→hello, German hunger→Hunger).
+ */
+function orthographyFixIsPlausible(userText, correctedText) {
+  if (!userText || !correctedText) return false;
+  const userClean = stripFlashcardPunctuation(userText);
+  const fixClean = stripFlashcardPunctuation(correctedText);
+  if (!userClean || !fixClean || userClean === fixClean) return false;
+  // Pure capitalization / acronym / lemma-style change
+  if (normalizeAnswer(userClean) === normalizeAnswer(fixClean)) return true;
+  return spellingFixIsPlausible(userClean, fixClean);
+}
+
+/** Title + copy for orthography recommendations (teacher voice). */
+function orthographyFixCopy(learningName, userNative, userForeign, fixNative, fixForeign) {
+  const nativeChanged =
+    fixNative && stripFlashcardPunctuation(userNative) !== stripFlashcardPunctuation(fixNative);
+  const foreignChanged =
+    fixForeign && stripFlashcardPunctuation(userForeign) !== stripFlashcardPunctuation(fixForeign);
+  const nativeSpell =
+    nativeChanged && normalizeAnswer(userNative) !== normalizeAnswer(fixNative);
+  const foreignSpell =
+    foreignChanged && normalizeAnswer(userForeign) !== normalizeAnswer(fixForeign);
+  const nativeCase = nativeChanged && !nativeSpell;
+  const foreignCase = foreignChanged && !foreignSpell;
+
+  const pair = formatReviewPair(fixForeign || userForeign, fixNative || userNative);
+
+  if (nativeChanged && foreignChanged) {
+    if (nativeSpell || foreignSpell) {
+      return {
+        title: "Fix spelling & capitalization?",
+        copy: `Tap to use ${pair} — exact correct forms only for both sides.`,
+      };
+    }
+    return {
+      title: "Fix capitalization?",
+      copy: `Tap to use ${pair} — language-correct capitalization on both sides.`,
+    };
+  }
+  if (nativeChanged) {
+    if (nativeSpell && nativeCase) {
+      return {
+        title: "Fix English spelling?",
+        copy: `Tap to use ${pair} — exact correct English.`,
+      };
+    }
+    if (nativeSpell) {
+      return {
+        title: "Fix English spelling?",
+        copy: `Tap to use ${pair} — learn the exact correct English.`,
+      };
+    }
+    return {
+      title: "Fix English capitalization?",
+      copy: `Tap to use ${pair} — proper nouns, acronyms (ATM), and “I” stay correct; ordinary words match the deck.`,
+    };
+  }
+  if (foreignChanged) {
+    if (foreignSpell) {
+      return {
+        title: `Fix ${learningName} spelling?`,
+        copy: `Tap to use ${pair} — never learn a misspelled ${learningName} form.`,
+      };
+    }
+    return {
+      title: `Fix ${learningName} capitalization?`,
+      copy: `Tap to use ${pair} — correct ${learningName} capitalization (never teach the wrong form).`,
+    };
+  }
+  return {
+    title: "Use correct form?",
+    copy: `Tap to use ${pair}.`,
+  };
+}
+
 function getTranslationReviewSummary(
   foreign,
   native,
@@ -5416,60 +5905,49 @@ function getTranslationReviewSummary(
       ? null
       : preferDisplayForm(suggestedForeign) || null;
 
-  // Real spell-check (LanguageTool + deck near-match) — independent of MT.
-  // MT often echoes typos; we still must never teach a wrong form.
+  // Orthography (spelling + language-correct capitalization) — independent of MT.
+  // Never teach a wrong form; user may still Add Anyway.
   const safeSpellingNative =
     !nativeGibberish && spellingCorrectedNative
       ? stripFlashcardPunctuation(spellingCorrectedNative) || null
       : null;
   const safeSpellingForeign =
     !foreignGibberish && spellingCorrectedForeign
-      ? preferDisplayForm(spellingCorrectedForeign) || null
+      ? stripFlashcardPunctuation(spellingCorrectedForeign) || null
       : null;
 
   const makePairFix = (title, copy, pairForeign, pairNative) => ({
     matches: false,
     targetField: "pair",
     suggestedValue: null,
-    suggestedForeign: preferDisplayForm(pairForeign),
+    // Keep recommended orthography as-is (do not re-lower via preferDisplayForm)
+    suggestedForeign: stripFlashcardPunctuation(pairForeign),
     suggestedNative: stripFlashcardPunctuation(pairNative),
     title,
     copy,
   });
 
-  const nativeNeedsSpelling =
-    safeSpellingNative && spellingFixIsPlausible(native, safeSpellingNative);
-  const foreignNeedsSpelling =
-    safeSpellingForeign && spellingFixIsPlausible(foreign, safeSpellingForeign);
+  const nativeNeedsOrtho =
+    safeSpellingNative && orthographyFixIsPlausible(native, safeSpellingNative);
+  const foreignNeedsOrtho =
+    safeSpellingForeign && orthographyFixIsPlausible(foreign, safeSpellingForeign);
 
-  // Spell-check first — product rule: never freely accept ANY misspelled side to learn.
-  if (nativeNeedsSpelling && foreignNeedsSpelling) {
-    return makePairFix(
-      "Fix spelling?",
-      `Tap to use ${formatReviewPair(safeSpellingForeign, safeSpellingNative)} — exact correct forms only.`,
-      safeSpellingForeign,
-      safeSpellingNative
+  // Orthography first — product rule: never freely accept ANY incorrect form to learn.
+  if (nativeNeedsOrtho || foreignNeedsOrtho) {
+    const pairNative = nativeNeedsOrtho
+      ? safeSpellingNative
+      : stripFlashcardPunctuation(safeSuggestedNative || native);
+    const pairForeign = foreignNeedsOrtho
+      ? safeSpellingForeign
+      : stripFlashcardPunctuation(safeSuggestedForeign || foreign);
+    const msg = orthographyFixCopy(
+      learningName,
+      native,
+      foreign,
+      nativeNeedsOrtho ? pairNative : null,
+      foreignNeedsOrtho ? pairForeign : null
     );
-  }
-
-  if (nativeNeedsSpelling) {
-    const pairForeign = safeSpellingForeign || safeSuggestedForeign || foreign;
-    return makePairFix(
-      "Fix English spelling?",
-      `Tap to use ${formatReviewPair(pairForeign, safeSpellingNative)} — learn the exact correct English.`,
-      pairForeign,
-      safeSpellingNative
-    );
-  }
-
-  if (foreignNeedsSpelling) {
-    const pairNative = safeSpellingNative || safeSuggestedNative || native;
-    return makePairFix(
-      `Fix ${learningName} spelling?`,
-      `Tap to use ${formatReviewPair(safeSpellingForeign, pairNative)} — never learn a misspelled ${learningName} form.`,
-      safeSpellingForeign,
-      pairNative
-    );
+    return makePairFix(msg.title, msg.copy, pairForeign, pairNative);
   }
 
   // Curated local data first (can still rescue mash on one side with a real deck pair).
@@ -5984,7 +6462,7 @@ async function openAddCardReview() {
   let suggestedNative = suggestedNativeRaw;
   let suggestedForeign = suggestedForeignRaw;
 
-  // Re-translate from corrected forms so neither side ships a typo-shaped gloss.
+  // Re-translate when letters changed (casing-only usually keeps the same gloss).
   const nativeFixed =
     spellingCorrectedNative &&
     normalizeAnswer(spellingCorrectedNative) !== normalizeAnswer(native);
