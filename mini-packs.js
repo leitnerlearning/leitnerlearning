@@ -124,7 +124,7 @@
     ['försenat flyg', 'delayed flight'],
     ['boardinggate', 'boarding gate'],
     ['biometriskt pass', 'biometric passport'],
-    ['dutyfree', 'duty-free shop'],
+    ['taxfree', 'duty-free shop'],
     ['flygbuss', 'airport shuttle'],
     ['informationsdisk', 'information desk'],
     ['bagageutlämning', 'baggage claim'],
@@ -578,7 +578,7 @@
   packs.cafe.byCategory["sv"] = buildEntries([
     ['kaffe latte', 'latte'],
     ['notan tack', 'the bill please'],
-    ['uteservering sommar', 'summer outdoor seating'],
+    ['uteservering', 'outdoor seating'],
     ['dagens rätt', 'dish of the day'],
     ['servitör', 'waiter'],
     ['vinkort', 'wine list'],
@@ -818,7 +818,7 @@
     ['handledning', 'tutoring'],
     ['studentbostad', 'student housing'],
     ['dugga', 'mid-term exam'],
-    ['kandidatexamen', 'bachelor\'s degree'],
+    ['kandidatexamen', 'bachelor’s degree'],
     ['doktorsexamen', 'PhD'],
     ['labbsal', 'lab room'],
     ['studiestipendium', 'study scholarship'],
@@ -1037,7 +1037,7 @@
 
   packs.doctor.byCategory["sv"] = buildEntries([
     ['vårdcentral', 'health centre'],
-    ['apotek jour', 'on-duty pharmacy'],
+    ['jourapotek', 'on-duty pharmacy'],
     ['besökstid', 'appointment'],
     ['recept', 'prescription'],
     ['Försäkringskassan', 'Social Insurance Agency'],
@@ -1728,7 +1728,7 @@
   packs.shopping.byCategory["sv"] = buildEntries([
     ['streckkod', 'barcode'],
     ['kassa', 'checkout'],
-    ['rea-period', 'sale period'],
+    ['rea', 'sale'],
     ['kundvagn', 'shopping trolley'],
     ['medlemskort', 'loyalty card'],
     ['avdelning', 'department'],
@@ -1956,11 +1956,11 @@
   ]);
 
   packs.social.byCategory["sv"] = buildEntries([
-    ['kväll ute', 'night out'],
+    ['kväll på stan', 'night out'],
     ['kindpuss', 'kiss on the cheek'],
     ['familjemiddag', 'family dinner'],
-    ['afterwork', 'afterwork drinks'],
-    ['bostadsområde grannar', 'residential neighbours'],
+    ['after work', 'after-work drinks'],
+    ['grannar', 'neighbours'],
     ['fest', 'party'],
     ['avskedsdrink', 'farewell drink'],
     ['återträff', 'reunion'],
@@ -1972,7 +1972,7 @@
     ['födelsedag', 'birthday'],
     ['fika med vänner', 'coffee with friends'],
     ['diskussion', 'discussion'],
-    ['WhatsApp-grupp', 'WhatsApp group'],
+    ['chattgrupp', 'chat group'],
     ['handskakning', 'handshake'],
     ['helg med familjen', 'family weekend'],
     ['gamla vänner', 'old friends'],
