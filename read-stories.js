@@ -41,7 +41,7 @@ function getReadTrailLevel(id) {
 }
 
 function sortStoriesByTrail(stories) {
-  return [. .stories].sort(
+  return [...stories].sort(
     (a, b) => READ_TRAIL_ORDER.indexOf(a.trail) - READ_TRAIL_ORDER.indexOf(b.trail)
   );
 }
