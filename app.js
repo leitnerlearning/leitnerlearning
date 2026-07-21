@@ -4860,6 +4860,11 @@ const COMMON_ENGLISH_TYPOS = {
   fro: "for",
   formr: "from",
   fomr: "form",
+  // kiss / common short verbs LT ranks poorly for jumbled letters
+  ksi: "kiss",
+  kis: "kiss",
+  ksis: "kiss",
+  kss: "kiss",
   recieve: "receive",
   beleive: "believe",
   seperate: "separate",
@@ -4905,6 +4910,95 @@ const COMMON_ENGLISH_TYPOS = {
   couldnt: "couldn't",
 };
 
+/** Frequent short English words we may recover via 1–2 edits when LT misses them. */
+const COMMON_ENGLISH_RECOVER_WORDS = [
+  "kiss",
+  "eat",
+  "like",
+  "love",
+  "want",
+  "need",
+  "have",
+  "make",
+  "take",
+  "give",
+  "go",
+  "get",
+  "see",
+  "know",
+  "think",
+  "say",
+  "tell",
+  "use",
+  "find",
+  "help",
+  "come",
+  "look",
+  "feel",
+  "try",
+  "leave",
+  "call",
+  "keep",
+  "let",
+  "begin",
+  "seem",
+  "help",
+  "show",
+  "hear",
+  "play",
+  "run",
+  "move",
+  "live",
+  "believe",
+  "hold",
+  "bring",
+  "happen",
+  "write",
+  "sit",
+  "stand",
+  "lose",
+  "pay",
+  "meet",
+  "include",
+  "continue",
+  "set",
+  "learn",
+  "change",
+  "lead",
+  "understand",
+  "watch",
+  "follow",
+  "stop",
+  "create",
+  "speak",
+  "read",
+  "allow",
+  "add",
+  "spend",
+  "grow",
+  "open",
+  "walk",
+  "win",
+  "offer",
+  "remember",
+  "love",
+  "consider",
+  "appear",
+  "buy",
+  "wait",
+  "serve",
+  "die",
+  "send",
+  "expect",
+  "build",
+  "stay",
+  "fall",
+  "cut",
+  "reach",
+  "kill",
+  "remain",
+];
+
 function commonEnglishTypoFix(word) {
   const raw = String(word || "");
   const key = normalizeAnswer(raw).replace(/'/g, "");
@@ -4934,33 +5028,86 @@ function isAdjacentTransposition(a, b) {
   return s[i] === t[i + 1] && s[i + 1] === t[i] && s.slice(i + 2) === t.slice(i + 2);
 }
 
+/** longer is shorter with exactly one inserted letter (ksi → kiss). */
+function isOneLetterInsert(shorter, longer) {
+  const s = normalizeAnswer(shorter);
+  const t = normalizeAnswer(longer);
+  if (!s || !t || t.length !== s.length + 1) return false;
+  let i = 0;
+  let j = 0;
+  let skipped = 0;
+  while (i < s.length && j < t.length) {
+    if (s[i] === t[j]) {
+      i += 1;
+      j += 1;
+    } else {
+      skipped += 1;
+      j += 1;
+      if (skipped > 1) return false;
+    }
+  }
+  return true;
+}
+
 /**
- * Pick the best spelling replacement from LanguageTool candidates.
- * Prefers: common typos, phrase context, real words over ALLCAPS acronym noise.
+ * Recover real English words near a misspelling when LT misses them
+ * (ksi → kiss is not in LT's list; ski/kis are wrong neighbors).
+ */
+function englishRecoveryCandidates(misspelled) {
+  const o = normalizeAnswer(misspelled);
+  if (!o || o.length < 2) return [];
+  const out = [];
+  const seen = new Set();
+  const add = (word) => {
+    const w = normalizeAnswer(word);
+    if (!w || w === o || seen.has(w)) return;
+    seen.add(w);
+    out.push(w);
+  };
+
+  const mapped = commonEnglishTypoFix(misspelled);
+  if (mapped) add(mapped);
+
+  // Known typo keys that are close to what the user typed
+  Object.keys(COMMON_ENGLISH_TYPOS).forEach((key) => {
+    if (key === o || editDistance(o, key) <= 1 || isAdjacentTransposition(o, key)) {
+      add(COMMON_ENGLISH_TYPOS[key]);
+    }
+  });
+
+  // High-frequency words within 1–2 edits / one insert (ksi→kiss)
+  COMMON_ENGLISH_RECOVER_WORDS.forEach((word) => {
+    if (isOneLetterInsert(o, word) || isAdjacentTransposition(o, word)) {
+      add(word);
+      return;
+    }
+    const dist = editDistance(o, word);
+    if (dist > 0 && dist <= 2 && Math.abs(o.length - word.length) <= 2) add(word);
+  });
+
+  return out;
+}
+
+/**
+ * Pick the best spelling replacement from LanguageTool + recovery candidates.
+ * Never invent garbage neighbors (ksi → kis) via blind letter swaps.
  */
 function pickSpellingReplacement(original, replacements, fullText, knownForms = null) {
   const o = normalizeAnswer(original);
   if (!o) return null;
 
-  const injected = [];
-  const common = commonEnglishTypoFix(original);
-  if (common) injected.push(common);
-  // Adjacent swaps as soft candidates (aet → eat)
-  const rawO = String(original || "");
-  for (let i = 0; i < rawO.length - 1; i += 1) {
-    const chars = rawO.split("");
-    const tmp = chars[i];
-    chars[i] = chars[i + 1];
-    chars[i + 1] = tmp;
-    injected.push(chars.join(""));
-  }
-
-  const pool = [...injected, ...(replacements || [])];
+  // Recovery first (kiss), then LT — never blind adjacent swaps (those produced "kis")
+  const pool = [...englishRecoveryCandidates(original), ...(replacements || [])];
   if (!pool.length) return null;
 
-  const contextTokens = new Set(reviewTokens(fullText));
-  const inPhrase = reviewTokens(fullText).length >= 2;
+  const phraseTokens = reviewTokens(fullText);
+  const contextTokens = new Set(phraseTokens);
+  const inPhrase = phraseTokens.length >= 2;
   const userLower = String(original || "") === String(original || "").toLowerCase();
+  const missIdx = phraseTokens.indexOf(o);
+  const prevTok = missIdx > 0 ? phraseTokens[missIdx - 1] : "";
+  const nextTok = missIdx >= 0 && missIdx < phraseTokens.length - 1 ? phraseTokens[missIdx + 1] : "";
+
   let best = null;
   let bestScore = -Infinity;
 
@@ -4987,22 +5134,41 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
 
     const dist = caseOnly
       ? 0
-      : isAdjacentTransposition(o, n)
+      : isOneLetterInsert(o, n)
         ? 1
-        : editDistance(o, n);
+        : isAdjacentTransposition(o, n)
+          ? 1
+          : editDistance(o, n);
     if (!caseOnly && dist > 3) return;
 
     let score = 0;
-    if (COMMON_ENGLISH_TYPOS[o] === n) score += 120;
-    if (isAdjacentTransposition(o, n) && n.length >= 3) score += 45;
+    if (COMMON_ENGLISH_TYPOS[o] === n) score += 130;
+    if (isOneLetterInsert(o, n) && COMMON_ENGLISH_RECOVER_WORDS.includes(n)) score += 95;
+    if (isAdjacentTransposition(o, n) && COMMON_ENGLISH_RECOVER_WORDS.includes(n)) score += 55;
+    // Blind scramble neighbors that aren't real recover words (ksi→kis)
+    if (
+      isAdjacentTransposition(o, n) &&
+      !COMMON_ENGLISH_RECOVER_WORDS.includes(n) &&
+      !COMMON_ENGLISH_TYPOS[o]
+    ) {
+      score -= 60;
+    }
     if (caseOnly) score += 20;
     // Prefer real lowercase word over shouting acronym when user typed lower
     if (userLower && /^[a-z]/.test(candidate)) score += 18;
     if (userLower && /^[A-Z]{2,}$/.test(candidate)) score -= 90;
     if (contextTokens.has(n)) score += 40;
     if (knownForms && knownForms.has(n)) score += 35;
-    // LanguageTool order — weaker than before so acronyms don't dominate
-    score += Math.max(0, 14 - index * 1.8);
+    // Phrase context: "and X girls" strongly prefers verbs like kiss, not ski
+    if (nextTok === "girls" || nextTok === "boys" || nextTok === "someone") {
+      if (n === "kiss" || n === "hug" || n === "love") score += 70;
+      if (n === "ski" || n === "kai" || n === "psi") score -= 50;
+    }
+    if (prevTok === "to" || prevTok === "and" || prevTok === "or") {
+      if (COMMON_ENGLISH_RECOVER_WORDS.includes(n)) score += 25;
+    }
+    // LanguageTool order — weaker so acronyms / ski don't dominate
+    score += Math.max(0, 12 - index * 1.5);
     score += Math.max(0, 12 - dist * 3);
     if (n[0] === o[0]) score += 4;
     if (Math.abs(n.length - o.length) <= 1) score += 2;
@@ -5012,7 +5178,9 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
     }
     // Penalize "delete first letter only" (yamo→amo) — usually wrong
     if (dist === 1 && o.length === n.length + 1 && o.endsWith(n)) score -= 10;
-    if (dist === 1 && n.length === o.length + 1 && n.endsWith(o)) score -= 4;
+    if (dist === 1 && n.length === o.length + 1 && n.endsWith(o) && !isOneLetterInsert(o, n)) {
+      score -= 4;
+    }
 
     if (score > bestScore) {
       bestScore = score;
@@ -5494,6 +5662,7 @@ async function fetchSpellingCorrection(text, langCode) {
               pick &&
               editDistance(original, pick) > 3 &&
               !isAdjacentTransposition(original, pick) &&
+              !isOneLetterInsert(original, pick) &&
               COMMON_ENGLISH_TYPOS[normalizeAnswer(original)] !== normalizeAnswer(pick)
             ) {
               pick = null;
