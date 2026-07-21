@@ -2,9 +2,8 @@
  * Learning tracks available in Leitner Learning.
  * Only categories with `available: true` can be selected today.
  *
- * Display order (menus / welcome) is set by LANGUAGE_DISPLAY_ORDER in app.js —
- * most commonly learned first among the languages we ship, Nordics lower.
- * Array order here is not the UI order.
+ * Display order (menus / welcome) is alphabetical by label in app.js
+ * (sortCategoriesForDisplay). Array order here is not the UI order.
  */
 const LEARNING_CATEGORIES = [
   {

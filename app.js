@@ -8469,24 +8469,16 @@ function applyPracticeDirectionUI() {
 }
 
 /**
- * Menu / welcome order: most commonly learned first (among languages we ship).
- * Spanish → French → German → Italian → Swedish → Norwegian → Danish.
+ * Menu / welcome order: alphabetical by display name (A–Z).
+ * Scales better as languages are added — users can scan and find a language.
  */
-const LANGUAGE_DISPLAY_ORDER = [
-  "es",
-  "fr",
-  "de",
-  "it",
-  "sv",
-  "nb-bokmal",
-  "da",
-];
-
 function sortCategoriesForDisplay(categories) {
   return [...categories].sort((a, b) => {
-    const ia = LANGUAGE_DISPLAY_ORDER.indexOf(a.id);
-    const ib = LANGUAGE_DISPLAY_ORDER.indexOf(b.id);
-    return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+    const la = String(a.label || a.id || "");
+    const lb = String(b.label || b.id || "");
+    const byName = la.localeCompare(lb, "en", { sensitivity: "base" });
+    if (byName !== 0) return byName;
+    return String(a.id || "").localeCompare(String(b.id || ""), "en");
   });
 }
 
