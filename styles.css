@@ -4767,6 +4767,27 @@ html.needs-welcome body {
   display: none;
 }
 
+.library-themes-study-now {
+  margin-left: 0.35rem;
+  padding: 0.12rem 0.55rem;
+  border: 1px solid rgba(54, 95, 207, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--brand-deep, #2a4a9b);
+  cursor: pointer;
+  vertical-align: baseline;
+}
+
+.library-themes-study-now:hover,
+.library-themes-study-now:focus-visible {
+  border-color: rgba(54, 95, 207, 0.45);
+  color: var(--brand, #365fcf);
+  outline: none;
+}
+
 .library-themes-head {
   margin: 0 0 0.7rem;
 }

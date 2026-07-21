@@ -2494,7 +2494,7 @@ function getPackLearningProgress(pack, categoryId = activeCategoryId, cards = de
  * Enable a pack and merge its cards into the live deck.
  * Returns { added, total, already }.
  */
-function enableThematicPack(packId) {
+function enableThematicPack(packId, options = {}) {
   const pack = getThematicPackById(packId);
   if (!pack) return { added: 0, total: 0, already: true };
 
@@ -2525,11 +2525,23 @@ function enableThematicPack(packId) {
   } catch {
     // non-fatal
   }
+
+  // Focus Library on this pack so “what did I just add?” is obvious.
+  if (options.focusLibrary !== false) {
+    libraryFilter = "themes";
+    libraryThemePackFilter = packId;
+    document.querySelectorAll(".filter-chip").forEach((el) => {
+      el.classList.toggle("active", el.dataset.band === "themes");
+    });
+  }
+
   renderAll();
   return {
     added,
     total: getPackEntriesForCategory(pack).length,
     already: added === 0 && isPackEnabled(packId),
+    packId,
+    title: pack.title || packId,
   };
 }
 
@@ -4847,6 +4859,7 @@ function showFeedbackExample(example, card = currentCard) {
 /**
  * After a miss/reveal: show the answer pill, plus a real-sentence beat when we have one.
  * Especially valuable for glue words that only make sense in use.
+ * Theme cards without a story line get a quiet pack label so the miss still has context.
  */
 function showIncorrectWithExample(card, answerText) {
   showFeedback(answerText, "incorrect");
@@ -4854,6 +4867,19 @@ function showIncorrectWithExample(card, answerText) {
   if (example) {
     showFeedbackExample(example, card);
     return true;
+  }
+  if (card?.packId) {
+    const pack = getThematicPackById(card.packId);
+    const title = pack?.title || "Theme";
+    const foreign = String(card.foreign || "").trim();
+    const native = String(card.native || "").split("/")[0].trim();
+    if (foreign && native) {
+      showFeedbackExample(
+        { foreign: `${foreign} · ${native}`, en: title },
+        card
+      );
+      return true;
+    }
   }
   hideFeedbackExample();
   return false;
@@ -11684,13 +11710,13 @@ function initEventListeners() {
     const packId = btn.getAttribute("data-pack-enable");
     if (!packId) return;
     const result = enableThematicPack(packId);
-    // Quiet status on the card itself via re-render; optional brief live message
+    // Quiet status + one-tap Study so add → practice is one calm step.
     const live = document.getElementById("library-themes-live");
     if (live) {
       if (result.added > 0) {
-        live.textContent = `Added ${result.added} cards to your deck.`;
+        live.innerHTML = `Added ${result.added} cards. <button type="button" class="library-themes-study-now" data-pack-study="${escapeAttr(packId)}">Study now</button>`;
       } else if (result.already) {
-        live.textContent = "Already in your deck.";
+        live.innerHTML = `Already in your deck. <button type="button" class="library-themes-study-now" data-pack-study="${escapeAttr(packId)}">Study</button>`;
       } else {
         live.textContent = "";
       }
