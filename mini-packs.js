@@ -8,7 +8,7 @@
   const packs = {
     airport: {
       id: "airport",
-      title: "Airport & travel",
+      title: "Travel",
       blurb: "Gates, bags, delays, and asking for help.",
       byCategory: {},
     },

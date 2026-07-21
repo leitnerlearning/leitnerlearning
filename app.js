@@ -9795,7 +9795,7 @@ function renderCardList() {
     return;
   }
 
-  // Themes: group by pack title (Airport, Café, …) — jump chips use those sections.
+  // Themes: group by pack title (Travel, Dining, …) — jump chips use those sections.
   if (libraryFilter === "themes") {
     const packOrder = getThematicPackList().map((pack) => pack.id);
     const byPack = new Map();
