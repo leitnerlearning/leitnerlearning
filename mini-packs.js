@@ -111,8 +111,8 @@
     ['tur-retur', 'round-trip'],
     ['enveisbillett', 'one-way ticket'],
     ['å lande', 'to land'],
-    ['plattform', 'platform'],
-    ['spor', 'track / platform number'],
+    ['gate', 'gate'],
+    ['bagasjebånd', 'baggage carousel'],
   ]);
 
   packs.airport.byCategory["sv"] = buildEntries([
@@ -158,7 +158,7 @@
     ['enkeltbillet', 'one-way ticket'],
     ['at lande', 'to land'],
     ['boardinggate', 'boarding gate'],
-    ['spor', 'track / platform number'],
+    ['bagagebånd', 'baggage carousel'],
   ]);
 
   packs.airport.byCategory["de"] = buildEntries([
@@ -180,8 +180,8 @@
     ['Hin und zurück', 'round-trip'],
     ['Einfache Fahrt', 'one-way ticket'],
     ['landen', 'to land'],
-    ['Bahnsteig', 'platform'],
-    ['Gleis', 'track / platform number'],
+    ['Gate', 'gate'],
+    ['Gepäckband', 'baggage carousel'],
   ]);
 
   packs.airport.byCategory["fr"] = buildEntries([
@@ -226,8 +226,8 @@
     ['ida y vuelta', 'round-trip'],
     ['solo ida', 'one-way ticket'],
     ['aterrizar', 'to land'],
-    ['andén', 'platform'],
-    ['vía', 'track / platform number'],
+    ['puerta de embarque', 'boarding gate'],
+    ['cinta de equipaje', 'baggage carousel'],
   ]);
 
   packs.airport.byCategory["it"] = buildEntries([
