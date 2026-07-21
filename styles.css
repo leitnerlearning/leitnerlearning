@@ -4840,8 +4840,8 @@ html.needs-welcome body {
 
 /* Library → Packs filter only: compact optional grid (not a second product) */
 .library-themes {
-  margin: 0 0 0.75rem;
-  padding: 0.1rem 0 0.2rem;
+  margin: 0 0 0.55rem;
+  padding: 0;
   border: none;
   background: transparent;
 }
@@ -4857,17 +4857,17 @@ html.needs-welcome body {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.45rem;
+  gap: 0.35rem;
 }
 
 .library-theme-card {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.2rem;
-  padding: 0.55rem 0.6rem 0.5rem;
+  gap: 0;
+  padding: 0.42rem 0.48rem 0.38rem;
   border: 1px solid var(--border-strong, rgba(54, 95, 207, 0.14));
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--surface-glass-strong, rgba(255, 255, 255, 0.9));
   box-shadow: none;
   min-width: 0;
@@ -4879,44 +4879,57 @@ html.needs-welcome body {
 }
 
 .library-theme-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem 0.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 0.35rem;
+  row-gap: 0.06rem;
+  align-items: start;
   min-width: 0;
 }
 
 .library-theme-copy {
+  grid-column: 1;
+  grid-row: 1;
   min-width: 0;
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.04rem;
 }
 
 .library-theme-actions {
+  grid-column: 2;
+  grid-row: 1;
   display: flex;
   flex-shrink: 0;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0.25rem;
   justify-content: flex-end;
+  align-items: flex-start;
 }
 
-/* Preview under the tile row — still optional, not the page hero */
+/* › N sits on the row under the title (left column); open list spans full tile */
 .library-theme-preview {
+  grid-column: 1 / -1;
+  grid-row: 2;
   margin: 0;
   border: none;
   background: transparent;
   width: 100%;
   max-width: 100%;
   text-align: left;
+  min-width: 0;
 }
 
 .library-theme-preview-summary {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.1rem 0;
+  gap: 0.22rem;
+  padding: 0;
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 500;
+  line-height: 1.15;
   color: var(--muted, #5c6570);
   cursor: pointer;
   list-style: none;
@@ -5006,16 +5019,17 @@ html.needs-welcome body {
 
 .library-theme-name {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   font-weight: 650;
   letter-spacing: -0.02em;
   color: var(--text, #1a1f26);
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .library-theme-status {
-  margin: 0.08rem 0 0;
-  font-size: 0.75rem;
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.15;
   color: var(--muted, #5c6570);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -5023,13 +5037,13 @@ html.needs-welcome body {
 
 .library-theme-btn {
   flex-shrink: 0;
-  min-height: 2rem;
-  padding-inline: 0.7rem;
-  font-size: 0.8rem;
+  min-height: 1.75rem;
+  padding-inline: 0.55rem;
+  font-size: 0.74rem;
 }
 
 .library-theme-btn--study {
-  min-width: 4.5rem;
+  min-width: 3.75rem;
 }
 
 .library-theme-btn--remove {
@@ -5056,11 +5070,15 @@ html.needs-welcome body {
 @media (max-width: 520px) {
   .library-themes-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.4rem;
+    gap: 0.3rem;
   }
 
   .library-theme-card {
-    padding: 0.5rem 0.5rem 0.45rem;
+    padding: 0.38rem 0.42rem 0.34rem;
+  }
+
+  .library-theme-name {
+    font-size: 0.8rem;
   }
 
   .library-theme-word {

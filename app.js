@@ -2642,6 +2642,8 @@ function renderThemePackCard(pack, category) {
       >Add</button>`;
   }
 
+  // Grid: name | Add on row 1, › N (and open word list) on row 2 under the name.
+  // Keeps count tight to the title without wasting vertical space under the button.
   return `
     <li class="library-theme-card${enabled ? " is-enabled" : ""}" data-pack-id="${escapeAttr(pack.id)}">
       <div class="library-theme-top">
@@ -2654,8 +2656,8 @@ function renderThemePackCard(pack, category) {
           }
         </div>
         <div class="library-theme-actions">${actions}</div>
+        ${renderThemePackWordList(pack, category)}
       </div>
-      ${renderThemePackWordList(pack, category)}
     </li>`;
 }
 
