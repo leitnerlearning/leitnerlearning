@@ -3460,7 +3460,8 @@ function showTrackSwitchOverlay(label, options = {}) {
   const durationMs = Number(options.durationMs) > 0 ? Number(options.durationMs) : 1250;
   const isWelcome = Boolean(options.welcome);
   const isPortal = Boolean(options.portal);
-  const showKicker = options.showKicker !== false;
+  // Default off — brand is already "Leitner Learning"; kicker felt redundant.
+  const showKicker = options.showKicker === true;
   const restart = options.restart !== false;
   // Mid-session Progress picks: pulse the language chip after the veil
   const shouldFlashProgress =
@@ -3662,7 +3663,8 @@ function runPortalBeatClock(audio, events, onEvent) {
  */
 function announceLanguagePortal(category = getActiveCategory(), options = {}) {
   const firstEntry = Boolean(options.firstEntry);
-  const showKicker = options.showKicker !== false;
+  // Default: no "Now learning" kicker (user-preferred; cleaner under Leitner Learning brand)
+  const showKicker = options.showKicker === true;
   const label = category?.label || category?.learningLanguageName || "Language";
   const flag = category?.flag || "";
   unlockAudioPipeline();
