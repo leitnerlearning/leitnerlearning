@@ -5287,6 +5287,10 @@ function renderEmptyState() {
     messageEl.classList.add("hidden");
   }
 
+  const storiesReady =
+    typeof getStoriesForCategory === "function" &&
+    getStoriesForCategory().length > 0;
+
   function showPowerHome({
     mode = "start",
     enabled = true,
@@ -5294,6 +5298,7 @@ function renderEmptyState() {
     hint = "",
     ariaLabel = "",
     showTeaser = false,
+    showReadBridge,
     detail = "",
   } = {}) {
     emptyEl.classList.add("empty-state--power-complete");
@@ -5323,10 +5328,20 @@ function renderEmptyState() {
       celebrate,
       enabled,
     });
+    // Vital few #4: after today's Review job, invite Read when stories exist.
+    // Stay quiet during an active set (start/continue without goal met).
+    const goalSettled = Boolean(daily.goalMet) || mode === "complete";
+    const offerRead =
+      typeof showReadBridge === "boolean"
+        ? showReadBridge
+        : storiesReady && goalSettled && mode !== "start";
+    const offerTeaser =
+      showTeaser || (mode === "complete" && extraDue === 0 && remainingToday === 0);
     renderPowerOnExtras({
       teaserEl: powerTeaserEl,
       readBridgeBtn,
-      showTeaser,
+      showTeaser: offerTeaser,
+      showReadBridge: offerRead,
     });
     renderHomeStatus();
   }
