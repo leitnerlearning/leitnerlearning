@@ -1036,15 +1036,26 @@ main,
   text-align: left;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.15s var(--ease);
+  transition: background 0.15s var(--ease), box-shadow 0.15s var(--ease);
 }
 
-.category-option:hover:not(:disabled) {
-  background: var(--brand-soft);
+/* Hover = quiet gray (not the same as “current language”) */
+.category-option:hover:not(:disabled):not(.active) {
+  background: rgba(18, 24, 38, 0.05);
 }
 
+/* Current language: brand fill + left bar — clearly “selected,” not a scrollbar */
 .category-option.active {
-  background: var(--brand-soft);
+  background: color-mix(in srgb, var(--brand-soft) 70%, white);
+  box-shadow: inset 3px 0 0 0 var(--brand, #365fcf);
+}
+
+.category-option.active:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--brand-soft) 82%, white);
+}
+
+.category-option.active .category-option-label {
+  color: var(--brand-deep, #1e3a8a);
 }
 
 .category-option.unavailable {
