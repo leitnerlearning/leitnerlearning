@@ -3435,15 +3435,21 @@ html.needs-welcome body {
   left: 0;
   right: 0;
   transform: none;
-  max-height: min(28rem, 70dvh);
+  /* Fallback only — openCategoryMenu sets max-height from remaining viewport space */
+  max-height: min(28rem, 50dvh);
+}
+
+.category-picker--welcome .category-picker-menu.is-open-up {
+  top: auto;
+  bottom: calc(100% + 0.45rem);
 }
 
 /*
- * Prefer showing the full list. Only scroll on very short viewports.
- * (Older caps forced a ~3-row peephole with up/down arrows.)
+ * Prefer showing the full list. Only scroll when the viewport-fit max-height
+ * is smaller than the 10-language list (JS sets the real max-height).
  */
 .category-picker--welcome .category-picker-menu.is-scrollable {
-  max-height: min(28rem, 70dvh);
+  max-height: min(28rem, 50dvh);
 }
 
 .category-picker--progress .category-picker-menu.is-scrollable {

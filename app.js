@@ -11512,6 +11512,46 @@ function scrollCategoryMenuToActive(menu) {
   scroller.scrollTop = Math.max(0, Math.min(target, maxScroll));
 }
 
+/**
+ * Cap the open language menu to remaining viewport space so all languages
+ * stay reachable (welcome gate was clipping Spanish/Portuguese/Swedish).
+ * Prefer opening downward; flip upward when more room above the button.
+ */
+function fitCategoryMenuToViewport(menu, btn) {
+  if (!menu || !btn) return;
+  const gap = 8;
+  const edgePad = 12;
+  const hardCap = 28 * 16; // 28rem
+  const rect = btn.getBoundingClientRect();
+  const vh =
+    window.visualViewport?.height ||
+    document.documentElement.clientHeight ||
+    window.innerHeight;
+  const roomBelow = Math.max(0, vh - rect.bottom - gap - edgePad);
+  const roomAbove = Math.max(0, rect.top - gap - edgePad);
+  const openUp = roomBelow < 12 * 16 && roomAbove > roomBelow + 24;
+  const room = openUp ? roomAbove : roomBelow;
+  const maxH = Math.max(9 * 16, Math.min(hardCap, room));
+
+  menu.style.maxHeight = `${Math.round(maxH)}px`;
+  menu.classList.toggle("is-open-up", openUp);
+  if (openUp) {
+    menu.style.top = "auto";
+    menu.style.bottom = "calc(100% + 0.45rem)";
+  } else {
+    menu.style.top = "";
+    menu.style.bottom = "";
+  }
+}
+
+function clearCategoryMenuViewportFit(menu) {
+  if (!menu) return;
+  menu.style.maxHeight = "";
+  menu.style.top = "";
+  menu.style.bottom = "";
+  menu.classList.remove("is-open-up");
+}
+
 function openCategoryMenu(btn) {
   const picker = btn?.closest(".category-picker");
   const menu = picker?.querySelector(".category-picker-menu");
@@ -11531,11 +11571,16 @@ function openCategoryMenu(btn) {
   // Welcome: start at top. Progress: jump to current language after layout.
   if (scroller && forWelcome) scroller.scrollTop = 0;
 
+  // Size to remaining viewport *before* scroll hints so overflow is real.
+  fitCategoryMenuToViewport(menu, btn);
+
   requestAnimationFrame(() => {
+    fitCategoryMenuToViewport(menu, btn);
     if (!forWelcome) scrollCategoryMenuToActive(menu);
     updateCategoryMenuScrollHints(menu);
     // Second frame: fonts/layout settled (esp. mobile)
     requestAnimationFrame(() => {
+      fitCategoryMenuToViewport(menu, btn);
       if (!forWelcome) scrollCategoryMenuToActive(menu);
       updateCategoryMenuScrollHints(menu);
     });
@@ -11550,7 +11595,21 @@ function closeCategoryMenu() {
   document.querySelectorAll(".category-picker-menu").forEach((menu) => {
     menu.classList.add("hidden");
     menu.classList.remove("is-scrollable", "has-more-below", "has-more-above");
+    clearCategoryMenuViewportFit(menu);
   });
+}
+
+function refitOpenCategoryMenu() {
+  if (!categoryMenuOpen) return;
+  const btn = document.querySelector(
+    '.category-picker-btn[aria-expanded="true"]'
+  );
+  const menu = btn?.closest(".category-picker")?.querySelector(
+    ".category-picker-menu:not(.hidden)"
+  );
+  if (!btn || !menu) return;
+  fitCategoryMenuToViewport(menu, btn);
+  updateCategoryMenuScrollHints(menu);
 }
 
 function toggleCategoryMenu(btn) {
@@ -11792,6 +11851,14 @@ function switchTab(tabName) {
 }
 
 function initEventListeners() {
+  window.addEventListener("resize", refitOpenCategoryMenu, { passive: true });
+  window.visualViewport?.addEventListener("resize", refitOpenCategoryMenu, {
+    passive: true,
+  });
+  window.addEventListener("orientationchange", () => {
+    requestAnimationFrame(refitOpenCategoryMenu);
+  });
+
   document.querySelectorAll(".tab").forEach((tab) => {
     tab.addEventListener("click", () => switchTab(tab.dataset.tab));
   });
