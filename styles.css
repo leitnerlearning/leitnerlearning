@@ -1633,13 +1633,13 @@ main {
     margin-bottom: 0.75rem;
   }
 
-  .practice-card-top .direction-toggle {
-    width: 100%;
+  .practice-card-top .direction-label {
+    width: auto;
     max-width: 100%;
     justify-content: center;
-    min-height: 44px;
+    min-height: 1.9rem;
     padding-inline: 0.75rem;
-    font-size: 0.78rem;
+    font-size: 0.74rem;
   }
 
   .prompt {
@@ -2226,46 +2226,30 @@ main {
   margin-bottom: 1.1rem;
 }
 
-/* Direction chip — quiet control, not a shouty label */
-.direction-toggle {
+/* Direction — ambient orientation only (always L2 → English). Not a control. */
+.direction-label {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  margin: 0;
   font-family: inherit;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
   letter-spacing: -0.01em;
   text-transform: none;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-strong);
+  color: var(--text-tertiary);
+  border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 0.38rem 0.9rem;
-  background: var(--surface-glass-strong);
-  cursor: pointer;
-  transition:
-    color 0.15s var(--ease),
-    border-color 0.15s var(--ease),
-    background 0.15s var(--ease),
-    box-shadow 0.15s var(--ease);
-  touch-action: manipulation;
-  min-height: 2.2rem;
+  padding: 0.32rem 0.8rem;
+  background: var(--surface-glass);
+  cursor: default;
+  user-select: none;
+  pointer-events: none;
+  min-height: 2rem;
   line-height: 1.15;
 }
 
-.direction-toggle:hover,
-.direction-toggle:focus-visible {
-  color: var(--brand-deep);
-  border-color: transparent;
-  background: var(--brand-soft);
-  outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
-}
 
-.direction-toggle[aria-pressed="true"] {
-  color: var(--brand-deep);
-  border-color: transparent;
-  background: linear-gradient(135deg, rgba(91, 154, 255, 0.18), rgba(54, 95, 207, 0.1));
-}
 
 .category-chip {
   display: inline-flex;
@@ -2842,10 +2826,10 @@ main {
     margin-bottom: 1.25rem;
   }
 
-  .practice-card-top .direction-toggle {
-    min-height: 2.2rem;
-    padding: 0.4rem 1.05rem;
-    font-size: 0.8rem;
+  .practice-card-top .direction-label {
+    min-height: 1.95rem;
+    padding: 0.32rem 0.95rem;
+    font-size: 0.76rem;
   }
 
   .prompt {
@@ -6219,11 +6203,11 @@ html.needs-welcome body {
     padding: 0.5rem 1rem;
   }
 
-  /* Review: larger hit areas on chrome + actions */
-  .practice-card-top .direction-toggle {
-    min-height: 2.55rem;
-    padding: 0.45rem 0.75rem;
-    font-size: 0.7rem;
+  /* Review: direction is a label, not a control */
+  .practice-card-top .direction-label {
+    min-height: 1.9rem;
+    padding: 0.32rem 0.75rem;
+    font-size: 0.72rem;
   }
 
   .answer-actions .btn {

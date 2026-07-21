@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=289" />
+    <link rel="stylesheet" href="styles.css?v=290" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -233,14 +233,10 @@
 
           <div id="practice-active" class="practice-card hidden">
             <div class="practice-card-top">
-              <button
-                type="button"
-                class="direction-toggle"
-                id="prompt-direction"
-                aria-pressed="false"
-              >
+              <!-- Static orientation only — always L2 → English (type/speak English). -->
+              <p class="direction-label" id="prompt-direction" aria-live="polite">
                 Norwegian → English
-              </button>
+              </p>
             </div>
             <div class="prompt norwegian" id="prompt-text" lang="nb">—</div>
             <p class="prompt-hint hidden" id="prompt-hint"></p>
@@ -871,7 +867,7 @@
 
     <script src="norwegian-frequency-deck.js?v=26"></script>
     <script src="norwegian-reading-vocab.js?v=7"></script>
-    <script src="learning-categories.js?v=46"></script>
+    <script src="learning-categories.js?v=47"></script>
     <script src="read-stories.js?v=16"></script>
     <script src="lang/registry.js?v=1"></script>
     <script src="lang/basics-data.js?v=3"></script>
@@ -886,6 +882,6 @@
     <script src="lang/pl-pack.js?v=6"></script>
     <script src="mini-packs.js?v=22"></script>
     <script src="srs-core.js?v=3"></script>
-    <script src="app.js?v=366"></script>
+    <script src="app.js?v=367"></script>
   </body>
 </html>

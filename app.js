@@ -74,10 +74,7 @@ const CATEGORY_LABELS = {
   phrase: "Phrase",
 };
 
-const PRACTICE_DIRECTION_KEY = "leitner-learning-practice-direction";
-
 let activeCategoryId = getActiveCategoryId();
-let practiceDirection = getPracticeDirection();
 let deck = [];
 let sessionQueue = [];
 let sessionDayKey = "";
@@ -1956,26 +1953,9 @@ function answersAreClose(user, expected) {
   return distance <= distanceBudget;
 }
 
-function getPracticeDirectionKey(categoryId = activeCategoryId) {
-  return `${PRACTICE_DIRECTION_KEY}-${categoryId}`;
-}
-
-function getPracticeDirection(categoryId = activeCategoryId) {
-  const saved = storageGet(getPracticeDirectionKey(categoryId));
-  return saved === "native-to-foreign" ? "native-to-foreign" : "foreign-to-native";
-}
-
-function setPracticeDirection(direction, categoryId = activeCategoryId) {
-  storageSet(getPracticeDirectionKey(categoryId), direction);
-}
-
-function isReversePractice() {
-  return practiceDirection === "native-to-foreign";
-}
-
 /**
  * Glue = high-frequency connectors/pronouns/articles (rank &lt; ~36, not phrases).
- * Isolation production (EN→L2) is brutal early; recognition (L2→EN) teaches meaning first.
+ * Review is always L2 → English (recognition); glue still matters for other UI.
  */
 function isGluePracticeCard(card) {
   if (!card) return false;
@@ -1989,40 +1969,16 @@ function isGluePracticeCard(card) {
   return Number.isFinite(rank) && rank < 36;
 }
 
-/** Weak = not yet stable in Leitner (new or boxes 1–2). */
-function isWeakCard(card) {
-  if (!card) return false;
-  if (isNewCard(card)) return true;
-  const box = Number(card.box) || 1;
-  return box <= 2;
-}
-
-/**
- * Per-card direction. Weak glue forces L2→EN (recognition) even if the user
- * toggle is English → language — exact-form production waits until the form sticks.
- */
-function isEffectiveReversePractice(card = currentCard) {
-  if (card && isGluePracticeCard(card) && isWeakCard(card)) return false;
-  return isReversePractice();
-}
-
 function updateAnswerInputPlaceholder() {
   const answerInput = document.getElementById("answer-input");
   if (answerInput) answerInput.placeholder = "";
 }
 
-function getDirectionLabels(category = getActiveCategory(), card = currentCard) {
-  if (isEffectiveReversePractice(card)) {
-    return {
-      promptLabel: category.reversePromptLabel || "English → " + category.label.split(" · ")[0],
-      answerLang: category.reverseAnswerLang || category.speechLang || "nb-NO",
-      hearTitle: category.reverseHearTitle || "Hear the prompt",
-      speakTitle: category.reverseSpeakTitle || "Speak your answer",
-      promptLang: category.answerLang?.split("-")[0] || "en",
-      promptSpeechLang: category.nativeSpeechLang || "en-US",
-    };
-  }
-
+/**
+ * Review orientation is fixed: see the learning language, answer in English.
+ * (No EN → L2 production toggle — special characters + fuzzy L2 answers were a trap.)
+ */
+function getDirectionLabels(category = getActiveCategory()) {
   return {
     promptLabel: category.promptLabel || "Practice",
     answerLang: category.answerLang || "en-US",
@@ -2034,11 +1990,11 @@ function getDirectionLabels(category = getActiveCategory(), card = currentCard) 
 }
 
 function getPromptDisplayText(card) {
-  return isEffectiveReversePractice(card) ? card.native.split("/")[0].trim() : card.foreign;
+  return card?.foreign || "";
 }
 
 function getAnswerTargetText(card) {
-  return isEffectiveReversePractice(card) ? card.foreign : card.native;
+  return card?.native || "";
 }
 
 function getExpectedAnswers(card) {
@@ -2132,20 +2088,6 @@ function evaluateAnswer(userAnswer, card, options = {}) {
 function checkAnswer(userAnswer, card) {
   const result = evaluateAnswer(userAnswer, card);
   return { correct: result.correct, close: result.close || false };
-}
-
-function togglePracticeDirection() {
-  practiceDirection = isReversePractice() ? "foreign-to-native" : "native-to-foreign";
-  setPracticeDirection(practiceDirection);
-  recognition = null;
-  applyPracticeDirectionUI();
-  hideFeedback();
-  if (currentCard) {
-    const input = document.getElementById("answer-input");
-    if (input) input.value = "";
-    renderPractice();
-    if (speakModeActive) scheduleSpeakForCurrentCard();
-  }
 }
 
 function formatInterval(box) {
@@ -5673,14 +5615,9 @@ function renderPractice() {
     promptHint.classList.add("hidden");
   }
 
-  // Direction chip shows *this* card’s effective direction (glue may force L2→EN).
-  const directionBtn = document.getElementById("prompt-direction");
-  if (directionBtn) {
-    directionBtn.textContent = labels.promptLabel;
-    directionBtn.setAttribute(
-      "aria-pressed",
-      String(isEffectiveReversePractice(currentCard))
-    );
+  const directionLabel = document.getElementById("prompt-direction");
+  if (directionLabel) {
+    directionLabel.textContent = labels.promptLabel;
   }
 
   hideFeedback();
@@ -11004,27 +10941,19 @@ function applyCategoryUI() {
 function applyPracticeDirectionUI() {
   const category = getActiveCategory();
   const labels = getDirectionLabels(category);
-  const directionBtn = document.getElementById("prompt-direction");
+  const directionLabel = document.getElementById("prompt-direction");
   const answerInput = document.getElementById("answer-input");
   const hearBtn = document.getElementById("hear-btn");
   const speakBtn = document.getElementById("speak-btn");
   const revealBtn = document.getElementById("reveal-btn");
 
-  if (directionBtn) {
-    directionBtn.textContent = labels.promptLabel;
-    directionBtn.setAttribute("aria-pressed", String(isReversePractice()));
-    const learningName =
-      category.learningLanguageName || category.label.split(" · ")[0] || "the language";
-    const dirTitle = isReversePractice()
-      ? `Tap to review ${learningName} → English`
-      : `Tap to review English → ${learningName}`;
-    directionBtn.removeAttribute("title");
-    directionBtn.setAttribute("aria-label", `Review direction: ${labels.promptLabel}. ${dirTitle}`);
+  if (directionLabel) {
+    directionLabel.textContent = labels.promptLabel;
   }
 
   if (answerInput) {
     updateAnswerInputPlaceholder();
-    answerInput.lang = labels.answerLang.split("-")[0];
+    answerInput.lang = labels.answerLang.split("-")[0] || "en";
   }
 
   if (hearBtn) {
@@ -11345,7 +11274,6 @@ function applyCategorySwitch(nextCategoryId, { announce = true } = {}) {
   saveDeck();
   activeCategoryId = nextCategoryId;
   setActiveCategoryId(nextCategoryId);
-  practiceDirection = getPracticeDirection(nextCategoryId);
   setSpeakMode(false);
   recognition = null;
 
@@ -11592,8 +11520,6 @@ function initEventListeners() {
     e.preventDefault();
     submitAnswer();
   });
-
-  document.getElementById("prompt-direction")?.addEventListener("click", togglePracticeDirection);
 
   document.getElementById("reveal-btn")?.addEventListener("click", () => {
     if (!currentCard) return;
