@@ -5151,17 +5151,28 @@ html.needs-welcome body {
   box-shadow: none;
 }
 
-/* Themes last: optional packs — quiet brand tint so it reads apart from deck filters */
+/* Themes last: optional packs — clear brand outline + wash (not another solid primary) */
 .filter-chip--themes:not(.active) {
-  color: var(--brand-deep, #2a4a9b);
-  border-color: color-mix(in srgb, var(--brand, #365fcf) 28%, transparent);
-  background: color-mix(in srgb, var(--brand, #365fcf) 6%, var(--surface-glass-strong, #fff));
+  color: var(--brand-deep, #2849a8);
+  font-weight: 700;
+  border: 1.5px solid color-mix(in srgb, var(--brand, #365fcf) 55%, transparent);
+  background: linear-gradient(
+    165deg,
+    rgba(91, 154, 255, 0.18) 0%,
+    rgba(54, 95, 207, 0.1) 100%
+  );
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
 .filter-chip--themes:not(.active):hover {
-  color: var(--brand-deep, #2a4a9b);
-  border-color: color-mix(in srgb, var(--brand, #365fcf) 40%, transparent);
-  background: var(--brand-soft);
+  color: var(--brand-deep, #2849a8);
+  border-color: var(--brand, #365fcf);
+  background: linear-gradient(
+    165deg,
+    rgba(91, 154, 255, 0.26) 0%,
+    rgba(54, 95, 207, 0.14) 100%
+  );
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand, #365fcf) 14%, transparent);
 }
 
 
