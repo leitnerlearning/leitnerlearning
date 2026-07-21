@@ -1,30 +1,22 @@
 {
   "src": "assets/welcome-portal.m4a",
-  "duration": 7.55,
-  "switchAt": 3.642,
+  "duration": 4.72,
+  "switchAt": 3.073,
   "phase1Beats": [
     0.045,
-    0.6,
-    1.214,
-    1.814,
-    2.413,
-    3.005
+    0.66,
+    1.244,
+    1.845,
+    2.473
   ],
   "phase2Beats": [
-    3.642,
-    3.938,
-    4.242,
-    4.53,
-    4.856,
-    5.122,
-    5.471,
-    5.756,
-    6.07,
-    6.37,
-    6.602,
-    6.898,
-    7.194
+    3.073,
+    3.372,
+    3.687,
+    3.987,
+    4.287,
+    4.557
   ],
   "volume": 0.78,
-  "notes": "From Desktop 'Music for Leitner .MP4' 7.35-14.90s (after Japanese intro voice, before English rap). Phase1=Leitner logo on main beat; phase2=target-language flag on denser bass."
+  "notes": "Music for Leitner .MP4 4.88-9.60s \u2014 between speech parts (after opening JP speaker, before EN rap). Logo phase1, language flag phase2."
 }

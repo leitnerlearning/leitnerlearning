@@ -3438,7 +3438,7 @@ function updateReadLanguageIndicator(category = getActiveCategory()) {
 /**
  * Full-screen language ceremony: logo bloom + optional flag + language name.
  * @param {string} label
- * @param {{ flag?: string, durationMs?: number, welcome?: boolean, portal?: boolean }} [options]
+ * @param {{ flag?: string, durationMs?: number, welcome?: boolean, portal?: boolean, flashProgress?: boolean }} [options]
  */
 function showTrackSwitchOverlay(label, options = {}) {
   const el = document.getElementById("track-switch-overlay");
@@ -3458,6 +3458,9 @@ function showTrackSwitchOverlay(label, options = {}) {
   const durationMs = Number(options.durationMs) > 0 ? Number(options.durationMs) : 1250;
   const isWelcome = Boolean(options.welcome);
   const isPortal = Boolean(options.portal);
+  // Mid-session Progress picks: pulse the language chip after the veil
+  const shouldFlashProgress =
+    options.flashProgress === true || (!isWelcome && options.flashProgress !== false);
 
   nameEl.textContent = text;
   if (flagEl) {
@@ -3515,30 +3518,19 @@ function showTrackSwitchOverlay(label, options = {}) {
     }, 320);
     // Mid-session switches land attention on Progress language control.
     // First entry: already on Review — no Progress flash.
-    if (!isWelcome) flashProgressLanguageControl();
+    if (shouldFlashProgress) flashProgressLanguageControl();
   }, durationMs);
 }
 
 /**
- * Language-switch ceremony stack (by reliability, not by flashiness):
- *  1. Visual — logo + flag + language name overlay (always; the real confirmation)
- *  2. Haptic — dual pulse on phones (works even with hardware mute)
- *  3. Sound  — soft rising triad only if Web Audio is actually running
- *
- * Sound is a flourish, never required. Mobile Safari used to stay silent
- * because we scheduled oscillators before await resume() finished.
+ * Mid-session language switch (Progress tab picker, etc.).
+ * Same music portal as first entry — logo on the beat, then target language on denser bass.
  */
 function announceTrackSwitch(category = getActiveCategory()) {
-  const label = category?.label || category?.learningLanguageName || "Language";
-  const flag = category?.flag || "";
-  // Warm the audio pipeline in this same user-gesture turn (menu → pick).
-  unlockAudioPipeline();
-  showTrackSwitchOverlay(label, { flag, durationMs: 1250, welcome: false });
-  triggerTrackSwitchHaptic();
-  playTrackSwitchSound();
+  announceLanguagePortal(category, { firstEntry: false });
 }
 
-/** Beat map + audio for first-entry portal (from Music for Leitner clip). */
+/** Beat map + audio for the language-select portal (from Music for Leitner clip). */
 let welcomePortalBeatmap = null;
 let welcomePortalTimers = [];
 
@@ -3557,7 +3549,7 @@ function pulseWelcomeBeat(el) {
 async function loadWelcomePortalBeatmap() {
   if (welcomePortalBeatmap) return welcomePortalBeatmap;
   try {
-    const res = await fetch("assets/welcome-portal-beats.json?v=2", { cache: "force-cache" });
+    const res = await fetch("assets/welcome-portal-beats.json?v=3", { cache: "force-cache" });
     if (!res.ok) return null;
     welcomePortalBeatmap = await res.json();
     return welcomePortalBeatmap;
@@ -3568,22 +3560,47 @@ async function loadWelcomePortalBeatmap() {
 
 /**
  * First-run: user chooses a language and steps through the door.
- * Music portal: Leitner logo flashes on the main beat; when the bass densifies,
- * branding hands off to the target-language flag (still on the beat); then the app.
- * Falls back to short synth if audio/beatmap unavailable.
+ * Same portal as Progress language switches.
  */
 function announceWelcomeEnter(category = getActiveCategory()) {
+  announceLanguagePortal(category, { firstEntry: true });
+}
+
+/**
+ * Language-select music portal (welcome + Progress):
+ * Leitner logo flashes on the main beat; when the bass densifies, branding hands off
+ * to the target-language flag; then the app continues.
+ * Falls back to short synth if audio/beatmap unavailable or reduced motion.
+ *
+ * @param {{ firstEntry?: boolean }} [options]
+ */
+function announceLanguagePortal(category = getActiveCategory(), options = {}) {
+  const firstEntry = Boolean(options.firstEntry);
   const label = category?.label || category?.learningLanguageName || "Language";
   const flag = category?.flag || "";
   unlockAudioPipeline();
   void ensureUiAudioReady();
   clearWelcomePortalTimers();
 
-  // Reduced motion or missing assets → short calm ceremony
+  const shortFallback = () => {
+    // Mid-session short path still lands attention on Progress language control.
+    showTrackSwitchOverlay(label, {
+      flag,
+      durationMs: firstEntry ? 1400 : 1250,
+      welcome: firstEntry,
+    });
+    if (firstEntry) {
+      triggerWelcomeEnterHaptic();
+      playWelcomeEnterSound();
+    } else {
+      triggerTrackSwitchHaptic();
+      playTrackSwitchSound();
+    }
+  };
+
+  // Reduced motion → short calm ceremony
   if (prefersReducedMotion()) {
-    showTrackSwitchOverlay(label, { flag, durationMs: 1400, welcome: true });
-    triggerWelcomeEnterHaptic();
-    playWelcomeEnterSound();
+    shortFallback();
     return;
   }
 
@@ -3596,34 +3613,34 @@ function announceWelcomeEnter(category = getActiveCategory()) {
     const nameEl = document.getElementById("track-switch-overlay-name");
 
     if (!map || !audio) {
-      showTrackSwitchOverlay(label, { flag, durationMs: 1680, welcome: true });
-      triggerWelcomeEnterHaptic();
-      playWelcomeEnterSound();
+      shortFallback();
       return;
     }
 
     // Hold the veil a beat past the clip so the last flash can land cleanly
-    const durationMs = Math.round((Number(map.duration) || 8) * 1000 + 380);
+    const durationMs = Math.round((Number(map.duration) || 5) * 1000 + 380);
     showTrackSwitchOverlay(label, {
       flag,
       durationMs,
       welcome: true,
       portal: true,
+      // After Progress picks, pulse the language chip so attention lands there
+      flashProgress: !firstEntry,
     });
-    triggerWelcomeEnterHaptic();
+    if (firstEntry) triggerWelcomeEnterHaptic();
+    else triggerTrackSwitchHaptic();
 
     // Start audio first; schedule flashes relative to a shared t0 after play begins
     const volume = Math.min(1, Math.max(0, Number(map.volume) || 0.75));
-    let audioStarted = false;
     try {
       audio.pause();
       audio.currentTime = 0;
       audio.volume = volume;
       await audio.play();
-      audioStarted = true;
     } catch {
       // Autoplay blocked or decode fail — keep visuals + soft synth underlay
-      playWelcomeEnterSound();
+      if (firstEntry) playWelcomeEnterSound();
+      else playTrackSwitchSound();
     }
 
     const t0 = performance.now();
@@ -3641,18 +3658,16 @@ function announceWelcomeEnter(category = getActiveCategory()) {
     });
 
     // Hand off to target-language flag when the bass densifies
-    const switchAt = Number(map.switchAt) || 4;
+    const switchAt = Number(map.switchAt) || 3;
     scheduleAt(switchAt, () => {
       overlay?.classList.add("is-phase-language");
       if (typeof navigator.vibrate === "function") navigator.vibrate([14, 30, 18]);
-      // First language beat lands with the handoff
       pulseWelcomeBeat(flagEl);
       pulseWelcomeBeat(nameEl);
     });
 
     // Phase 2 — flag (+ language name) punches with the denser bass
     (map.phase2Beats || []).forEach((t) => {
-      // skip the first if it lands on switchAt (already pulsed above)
       if (Math.abs(t - switchAt) < 0.04) return;
       scheduleAt(t, () => {
         pulseWelcomeBeat(flagEl);
@@ -3660,11 +3675,6 @@ function announceWelcomeEnter(category = getActiveCategory()) {
         if (typeof navigator.vibrate === "function") navigator.vibrate(9);
       });
     });
-
-    // If audio never started, still finish on the visual timeline (overlay timer owns exit)
-    if (!audioStarted) {
-      /* visuals already scheduled */
-    }
   })();
 }
 
