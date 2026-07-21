@@ -40,7 +40,7 @@ Goal: natural dialogue that weaves high-frequency **core** and **theme** forms s
 ## Ship rule
 
 - **All 10 languages:** structure PASS + linguistic PASS 1 (NB PASS 2).
-- **NB + DA + DE + ES story pass 1** shipped; remaining on go (order: fr → it → nl → pl → pt → sv).
+- **NB + DA + DE + ES + FR story pass 1** shipped; remaining on go (order: it → nl → pl → pt → sv).
 - Continuous improvement always welcome; re-open a language only for a **named defect**.
 - Do not thrash certified decks without evidence.
 
