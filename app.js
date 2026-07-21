@@ -2640,9 +2640,10 @@ function renderThemePackWordList(pack, category) {
       const foreign = String(entry.foreign || "").trim();
       const native = String(entry.native || "").trim();
       if (!foreign) return "";
+      // English left (anchor) · L2 right (target) — tight pair for scanning before Add.
       return `<li class="library-theme-word">
-        <span class="library-theme-word-l2" lang="${escapeAttr(category.foreignLang || "nb")}">${escapeHtml(foreign)}</span>
         <span class="library-theme-word-en">${escapeHtml(native)}</span>
+        <span class="library-theme-word-l2" lang="${escapeAttr(category.foreignLang || "nb")}">${escapeHtml(foreign)}</span>
       </li>`;
     })
     .filter(Boolean)
