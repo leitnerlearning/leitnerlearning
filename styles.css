@@ -5285,21 +5285,22 @@ html.needs-welcome body {
   box-shadow: none;
 }
 
-/* Themes last: optional packs — same white chip body, brand type + outline only.
-   Avoid filled wash (reads as “always pressed” next to All/Phrases/Yours). */
+/* Packs last: optional filter — white chip body, stronger brand type + outline.
+   Avoid filled wash (reads as “always pressed”); type must still read clearly. */
 .filter-chip--themes:not(.active) {
-  color: var(--brand, #365fcf);
-  font-weight: 700;
-  border-color: color-mix(in srgb, var(--brand, #365fcf) 42%, transparent);
+  color: var(--brand-deep, #1e3a8a);
+  font-weight: 750;
+  letter-spacing: -0.015em;
+  border-color: color-mix(in srgb, var(--brand, #365fcf) 58%, transparent);
   background: var(--surface-glass-strong);
   box-shadow: none;
 }
 
 .filter-chip--themes:not(.active):hover {
-  color: var(--brand-deep, #2849a8);
+  color: var(--brand-deep, #1e3a8a);
   border-color: var(--brand, #365fcf);
-  background: var(--surface-glass-strong);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand, #365fcf) 12%, transparent);
+  background: color-mix(in srgb, var(--brand-soft, #e8efff) 55%, var(--surface-glass-strong));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand, #365fcf) 14%, transparent);
 }
 
 
