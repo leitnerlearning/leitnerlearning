@@ -4877,17 +4877,26 @@ html.needs-welcome body {
   flex-direction: column;
   align-items: stretch;
   gap: 0;
-  padding: 0.34rem 0.4rem 0.3rem;
+  padding: 0.36rem 0.42rem 0.32rem;
   border: 1px solid var(--border-strong, rgba(54, 95, 207, 0.14));
   border-radius: 10px;
   background: var(--surface-glass-strong, rgba(255, 255, 255, 0.9));
   box-shadow: none;
   min-width: 0;
+  transition:
+    background 0.15s var(--ease, ease),
+    border-color 0.15s var(--ease, ease);
 }
 
+/* Added packs — clear brand wash (readable, not “always pressed”) */
 .library-theme-card.is-enabled {
-  border-color: color-mix(in srgb, var(--brand, #365fcf) 28%, transparent);
-  background: color-mix(in srgb, var(--brand, #365fcf) 5%, var(--surface-glass-strong, #fff));
+  border-color: color-mix(in srgb, var(--brand, #365fcf) 40%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--brand, #365fcf) 10%,
+    var(--surface-glass-strong, #fff)
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand, #365fcf) 8%, transparent);
 }
 
 /*
@@ -4901,23 +4910,28 @@ html.needs-welcome body {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-rows: auto auto auto;
-  column-gap: 0.3rem;
+  column-gap: 0.28rem;
   row-gap: 0;
   align-items: start;
   min-width: 0;
 }
 
+/* Category title leads the tile — not the action pills */
 .library-theme-name {
   grid-column: 1;
   grid-row: 1;
   min-width: 0;
   margin: 0;
-  padding-top: 0.12rem; /* optical align with Study pill */
-  font-size: 0.82rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: var(--text, #1a1f26);
-  line-height: 1.1;
+  padding-top: 0.06rem; /* optical align with smaller Study */
+  font-size: 0.9rem;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  color: var(--ink, #231f20);
+  line-height: 1.12;
+}
+
+.library-theme-card.is-enabled .library-theme-name {
+  color: var(--brand-deep, #2849a8);
 }
 
 .library-theme-status {
@@ -4929,6 +4943,10 @@ html.needs-welcome body {
   color: var(--muted, #5c6570);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
+}
+
+.library-theme-card.is-enabled .library-theme-status {
+  color: color-mix(in srgb, var(--brand-deep, #2849a8) 55%, var(--muted, #5c6570));
 }
 
 .library-theme-actions {
@@ -5071,17 +5089,27 @@ html.needs-welcome body {
 
 .library-theme-btn {
   flex-shrink: 0;
-  min-height: 1.65rem;
-  padding-inline: 0.5rem;
-  font-size: 0.72rem;
+  min-height: 1.55rem;
+  padding-inline: 0.48rem;
+  font-size: 0.7rem;
 }
 
+/* Study — present but quiet enough that the category name stays primary */
 .library-theme-btn--study {
-  min-width: 3.4rem;
+  min-width: 2.85rem;
+  min-height: 1.45rem;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: none;
 }
 
 .library-theme-btn--add {
   min-width: auto;
+  min-height: 1.5rem;
+  padding-inline: 0.5rem;
+  font-size: 0.7rem;
 }
 
 /*
@@ -5133,11 +5161,18 @@ html.needs-welcome body {
   }
 
   .library-theme-card {
-    padding: 0.3rem 0.36rem 0.28rem;
+    padding: 0.32rem 0.38rem 0.28rem;
   }
 
   .library-theme-name {
-    font-size: 0.78rem;
+    font-size: 0.86rem;
+  }
+
+  .library-theme-btn--study {
+    min-width: 2.7rem;
+    min-height: 1.4rem;
+    padding: 0.2rem 0.48rem;
+    font-size: 0.66rem;
   }
 
   .library-theme-word {
