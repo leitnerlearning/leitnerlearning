@@ -2439,10 +2439,12 @@ function updateSpeakButtonUI() {
   btn.textContent = speakListening ? "Listening…" : "Speak";
   btn.classList.toggle("listening", speakListening);
 
-  const labels = getDirectionLabels();
-  btn.title = speakModeActive
-    ? "Speak mode on. Tap to turn off"
-    : labels.speakTitle;
+  // Hover only when mode is on — off state is obvious from the label "Speak".
+  if (speakModeActive) {
+    btn.title = "Speak mode on · tap to turn off";
+  } else {
+    btn.removeAttribute("title");
+  }
 }
 
 function setListeningUI(active) {
@@ -3721,7 +3723,8 @@ function updateReadLanguageIndicator(category = getActiveCategory()) {
         ? `${label} story: ${title}. Choose story`
         : `Choose ${label} story`
     );
-    storyBtn.title = `${label} stories`;
+    // Flag + story title are visible; no hover that only renames the control.
+    storyBtn.removeAttribute("title");
   }
 
   // Keep empty-state copy in sync if Read is open with no stories
@@ -4220,8 +4223,8 @@ function setEmptyStatePowerAction(
     startBtn.disabled = !enabled;
     startBtn.setAttribute("aria-disabled", enabled ? "false" : "true");
     startBtn.setAttribute("aria-label", ariaLabel || hint || "Review");
-    if (hint) startBtn.title = hint;
-    else startBtn.removeAttribute("title");
+    // Status text already lives under the power button — no duplicate hover.
+    startBtn.removeAttribute("title");
   }
 
   if (powerEl) {
@@ -8259,7 +8262,7 @@ function renderCardItem(card) {
           <div class="card-item-native">${escapeHtml(card.native)}</div>
         </div>
         <div class="card-item-actions">
-          <button class="btn ghost small hear-card-btn card-action card-action--hear" data-foreign="${escapeAttr(card.foreign)}" type="button" title="Hear" aria-label="Hear ${escapeAttr(card.foreign)}">Hear</button>
+          <button class="btn ghost small hear-card-btn card-action card-action--hear" data-foreign="${escapeAttr(card.foreign)}" type="button" aria-label="Hear ${escapeAttr(card.foreign)}">Hear</button>
           <button class="btn ghost small edit-card-btn card-action" data-id="${escapeAttr(card.id)}" type="button">Edit</button>
           <button class="btn ghost small danger delete-card-btn card-action card-action--delete" data-id="${escapeAttr(card.id)}" type="button">Delete</button>
         </div>
@@ -8490,8 +8493,13 @@ function renderLibraryJumpNav(sections) {
       const chipLabel = compact
         ? BAND_JUMP_LABELS_COMPACT[key] || full
         : full;
-      // Full name + range on long-press / hover.
-      const tip = range ? `${full} · ${range}` : full;
+      // Hover only when the chip is shortened — expand the full band name + range.
+      const tip =
+        compact && range
+          ? `${full} · ${range}`
+          : compact
+            ? full
+            : "";
       const titleAttr = tip ? ` title="${escapeAttr(tip)}"` : "";
       return `<button type="button" class="library-jump-chip" data-jump-section="${escapeAttr(key)}"${titleAttr}>${escapeHtml(chipLabel)}</button>`;
     })
@@ -9335,9 +9343,12 @@ function updateReadEnglishToggle() {
   toggle.classList.toggle("is-on", Boolean(readShowEnglish));
   // Short label; pressed/on state carries the meaning.
   toggle.textContent = "English";
-  toggle.title = readShowEnglish
-    ? "Hide English translation"
-    : "Show English translation";
+  // Hover only when English is on (label alone doesn't say "hide").
+  if (readShowEnglish) {
+    toggle.title = "Hide English translation";
+  } else {
+    toggle.removeAttribute("title");
+  }
   toggle.setAttribute(
     "aria-label",
     readShowEnglish ? "Hide English translation" : "Show English translation"
@@ -9573,7 +9584,7 @@ function renderReadHeader(story) {
       "aria-label",
       `${langLabel} story: ${story.title}. Choose story`
     );
-    storyBtn.title = `${langLabel} · ${story.title}`;
+    storyBtn.removeAttribute("title");
   }
 
   const sourceEl = document.getElementById("read-story-source");
@@ -9807,7 +9818,7 @@ function renderProgressReadStats() {
               type="button"
               class="read-stat-row read-stat-row--link"
               data-open-story-id="${escapeAttr(story.id)}"
-              title="Open ${escapeAttr(story.title)}"
+              aria-label="Open ${escapeAttr(story.title)}"
             >
               <div class="read-stat-label">
                 <span class="read-stat-title">${escapeHtml(story.title)}</span>
@@ -9910,22 +9921,26 @@ function applyPracticeDirectionUI() {
 
   if (hearBtn) {
     hearBtn.textContent = category.hearLabel || "Hear";
-    hearBtn.title = labels.hearTitle;
+    hearBtn.removeAttribute("title");
     hearBtn.setAttribute("aria-label", labels.hearTitle || "Hear the prompt");
   }
 
   if (speakBtn) {
-    const speakTitle = speakModeActive
+    const speakAria = speakModeActive
       ? "Speak mode on. Tap to turn off"
       : labels.speakTitle;
-    speakBtn.title = speakTitle;
+    if (speakModeActive) {
+      speakBtn.title = "Speak mode on · tap to turn off";
+    } else {
+      speakBtn.removeAttribute("title");
+    }
     speakBtn.setAttribute("aria-pressed", String(speakModeActive));
-    speakBtn.setAttribute("aria-label", speakTitle);
+    speakBtn.setAttribute("aria-label", speakAria);
     speakBtn.classList.toggle("is-active", Boolean(speakModeActive));
   }
 
   if (revealBtn) {
-    revealBtn.title = "Show the answer";
+    revealBtn.removeAttribute("title");
     revealBtn.setAttribute("aria-label", "Show the answer");
   }
 }
