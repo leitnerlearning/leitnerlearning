@@ -3447,7 +3447,6 @@ function showTrackSwitchOverlay(label, options = {}) {
   const kickerEl = document.getElementById("track-switch-overlay-kicker");
   const logoEl = el?.querySelector(".track-switch-logo");
   const logoWrap = el?.querySelector(".track-switch-logo-wrap");
-  const stageEl = el?.querySelector(".track-switch-stage");
   if (!el || !nameEl) return;
   const text = String(label || "").trim();
   if (!text) return;
@@ -3482,12 +3481,11 @@ function showTrackSwitchOverlay(label, options = {}) {
 
   el.classList.toggle("is-welcome-enter", isWelcome);
   el.classList.toggle("is-welcome-portal", isPortal);
-  el.classList.remove("is-phase-language", "is-beat-pulse");
+  el.classList.remove("is-phase-language");
   logoEl?.classList.remove("is-beat-flash");
   logoWrap?.classList.remove("is-beat-flash");
   flagEl?.classList.remove("is-beat-flash");
   nameEl?.classList.remove("is-beat-flash");
-  stageEl?.classList.remove("is-ripple", "is-switch-flash");
   el.classList.remove("hidden");
   el.setAttribute("aria-hidden", "false");
   // Restart CSS animations cleanly
@@ -3514,17 +3512,11 @@ function showTrackSwitchOverlay(label, options = {}) {
     window.setTimeout(() => {
       if (!el.classList.contains("is-visible")) {
         el.classList.add("hidden");
-        el.classList.remove(
-          "is-welcome-enter",
-          "is-welcome-portal",
-          "is-phase-language",
-          "is-beat-pulse"
-        );
+        el.classList.remove("is-welcome-enter", "is-welcome-portal", "is-phase-language");
         el.setAttribute("aria-hidden", "true");
         logoEl?.classList.remove("is-beat-flash");
         logoWrap?.classList.remove("is-beat-flash");
         nameEl?.classList.remove("is-beat-flash");
-        stageEl?.classList.remove("is-ripple", "is-switch-flash");
         if (kickerEl) kickerEl.hidden = true;
         if (flagEl) {
           flagEl.hidden = true;
@@ -3568,22 +3560,10 @@ function pulseWelcomeBeat(el) {
   el.classList.add("is-beat-flash");
 }
 
-function pulsePortalClass(el, className, holdMs = 80) {
-  if (!el) return;
-  el.classList.remove(className);
-  void el.offsetWidth;
-  el.classList.add(className);
-  welcomePortalTimers.push(
-    window.setTimeout(() => {
-      el.classList.remove(className);
-    }, holdMs)
-  );
-}
-
 async function loadWelcomePortalBeatmap() {
   if (welcomePortalBeatmap) return welcomePortalBeatmap;
   try {
-    const res = await fetch("assets/welcome-portal-beats.json?v=19", { cache: "force-cache" });
+    const res = await fetch("assets/welcome-portal-beats.json?v=18", { cache: "force-cache" });
     if (!res.ok) return null;
     welcomePortalBeatmap = await res.json();
     return welcomePortalBeatmap;
@@ -3639,8 +3619,8 @@ function runPortalBeatClock(audio, events, onEvent) {
 
 /**
  * Language-select music portal (welcome + Progress):
- * Leitner logo flashes on the main beat; when the bass densifies, branding morphs
- * into the target-language flag; then the app continues.
+ * Soft logo pulse on the main beat; gentle handoff to the target-language flag
+ * when the bass densifies. No screen flashes/ripples (photosensitive-safe).
  * Falls back to short synth if audio/beatmap unavailable or reduced motion.
  *
  * @param {{ firstEntry?: boolean }} [options]
@@ -3669,7 +3649,7 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
     }
   };
 
-  // Reduced motion → short calm ceremony
+  // Reduced motion → short calm ceremony (no beat pulses)
   if (prefersReducedMotion()) {
     shortFallback();
     return;
@@ -3681,7 +3661,6 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
     const overlay = document.getElementById("track-switch-overlay");
     const logoEl = overlay?.querySelector(".track-switch-logo");
     const logoWrap = overlay?.querySelector(".track-switch-logo-wrap");
-    const stageEl = overlay?.querySelector(".track-switch-stage");
     const flagEl = document.getElementById("track-switch-overlay-flag");
     const nameEl = document.getElementById("track-switch-overlay-name");
 
@@ -3690,7 +3669,7 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
       return;
     }
 
-    // Hold the veil a beat past the clip so the last flash can land cleanly
+    // Hold the veil a beat past the clip so the last pulse can settle
     const durationMs = Math.round((Number(map.duration) || 5) * 1000 + 420);
     showTrackSwitchOverlay(label, {
       flag,
@@ -3719,35 +3698,32 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
     const events = [];
     (map.phase1Beats || []).forEach((t) => events.push({ t: Number(t), type: "logo" }));
     events.push({ t: switchAt, type: "switch" });
-    (map.phase2Beats || []).forEach((t) => {
-      if (Math.abs(Number(t) - switchAt) < 0.04) return;
-      events.push({ t: Number(t), type: "flag" });
+    // Phase 2: soft flag pulse, but not on every dense hit — keeps under
+    // the WCAG “3 flashes per second” caution for large bright changes.
+    const phase2 = (map.phase2Beats || [])
+      .map(Number)
+      .filter((t) => Math.abs(t - switchAt) >= 0.04);
+    phase2.forEach((t, idx) => {
+      if (idx % 2 === 0) events.push({ t, type: "flag" });
     });
 
     const fireLogoBeat = () => {
       pulseWelcomeBeat(logoEl);
       pulseWelcomeBeat(logoWrap);
-      pulsePortalClass(overlay, "is-beat-pulse", 90);
-      pulsePortalClass(stageEl, "is-ripple", 120);
-      if (typeof navigator.vibrate === "function") navigator.vibrate(12);
+      if (typeof navigator.vibrate === "function") navigator.vibrate(8);
     };
 
     const fireFlagBeat = () => {
       pulseWelcomeBeat(flagEl);
       pulseWelcomeBeat(nameEl);
-      pulsePortalClass(overlay, "is-beat-pulse", 90);
-      pulsePortalClass(stageEl, "is-ripple", 120);
-      if (typeof navigator.vibrate === "function") navigator.vibrate(9);
+      if (typeof navigator.vibrate === "function") navigator.vibrate(6);
     };
 
     const fireSwitch = () => {
       overlay?.classList.add("is-phase-language");
-      pulsePortalClass(stageEl, "is-switch-flash", 160);
-      pulsePortalClass(stageEl, "is-ripple", 140);
-      pulsePortalClass(overlay, "is-beat-pulse", 110);
       pulseWelcomeBeat(flagEl);
       pulseWelcomeBeat(nameEl);
-      if (typeof navigator.vibrate === "function") navigator.vibrate([16, 28, 20]);
+      if (typeof navigator.vibrate === "function") navigator.vibrate([10, 40, 10]);
     };
 
     runPortalBeatClock(audio, events, (ev) => {
