@@ -10908,7 +10908,6 @@ function renderProgressSummary() {
   const daily = ensureDailyPracticeState();
   const practiceStat = getProgressPracticeStat();
   const streakStat = getHomeStreakStat();
-  const reviewedToday = daily.reviewed;
   const total = deck.length;
   const introduced = getIntroducedCount();
   const introducedPct = total ? Math.round((introduced / total) * 100) : 0;
@@ -10916,51 +10915,94 @@ function renderProgressSummary() {
   const masteredPct = total ? Math.round((mastered / total) * 100) : 0;
   const deckLabel = total === 1 ? "1 card" : `${total.toLocaleString("en-US")} cards`;
 
-  // —— Practice truth strip (due / left today / caught up) ——
+  // —— Review strip: same language as Review tab (fraction chip + bar), not prose.
   if (dailyEl) {
+    const cap = getDailyPracticeCap();
+    const hasGoal = daily.goal > 0 && !daily.extraMode;
+    // Prefer real daily goal fraction; otherwise soft 0/cap when work is waiting.
+    let done = hasGoal ? daily.reviewed : 0;
+    let goalTotal = hasGoal ? daily.goal : 0;
+    if (!hasGoal && practiceStat.actionable && practiceStat.kind !== "caught-up") {
+      done = 0;
+      goalTotal = cap > 0 ? cap : 0;
+    }
+    if (daily.extraMode && daily.goal > 0) {
+      // Goal already met — keep the completed fraction visible.
+      done = daily.reviewed;
+      goalTotal = daily.goal;
+    }
+    if (practiceStat.kind === "done-today" || (daily.goalMet && daily.goal > 0)) {
+      done = daily.reviewed;
+      goalTotal = daily.goal;
+    }
+    if (practiceStat.kind === "caught-up" && daily.goal > 0) {
+      done = daily.reviewed;
+      goalTotal = daily.goal;
+    }
+
+    const showMeter = goalTotal > 0;
+    const pct = showMeter ? Math.min(100, Math.round((done / goalTotal) * 100)) : 0;
     const isDone =
       practiceStat.kind === "done-today" ||
       practiceStat.kind === "caught-up" ||
-      practiceStat.value === "✓";
+      practiceStat.value === "✓" ||
+      (showMeter && daily.goalMet && !daily.extraMode);
+    const isLive = showMeter && done > 0 && !isDone;
     const isQuiet = !practiceStat.highlight && !practiceStat.actionable;
+
     dailyEl.classList.toggle("hidden", false);
     dailyEl.classList.toggle("is-complete", Boolean(isDone));
     dailyEl.classList.toggle("is-quiet", Boolean(isQuiet) && !isDone);
+    dailyEl.classList.toggle("is-live", Boolean(isLive));
 
-    // Prefer shared soft line from getProgressPracticeStat; add done count when helpful.
-    const doneBit =
-      reviewedToday > 0 &&
-      practiceStat.kind !== "done-today" &&
-      practiceStat.kind !== "caught-up"
-        ? ` · ${reviewedToday} done`
-        : practiceStat.kind === "caught-up" && reviewedToday > 0
-          ? ` · ${reviewedToday} reviewed today`
-          : "";
-    let line = practiceStat.line || `${practiceStat.value} · ${practiceStat.label}`;
-    if (doneBit && !String(line).includes("done") && !String(line).includes("reviewed today")) {
-      line = `${line}${doneBit}`;
-    }
     let aria = practiceStat.ariaLabel;
-    if (practiceStat.kind === "left-today" && reviewedToday > 0) {
-      aria = `${practiceStat.ariaLabel}, ${reviewedToday} already reviewed`;
+    if (showMeter) {
+      aria = isDone
+        ? `Review goal complete: ${done} of ${goalTotal}`
+        : `Review ${done} of ${goalTotal} today`;
+      if (practiceStat.actionable && !isDone) {
+        aria += ". Open Review.";
+      }
     }
-    if (practiceStat.kind === "caught-up" && reviewedToday > 0) {
-      line = `All caught up · ${reviewedToday} reviewed today`;
-      aria = `All caught up. ${reviewedToday} reviewed today.`;
-    }
+
+    const countText = showMeter ? `${done}/${goalTotal}` : "—";
+    const chipClass = [
+      "progress-daily-chip",
+      isDone ? "is-complete" : "",
+      isLive ? "is-live" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const meterHtml = showMeter
+      ? `<div class="progress-daily-meter">
+          <span class="${chipClass}" aria-hidden="true">${escapeHtml(countText)}</span>
+          <div
+            class="progress-daily-bar${isDone ? " is-complete" : ""}"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuenow="${done}"
+            aria-valuemax="${goalTotal}"
+            aria-label="${escapeAttr(aria)}"
+          >
+            <div class="progress-daily-fill" style="width: ${pct}%"></div>
+          </div>
+        </div>`
+      : `<div class="progress-daily-meter progress-daily-meter--empty">
+          <span class="progress-daily-chip">${escapeHtml(countText)}</span>
+        </div>`;
 
     if (practiceStat.actionable) {
       dailyEl.innerHTML = `
         <button type="button" class="progress-daily-action" data-tab-jump="practice" aria-label="${escapeAttr(aria)}">
-          <span class="progress-daily-kicker">Review</span>
-          <span class="progress-daily-line">${escapeHtml(line)}</span>
-          <span class="progress-daily-go" aria-hidden="true">→</span>
+          <span class="progress-daily-label">Review</span>
+          ${meterHtml}
         </button>`;
     } else {
       dailyEl.innerHTML = `
         <div class="progress-daily-static" aria-label="${escapeAttr(aria)}">
-          <span class="progress-daily-kicker">Review</span>
-          <span class="progress-daily-line">${escapeHtml(line)}</span>
+          <span class="progress-daily-label">Review</span>
+          ${meterHtml}
         </div>`;
     }
   }
