@@ -121,6 +121,8 @@ let readMenuTrail = null;
 let editingCardId = null;
 let addCardReviewOpen = false;
 let addCardReviewState = null;
+/** Signatures of pairs already applied in this review session (stop A→B→A loops). */
+let addCardReviewApplyHistory = [];
 /** Snapshot of the form before the user started typing / picking suggestions. */
 let addCardFormBaseline = { foreign: "", native: "" };
 let foreignSuggestTimer = null;
@@ -4585,7 +4587,7 @@ async function fetchTranslationSuggestion(text, fromLang, toLang) {
     const data = await response.json();
     if (data.responseStatus !== 200) return null;
     const picked = pickBestTranslationSuggestion(data, trimmed, to);
-    if (!picked || looksLikeGibberish(picked)) return null;
+    if (!picked || looksLikeGibberish(picked) || !isPlausibleCardText(picked)) return null;
     // Refuse absurd compressions: resumekeieie → CV-en (API guessing from a stem)
     const sourceCompact = normalizeAnswer(trimmed).replace(/\s+/g, "");
     const pickedCompact = normalizeAnswer(picked).replace(/\s+/g, "");
@@ -4715,6 +4717,9 @@ function pickSpellingReplacement(original, replacements, fullText, knownForms = 
     if (!candidate || /\s/.test(candidate)) return;
     const n = normalizeAnswer(candidate);
     if (!n) return;
+    // Never accept symbol junk as a "spelling" fix
+    if (!/[a-zæøåäöü]/i.test(candidate)) return;
+    if (/[#@$%{}[\]\\|<>]/.test(candidate)) return;
     // Same letters, different casing (norway→Norway) is a valid orthography pick
     const caseOnly = n === o && candidate !== original;
     if (n === o && !caseOnly) return;
@@ -5732,47 +5737,55 @@ function nonsenseReviewSummary(learningName, foreignGibberish, nativeGibberish, 
       matches: false,
       targetField: null,
       suggestedValue: null,
-      title: "Looks like nonsense",
-      copy: "Neither side looks like a real word. Fix the text before adding, or only add it if you really mean to.",
+      title: "Looks unclear",
+      copy: "Try rewriting both sides.",
     };
   }
 
-  // Only ever suggest a fix FROM the side that looks real — never "translate" mash into approval.
+  // Only ever suggest a fix FROM the side that looks real
   if (foreignGibberish) {
-    if (suggestedForeign && !looksLikeGibberish(suggestedForeign)) {
+    if (
+      suggestedForeign &&
+      !looksLikeGibberish(suggestedForeign) &&
+      isPlausibleCardText(suggestedForeign)
+    ) {
       return {
         matches: false,
         targetField: "foreign",
         suggestedValue: suggestedForeign,
-        title: `${learningName} looks like nonsense`,
-        copy: `“${suggestedForeign}” is a normal ${learningName} for the English you typed. Tap to use it, or rewrite the ${learningName} yourself.`,
+        title: `Suggested ${learningName}`,
+        copy: `Use “${suggestedForeign}”?`,
       };
     }
     return {
       matches: false,
       targetField: null,
       suggestedValue: null,
-      title: `${learningName} looks like nonsense`,
-      copy: `That doesn’t look like real ${learningName}. Rewrite it before adding — a translation tool will still “match” pure gibberish if you let it.`,
+      title: `${learningName} looks unclear`,
+      copy: "Try rewriting that side.",
     };
   }
 
   if (nativeGibberish) {
-    if (suggestedNative && !looksLikeGibberish(suggestedNative)) {
+    if (
+      suggestedNative &&
+      !looksLikeGibberish(suggestedNative) &&
+      isPlausibleCardText(suggestedNative)
+    ) {
       return {
         matches: false,
         targetField: "native",
         suggestedValue: suggestedNative,
-        title: "English looks like nonsense",
-        copy: `“${suggestedNative}” is a common English for the ${learningName} you typed. Tap to use it, or rewrite the English yourself.`,
+        title: "Suggested English",
+        copy: `Use “${suggestedNative}”?`,
       };
     }
     return {
       matches: false,
       targetField: null,
       suggestedValue: null,
-      title: "English looks like nonsense",
-      copy: "That doesn’t look like real English. Rewrite it before adding.",
+      title: "English looks unclear",
+      copy: "Try rewriting that side.",
     };
   }
 
@@ -5786,8 +5799,42 @@ function formatReviewPair(foreign, native) {
   return `“${en}” / “${nb}”`;
 }
 
+/** Must look like real flashcard text (letters), not # / junk / empty symbols. */
+function isPlausibleCardText(text) {
+  const cleaned = stripFlashcardPunctuation(text);
+  if (!cleaned || cleaned.length > 140) return false;
+  // At least one letter in any script we care about
+  if (!/[a-zA-ZæøåäöüÆØÅÄÖÜàâäéèêëïîôùûüçÀ-ÖØ-öø-ÿ]/.test(cleaned)) return false;
+  // Reject pure/mostly symbol noise (incl. lone # from bad MT)
+  const symbols = (cleaned.match(/[#@$%{}[\]\\|<>*_~`^+=]/g) || []).length;
+  if (symbols > 0 && symbols >= cleaned.replace(/\s/g, "").length * 0.4) return false;
+  if (/^[#@$%&*+=./\\|-]+$/.test(cleaned)) return false;
+  return true;
+}
+
+/** Casing-only difference (Hello→hello, norway→Norway). Apostrophes count as different. */
+function isCasingOnlyDiff(a, b) {
+  const x = stripFlashcardPunctuation(a);
+  const y = stripFlashcardPunctuation(b);
+  if (!x || !y || x === y) return false;
+  return x.toLocaleLowerCase() === y.toLocaleLowerCase();
+}
+
+/**
+ * Same letters if we strip punctuation (banana's ≈ bananas in normalizeAnswer).
+ * Those are NOT safe auto-fixes — possessives/plurals mean different things.
+ */
+function isNormalizeOnlyDiff(a, b) {
+  const x = stripFlashcardPunctuation(a);
+  const y = stripFlashcardPunctuation(b);
+  if (!x || !y || x === y) return false;
+  if (isCasingOnlyDiff(x, y)) return false;
+  return normalizeAnswer(x) === normalizeAnswer(y);
+}
+
 function spellingFixIsPlausible(userText, correctedText) {
   if (!userText || !correctedText) return false;
+  if (!isPlausibleCardText(correctedText)) return false;
   if (normalizeAnswer(userText) === normalizeAnswer(correctedText)) return false;
   const spellingCmp = reviewGlossCompare(userText, correctedText);
   if (spellingCmp.spellingOnly || spellingCmp.soft) return true;
@@ -5799,80 +5846,54 @@ function spellingFixIsPlausible(userText, correctedText) {
 }
 
 /**
- * Plausible orthography fix: spelling change OR display casing change
- * (norway→Norway, atm→ATM, Hello→hello, German hunger→Hunger).
+ * Plausible orthography fix: real spelling change OR pure casing change.
+ * Never: apostrophe-only flips (banana's ⇄ bananas), symbol junk, empty.
  */
 function orthographyFixIsPlausible(userText, correctedText) {
   if (!userText || !correctedText) return false;
+  if (!isPlausibleCardText(correctedText)) return false;
   const userClean = stripFlashcardPunctuation(userText);
   const fixClean = stripFlashcardPunctuation(correctedText);
   if (!userClean || !fixClean || userClean === fixClean) return false;
-  // Pure capitalization / acronym / lemma-style change
-  if (normalizeAnswer(userClean) === normalizeAnswer(fixClean)) return true;
+  // Pure capitalization / acronym form only
+  if (isCasingOnlyDiff(userClean, fixClean)) return true;
+  // banana's vs bananas etc. — leave alone (not a casing fix)
+  if (isNormalizeOnlyDiff(userClean, fixClean)) return false;
   return spellingFixIsPlausible(userClean, fixClean);
 }
 
-/** Title + copy for orthography recommendations (teacher voice). */
+/** Short, human recommendation copy. No em dashes, no lecture. */
 function orthographyFixCopy(learningName, userNative, userForeign, fixNative, fixForeign) {
   const nativeChanged =
     fixNative && stripFlashcardPunctuation(userNative) !== stripFlashcardPunctuation(fixNative);
   const foreignChanged =
     fixForeign && stripFlashcardPunctuation(userForeign) !== stripFlashcardPunctuation(fixForeign);
   const nativeSpell =
-    nativeChanged && normalizeAnswer(userNative) !== normalizeAnswer(fixNative);
+    nativeChanged && !isCasingOnlyDiff(userNative, fixNative);
   const foreignSpell =
-    foreignChanged && normalizeAnswer(userForeign) !== normalizeAnswer(fixForeign);
-  const nativeCase = nativeChanged && !nativeSpell;
-  const foreignCase = foreignChanged && !foreignSpell;
+    foreignChanged && !isCasingOnlyDiff(userForeign, fixForeign);
 
   const pair = formatReviewPair(fixForeign || userForeign, fixNative || userNative);
 
   if (nativeChanged && foreignChanged) {
     if (nativeSpell || foreignSpell) {
-      return {
-        title: "Fix spelling & capitalization?",
-        copy: `Tap to use ${pair} — exact correct forms only for both sides.`,
-      };
+      return { title: "Suggested fix", copy: `Use ${pair}?` };
     }
-    return {
-      title: "Fix capitalization?",
-      copy: `Tap to use ${pair} — language-correct capitalization on both sides.`,
-    };
+    return { title: "Suggested capitalization", copy: `Use ${pair}?` };
   }
   if (nativeChanged) {
-    if (nativeSpell && nativeCase) {
-      return {
-        title: "Fix English spelling?",
-        copy: `Tap to use ${pair} — exact correct English.`,
-      };
-    }
     if (nativeSpell) {
-      return {
-        title: "Fix English spelling?",
-        copy: `Tap to use ${pair} — learn the exact correct English.`,
-      };
+      return { title: "Suggested English", copy: `Use ${pair}?` };
     }
-    return {
-      title: "Fix English capitalization?",
-      copy: `Tap to use ${pair} — proper nouns, acronyms (ATM), and “I” stay correct; ordinary words match the deck.`,
-    };
+    return { title: "Suggested capitalization", copy: `Use ${pair}?` };
   }
   if (foreignChanged) {
     if (foreignSpell) {
-      return {
-        title: `Fix ${learningName} spelling?`,
-        copy: `Tap to use ${pair} — never learn a misspelled ${learningName} form.`,
-      };
+      return { title: `Suggested ${learningName}`, copy: `Use ${pair}?` };
     }
-    return {
-      title: `Fix ${learningName} capitalization?`,
-      copy: `Tap to use ${pair} — correct ${learningName} capitalization (never teach the wrong form).`,
-    };
+    return { title: "Suggested capitalization", copy: `Use ${pair}?` };
   }
-  return {
-    title: "Use correct form?",
-    copy: `Tap to use ${pair}.`,
-  };
+  return { title: "Suggested fix", copy: `Use ${pair}?` };
 }
 
 function getTranslationReviewSummary(
@@ -5905,41 +5926,55 @@ function getTranslationReviewSummary(
       ? null
       : preferDisplayForm(suggestedForeign) || null;
 
-  // Orthography (spelling + language-correct capitalization) — independent of MT.
-  // Never teach a wrong form; user may still Add Anyway.
+  // Orthography (spelling + capitalization). Independent of MT. User can still Add.
   const safeSpellingNative =
-    !nativeGibberish && spellingCorrectedNative
+    !nativeGibberish &&
+    spellingCorrectedNative &&
+    isPlausibleCardText(spellingCorrectedNative)
       ? stripFlashcardPunctuation(spellingCorrectedNative) || null
       : null;
   const safeSpellingForeign =
-    !foreignGibberish && spellingCorrectedForeign
+    !foreignGibberish &&
+    spellingCorrectedForeign &&
+    isPlausibleCardText(spellingCorrectedForeign)
       ? stripFlashcardPunctuation(spellingCorrectedForeign) || null
       : null;
 
-  const makePairFix = (title, copy, pairForeign, pairNative) => ({
-    matches: false,
-    targetField: "pair",
-    suggestedValue: null,
-    // Keep recommended orthography as-is (do not re-lower via preferDisplayForm)
-    suggestedForeign: stripFlashcardPunctuation(pairForeign),
-    suggestedNative: stripFlashcardPunctuation(pairNative),
-    title,
-    copy,
-  });
+  const makePairFix = (title, copy, pairForeign, pairNative) => {
+    const f = stripFlashcardPunctuation(pairForeign);
+    const n = stripFlashcardPunctuation(pairNative);
+    if (!isPlausibleCardText(f) || !isPlausibleCardText(n)) return null;
+    // Don't "recommend" the same pair the user already has
+    if (
+      stripFlashcardPunctuation(foreign) === f &&
+      stripFlashcardPunctuation(native) === n
+    ) {
+      return null;
+    }
+    return {
+      matches: false,
+      targetField: "pair",
+      suggestedValue: null,
+      suggestedForeign: f,
+      suggestedNative: n,
+      title,
+      copy,
+    };
+  };
 
   const nativeNeedsOrtho =
     safeSpellingNative && orthographyFixIsPlausible(native, safeSpellingNative);
   const foreignNeedsOrtho =
     safeSpellingForeign && orthographyFixIsPlausible(foreign, safeSpellingForeign);
 
-  // Orthography first — product rule: never freely accept ANY incorrect form to learn.
   if (nativeNeedsOrtho || foreignNeedsOrtho) {
     const pairNative = nativeNeedsOrtho
       ? safeSpellingNative
-      : stripFlashcardPunctuation(safeSuggestedNative || native);
+      : stripFlashcardPunctuation(native);
     const pairForeign = foreignNeedsOrtho
       ? safeSpellingForeign
-      : stripFlashcardPunctuation(safeSuggestedForeign || foreign);
+      : stripFlashcardPunctuation(foreign);
+    // Don't pull unstable MT into an orthography-only fix (loop fuel)
     const msg = orthographyFixCopy(
       learningName,
       native,
@@ -5947,7 +5982,8 @@ function getTranslationReviewSummary(
       nativeNeedsOrtho ? pairNative : null,
       foreignNeedsOrtho ? pairForeign : null
     );
-    return makePairFix(msg.title, msg.copy, pairForeign, pairNative);
+    const fix = makePairFix(msg.title, msg.copy, pairForeign, pairNative);
+    if (fix) return fix;
   }
 
   // Curated local data first (can still rescue mash on one side with a real deck pair).
@@ -5977,32 +6013,35 @@ function getTranslationReviewSummary(
 
     // Both sides clearly the same card, minor spelling/caps difference
     if (foreignStrong && nativeStrong && !foreignGibberish && !nativeGibberish && !displayMatches) {
-      return makePairFix(
-        "Close — use the deck spelling?",
-        `Tap to fill both sides with ${formatReviewPair(localPair.foreign, localPair.native)}, the spelling in ${where}.`,
+      const fix = makePairFix(
+        "In your deck",
+        `Use ${formatReviewPair(localPair.foreign, localPair.native)}?`,
         localPair.foreign,
         localPair.native
       );
+      if (fix) return fix;
     }
 
     // Same Norwegian headword, different English — only if Norwegian match is strong
     if (foreignStrong && !nativeStrong && !foreignGibberish) {
-      return makePairFix(
-        "Same Norwegian in your deck",
-        `Deck has ${formatReviewPair(localPair.foreign, localPair.native)} (you typed “${stripFlashcardPunctuation(native)}”). Tap to use the deck pair.`,
+      const fix = makePairFix(
+        "In your deck",
+        `Use ${formatReviewPair(localPair.foreign, localPair.native)}?`,
         localPair.foreign,
         localPair.native
       );
+      if (fix) return fix;
     }
 
     // Same English gloss, different Norwegian — only if English match is strong
     if (nativeStrong && !foreignStrong && !nativeGibberish) {
-      return makePairFix(
-        "Same English in your deck",
-        `Deck has ${formatReviewPair(localPair.foreign, localPair.native)} (you typed “${stripFlashcardPunctuation(foreign)}”). Tap to use the deck pair.`,
+      const fix = makePairFix(
+        "In your deck",
+        `Use ${formatReviewPair(localPair.foreign, localPair.native)}?`,
         localPair.foreign,
         localPair.native
       );
+      if (fix) return fix;
     }
   }
 
@@ -6019,93 +6058,125 @@ function getTranslationReviewSummary(
     if (nonsense) return nonsense;
   }
 
-  const foreignCmp = safeSuggestedForeign
-    ? reviewGlossCompare(foreign, safeSuggestedForeign)
+  // Drop junk MT before any soft-match / suggest path
+  const usableSuggestedForeign =
+    safeSuggestedForeign && isPlausibleCardText(safeSuggestedForeign)
+      ? safeSuggestedForeign
+      : null;
+  const usableSuggestedNative =
+    safeSuggestedNative && isPlausibleCardText(safeSuggestedNative)
+      ? safeSuggestedNative
+      : null;
+
+  const foreignCmp = usableSuggestedForeign
+    ? reviewGlossCompare(foreign, usableSuggestedForeign)
     : { exact: false, soft: false, spellingOnly: false };
-  const nativeCmp = safeSuggestedNative
-    ? reviewGlossCompare(native, safeSuggestedNative)
+  const nativeCmp = usableSuggestedNative
+    ? reviewGlossCompare(native, usableSuggestedNative)
     : { exact: false, soft: false, spellingOnly: false };
 
   const foreignOk = foreignCmp.soft || foreignCmp.exact;
   const nativeOk = nativeCmp.soft || nativeCmp.exact;
-  const hasSpellingIssue = foreignCmp.spellingOnly || nativeCmp.spellingOnly;
+  // Real letter typos only — not banana's ⇄ bananas (normalize-only)
+  const hasSpellingIssue =
+    (foreignCmp.spellingOnly &&
+      usableSuggestedForeign &&
+      !isNormalizeOnlyDiff(foreign, usableSuggestedForeign) &&
+      !isCasingOnlyDiff(foreign, usableSuggestedForeign)) ||
+    (nativeCmp.spellingOnly &&
+      usableSuggestedNative &&
+      !isNormalizeOnlyDiff(native, usableSuggestedNative) &&
+      !isCasingOnlyDiff(native, usableSuggestedNative));
 
   // Fields look swapped (English in Norwegian box and vice versa)
   if (
-    safeSuggestedForeign &&
-    safeSuggestedNative &&
+    usableSuggestedForeign &&
+    usableSuggestedNative &&
     !foreignOk &&
     !nativeOk &&
-    softGlossMatch(safeSuggestedForeign, native) &&
-    softGlossMatch(safeSuggestedNative, foreign)
+    softGlossMatch(usableSuggestedForeign, native) &&
+    softGlossMatch(usableSuggestedNative, foreign)
   ) {
     return {
       matches: false,
       targetField: "swap",
       suggestedValue: null,
-      suggestedForeign: preferDisplayForm(safeSuggestedForeign),
-      suggestedNative: safeSuggestedNative,
+      suggestedForeign: stripFlashcardPunctuation(usableSuggestedForeign),
+      suggestedNative: stripFlashcardPunctuation(usableSuggestedNative),
       title: "Sides look swapped",
-      copy: `English and ${learningName} look swapped. Tap to use ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)} instead.`,
+      copy: `Use ${formatReviewPair(usableSuggestedForeign, usableSuggestedNative)}?`,
     };
   }
 
-  // Product rule: never approve a soft typo as "Looks good".
-  // "do you feel the way i feal" must become a Fix spelling? offer, not a free Add.
+  // Soft letter typos (feal→feel), not apostrophe/punctuation twins
   if (!foreignGibberish && !nativeGibberish && hasSpellingIssue) {
-    if (safeSuggestedForeign && safeSuggestedNative && foreignOk && nativeOk) {
-      return makePairFix(
-        "Fix spelling?",
-        `Tap to use ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)} — the exact form to learn.`,
-        safeSuggestedForeign,
-        safeSuggestedNative
+    if (usableSuggestedForeign && usableSuggestedNative && foreignOk && nativeOk) {
+      const fix = makePairFix(
+        "Suggested fix",
+        `Use ${formatReviewPair(usableSuggestedForeign, usableSuggestedNative)}?`,
+        usableSuggestedForeign,
+        usableSuggestedNative
       );
+      if (fix) return fix;
     }
-    if (nativeCmp.spellingOnly && safeSuggestedNative) {
-      const pairForeign = safeSuggestedForeign || foreign;
-      return makePairFix(
-        "Fix English spelling?",
-        `Tap to use ${formatReviewPair(pairForeign, safeSuggestedNative)} — correct the English before you learn it.`,
+    if (
+      nativeCmp.spellingOnly &&
+      usableSuggestedNative &&
+      !isNormalizeOnlyDiff(native, usableSuggestedNative)
+    ) {
+      const pairForeign = usableSuggestedForeign || foreign;
+      const fix = makePairFix(
+        "Suggested English",
+        `Use ${formatReviewPair(pairForeign, usableSuggestedNative)}?`,
         pairForeign,
-        safeSuggestedNative
+        usableSuggestedNative
       );
+      if (fix) return fix;
     }
-    if (foreignCmp.spellingOnly && safeSuggestedForeign) {
-      const pairNative = safeSuggestedNative || native;
-      return makePairFix(
-        `Fix ${learningName} spelling?`,
-        `Tap to use ${formatReviewPair(safeSuggestedForeign, pairNative)} — correct the ${learningName} before you learn it.`,
-        safeSuggestedForeign,
+    if (
+      foreignCmp.spellingOnly &&
+      usableSuggestedForeign &&
+      !isNormalizeOnlyDiff(foreign, usableSuggestedForeign)
+    ) {
+      const pairNative = usableSuggestedNative || native;
+      const fix = makePairFix(
+        `Suggested ${learningName}`,
+        `Use ${formatReviewPair(usableSuggestedForeign, pairNative)}?`,
+        usableSuggestedForeign,
         pairNative
       );
+      if (fix) return fix;
     }
   }
 
   // Either direction confirming is enough for a real everyday pair.
-  // Requiring both caused false alarms: great/flott is valid, but reverse TM may say
-  // "bang-up", or EN→NO may prefer "god" while the learner chose "flott" (also fine).
-  // Exact only — soft typos already handled above and must not fall through here.
-  if ((foreignCmp.exact || nativeCmp.exact) && !foreignGibberish && !nativeGibberish && !hasSpellingIssue) {
-    if (foreignOk && nativeOk && safeSuggestedForeign && safeSuggestedNative) {
-      const canonForeign = preferDisplayForm(safeSuggestedForeign);
-      const canonNative = stripFlashcardPunctuation(safeSuggestedNative);
+  if (
+    (foreignCmp.exact || nativeCmp.exact) &&
+    !foreignGibberish &&
+    !nativeGibberish &&
+    !hasSpellingIssue
+  ) {
+    if (foreignOk && nativeOk && usableSuggestedForeign && usableSuggestedNative) {
+      const canonForeign = preferDisplayForm(usableSuggestedForeign);
+      const canonNative = stripFlashcardPunctuation(usableSuggestedNative);
       const userForeign = stripFlashcardPunctuation(foreign);
       const userNative = stripFlashcardPunctuation(native);
-      // Display-only polish (casing, particles already folded by exact compare)
+      // Casing-only polish (never banana's → bananas)
       if (
-        userForeign !== stripFlashcardPunctuation(canonForeign) ||
-        userNative !== canonNative
+        (isCasingOnlyDiff(userForeign, canonForeign) ||
+          isCasingOnlyDiff(userNative, canonNative)) &&
+        (userForeign !== stripFlashcardPunctuation(canonForeign) || userNative !== canonNative)
       ) {
-        return makePairFix(
-          "Tiny spelling tweak?",
-          `Tap to use ${formatReviewPair(canonForeign, canonNative)}, or keep yours.`,
-          canonForeign,
-          canonNative
+        const fix = makePairFix(
+          "Suggested capitalization",
+          `Use ${formatReviewPair(canonForeign, canonNative)}?`,
+          isCasingOnlyDiff(userForeign, canonForeign) ? canonForeign : userForeign,
+          isCasingOnlyDiff(userNative, canonNative) ? canonNative : userNative
         );
+        if (fix) return fix;
       }
     }
 
-    // Title only: "common translation" overclaims obscure words the tool still accepts.
     return {
       matches: true,
       targetField: null,
@@ -6115,7 +6186,7 @@ function getTranslationReviewSummary(
     };
   }
 
-  // Soft match both sides without spellingOnly flag (inflection/dialect already exact-ish)
+  // Soft match without a real letter typo
   if ((foreignOk || nativeOk) && !foreignGibberish && !nativeGibberish && !hasSpellingIssue) {
     return {
       matches: true,
@@ -6126,49 +6197,44 @@ function getTranslationReviewSummary(
     };
   }
 
-  // Both sides disagree, or multi-word: MT is unreliable for idioms/slang/dialect.
-  // Still offer a correctable pair when both directions returned something usable —
-  // never silently bless free-form phrase adds when we have a concrete alternative.
-  if (isPhrase || (safeSuggestedForeign && safeSuggestedNative)) {
-    if (safeSuggestedForeign && safeSuggestedNative) {
-      return makePairFix(
+  // Multi-word / disagreement: offer a pair once when both sides are clean text
+  if (isPhrase || (usableSuggestedForeign && usableSuggestedNative)) {
+    if (usableSuggestedForeign && usableSuggestedNative) {
+      const fix = makePairFix(
         "Suggested pair",
-        `Tap to use ${formatReviewPair(safeSuggestedForeign, safeSuggestedNative)} — the form online checks suggest. Only keep yours if you are sure it is correct.`,
-        safeSuggestedForeign,
-        safeSuggestedNative
+        `Use ${formatReviewPair(usableSuggestedForeign, usableSuggestedNative)}?`,
+        usableSuggestedForeign,
+        usableSuggestedNative
       );
+      if (fix) return fix;
     }
-    const toolBits = [];
-    if (safeSuggestedNative) toolBits.push(`English: “${safeSuggestedNative}”`);
-    if (safeSuggestedForeign) toolBits.push(`${learningName}: “${preferDisplayForm(safeSuggestedForeign)}”`);
-    const toolNote = toolBits.length ? ` Tool guessed ${toolBits.join(", ")}.` : "";
     return {
       matches: false,
       targetField: null,
       suggestedValue: null,
       title: "Hard to check online",
-      copy: `Idioms, slang, and dialect often confuse translation tools. Double-check spelling on both sides before adding.${toolNote}`,
+      copy: "Add if both sides look right to you.",
     };
   }
 
   // Single-word: only suggest a fix FROM a non-mash source
-  if (safeSuggestedForeign) {
+  if (usableSuggestedForeign && isPlausibleCardText(usableSuggestedForeign)) {
     return {
       matches: false,
       targetField: "foreign",
-      suggestedValue: preferDisplayForm(safeSuggestedForeign),
-      title: "Different translation found",
-      copy: `For “${native}”, a common ${learningName} is “${preferDisplayForm(safeSuggestedForeign)}”. You typed “${foreign}”.`,
+      suggestedValue: preferDisplayForm(usableSuggestedForeign),
+      title: `Suggested ${learningName}`,
+      copy: `Use “${preferDisplayForm(usableSuggestedForeign)}”?`,
     };
   }
 
-  if (safeSuggestedNative) {
+  if (usableSuggestedNative && isPlausibleCardText(usableSuggestedNative)) {
     return {
       matches: false,
       targetField: "native",
-      suggestedValue: safeSuggestedNative,
-      title: "Different translation found",
-      copy: `A common English for “${preferDisplayForm(foreign)}” is “${safeSuggestedNative}”. You typed “${native}”.`,
+      suggestedValue: usableSuggestedNative,
+      title: "Suggested English",
+      copy: `Use “${usableSuggestedNative}”?`,
     };
   }
 
@@ -6178,7 +6244,7 @@ function getTranslationReviewSummary(
       targetField: null,
       suggestedValue: null,
       title: "Couldn't double-check",
-      copy: "No strong online match. Check spelling carefully — only add it if you know both sides are exact.",
+      copy: "Add if both sides look right to you.",
     };
   }
 
@@ -6365,36 +6431,70 @@ function applyReviewSuggestion() {
     return;
   }
 
+  // Reject junk suggestions (e.g. lone # from bad MT)
+  if (targetField === "swap" || targetField === "pair") {
+    if (!isPlausibleCardText(suggestedForeign) || !isPlausibleCardText(suggestedNative)) return;
+  } else if (!isPlausibleCardText(suggestedValue)) {
+    return;
+  }
+
   const foreignInput = document.getElementById("new-foreign");
   const nativeInput = document.getElementById("new-native");
   const reviewForeign = document.getElementById("review-foreign");
   const reviewNative = document.getElementById("review-native");
 
-  if (targetField === "swap" || targetField === "pair") {
-    const nextForeign = preferDisplayForm(suggestedForeign);
-    const nextNative = stripFlashcardPunctuation(suggestedNative);
-    if (foreignInput) foreignInput.value = nextForeign;
-    if (nativeInput) nativeInput.value = nextNative;
-    if (reviewForeign) reviewForeign.textContent = nextForeign;
-    if (reviewNative) reviewNative.textContent = nextNative;
-  } else if (targetField === "foreign") {
-    const nextForeign = preferDisplayForm(suggestedValue);
-    if (foreignInput) foreignInput.value = nextForeign;
-    if (reviewForeign) reviewForeign.textContent = nextForeign;
-  } else {
-    const nextNative = stripFlashcardPunctuation(suggestedValue);
-    if (nativeInput) nativeInput.value = nextNative;
-    if (reviewNative) reviewNative.textContent = nextNative;
+  let nextForeign =
+    targetField === "swap" || targetField === "pair"
+      ? stripFlashcardPunctuation(suggestedForeign)
+      : targetField === "foreign"
+        ? stripFlashcardPunctuation(suggestedValue)
+        : foreignInput?.value.trim() || "";
+  let nextNative =
+    targetField === "swap" || targetField === "pair"
+      ? stripFlashcardPunctuation(suggestedNative)
+      : targetField === "native"
+        ? stripFlashcardPunctuation(suggestedValue)
+        : nativeInput?.value.trim() || "";
+
+  // Light display form only for acronyms (cv→CV)
+  if (targetField === "swap" || targetField === "pair" || targetField === "foreign") {
+    nextForeign = preferDisplayForm(nextForeign);
   }
 
+  const sig = `${normalizeAnswer(nextForeign)}|${normalizeAnswer(nextNative)}|${nextForeign}|${nextNative}`;
+  // Already applied this exact pair, or too many hops: settle instead of looping
+  const shouldSettle =
+    addCardReviewApplyHistory.includes(sig) || addCardReviewApplyHistory.length >= 4;
+
+  if (foreignInput) foreignInput.value = nextForeign;
+  if (nativeInput) nativeInput.value = nextNative;
+  if (reviewForeign) reviewForeign.textContent = nextForeign;
+  if (reviewNative) reviewNative.textContent = nextNative;
   syncAddCardResetButton();
-  // Full re-check with fresh MT — never re-approve using stale translations of the old text.
+
+  if (shouldSettle) {
+    renderAddCardReviewContext({
+      foreign: nextForeign,
+      native: nextNative,
+      duplicate: findDeckCardByForeign(nextForeign, editingCardId),
+      suggestedNative: nextNative,
+      suggestedForeign: nextForeign,
+      related: getRelatedEntriesForReview(nextForeign, nextNative),
+      localPair: findLocalDeckPair(nextForeign, nextNative),
+      spellingCorrectedNative: null,
+      spellingCorrectedForeign: null,
+    });
+    return;
+  }
+
+  addCardReviewApplyHistory.push(sig);
   openAddCardReview();
 }
 
 function closeAddCardReview() {
   addCardReviewOpen = false;
   addCardReviewState = null;
+  addCardReviewApplyHistory = [];
   document.getElementById("add-card-review")?.classList.add("hidden");
   const confirmBtn = document.getElementById("add-card-confirm");
   if (confirmBtn) confirmBtn.disabled = false;
