@@ -48,7 +48,7 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=205" />
+    <link rel="stylesheet" href="styles.css?v=206" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -396,7 +396,7 @@
 
           <form id="add-card-form" class="add-card-form">
             <div class="add-card-form-head">
-              <span id="add-card-mode-label" class="add-card-mode-label hidden">Editing card</span>
+              <span id="add-card-mode-label" class="add-card-mode-label hidden">Editing</span>
               <button type="button" id="add-card-cancel-edit" class="btn ghost small hidden">Cancel</button>
             </div>
             <div class="form-row add-card-fields">
@@ -433,9 +433,9 @@
             <div class="add-card-form-actions">
               <button
                 type="button"
-                class="btn ghost"
+                class="btn ghost add-card-secondary-btn"
                 id="add-card-reset-fields"
-                title="Put the boxes back how they were before you edited them"
+                title="Restore previous text"
                 hidden
               >
                 Reset
@@ -444,7 +444,16 @@
             </div>
           </form>
 
-          <div id="add-card-review" class="add-card-review hidden" role="dialog" aria-label="Review card">
+          <div
+            id="add-card-review"
+            class="add-card-review hidden"
+            role="dialog"
+            aria-label="Check card"
+            aria-labelledby="add-card-review-heading"
+          >
+            <div class="add-card-review-head">
+              <h3 class="add-card-review-heading" id="add-card-review-heading">Check card</h3>
+            </div>
             <div class="add-card-review-pair">
               <div class="add-card-review-side is-en">
                 <span class="add-card-review-label" id="add-card-review-native-label">English</span>
@@ -458,8 +467,12 @@
             </div>
             <div id="add-card-review-context" class="add-card-review-context" role="status"></div>
             <div class="add-card-review-actions">
-              <button type="button" class="btn ghost hidden" id="add-card-edit-existing">Edit existing</button>
-              <button type="button" class="btn ghost" id="add-card-edit-review">Edit</button>
+              <button type="button" class="btn ghost add-card-secondary-btn hidden" id="add-card-edit-existing">
+                Edit existing
+              </button>
+              <button type="button" class="btn ghost add-card-secondary-btn" id="add-card-edit-review">
+                Edit
+              </button>
               <button type="button" class="btn primary" id="add-card-confirm">Add</button>
             </div>
           </div>
@@ -779,6 +792,6 @@
     <script src="lang/es-pack.js?v=2"></script>
     <script src="lang/it-pack.js?v=2"></script>
     <script src="srs-core.js?v=1"></script>
-    <script src="app.js?v=266"></script>
+    <script src="app.js?v=267"></script>
   </body>
 </html>

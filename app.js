@@ -5164,8 +5164,8 @@ function renderAddCardReviewContext({
   if (duplicate) {
     blocks.push(`
       <section class="review-context-block is-warning">
-        <h4 class="review-context-title">Already in your library</h4>
-        <p class="review-context-copy">Already in your library: “${escapeHtml(stripFlashcardPunctuation(duplicate.native))}” / “${escapeHtml(preferDisplayForm(duplicate.foreign))}”</p>
+        <h4 class="review-context-title">Already in library</h4>
+        <p class="review-context-copy">“${escapeHtml(stripFlashcardPunctuation(duplicate.native))}” · “${escapeHtml(preferDisplayForm(duplicate.foreign))}”</p>
       </section>`);
   } else if (translation) {
     const canApplyOne =
