@@ -4718,11 +4718,12 @@ html.needs-welcome body {
   margin-bottom: 0.95rem;
 }
 
+/* Rare / caution action — quiet at rest; soft red only on hover/focus */
 .library-reset-btn {
   flex-shrink: 0;
   min-height: 2.15rem;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid var(--border-strong);
+  padding: 0.35rem 0.55rem;
+  border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   color: var(--text-tertiary);
@@ -4735,15 +4736,24 @@ html.needs-welcome body {
   transition:
     color 0.15s var(--ease),
     background 0.15s var(--ease),
-    border-color 0.15s var(--ease);
+    border-color 0.15s var(--ease),
+    box-shadow 0.15s var(--ease);
 }
 
 .library-reset-btn:hover,
 .library-reset-btn:focus-visible {
-  color: var(--brand-deep);
-  background: var(--brand-soft);
-  border-color: transparent;
+  color: color-mix(in srgb, var(--error, #d70015) 88%, var(--ink));
+  background: var(--error-soft, rgba(215, 0, 21, 0.08));
+  border-color: color-mix(in srgb, var(--error, #d70015) 22%, transparent);
   outline: none;
+}
+
+.library-reset-btn:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error, #d70015) 16%, transparent);
+}
+
+.library-reset-btn:active {
+  background: color-mix(in srgb, var(--error, #d70015) 12%, transparent);
 }
 
 .library-controls {
