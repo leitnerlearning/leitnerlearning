@@ -1358,7 +1358,7 @@
   ]);
 
   packs.housing.byCategory["es"] = buildEntries([
-    ['piso de un dormitorio', 'one-bedroom flat'],
+    ['piso', 'apartment / flat'],
     ['alquiler', 'rent'],
     ['casero', 'landlord'],
     ['inquilino', 'tenant'],
@@ -1589,7 +1589,7 @@
 
   packs.work.byCategory["es"] = buildEntries([
     ['periodo de prueba', 'probation period'],
-    ['superior', 'manager / superior'],
+    ['jefe', 'boss / manager'],
     ['confirmación de pedido', 'order confirmation'],
     ['jornada completa', 'full-time'],
     ['media jornada', 'part-time'],
@@ -1821,7 +1821,7 @@
     ['supermercado', 'supermarket'],
     ['barato', 'cheap'],
     ['rebajas', 'sale'],
-    ['cambio', 'change (money)'],
+    ['cambio', 'change (money) / exchange'],
     ['bolsa', 'shopping bag'],
     ['carrito', 'shopping cart'],
     ['caja', 'checkout / register'],
@@ -2278,7 +2278,7 @@
   ]);
 
   packs.money.byCategory["es"] = buildEntries([
-    ['cajero', 'ATM'],
+    ['cajero automático', 'ATM'],
     ['tarjeta de crédito', 'credit card'],
     ['tarjeta de débito', 'debit card'],
     ['importe', 'amount'],

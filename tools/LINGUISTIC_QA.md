@@ -9,7 +9,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 | Danish | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; weak top-100 replaced; survival adds; packs + 12 stories polished 2026-07-21 |
 | German | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; weak fillers out; groß/klein/schlecht early; packs + 12 stories 2026-07-21 |
 | French | PASS | OPEN | |
-| Spanish | PASS | OPEN | |
+| Spanish | PASS | **PASS 1 COMPLETE** (spine certified for ship-trust) | POS honesty; malo/lo siento; gloss fixes; packs + stories 2026-07-21 |
 | Italian | PASS | OPEN | |
 | Dutch | PASS | OPEN | |
 | Portuguese | PASS | OPEN | |
@@ -60,12 +60,23 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 - [x] 12 stories light EN polish
 - [x] Unique forms still 1000
 
+## Spanish — pass 1 checklist
+
+- [x] Mechanical 1000 + 200 + 12 stories
+- [x] POS honesty (not all `noun`)
+- [x] Dedup weak pairs (`de pronto` / `no hay problema`)
+- [x] Survival: `malo`, `lo siento`, strong phrase ladder kept
+- [x] Gloss fixes (`ser`/`estar`, `por`, `su`, `mañana`, …)
+- [x] Packs polish (ES airport gate/carousel already good; jefe/piso/ATM)
+- [x] 12 stories light EN polish
+- [x] Unique forms still 1000
+
 ## Ship rule
 
-- **NB + SV + DA + DE:** trustworthy for “exact forms” on certified spines.
-- **Other 6 languages:** structure only until certified the same way.
+- **NB + SV + DA + DE + ES:** trustworthy for “exact forms” on certified spines.
+- **Other 5 languages:** structure only until certified the same way (FR, IT, NL, PT, PL).
 - Continuous improvement always welcome; do not re-open thrash without a named defect.
-- **Next:** Spanish (large market) or French.
+- **Next:** French.
 
 ## How to re-verify
 
