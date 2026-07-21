@@ -4900,25 +4900,91 @@ function acronymDisplayForm(token) {
 
 /**
  * Should we apply this LanguageTool match for flashcard orthography?
- * - Misspellings: yes (incl. proper nouns norway→Norway)
- * - Casing (German nouns, THE_FRENCH…): yes
- * - Sentence-start capitalization: no (fights lemma/deck style)
+ * - Misspellings, grammar, apostrophes, agreement: yes
+ * - Casing that is language-correct (German nouns, Norway…): yes
+ * - Sentence-start capitalization / pure style: no (fights lemma flashcards)
  */
 function isFlashcardOrthographyMatch(match) {
   if (!match?.rule) return false;
   const issue = match.rule.issueType || "";
   const cat = match.rule.category?.id || "";
   const id = match.rule.id || "";
+  const msg = `${id} ${match.message || ""} ${match.shortMessage || ""}`;
+
   if (LT_SENTENCE_START_RULES.has(id)) return false;
-  if (issue === "misspelling") return true;
-  if (cat === "CASING" || issue === "typographical" || issue === "uncategorized") {
-    // Only casing-ish rules; skip pure style/typography that isn't about letter case
-    if (/CASE|CAPITAL|GROSS|MAJUSCUL|MAYÚSCUL|STOR/i.test(`${id} ${match.message || ""}`)) {
+  // Pure style / punctuation cosmetics — not teaching accuracy
+  if (
+    /WHITESPACE|DASH_RULE|ELLIPSIS|OXFORD_COMMA|COMMA_PARENTHESIS|SENTENCE_WHITESPACE|EN_QUOTES|FR_SPACING|PUNCTUATION_PARAGRAPH_END/i.test(
+      id
+    )
+  ) {
+    return false;
+  }
+
+  if (issue === "misspelling" || issue === "grammar") return true;
+  if (cat === "TYPOS" || cat === "GRAMMAR" || cat === "CASING") return true;
+  // Apostrophe / possessive / contraction rules often land as typographical or uncategorized
+  if (/APOS|POSSESS|CONTRACTION|AGREEMENT|PLURAL|SPURIOUS_APOSTROPHE|IT_IS|WONT_|CANT|DONT|EN_CONTRACTION/i.test(msg)) {
+    return true;
+  }
+  if (issue === "typographical" || issue === "uncategorized") {
+    if (/CASE|CAPITAL|GROSS|MAJUSCUL|MAYÚSCUL|STOR|APOS|POSSESS|CONTRACTION/i.test(msg)) {
       return true;
     }
-    if (cat === "CASING") return true;
   }
   return false;
+}
+
+/**
+ * Local English grammar that free LanguageTool often misses in free-form phrases:
+ * - banana's up / three banana's → bananas (false possessive / plural)
+ * - girls asses → girls' asses (plural possessive)
+ * Kept conservative so we never invent nonsense.
+ */
+function applyEnglishGrammarFixes(text) {
+  let result = String(text || "");
+  if (!result.trim()) return result;
+
+  // Quantifier + noun's → plural (three banana's → three bananas)
+  result = result.replace(
+    /\b(a\s+few|a\s+lot\s+of|lots\s+of|many|several|few|some|these|those|all|both|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+([A-Za-z]{2,})['’]s\b/gi,
+    (_, quant, noun) => `${quant} ${noun}s`
+  );
+
+  // noun's + plural verb → plurals (banana's are → bananas are)
+  result = result.replace(
+    /\b([A-Za-z]{2,})['’]s\s+(are|were|aren't|weren't|have|haven't)\b/gi,
+    (_, noun, verb) => `${noun}s ${verb}`
+  );
+
+  // noun's + preposition → usually intended plural object (banana's up → bananas up)
+  // Possessives almost always take a following noun, not a bare preposition.
+  result = result.replace(
+    /\b([A-Za-z]{3,})['’]s\s+(up|on|in|into|onto|over|under|through|with|without|from|to|for|at|by|off|out|about|across|around|between|among|behind|beside|near)\b/gi,
+    (_, noun, prep) => `${noun}s ${prep}`
+  );
+
+  // Missing plural possessive: people-plurals + common "owned" plurals
+  // girls asses → girls' asses
+  const owners =
+    "girls|boys|kids|children|women|men|students|teachers|friends|parents|people|ladies|guys|players|workers|nurses|doctors|babies|cats|dogs";
+  const owned =
+    "asses|shoes|books|cars|hats|bags|rooms|houses|phones|names|lives|jobs|faces|hands|eyes|ears|legs|arms|heads|clothes|toys|wives|husbands|bodies|minds|hearts|voices|rights|problems|ideas|opinions|beds|desks|chairs|doors|windows|keys|wallets|purses";
+  result = result.replace(
+    new RegExp(`\\b(${owners})\\s+(${owned})\\b`, "gi"),
+    (full, owner, thing) => {
+      if (/['’]s?$/i.test(owner)) return full;
+      return `${owner}' ${thing}`;
+    }
+  );
+
+  // childrens / peoples → children's / people's (common miss)
+  result = result.replace(/\bchildrens\b/gi, "children's");
+  result = result.replace(/\bpeoples\b/gi, (m) =>
+    m[0] === "P" ? "People's" : "people's"
+  );
+
+  return result;
 }
 
 /** German closed-class words — flashcard style keeps these lowercase. */
@@ -5090,20 +5156,23 @@ async function fetchSpellingCorrection(text, langCode) {
   if (!trimmed || trimmed.length < 2) return null;
   if (looksLikeGibberish(trimmed)) return null;
   const ltLang = toLanguageToolCode(langCode);
-  if (!ltLang) {
-    // Still apply local flashcard casing when LT has no language pack
-    const localOnly = applyFlashcardCasingConvention(trimmed, langCode);
-    return localOnly && localOnly !== stripFlashcardPunctuation(trimmed) ? localOnly : null;
-  }
-
+  const baseLang = String(langCode || "")
+    .toLowerCase()
+    .split("-")[0];
   const knownForms =
-    ltLang === "en-US" || ltLang === "en-GB" ? null : getKnownForeignForms();
+    baseLang === "en" ? null : getKnownForeignForms();
   const protectedKeys = new Set();
+
+  if (!ltLang) {
+    // Local grammar + casing when LT has no language pack
+    return finalizeOrthographyCorrection(trimmed, langCode, knownForms, protectedKeys);
+  }
 
   try {
     const body = new URLSearchParams({
       language: ltLang,
       text: trimmed,
+      level: "picky",
     });
     const response = await fetch("https://api.languagetool.org/v2/check", {
       method: "POST",
@@ -5111,8 +5180,7 @@ async function fetchSpellingCorrection(text, langCode) {
       body,
     });
     if (!response.ok) {
-      const localOnly = applyFlashcardCasingConvention(trimmed, langCode);
-      return localOnly && localOnly !== stripFlashcardPunctuation(trimmed) ? localOnly : null;
+      return finalizeOrthographyCorrection(trimmed, langCode, knownForms, protectedKeys);
     }
     const data = await response.json();
     const matches = (data.matches || []).filter(
@@ -5127,100 +5195,115 @@ async function fetchSpellingCorrection(text, langCode) {
     );
 
     let result = trimmed;
-    let changed = false;
 
     if (matches.length) {
       const sorted = [...matches].sort((a, b) => b.offset - a.offset);
       for (const match of sorted) {
         if (match.offset < 0 || match.offset + match.length > result.length) continue;
         const original = result.slice(match.offset, match.offset + match.length);
-        if (/\s/.test(original)) continue;
-        const reps = match.replacements.map((r) => r.value).filter(Boolean);
-        const isMisspelling = match.rule?.issueType === "misspelling";
+        const reps = match.replacements
+          .map((r) => r.value)
+          .filter((v) => v != null && String(v).length > 0);
+        const issue = match.rule?.issueType || "";
+        const id = match.rule?.id || "";
         let pick = null;
 
-        if (isMisspelling) {
-          pick = pickSpellingReplacement(original, reps, trimmed, knownForms);
-          if (pick && editDistance(original, pick) > 3) pick = null;
-        } else {
-          // Casing: prefer first single-token replacement that only changes case
-          // or is the language-correct form (German Hunger, etc.)
-          for (const rep of reps) {
-            if (/\s/.test(rep)) continue;
-            if (normalizeAnswer(rep) === normalizeAnswer(original)) {
-              pick = rep;
-              break;
-            }
-            // German etc.: sometimes casing rule still suggests same letters
-            if (editDistance(original, rep) <= 1 && rep[0] && rep[0] === rep[0].toUpperCase()) {
-              pick = rep;
-              break;
-            }
+        if (issue === "misspelling") {
+          // Single-token typos: ranked pick; multi-word keep first plausible
+          if (!/\s/.test(original)) {
+            pick = pickSpellingReplacement(original, reps, trimmed, knownForms);
+            if (pick && editDistance(original, pick) > 3) pick = null;
+          } else {
+            pick = reps.find((r) => isPlausibleCardText(r) && !/[#@$%{}[\]\\|<>]/.test(r)) || null;
           }
-          if (!pick) {
-            const first = reps.find((r) => r && !/\s/.test(r));
-            if (first && normalizeAnswer(first) === normalizeAnswer(original)) pick = first;
+        } else {
+          // Grammar / apostrophe / casing: first plausible replacement
+          for (const rep of reps) {
+            if (!isPlausibleCardText(rep) && !/['’]/.test(rep)) continue;
+            if (/[#@$%{}[\]\\|<>]/.test(rep)) continue;
+            // Skip wild expansions
+            if (rep.length > original.length + 12) continue;
+            if (rep === original) continue;
+            pick = rep;
+            break;
           }
         }
 
-        if (!pick) continue;
-        if (pick === original) continue;
+        if (!pick || pick === original) continue;
         result =
           result.slice(0, match.offset) + pick + result.slice(match.offset + match.length);
-        changed = true;
-        // Protect orthographically capitalized tokens from the later lowercase pass
-        const pickKey = normalizeAnswer(pick);
-        if (pickKey && pick !== pick.toLowerCase()) {
-          protectedKeys.add(pickKey);
+        // Protect orthographically capitalized / possessive tokens from later lowercase pass
+        for (const tok of reviewTokens(pick)) {
+          if (tok !== tok.toLowerCase() || /['’]/.test(tok)) {
+            protectedKeys.add(normalizeAnswer(tok));
+          }
         }
       }
     }
 
-    // Deck-known display forms (Bodø, etc.) protect casing when letters match
-    if (knownForms) {
+    return finalizeOrthographyCorrection(result, langCode, knownForms, protectedKeys, trimmed);
+  } catch {
+    return finalizeOrthographyCorrection(trimmed, langCode, knownForms, protectedKeys);
+  }
+}
+
+/**
+ * Local grammar + casing + deck forms after LanguageTool (or when LT fails).
+ * Returns corrected text or null if nothing meaningful changed.
+ */
+function finalizeOrthographyCorrection(
+  text,
+  langCode,
+  knownForms = null,
+  protectedKeys = null,
+  originalText = null
+) {
+  const source = originalText != null ? originalText : text;
+  let result = String(text || "");
+  const base = String(langCode || "")
+    .toLowerCase()
+    .split("-")[0];
+  const protected = protectedKeys || new Set();
+
+  // English: apostrophe / plural / possessive heuristics LT often misses in free phrases
+  if (base === "en") {
+    const grammarFixed = applyEnglishGrammarFixes(result);
+    if (grammarFixed !== result) {
+      result = grammarFixed;
       for (const tok of reviewTokens(result)) {
-        const key = normalizeAnswer(tok);
+        if (/['’]/.test(tok) || tok !== tok.toLowerCase()) {
+          protected.add(normalizeAnswer(tok));
+        }
+      }
+    }
+  }
+
+  // Deck-known display forms (Bodø, etc.)
+  if (knownForms && knownForms.size) {
+    result = result
+      .split(/(\s+|\/)/)
+      .map((part) => {
+        if (!part || /^\s+$/.test(part) || part === "/") return part;
+        const key = normalizeAnswer(part);
         if (knownForms.has(key)) {
           const display = knownForms.get(key);
-          if (display && display !== display.toLowerCase()) {
-            protectedKeys.add(key);
+          if (display && display !== part) {
+            if (display !== display.toLowerCase()) protected.add(key);
+            return display;
           }
         }
-      }
-      // Prefer deck display form token-for-token when available
-      result = result
-        .split(/(\s+|\/)/)
-        .map((part) => {
-          if (!part || /^\s+$/.test(part) || part === "/") return part;
-          const key = normalizeAnswer(part);
-          if (knownForms.has(key)) {
-            const display = knownForms.get(key);
-            if (display && display !== part) {
-              changed = true;
-              return display;
-            }
-          }
-          return part;
-        })
-        .join("");
-    }
-
-    const cased = applyFlashcardCasingConvention(result, langCode, protectedKeys);
-    if (cased && cased !== stripFlashcardPunctuation(result)) {
-      result = cased;
-      changed = true;
-    } else if (cased) {
-      result = cased;
-    }
-
-    const cleaned = stripFlashcardPunctuation(result);
-    if (!cleaned) return null;
-    if (cleaned === stripFlashcardPunctuation(trimmed)) return null;
-    return cleaned;
-  } catch {
-    const localOnly = applyFlashcardCasingConvention(trimmed, langCode);
-    return localOnly && localOnly !== stripFlashcardPunctuation(trimmed) ? localOnly : null;
+        return part;
+      })
+      .join("");
   }
+
+  const cased = applyFlashcardCasingConvention(result, langCode, protected);
+  if (cased) result = cased;
+
+  const cleaned = stripFlashcardPunctuation(result);
+  if (!cleaned || !isPlausibleCardText(cleaned)) return null;
+  if (cleaned === stripFlashcardPunctuation(source)) return null;
+  return cleaned;
 }
 
 /** English convenience wrapper (answer side). */
@@ -5845,9 +5928,19 @@ function spellingFixIsPlausible(userText, correctedText) {
   return tokenDist <= Math.max(2, Math.floor(reviewTokens(userText).length / 2));
 }
 
+/** Apostrophe / possessive placement differs (banana's↔bananas, girls↔girls'). */
+function isApostropheGrammarDiff(a, b) {
+  const x = stripFlashcardPunctuation(a);
+  const y = stripFlashcardPunctuation(b);
+  if (!x || !y || x === y) return false;
+  const stripApos = (s) => s.replace(/['’]/g, "");
+  return stripApos(x).toLocaleLowerCase() === stripApos(y).toLocaleLowerCase();
+}
+
 /**
- * Plausible orthography fix: real spelling change OR pure casing change.
- * Never: apostrophe-only flips (banana's ⇄ bananas), symbol junk, empty.
+ * Plausible orthography fix from the spell/grammar pipeline:
+ * letter typos, casing, OR apostrophe/possessive grammar (banana's → bananas).
+ * Not: MT junk, symbols, empty.
  */
 function orthographyFixIsPlausible(userText, correctedText) {
   if (!userText || !correctedText) return false;
@@ -5855,9 +5948,11 @@ function orthographyFixIsPlausible(userText, correctedText) {
   const userClean = stripFlashcardPunctuation(userText);
   const fixClean = stripFlashcardPunctuation(correctedText);
   if (!userClean || !fixClean || userClean === fixClean) return false;
-  // Pure capitalization / acronym form only
+  // Pure capitalization / acronym form
   if (isCasingOnlyDiff(userClean, fixClean)) return true;
-  // banana's vs bananas etc. — leave alone (not a casing fix)
+  // Grammar: apostrophe placement (trusted only when from orthography pipeline, not MT soft-match)
+  if (isApostropheGrammarDiff(userClean, fixClean)) return true;
+  // Other normalize-only noise still blocked
   if (isNormalizeOnlyDiff(userClean, fixClean)) return false;
   return spellingFixIsPlausible(userClean, fixClean);
 }
