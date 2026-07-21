@@ -5483,9 +5483,9 @@ function renderCardItem(card) {
           <div class="card-item-native">${escapeHtml(card.native)}</div>
         </div>
         <div class="card-item-actions">
-          <button class="btn ghost small hear-card-btn" data-foreign="${escapeAttr(card.foreign)}" type="button" title="Hear">Hear</button>
-          <button class="btn ghost small edit-card-btn" data-id="${escapeAttr(card.id)}" type="button">Edit</button>
-          <button class="btn ghost small danger delete-card-btn" data-id="${escapeAttr(card.id)}" type="button">Delete</button>
+          <button class="btn ghost small hear-card-btn card-action card-action--hear" data-foreign="${escapeAttr(card.foreign)}" type="button" title="Hear" aria-label="Hear ${escapeAttr(card.foreign)}">Hear</button>
+          <button class="btn ghost small edit-card-btn card-action" data-id="${escapeAttr(card.id)}" type="button">Edit</button>
+          <button class="btn ghost small danger delete-card-btn card-action card-action--delete" data-id="${escapeAttr(card.id)}" type="button">Delete</button>
         </div>
       </article>`;
 }
@@ -5848,7 +5848,19 @@ function renderCardList() {
     } else {
       clearLibraryJumpNav();
     }
-    list.innerHTML = `<div class="library-empty">No matches</div>`;
+    list.innerHTML = `
+      <div class="library-empty">
+        <p class="library-empty-title">${searching ? "No matches" : "Nothing here"}</p>
+        <p class="library-empty-copy">${
+          searching
+            ? "Try another search."
+            : libraryFilter === "yours"
+              ? "Cards you add show up here."
+              : libraryFilter === "phrase"
+                ? "No phrases in this deck yet."
+                : "No cards in this view."
+        }</p>
+      </div>`;
     updateLibraryScrollTopVisibility();
     return;
   }
@@ -5889,7 +5901,11 @@ function renderCardList() {
 
   if (!sections.length) {
     clearLibraryJumpNav();
-    list.innerHTML = `<div class="library-empty">No matches</div>`;
+    list.innerHTML = `
+      <div class="library-empty">
+        <p class="library-empty-title">Nothing here</p>
+        <p class="library-empty-copy">No cards in this view.</p>
+      </div>`;
     updateLibraryScrollTopVisibility();
     return;
   }
