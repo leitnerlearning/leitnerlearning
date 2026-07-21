@@ -1946,6 +1946,7 @@ main {
   min-height: 2.15rem;
   min-width: 3.5rem;
   padding: 0.32rem 0.85rem;
+  /* Neutral rest — same family as Progress prefs chips; never a permanent “pressed” wash */
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   background: var(--surface-glass-strong);
@@ -1955,7 +1956,7 @@ main {
   color: var(--text-secondary);
   font-family: inherit;
   font-size: 0.88rem;
-  font-weight: 700;
+  font-weight: 650;
   letter-spacing: -0.02em;
   line-height: 1;
   cursor: pointer;
@@ -1968,16 +1969,13 @@ main {
     transform 0.12s ease;
 }
 
-/* Theme Study set: same chip, quieter “not a setting” */
+/* Theme Study set: still neutral at rest (not a settings control) */
 .daily-goal-chip.is-theme-chip {
   cursor: default;
-  border-color: rgba(54, 95, 207, 0.22);
-  background: linear-gradient(
-    135deg,
-    rgba(91, 154, 255, 0.12),
-    rgba(54, 95, 207, 0.06)
-  );
-  color: var(--brand-deep, #2a4a9b);
+  /* Match daily chip rest — progress is on the bar, not a filled pill */
+  border-color: var(--border-strong);
+  background: var(--surface-glass-strong);
+  color: var(--text-secondary);
 }
 
 .practice-meta.is-theme .daily-progress,
@@ -1991,7 +1989,7 @@ main {
 
 .daily-goal-chip__count {
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
+  font-weight: 650;
   letter-spacing: -0.02em;
   color: inherit;
   text-align: center;
@@ -2006,20 +2004,34 @@ main {
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
 }
 
-.daily-goal-chip:active {
+.daily-goal-chip.is-theme-chip:hover,
+.daily-goal-chip.is-theme-chip:focus-visible {
+  /* Theme label isn’t a control — don’t flash the interactive hover */
+  color: var(--text-secondary);
+  background: var(--surface-glass-strong);
+  border-color: var(--border-strong);
+  box-shadow: none;
+}
+
+.daily-goal-chip:active:not(.is-theme-chip) {
   transform: scale(0.98);
 }
 
+/*
+ * In-progress (1/20…): keep rest look. The number + bar already show progress;
+ * a permanent brand fill read as “stuck depressed.”
+ */
 .daily-goal-chip.is-live {
-  color: var(--brand-deep);
-  background: linear-gradient(135deg, rgba(91, 154, 255, 0.14), rgba(54, 95, 207, 0.08));
-  border-color: color-mix(in srgb, var(--brand) 28%, transparent);
+  color: var(--text-secondary);
+  background: var(--surface-glass-strong);
+  border-color: var(--border-strong);
 }
 
+/* Goal done — quiet success, not a loud filled button */
 .daily-goal-chip.goal-met {
   color: #1f6b45;
-  background: linear-gradient(135deg, rgba(72, 187, 120, 0.16), rgba(56, 161, 105, 0.08));
-  border-color: rgba(56, 161, 105, 0.35);
+  background: color-mix(in srgb, rgba(72, 187, 120, 0.1) 80%, var(--surface-glass-strong));
+  border-color: rgba(56, 161, 105, 0.28);
 }
 
 /* Legacy class hooks still used in media queries */
