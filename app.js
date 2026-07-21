@@ -191,6 +191,9 @@ const BASICS_PREVIEW_GLYPHS_FALLBACK = {
   fr: ["é", "è", "ç"],
   es: ["ñ", "á", "ü"],
   it: ["à", "è", "ò"],
+  nl: ["ij", "ui", "oe"],
+  pt: ["ã", "ç", "õ"],
+  pl: ["ą", "ę", "ł"],
 };
 
 function getBasicsPreviewGlyphs(categoryId = activeCategoryId) {
@@ -5131,8 +5134,36 @@ function toLanguageToolCode(langCode) {
     "es-es": "es",
     it: "it",
     "it-it": "it",
+    // Tier A LanguageTool languages (next expansion)
+    nl: "nl",
+    "nl-nl": "nl",
+    "nl-be": "nl-BE",
+    pt: "pt",
+    "pt-pt": "pt-PT",
+    "pt-br": "pt-BR",
+    pl: "pl",
+    "pl-pl": "pl",
+    ro: "ro",
+    "ro-ro": "ro",
+    ca: "ca",
   };
   return map[raw] || map[base] || null;
+}
+
+/**
+ * How reliable Library Check is for a track (LanguageTool depth).
+ * full  — strong spell + grammar (DE/FR/ES/NL/PT/PL…)
+ * spell — spell/dictionary ok; grammar thin (Nordic, Italian…)
+ * mt    — mostly translation double-check; avoid false LOOKS GOOD
+ */
+function getCheckStrength(category = getActiveCategory()) {
+  const raw = String(category?.checkStrength || "").toLowerCase();
+  if (raw === "full" || raw === "spell" || raw === "mt") return raw;
+  // Infer from known LanguageTool depth when field omitted
+  const code = String(category?.foreignLang || "").split("-")[0].toLowerCase();
+  if (["de", "fr", "es", "nl", "pt", "pl", "en", "ca"].includes(code)) return "full";
+  if (["nb", "no", "nn", "sv", "da", "it", "ro"].includes(code)) return "spell";
+  return "mt";
 }
 
 /** Cached normalized → display forms for the active learning language (starter + library). */
