@@ -14,19 +14,19 @@
     },
     cafe: {
       id: "cafe",
-      title: "Café & dining",
+      title: "Dining",
       blurb: "Ordering food, the bill, and allergies.",
       byCategory: {},
     },
     campus: {
       id: "campus",
-      title: "Campus & studies",
+      title: "Studies",
       blurb: "Classes, exams, library, and student life.",
       byCategory: {},
     },
     doctor: {
       id: "doctor",
-      title: "Doctor & health",
+      title: "Health",
       blurb: "Symptoms, pharmacy, and asking for care.",
       byCategory: {},
     },
@@ -38,7 +38,7 @@
     },
     work: {
       id: "work",
-      title: "Work & office",
+      title: "Work",
       blurb: "Meetings, email, and workplace phrases.",
       byCategory: {},
     },
@@ -50,7 +50,7 @@
     },
     social: {
       id: "social",
-      title: "Social & small talk",
+      title: "Social",
       blurb: "Intros, plans, thanks, and hanging out.",
       byCategory: {},
     },
