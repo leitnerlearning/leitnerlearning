@@ -9,7 +9,7 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 | Danish | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
 | German | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
 | Spanish | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
-| French | PASS | **PASS 1 COMPLETE** | POS; survival; packs; stories |
+| French | PASS | **PASS 1 COMPLETE** | POS; survival; packs; **story pass 1** |
 | Italian | PASS | **PASS 1 COMPLETE** | POS; survival; packs; stories |
 | Dutch | PASS | **PASS 1 COMPLETE** | POS; survival; packs; stories |
 | Portuguese | PASS | **PASS 1 COMPLETE** | BR standard; POS; packs; stories |
@@ -35,7 +35,8 @@ Goal: natural dialogue that weaves high-frequency **core** and **theme** forms s
 | Danish (da) | **PASS 1 COMPLETE** | 12 stories; theme weave ~93% of 200; DK forms (MobilePay, dankort, S-tog) |
 | German (de) | **PASS 1 COMPLETE** | 12 stories; theme weave ~93% of 199; DE forms (Deutschlandticket, S-Bahn, WG) |
 | Spanish (es) | **PASS 1 COMPLETE** | 12 stories; theme weave ~92% of 199; ES forms (VTC, cercanías, teletrabajo) |
-| Other 6 | pending | Same ladder; next on go |
+| French (fr) | **PASS 1 COMPLETE** | 12 stories; theme weave densified; FR forms (Navigo, carte Vitale, CROUS, Vélib') |
+| Other 5 | pending | Same ladder; next on go |
 
 ## Ship rule
 
