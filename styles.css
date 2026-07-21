@@ -3929,15 +3929,16 @@ body.welcome-open .app {
   }
 }
 
-/* Same idea as practice .feedback: chip hugs the text, not a full-width bar */
+/* Chip hugs content, with air so long pairs don’t feel clipped */
 .review-context-block {
   box-sizing: border-box;
   width: fit-content;
   max-width: 100%;
-  padding: 0.55rem 0.85rem;
-  border-radius: 1rem;
+  padding: 0.7rem 1rem;
+  border-radius: 0.95rem;
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid var(--border);
+  line-height: 1.4;
 }
 
 .review-context-block.is-warning {
@@ -3978,6 +3979,7 @@ body.welcome-open .app {
 
 .review-context-block.is-actionable {
   cursor: pointer;
+  padding: 0.78rem 1.1rem;
   transition: border-color 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease);
 }
 
@@ -4674,8 +4676,8 @@ body.welcome-open .app {
   }
 
   .library-suggest-option {
-    min-height: 44px;
-    padding: 0.55rem 0.65rem;
+    min-height: 48px;
+    padding: 0.7rem 0.95rem;
     align-items: center;
   }
 
