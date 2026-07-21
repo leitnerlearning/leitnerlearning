@@ -1906,7 +1906,7 @@
     ['etiqueta de preço', 'price tag'],
     ['sacola reutilizável', 'reusable bag'],
     ['hipermercado', 'hypermarket'],
-    ['desconto', 'discount'],
+    ['desconto', 'discount / sale'],
   ]);
 
   packs.shopping.byCategory["pl"] = buildEntries([
@@ -2347,7 +2347,7 @@
   ]);
 
   packs.money.byCategory["pt"] = buildEntries([
-    ['PIX', 'PIX instant payment'],
+    ['PIX', 'PIX (instant payment)'],
     ['transferência', 'bank transfer'],
     ['talão de cheques', 'chequebook'],
     ['cheque especial', 'overdraft'],
