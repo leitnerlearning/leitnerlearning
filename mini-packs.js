@@ -1929,7 +1929,7 @@
     ['cenówka', 'price tag'],
     ['torba wielorazowa', 'reusable bag'],
     ['hipermarket', 'hypermarket'],
-    ['zniżka', 'discount'],
+    ['zniżka', 'discount / sale'],
   ]);
 
   packs.social.byCategory["nb-bokmal"] = buildEntries([
@@ -2156,7 +2156,7 @@
     ['urodziny', 'birthday'],
     ['kawa z przyjaciółmi', 'coffee with friends'],
     ['dyskusja', 'discussion'],
-    ['grupa WhatsApp', 'WhatsApp group'],
+    ['grupa czatu', 'chat group'],
     ['uścisk dłoni', 'handshake'],
     ['weekend z rodziną', 'family weekend'],
     ['starsi przyjaciele', 'long-time friends'],
@@ -2389,7 +2389,7 @@
     ['doradca finansowy', 'financial advisor'],
     ['wypłata', 'withdrawal'],
     ['oprocentowanie', 'interest rate'],
-    ['BLIK', 'BLIK mobile payment'],
+    ['BLIK', 'BLIK (mobile payment)'],
   ]);
 
   root.THEMATIC_PACKS = packs;
