@@ -5526,26 +5526,29 @@ function renderEmptyState() {
   if (sessionJustCompleted) {
     emptyEl.classList.add("session-complete");
     emptyEl.classList.toggle("goal-met", daily.goalMet);
-    // Honest end line: never claim “N right” when misses happened.
+    // Honest end line: never claim “right” when misses happened.
     // Perfect round only — Title Case. Otherwise silence (Done chip already tells truth).
+    // "1 Right" is awkward; one clean card → "All Right", multi → "All 10 Right".
     const sessionLine =
       sessionIncorrect === 0 && sessionCorrect > 0
         ? sessionCorrect === 1
-          ? "1 Right"
+          ? "All Right"
           : `All ${sessionCorrect} Right`
         : "";
 
-    // Theme set finished - name it once; Title Case caption.
+    // Theme / pack Study finished — not “Airport Done” (reads like a place closed).
     if (lastThemeSessionNote) {
-      const themeLine = `${lastThemeSessionNote.title} Done`;
+      const packName = lastThemeSessionNote.title || "Pack";
+      const themeLine = "Pack Done";
+      const moreDaily = remainingToday > 0 || extraDue > 0 || hasDailyGoalRemaining(daily);
       showPowerHome({
-        mode: remainingToday > 0 || extraDue > 0 ? "continue" : "complete",
-        enabled: remainingToday > 0 || extraDue > 0 || hasDailyGoalRemaining(daily),
-        hint: themeLine,
-        ariaLabel:
-          remainingToday > 0
-            ? `${themeLine}. Continue daily review`
-            : themeLine,
+        mode: moreDaily ? "continue" : "complete",
+        enabled: moreDaily,
+        // If daily still waits, prefer the spine verb over the pack note.
+        hint: moreDaily ? "Continue" : themeLine,
+        ariaLabel: moreDaily
+          ? `${packName} pack done. Continue daily review`
+          : `${packName} pack done`,
       });
       return;
     }
