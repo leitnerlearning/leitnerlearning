@@ -87,7 +87,7 @@
         "inLanguage": ["en", "nb", "sv", "da", "de", "fr", "es", "it", "nl", "pt", "pl"]
       }
     </script>
-    <link rel="stylesheet" href="styles.css?v=311" />
+    <link rel="stylesheet" href="styles.css?v=312" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -221,7 +221,7 @@
                   type="button"
                   class="power-on-btn"
                   id="start-practice-btn"
-                  aria-label="Continue review"
+                  aria-label="Study"
                 >
                   <span class="power-on-btn__glow" aria-hidden="true"></span>
                   <img
@@ -253,13 +253,14 @@
                 <p class="power-on-teaser hidden" id="power-on-teaser" aria-live="polite"></p>
               </div>
               <div class="empty-home-status" id="empty-home-status" aria-live="polite"></div>
-              <!-- Optional bridges kept for future; home status is the power hint line -->
+              <!-- Stories bridge removed: Read tab is the door. Library jump unused on home. -->
               <button
                 type="button"
                 class="read-bridge-btn hidden"
                 id="read-bridge-btn"
                 data-tab-jump="read"
                 aria-label="Go to Read"
+                hidden
               >
                 <span class="read-bridge-btn__label">Stories</span>
               </button>
@@ -781,35 +782,8 @@
       })();
     </script>
 
-    <div
-      class="goal-cap-modal hidden"
-      id="goal-cap-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="goal-cap-title"
-    >
-      <div class="goal-cap-card">
-        <div class="goal-cap-head">
-          <h2 class="goal-cap-title" id="goal-cap-title">Daily Goal</h2>
-        </div>
-        <div
-          class="goal-cap-options"
-          id="goal-cap-options"
-          role="radiogroup"
-          aria-label="Daily card target"
-        >
-          <button type="button" class="goal-cap-option" data-goal-cap="5" role="radio" aria-checked="false">
-            5
-          </button>
-          <button type="button" class="goal-cap-option" data-goal-cap="10" role="radio" aria-checked="false">
-            10
-          </button>
-          <button type="button" class="goal-cap-option" data-goal-cap="20" role="radio" aria-checked="false">
-            20
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- Daily goal modal removed (floss model: Study once to keep streak; no target picker). -->
+    <div class="goal-cap-modal hidden" id="goal-cap-modal" hidden aria-hidden="true"></div>
 
     <div
       class="confirm-modal hidden"
@@ -926,6 +900,6 @@
     <script src="lang/pl-pack.js?v=12"></script>
     <script src="mini-packs.js?v=35"></script>
     <script src="srs-core.js?v=4"></script>
-    <script src="app.js?v=396"></script>
+    <script src="app.js?v=397"></script>
   </body>
 </html>

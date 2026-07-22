@@ -3297,17 +3297,17 @@ main {
 }
 
 .empty-home-status {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-  width: min(100%, 15rem);
-  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  width: min(100%, 12rem);
+  margin: 1rem auto 0;
 }
 
 .empty-home-status:empty {
   display: none;
 }
 
+/* Legacy dual chips (kept for any residual markup) */
 .home-stat {
   padding: 0.65rem 0.55rem 0.6rem;
   border-radius: var(--radius-sm);
@@ -3315,19 +3315,6 @@ main {
   border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-sm);
   text-align: center;
-}
-
-.home-stat--highlight .home-stat__value {
-  color: var(--brand);
-}
-
-.home-stat--risk {
-  border-color: rgba(54, 95, 207, 0.34);
-  box-shadow: 0 0 0 1px rgba(91, 154, 255, 0.12);
-}
-
-.home-stat--risk .home-stat__label {
-  color: var(--brand);
 }
 
 .home-stat__value {
@@ -3348,6 +3335,55 @@ main {
   text-transform: uppercase;
   color: var(--text-tertiary);
   line-height: 1.25;
+}
+
+/*
+ * Streak under Study — one calm number + label (room after removing Stories / goal chips).
+ * Not a second primary action; quiet companion to the logo.
+ */
+.study-streak {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 4.5rem;
+  padding: 0.85rem 1.25rem 0.75rem;
+  border-radius: 999px;
+  background: var(--surface-glass-strong);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.study-streak--live .study-streak__count {
+  color: var(--brand);
+}
+
+.study-streak--risk {
+  border-color: rgba(54, 95, 207, 0.36);
+  box-shadow: 0 0 0 1px rgba(91, 154, 255, 0.14);
+}
+
+.study-streak--risk .study-streak__label {
+  color: var(--brand);
+}
+
+.study-streak__count {
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.study-streak__label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  line-height: 1.2;
 }
 
 /*

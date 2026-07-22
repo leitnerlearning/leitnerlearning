@@ -638,11 +638,8 @@ function isStreakAtRisk(categoryId = activeCategoryId) {
   const today = getLocalDayKey();
   if (state.lastGoalDay === today) return false;
 
-  const yesterday = getYesterdayDayKey();
-  if (state.lastGoalDay !== yesterday) return false;
-
-  const daily = ensureDailyPracticeState();
-  return !daily.goalMet;
+  // Streak from yesterday, not yet flossed today
+  return state.lastGoalDay === getYesterdayDayKey();
 }
 
 function getHomeStreakStat(categoryId = activeCategoryId) {
@@ -654,7 +651,7 @@ function getHomeStreakStat(categoryId = activeCategoryId) {
     // One-word chip label; risk is color/aria, not a longer string.
     label: "Streak",
     ariaLabel: atRisk
-      ? `${streak}-day streak. Finish today's review to keep it.`
+      ? `${streak}-day streak. Study once today to keep it.`
       : streak > 0
         ? `${streak}-day streak`
         : "No streak yet",
@@ -706,8 +703,9 @@ function setDailyPracticeCap(cap) {
 }
 
 function computeDailyGoal(dueCount) {
+  // No artificial daily target — due cards are the work; Study goes as long as they want.
   if (dueCount <= 0) return 0;
-  return Math.min(dueCount, getDailyPracticeCap());
+  return dueCount;
 }
 
 /** Recompute today's goal from the saved cap (raise or lower mid-day safely). */
@@ -998,9 +996,14 @@ function recordDailyCompletion(cardId) {
 
   state.completedIds.push(cardId);
   state.reviewed = state.completedIds.length;
+  // Floss one tooth: first honest review of the day keeps the streak.
+  recordGoalStreak();
+  // goalMet kept for older paths; home no longer uses a daily target.
   if (state.goal > 0 && state.reviewed >= state.goal) {
     state.goalMet = true;
-    recordGoalStreak();
+  }
+  if (getOutstandingDueCount(state) === 0) {
+    state.goalMet = true;
   }
   saveDailyPractice(state);
   return state;
@@ -2950,19 +2953,11 @@ function buildSessionQueue() {
   const due = getDueCards(deck);
   const completed = new Set(state.completedIds);
 
-  if (state.extraMode) {
-    // Open Study: all remaining due — low bar to start, no artificial stop
-    sessionQueue = due
-      .filter((card) => !completed.has(card.id))
-      .sort(compareCardsForPractice)
-      .map((card) => card.id);
-    return;
-  }
-
-  const dueIds = new Set(due.map((card) => card.id));
-  sessionQueue = state.dailyQueue.filter(
-    (id) => dueIds.has(id) && !completed.has(id)
-  );
+  // Floss model: always all due cards (go as long as you want). No daily cap queue.
+  sessionQueue = due
+    .filter((card) => !completed.has(card.id))
+    .sort(compareCardsForPractice)
+    .map((card) => card.id);
 }
 
 function nextInSession() {
@@ -5494,7 +5489,7 @@ function setEmptyStatePowerAction(
   {
     show = false,
     mode = "start",
-    ariaLabel = "Start review",
+    ariaLabel = "Study",
     hint = "",
     celebrate = false,
     enabled = true,
@@ -5539,67 +5534,33 @@ function setEmptyStatePowerAction(
 }
 
 /**
- * Short title under the logo power button (Title Case if multi-word).
- * Counts live in home stats - don't repeat them here.
- * Fully done (no more due): silence under the logo - complete logo is enough.
- *
- * Stages:
- *   start     → Start
- *   continue  → Continue
- *   complete + more due → Study
- *   complete + quiet  → (empty)
- *   session end       → Perfect (0 misses) or Done (any miss)
+ * One word under the logo when there is work; silence when there is not.
+ * No Start / Continue / Perfect / Done / Stories.
  */
-function formatPowerHomeHint({
-  mode = "start",
-  extraDue = 0,
-  sessionLine = "",
-} = {}) {
-  if (sessionLine) return sessionLine;
-  // Tab is already “Review” — caption is the verb only.
-  if (mode === "start") return "Start";
-  if (mode === "continue") return "Continue";
-  // complete - only speak when there's something left to do
-  if (extraDue > 0) return "Study";
-  return ""; // idle done: no caption under the logo
+function formatPowerHomeHint({ canStudy = false } = {}) {
+  return canStudy ? "Study" : "";
 }
 
+/** Streak only — calm, centered under Study (no dual chips, no length). */
 function renderHomeStatus() {
   const container = document.getElementById("empty-home-status");
   if (!container) return;
 
-  const practiceStat = getProgressPracticeStat();
   const streakStat = getHomeStreakStat();
-  // Study is already the power-button caption — never repeat it as a chip with a length.
-  const showPractice =
-    practiceStat &&
-    practiceStat.kind !== "extras" &&
-    practiceStat.kind !== "extras-ready";
+  const streak = Number(streakStat.value) || 0;
+  const classes = [
+    "study-streak",
+    streak > 0 ? "study-streak--live" : "",
+    streakStat.atRisk ? "study-streak--risk" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  const parts = [];
-  if (showPractice) {
-    parts.push(`
-    <div class="home-stat${practiceStat.highlight ? " home-stat--highlight" : ""}" aria-label="${escapeAttr(practiceStat.ariaLabel)}">
-      <span class="home-stat__value">${escapeHtml(String(practiceStat.value))}</span>
-      <span class="home-stat__label">${escapeHtml(practiceStat.label)}</span>
-    </div>`);
-  }
-  if (streakStat) {
-    const streakClasses = [
-      "home-stat",
-      streakStat.highlight ? "home-stat--highlight" : "",
-      streakStat.atRisk ? "home-stat--risk" : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-    parts.push(`
-    <div class="${streakClasses}" aria-label="${escapeAttr(streakStat.ariaLabel)}">
-      <span class="home-stat__value">${streakStat.value}</span>
-      <span class="home-stat__label">${escapeHtml(streakStat.label)}</span>
-    </div>`);
-  }
-
-  container.innerHTML = parts.join("");
+  container.innerHTML = `
+    <div class="${classes}" aria-label="${escapeAttr(streakStat.ariaLabel)}">
+      <span class="study-streak__count">${escapeHtml(String(streak))}</span>
+      <span class="study-streak__label">Streak</span>
+    </div>`;
 }
 
 function renderPowerOnExtras({
@@ -5638,179 +5599,41 @@ function renderEmptyState() {
   emptyEl.classList.remove("empty-state--power-complete");
   setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, false);
   setEmptyStatePowerAction(powerEl, powerHintEl);
+  // No Stories bridge, no unlock teaser — only Study + streak.
   renderPowerOnExtras({
     teaserEl: powerTeaserEl,
     readBridgeBtn,
+    showTeaser: false,
+    showReadBridge: false,
   });
-  setEmptyStateSecondaryActions({ libraryBtn });
+  setEmptyStateSecondaryActions({ libraryBtn, showLibrary: false });
 
-  const daily = ensureDailyPracticeState();
-  const remainingToday = getDailyRemainingCount(daily);
-  const extraDue = getOutstandingDueCount(daily);
   const emptyPreview = document.getElementById("empty-preview");
+  if (emptyPreview) emptyPreview.hidden = true;
+  messageEl.textContent = "";
+  messageEl.classList.add("hidden");
+  titleEl.classList.add("hidden");
+  iconEl.classList.add("hidden");
 
-  function hideLegacyCopy() {
-    if (emptyPreview) emptyPreview.hidden = true;
-    // Status lives under the power button - avoid a second paragraph by default.
-    messageEl.textContent = "";
-    messageEl.classList.add("hidden");
-  }
+  ensureDailyPracticeState();
+  const outstanding = getOutstandingDueCount();
+  const canStudy = outstanding > 0;
 
-  const storiesReady =
-    typeof getStoriesForCategory === "function" &&
-    getStoriesForCategory().length > 0;
+  emptyEl.classList.add("empty-state--power-complete");
+  emptyEl.classList.toggle("session-complete", Boolean(sessionJustCompleted));
+  emptyEl.classList.toggle("goal-met", !canStudy);
+  setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
 
-  function showPowerHome({
-    mode = "start",
-    enabled = true,
-    celebrate = false,
-    hint = "",
-    ariaLabel = "",
-    showTeaser = false,
-    showReadBridge,
-    detail = "",
-  } = {}) {
-    emptyEl.classList.add("empty-state--power-complete");
-    setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
-    hideLegacyCopy();
-    if (detail) {
-      messageEl.textContent = detail;
-      messageEl.classList.remove("hidden");
-    }
-    const resolvedHint =
-      hint !== undefined && hint !== null && String(hint).length
-        ? String(hint)
-        : formatPowerHomeHint({
-            mode,
-            extraDue,
-          });
-    // When fully done, keep aria on the button even if the caption is silent.
-    const resolvedAria =
-      ariaLabel ||
-      resolvedHint ||
-      (mode === "complete" && !enabled ? "Done for today" : "Review");
-    setEmptyStatePowerAction(powerEl, powerHintEl, {
-      show: true,
-      mode,
-      ariaLabel: resolvedAria,
-      hint: resolvedHint,
-      celebrate,
-      enabled,
-    });
-    // Vital few #4: after today's Review job, invite Read when stories exist.
-    // Stay quiet during an active set (start/continue without goal met).
-    const goalSettled = Boolean(daily.goalMet) || mode === "complete";
-    const offerRead =
-      typeof showReadBridge === "boolean"
-        ? showReadBridge
-        : storiesReady && goalSettled && mode !== "start";
-    const offerTeaser =
-      showTeaser || (mode === "complete" && extraDue === 0 && remainingToday === 0);
-    renderPowerOnExtras({
-      teaserEl: powerTeaserEl,
-      readBridgeBtn,
-      showTeaser: offerTeaser,
-      showReadBridge: offerRead,
-    });
-    renderHomeStatus();
-  }
-
-  if (sessionJustCompleted) {
-    emptyEl.classList.add("session-complete");
-    emptyEl.classList.toggle("goal-met", daily.goalMet);
-    // End of a practice queue: Perfect only if zero misses; otherwise Done.
-    // (Wrong answers requeue — “right” counts were easy to misread.)
-    const sessionLine =
-      sessionCorrect > 0 && sessionIncorrect === 0
-        ? "Perfect"
-        : sessionCorrect > 0 || sessionIncorrect > 0
-          ? "Done"
-          : "";
-
-    // Theme / pack Study finished — not “Airport Done” (reads like a place closed).
-    if (lastThemeSessionNote) {
-      const packName = lastThemeSessionNote.title || "Pack";
-      const moreDaily = remainingToday > 0 || extraDue > 0 || hasDailyGoalRemaining(daily);
-      showPowerHome({
-        mode: moreDaily ? "continue" : "complete",
-        enabled: moreDaily,
-        // Daily still waits → Continue. Otherwise same Perfect / Done rule.
-        hint: moreDaily ? "Continue" : sessionLine || "Done",
-        ariaLabel: moreDaily
-          ? `${packName} pack done. Continue daily review`
-          : sessionLine === "Perfect"
-            ? `${packName} pack perfect`
-            : `${packName} pack done`,
-      });
-      return;
-    }
-
-    if (daily.goalMet && !daily.extraMode) {
-      showPowerHome({
-        mode: "complete",
-        enabled: extraDue > 0,
-        celebrate: true,
-        hint: formatPowerHomeHint({
-          mode: "complete",
-          extraDue,
-          // More due → Study; else Perfect / Done from this round.
-          sessionLine: extraDue > 0 ? "" : sessionLine,
-        }),
-        ariaLabel: extraDue > 0 ? "Start study set" : "Done for today",
-      });
-    } else if (remainingToday > 0) {
-      showPowerHome({
-        mode: "continue",
-        hint: formatPowerHomeHint({ mode: "continue" }),
-        ariaLabel: "Continue review",
-      });
-    } else {
-      showPowerHome({
-        mode: extraDue > 0 ? "continue" : "complete",
-        enabled: extraDue > 0,
-        hint: formatPowerHomeHint({
-          mode: extraDue > 0 ? "continue" : "complete",
-          extraDue,
-          sessionLine: extraDue > 0 ? "" : sessionLine,
-        }),
-        ariaLabel: extraDue > 0 ? "Start study set" : "Done for today",
-      });
-    }
-    return;
-  }
-
-  emptyEl.classList.remove("session-complete");
-  emptyEl.classList.toggle("goal-met", daily.goalMet && !daily.extraMode);
-
-  if (hasDailyGoalRemaining(daily)) {
-    const continuing = daily.reviewed > 0;
-    showPowerHome({
-      mode: continuing ? "continue" : "start",
-      hint: formatPowerHomeHint({
-        mode: continuing ? "continue" : "start",
-      }),
-      ariaLabel: continuing ? "Continue review" : "Start review",
-    });
-    return;
-  }
-
-  if (daily.goalMet && !daily.extraMode) {
-    showPowerHome({
-      mode: "complete",
-      enabled: extraDue > 0,
-      hint: formatPowerHomeHint({ mode: "complete", extraDue }),
-      ariaLabel: extraDue > 0 ? "Start study set" : "Done for today",
-    });
-    return;
-  }
-
-  emptyEl.classList.remove("goal-met");
-  showPowerHome({
-    mode: "complete",
-    enabled: extraDue > 0,
-    hint: formatPowerHomeHint({ mode: "complete", extraDue }),
-    ariaLabel: extraDue > 0 ? "Start study set" : "Done for today",
+  const hint = formatPowerHomeHint({ canStudy });
+  setEmptyStatePowerAction(powerEl, powerHintEl, {
+    show: true,
+    mode: canStudy ? "start" : "complete",
+    ariaLabel: canStudy ? "Study" : "Nothing due right now",
+    hint,
+    celebrate: Boolean(sessionJustCompleted && canStudy),
+    enabled: canStudy,
   });
+  renderHomeStatus();
 }
 
 function isWelcomeOpen() {
@@ -5889,21 +5712,16 @@ function renderPractice() {
   const practiceMeta = document.getElementById("practice-meta");
 
   const inTheme = Boolean(themeSessionPackId && themeSessionTotal > 0);
-  const showGoal = !inTheme && daily.goal > 0 && !daily.extraMode;
+  // No daily goal chrome (floss model). Theme set still uses the strip as progress only.
+  const showGoal = false;
 
   if (practiceMeta) {
-    practiceMeta.classList.toggle("hidden", !showGoal && !inTheme);
+    practiceMeta.classList.toggle("hidden", !inTheme);
     practiceMeta.classList.toggle("is-theme", inTheme);
-    practiceMeta.classList.toggle(
-      "is-complete",
-      Boolean(showGoal && daily.goalMet)
-    );
+    practiceMeta.classList.toggle("is-complete", false);
     practiceMeta.classList.toggle(
       "is-active",
-      Boolean(
-        (showGoal && !daily.goalMet && daily.reviewed > 0) ||
-          (inTheme && getThemeSessionDoneCount() > 0)
-      )
+      Boolean(inTheme && getThemeSessionDoneCount() > 0)
     );
   }
 
@@ -5927,27 +5745,8 @@ function renderPractice() {
       );
       goalChip.removeAttribute("title");
     } else {
-      goalChip.classList.remove("is-theme-chip");
-      goalChip.classList.toggle("hidden", !showGoal);
-      goalChip.classList.toggle("goal-met", Boolean(showGoal && daily.goalMet));
-      goalChip.classList.toggle(
-        "is-live",
-        Boolean(showGoal && !daily.goalMet && daily.reviewed > 0)
-      );
-      if (showGoal) {
-        const countEl = document.getElementById("daily-goal-count");
-        const countText = `${daily.reviewed}/${daily.goal}`;
-        if (countEl) countEl.textContent = countText;
-        else goalChip.textContent = countText;
-        const status = daily.goalMet
-          ? "Goal complete"
-          : `Daily goal ${daily.reviewed} of ${daily.goal}`;
-        goalChip.setAttribute(
-          "aria-label",
-          `${status}. Tap to change daily target.`
-        );
-        goalChip.removeAttribute("title");
-      }
+      goalChip.classList.remove("is-theme-chip", "is-live", "goal-met");
+      goalChip.classList.add("hidden");
     }
   }
 
@@ -12861,18 +12660,7 @@ function initEventListeners() {
   });
 
   document.getElementById("daily-goal-chip")?.addEventListener("click", () => {
-    // Theme set uses this chip as progress only - don't open daily-cap modal.
-    if (themeSessionPackId) return;
-    openGoalCapModal();
-  });
-  document.getElementById("goal-cap-modal")?.addEventListener("click", (e) => {
-    // Backdrop dismiss - no Close button; pick a number or tap away / Escape.
-    if (e.target.id === "goal-cap-modal") closeGoalCapModal();
-  });
-  document.getElementById("goal-cap-options")?.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-goal-cap]");
-    if (!btn) return;
-    selectDailyGoalCap(Number(btn.dataset.goalCap));
+    // Theme progress only — no daily goal picker (floss model).
   });
 
   document.addEventListener("keydown", (e) => {
