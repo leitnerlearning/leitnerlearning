@@ -119,7 +119,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 5. `git push origin main` (GitHub Pages).
 
 ### Cards deck count
-- `#deck-count` (`.library-deck-meta`) is the **sole** panel heading: live `deck.length` as “N cards”. Tab already says Cards — no restated H1.
+- `#deck-count` (`.library-deck-meta`) is the **sole** panel heading: live `deck.length` as a **number only** (tab already says Cards). `aria-label` still says “N cards in your deck”.
 
 ### Speech / voices
 - Prefer school-region tags (`pt-BR`, `de-DE`, etc.).
