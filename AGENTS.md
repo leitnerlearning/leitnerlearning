@@ -145,7 +145,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - **Glue recognition-first**: weak glue cards (new / boxes 1–2) practice **L2→EN** even if the user toggle is EN→L2. Exact production waits until the form is less brittle.
 - **Post-wrong context**: on miss/reveal, when a Read story uses the word, show that short L2 line + English under the answer pill.
 - **Later spice**: after the hook phase, small random pulls from slightly ahead of the frequency frontier.
-- Daily goal remains a **small bite** (cap **5 / 10 / 20**, default 20). Extra = one more set of that size - never dump the whole unpaid mountain into the UI.
+- Daily goal remains a **small bite** (cap **5 / 10 / 20**, default 20). After the goal, **Study** is always a fixed **5-card** set (not tied to daily goal size) - never dump the whole unpaid mountain into the UI.
 - Exact-form checking stays strict; soft-accept only true orthographic variants, not wrong articles.
 
 ## Content expansion priorities
