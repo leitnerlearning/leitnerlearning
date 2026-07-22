@@ -1,6 +1,6 @@
 # Leitner Learning
 
-Review just before you forget. Stories with translations.
+Language learning. Review just before you forget. Stories with translations.
 
 **Live:** [leitnerlearning.com](https://leitnerlearning.com)
 
