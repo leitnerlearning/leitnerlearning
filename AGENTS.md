@@ -32,7 +32,7 @@ We do **not** sell: streak guilt, gem shops, leaderboard theater, or AI that inv
 | Area | Intent |
 |------|--------|
 | **Review** | Leitner SRS; type/speak; direction toggle L2↔EN |
-| **Cards** (tab id `cards`) | Full deck, add/edit/delete, Check card, filters; live count under title |
+| **Cards** (tab id `cards`) | Full deck, add/edit/delete, Check card, filters; live **N cards** as sole panel heading |
 | **Stories** (tab id `read`) | Trail difficulties (green → double-black); natural dialogue stories |
 | **Progress** | Boxes, reading stats, Basics modal, voice gender |
 | **Portal** | Welcome ceremony (music/flag); no seizure-risk flashes |
@@ -119,7 +119,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 5. `git push origin main` (GitHub Pages).
 
 ### Cards deck count
-- `#deck-count` (`.library-deck-meta`) shows **live** `deck.length` as “N cards” under the Cards title — quiet meta, not a chip.
+- `#deck-count` (`.library-deck-meta`) is the **sole** panel heading: live `deck.length` as “N cards”. Tab already says Cards — no restated H1.
 
 ### Speech / voices
 - Prefer school-region tags (`pt-BR`, `de-DE`, etc.).

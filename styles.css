@@ -5449,33 +5449,25 @@ html.needs-welcome body {
 
 .library-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.95rem;
 }
 
-/* Title + live deck size — count is quiet meta, not a chip fighting filters */
-.library-heading {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.12rem;
-  min-width: 0;
-}
-
-.library-heading .panel-title {
-  margin: 0;
-}
-
+/*
+ * Sole Cards heading: live deck size (tab already says Cards — no restated H1).
+ * Number is the signal; weight sits between panel-title and body meta.
+ */
 .library-deck-meta {
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
+  min-width: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1.2;
-  color: var(--text-secondary);
+  color: var(--ink);
 }
 
 /* Rare / caution action - quiet at rest; soft red only on hover/focus */
@@ -5717,21 +5709,16 @@ html.needs-welcome body {
 
   .library-header {
     margin-bottom: 1.15rem;
-    align-items: flex-start;
-  }
-
-  .library-header .panel-title {
-    font-size: 1.35rem;
+    align-items: center;
   }
 
   .library-deck-meta {
-    font-size: 0.95rem;
+    font-size: 1.25rem;
   }
 
   .library-header .btn,
   .library-reset-btn {
     min-height: 2.25rem;
-    margin-top: 0.15rem;
   }
 
   .add-card-form {
@@ -6697,7 +6684,7 @@ html.needs-welcome body {
   }
 
   .library-deck-meta {
-    font-size: 0.86rem;
+    font-size: 1.05rem;
   }
 }
 
