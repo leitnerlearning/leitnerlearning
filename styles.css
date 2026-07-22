@@ -2630,7 +2630,6 @@ main {
   line-height: 1.4;
   letter-spacing: -0.01em;
   color: var(--text-secondary);
-  pointer-events: none;
   border-radius: var(--radius-xs);
   background: rgba(255, 255, 255, 0.55);
   border: 1px solid var(--border);
@@ -2641,11 +2640,32 @@ main {
   display: none;
 }
 
+/* L2 is a quiet hear control — not a second CTA */
+button.feedback-example-l2,
 .feedback-example-l2 {
   display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
   color: var(--ink);
   font-weight: 600;
   letter-spacing: -0.02em;
+  cursor: pointer;
+  touch-action: manipulation;
+  border-radius: 0.35rem;
+}
+
+button.feedback-example-l2:hover,
+button.feedback-example-l2:focus-visible {
+  color: var(--brand-deep);
+  outline: none;
+}
+
+button.feedback-example-l2:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 28%, transparent);
 }
 
 .feedback-example-en {
@@ -2655,6 +2675,7 @@ main {
   opacity: 0.88;
   font-weight: 450;
   color: var(--text-secondary);
+  pointer-events: none;
 }
 
 .answer-form input[type="text"].received {

@@ -5255,11 +5255,20 @@ function showFeedbackExample(example, card = currentCard) {
     return;
   }
   const foreignLang = getActiveCategory().foreignLang || "nb";
+  const l2 = String(example.foreign).trim();
   el.classList.remove("hidden");
   el.setAttribute("lang", foreignLang);
-  el.innerHTML = `<span class="feedback-example-l2" lang="${escapeAttr(foreignLang)}">${escapeHtml(
-    example.foreign
-  )}</span><span class="feedback-example-en">${escapeHtml(example.en)}</span>`;
+  // L2 is tappable to hear — same teaching beat as Stories gloss, no new chrome
+  el.innerHTML = `<button type="button" class="feedback-example-l2" lang="${escapeAttr(
+    foreignLang
+  )}" aria-label="Hear example">${escapeHtml(
+    l2
+  )}</button><span class="feedback-example-en">${escapeHtml(example.en)}</span>`;
+  el.querySelector(".feedback-example-l2")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof speakForeign === "function") speakForeign(l2);
+  });
 }
 
 /**
