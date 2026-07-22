@@ -1,7 +1,7 @@
 {
   "name": "leitnerlearning",
   "private": true,
-  "description": "Leitner Learning - Norwegian SRS app",
+  "description": "Leitner Learning — language learning in the browser",
   "scripts": {
     "test": "node tests/srs-simulation.js && node tests/tts-routing.js"
   }

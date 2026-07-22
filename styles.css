@@ -68,6 +68,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+  color-scheme: light;
   /* clip (not hidden) avoids killing position:sticky on Library jump chips */
   width: 100%;
   max-width: 100%;
@@ -3636,7 +3637,7 @@ html.needs-welcome body {
   gap: 0.5rem;
 }
 
-/* About - compact, one calm card */
+/* About - compact, one calm card (public scrapes + human readers) */
 .about-modal {
   position: fixed;
   inset: 0;
@@ -3645,9 +3646,9 @@ html.needs-welcome body {
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgba(18, 24, 38, 0.45);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(18, 24, 38, 0.42);
+  backdrop-filter: blur(8px) saturate(1.05);
+  -webkit-backdrop-filter: blur(8px) saturate(1.05);
 }
 
 .about-modal.hidden {
@@ -3657,12 +3658,17 @@ html.needs-welcome body {
 .about-card {
   display: flex;
   flex-direction: column;
-  width: min(100%, 24rem);
+  width: min(100%, 22.5rem);
   max-height: calc(100dvh - 2rem);
   overflow: hidden;
-  background: var(--surface-glass-strong);
+  background:
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, white 96%, var(--brand)) 0%,
+      var(--surface-glass-strong) 100%
+    );
   border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: calc(var(--radius-sm) + 2px);
   box-shadow: var(--shadow-lg);
 }
 
@@ -3671,39 +3677,40 @@ html.needs-welcome body {
   align-items: center;
   justify-content: flex-end;
   gap: 0.75rem;
-  padding: 0.45rem 0.65rem 0;
+  padding: 0.5rem 0.7rem 0;
   flex-shrink: 0;
 }
 
 .about-logo {
   display: block;
-  height: 3.25rem;
+  height: 3.5rem;
   width: auto;
-  margin: 0.15rem auto 0.85rem;
+  margin: 0.1rem auto 1rem;
   object-fit: contain;
+  filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--brand) 18%, transparent));
 }
 
 .about-body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 1rem 0.95rem;
+  padding: 0 1.15rem 1.1rem;
 }
 
 /* about-lead removed - language lives in the global header */
 
 .about-section {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .about-section:last-of-type {
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.7rem;
 }
 
 .about-section-title {
-  margin: 0 0 0.3rem;
+  margin: 0 0 0.28rem;
   font-size: var(--text-2xs);
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-weight: 650;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text-tertiary);
   line-height: var(--lh-tight);
@@ -3712,8 +3719,9 @@ html.needs-welcome body {
 .about-section p {
   margin: 0;
   font-size: var(--text-sm);
-  line-height: var(--lh-body);
+  line-height: 1.45;
   color: var(--text-secondary);
+  letter-spacing: -0.01em;
 }
 
 .about-section strong {
