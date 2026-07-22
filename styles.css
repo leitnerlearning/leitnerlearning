@@ -1794,6 +1794,11 @@ main {
     bottom: max(0.95rem, env(safe-area-inset-bottom, 0px));
   }
 
+  #library-float-actions.page-float-top {
+    right: auto;
+    left: max(0.85rem, env(safe-area-inset-left, 0px));
+  }
+
   .header {
     display: flex;
     flex-direction: column;
@@ -4907,9 +4912,16 @@ html.needs-welcome body {
 .library-themes {
   /* Tight to the card sections below (DINING · 20…) - no dead air */
   margin: 0 0 0.75rem;
-  padding: 0;
+  /* Clear fixed TOP when the last pack row is in view (Work Add stays tappable) */
+  padding: 0 0 4.75rem;
   border: none;
   background: transparent;
+}
+
+/* When pack cards follow, keep packs flush above DINING · N — clearance lives on .card-list */
+.library-themes:has(+ .library-jump:not(.hidden)),
+.library-themes:has(+ .card-list .card-group) {
+  padding-bottom: 0;
 }
 
 .library-themes.hidden {
@@ -5110,7 +5122,8 @@ html.needs-welcome body {
   width: 100%;
   max-width: 100%;
   margin: 0.2rem 0 0;
-  padding: 0.28rem 0.4rem 0.22rem;
+  /* Extra top inset so the first EN·L2 row never clips under the radius / fade */
+  padding: 0.42rem 0.4rem 0.28rem;
   border-radius: 8px;
   background: color-mix(in srgb, var(--brand, #365fcf) 4%, var(--surface, #fff));
   border: 1px solid rgba(54, 95, 207, 0.08);
@@ -5122,8 +5135,7 @@ html.needs-welcome body {
   overscroll-behavior: contain;
   text-align: left;
   box-sizing: border-box;
-  /* Avoid first row looking “cut off” under the › N summary */
-  scroll-padding-top: 0.15rem;
+  scroll-padding-top: 0.35rem;
   /* Quiet scrollbar - cue is the edge fade, not a brand bar */
   scrollbar-width: thin;
   scrollbar-color: rgba(18, 24, 38, 0.2) transparent;
@@ -5151,17 +5163,18 @@ html.needs-welcome body {
   box-shadow: inset 0 -1rem 0.85rem -0.65rem color-mix(in srgb, var(--brand-deep, #2849a8) 12%, transparent);
 }
 
+/* Top fade only after scroll - keep first row fully solid when just opened */
 .library-theme-word-list.has-more-above {
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 1rem, #000 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 1rem, #000 100%);
-  box-shadow: inset 0 0.85rem 0.7rem -0.55rem color-mix(in srgb, var(--brand-deep, #2849a8) 10%, transparent);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 0.75rem, #000 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 0.75rem, #000 100%);
+  box-shadow: inset 0 0.7rem 0.55rem -0.45rem color-mix(in srgb, var(--brand-deep, #2849a8) 10%, transparent);
 }
 
 .library-theme-word-list.has-more-above.has-more-below {
   mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    #000 0.95rem,
+    #000 0.75rem,
     #000 calc(100% - 1.85rem),
     rgba(0, 0, 0, 0.5) calc(100% - 0.85rem),
     transparent 100%
@@ -5169,13 +5182,13 @@ html.needs-welcome body {
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    #000 0.95rem,
+    #000 0.75rem,
     #000 calc(100% - 1.85rem),
     rgba(0, 0, 0, 0.5) calc(100% - 0.85rem),
     transparent 100%
   );
   box-shadow:
-    inset 0 0.85rem 0.7rem -0.55rem color-mix(in srgb, var(--brand-deep, #2849a8) 10%, transparent),
+    inset 0 0.7rem 0.55rem -0.45rem color-mix(in srgb, var(--brand-deep, #2849a8) 10%, transparent),
     inset 0 -1rem 0.85rem -0.65rem color-mix(in srgb, var(--brand-deep, #2849a8) 12%, transparent);
 }
 
@@ -5198,7 +5211,7 @@ html.needs-welcome body {
 }
 
 .library-theme-word:first-child {
-  padding-top: 0.04rem;
+  padding-top: 0.1rem;
 }
 
 /* English - quieter anchor */
@@ -5993,6 +6006,15 @@ html.needs-welcome body {
   z-index: 30;
   display: flex;
   align-items: center;
+}
+
+/*
+ * Library TOP sits bottom-left so it never covers last-row Pack Add
+ * (Work is bottom-right of the 2-col grid). Progress keeps bottom-right.
+ */
+#library-float-actions.page-float-top {
+  right: auto;
+  left: max(1rem, env(safe-area-inset-left, 0px));
 }
 
 .page-float-top.hidden {
