@@ -11755,25 +11755,29 @@ function renderProgressBoxStats() {
   const counts = getBoxCounts();
   const total = deck.length || 1;
 
+  // List markup + “Name · interval” so scrapers (and eyes) get clear separation,
+  // not “New Not started Learning Next day…” as one blob.
   container.innerHTML = counts
     .map((count, index) => {
       const box = index + 1;
       const level = getLearningLevel(box);
+      const interval = formatInterval(box);
       // True share of the deck (no 8% floor that made 1/1000 look huge).
       const width = count && total ? (count / total) * 100 : 0;
       const emptyClass = count === 0 ? " box-stat-row--empty" : "";
       const barClass = count > 0 ? " box-stat-bar--has" : "";
+      const aria = `${level.short}, ${interval}, ${count} card${count === 1 ? "" : "s"}`;
       return `
-        <div class="box-stat-row${emptyClass}">
+        <li class="box-stat-row${emptyClass}" aria-label="${escapeAttr(aria)}">
           <div class="box-stat-label">
             <span class="box-stat-name">${escapeHtml(level.short)}</span>
-            <span class="box-stat-interval">${escapeHtml(formatInterval(box))}</span>
+            <span class="box-stat-interval">${escapeHtml(interval)}</span>
           </div>
           <div class="box-stat-bar-wrap" role="presentation">
             <div class="box-stat-bar${barClass}" style="width: ${width}%"></div>
           </div>
-          <span class="box-stat-count">${count}</span>
-        </div>`;
+          <span class="box-stat-count" aria-hidden="true">${count}</span>
+        </li>`;
     })
     .join("");
 }
