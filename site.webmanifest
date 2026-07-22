@@ -1,7 +1,7 @@
 {
   "name": "Leitner Learning",
   "short_name": "Leitner",
-  "description": "Leitner Learning",
+  "description": "Language learning. Free in the browser.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
