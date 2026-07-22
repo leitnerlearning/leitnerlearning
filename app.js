@@ -9250,13 +9250,14 @@ function getTranslationReviewSummary(
   const englishIsAnchor = foreignStrong && !nativeGibberish;
   const learningIsAnchor = nativeStrong && !foreignGibberish;
 
-  // LOOKS GOOD only when at least one direction is a strong (exact) match
-  if (
-    (englishIsAnchor || learningIsAnchor) &&
-    !foreignGibberish &&
-    !nativeGibberish &&
-    !hasSpellingIssue
-  ) {
+  // LOOKS GOOD:
+  //  - single-word: one strong direction is enough (common lemmas)
+  //  - multi-word: both directions must agree — pure MT round-trip on junk
+  //    phrases ("then continue shows" / invented L2) was false green before
+  const looksGoodAnchored = isPhrase
+    ? englishIsAnchor && learningIsAnchor
+    : englishIsAnchor || learningIsAnchor;
+  if (looksGoodAnchored && !foreignGibberish && !nativeGibberish && !hasSpellingIssue) {
     // Only offer capitalization when it matches deck casing (never lower→Title nag).
     if (
       englishIsAnchor &&

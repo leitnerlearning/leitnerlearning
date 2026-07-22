@@ -48,17 +48,17 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - Teach **exact correct forms** only.
 - Never mark wrong L2 as LOOKS GOOD.
 - Soft-accept **major orthographic variants** of the *same* word (e.g. BE/AE English, German ß/ss, EP→BR Portuguese clusters) - not false friends or different lemmas.
-- Library Check: strong match required for LOOKS GOOD; Save Anyway is OK for the user.
+- Cards Check: strong match required for LOOKS GOOD (multi-word needs both EN↔L2); Save Anyway is OK for the user.
 
 ### Content quality
 - No placeholder junk (`woche 1`, `fr-extra-976`, `kapitel 3`, etc.).
 - Starter decks target **1,000 unique** foreign forms per language.
-- Read stories: clear L2 title + English subtitle, natural dialogue, glosses, 3 stories per trail × 4 trails when using the standard ladder.
+- Stories: clear L2 title + English subtitle, natural dialogue, glosses, 3 stories per trail × 4 trails when using the standard ladder.
 - Prefer school/standard variety + matching flag (e.g. Portuguese = **Brazil**, label “Portuguese”, 🇧🇷, `pt-BR`).
 
 ### UX
 - **Quiet chrome.** No hover `title` tooltips that restate visible labels (we removed them on purpose).
-- Flag can replace written language name where the flag is already shown (e.g. Read story bar).
+- Flag can replace written language name where the flag is already shown (e.g. Stories bar).
 - Keep `aria-label`s for accessibility; do not reintroduce mouse tooltips for “helpfulness.”
 - Prefer discovery by use over instructional popups.
 - **Subtraction over addition.** Prefer removing restated copy, duplicate progress chrome, and empty-state marketing. One status surface per fact (e.g. theme set progress in the Review strip only - not also under the prompt).
@@ -143,7 +143,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - **Due reviews always before new cards** in the daily queue.
 - **Early “hook mix”** (first ~40 introductions): interleave high-frequency *glue* (pronouns, articles, particles) with *hooks* (phrases + mid-rank content words). Pure rank-1-only order is coverage-optimal but demotivating and brutal for isolated connectors (et/a/the). Aligns with formulaic-sequence / usage-based practice.
 - **Glue recognition-first**: weak glue cards (new / boxes 1–2) practice **L2→EN** even if the user toggle is EN→L2. Exact production waits until the form is less brittle.
-- **Post-wrong context**: on miss/reveal, when a Read story uses the word, show that short L2 line + English under the answer pill.
+- **Post-wrong context**: on miss/reveal, when a story uses the word, show that short L2 line + English under the answer pill.
 - **Later spice**: after the hook phase, small random pulls from slightly ahead of the frequency frontier.
 - Review home is **Study** under the logo only (no Start/Continue/Perfect/Done/Stories bridge). **Streak** needs one honest review that day (floss one tooth). No daily goal picker or set-size chrome. Session is due cards; go as long as you want.
 - Exact-form checking stays strict; soft-accept only true orthographic variants, not wrong articles.
@@ -152,7 +152,7 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 
 1. Quality of existing 10 languages (lemmas vs noise, story naturalness).  
 2. More **phrases** and concrete hooks in ranks ~36–260 (feeds early mix).  
-3. Thematic mini-packs (Airport, Café, Campus, Doctor, Housing, Work, Shopping, Social) - **opt-in** from Library → Themes; never auto-dump into day one. Packs aim for **unique foreign forms across packs** (merge still de-dupes). Enabled packs get ranks 1001+ and a small daily intro bias after the hook phase. Library **Themes** filter + per-pack chips; after Add, focus that pack and offer **Study now**. Progress Themes glance + **Study** (cap ~12). Misses prefer **Read story → pack/phrase example → simple theme template → pack label**.  
+3. Thematic mini-packs (Airport, Café, Campus, Doctor, Housing, Work, Shopping, Social) - **opt-in** from Cards → Packs; never auto-dump into day one. Packs aim for **unique foreign forms across packs** (merge still de-dupes). Enabled packs get ranks 1001+ and a small daily intro bias after the hook phase. Cards **Packs** filter + per-pack chips; after Add, focus that pack and offer **Study now**. Progress Themes glance + **Study** (cap ~12). Misses prefer **story line → pack/phrase example → simple theme template → pack label**.  
 4. New full language only after LT/TTS/content research + founder OK.
 
 ---
