@@ -7501,13 +7501,17 @@ html.needs-welcome body {
 }
 
 .read-focus-nb {
-  /* ~2 lines of stage room — not a half-viewport empty box (that caused page drag). */
-  min-height: clamp(2.75rem, 8vw, 4.25rem);
+  /*
+   * Reserve two lines (em × line-height + padding, border-box).
+   * Undersized clamps let 1↔2 line wraps grow/shrink the shell and
+   * shove the ← → nav under the cursor on desktop.
+   */
   padding: 0.25rem 0.15rem;
   font-size: clamp(1.35rem, 4.9vw, 1.9rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.48;
+  min-height: calc((2 * 1.48em) + 0.5rem);
   color: var(--ink);
   overflow-wrap: break-word;
 }
@@ -7614,6 +7618,8 @@ html.needs-welcome body {
   font-size: var(--text-md);
   line-height: var(--lh-body);
   color: var(--text-secondary);
+  /* Keep English stage calm when open (1↔2 line translations) */
+  min-height: calc(2 * 1.45em);
 }
 
 .read-focus-en-slot.is-collapsed .read-focus-en {
@@ -7906,10 +7912,11 @@ html.needs-welcome body {
   }
 
   .read-focus-nb {
-    min-height: clamp(3.25rem, 7vh, 5rem);
     font-size: clamp(1.4rem, 2vw, 1.8rem);
     line-height: 1.48;
     padding: 0.3rem 0.2rem;
+    /* Two lines + padding — nav stays put while clicking through stories */
+    min-height: calc((2 * 1.48em) + 0.6rem);
   }
 
   .read-gloss-slot {
@@ -8123,10 +8130,11 @@ html.needs-welcome body {
   }
 
   .read-focus-nb {
-    min-height: clamp(2.5rem, 9vh, 4rem);
     font-size: clamp(1.24rem, 5.4vw, 1.5rem);
     line-height: 1.46;
     padding: 0.2rem 0.1rem;
+    /* Same 2-line reserve (footer is also flex-pinned on mobile) */
+    min-height: calc((2 * 1.46em) + 0.4rem);
   }
 
   .read-gloss-slot {
@@ -8278,7 +8286,7 @@ html.needs-welcome body {
   }
 
   .read-focus-nb {
-    min-height: clamp(2.5rem, 10vh, 4rem);
+    min-height: calc((2 * 1.48em) + 0.5rem);
   }
 
   .read-focus {
