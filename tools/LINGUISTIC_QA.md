@@ -56,6 +56,8 @@ Goal: natural dialogue that weaves high-frequency **core** and **theme** forms s
 | Portuguese (pt) | **PASS 1 COMPLETE** | 12 stories; theme weave ~100% of 200; BR forms (PIX, SUS, CPTM, Bilhete Único) |
 | Swedish (sv) | **PASS 1 COMPLETE** | 12 stories; theme weave ~100% of 200; SV forms (SL-kort, Swish, BankID, X2000) |
 
+- **2026-07-23:** light theme re-weave into Intermediate/Advanced stories (student ID, checkout, work agenda, lease/neighbor, appointment) without blowing ladder density.
+
 ## Ship rule
 
 - **All 10 languages:** structure PASS + linguistic PASS 1 (NB PASS 2).
