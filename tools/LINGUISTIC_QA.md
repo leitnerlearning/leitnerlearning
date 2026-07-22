@@ -37,7 +37,8 @@ Goal: trails match learner level (desirable difficulty). Beginner must not intim
 | double-black | Expert | ~B1+ | Opinion, plans, denser dialogue; theme weave OK |
 
 - **Norwegian:** full 12-story ladder rewrite (template).
-- **Other 9 languages:** green (Beginner) stories rewritten to match A1 bar; blue/black/expert still story-pass-1 density (ladder pass later).
+- **Danish:** full 12-story ladder pass (2026-07-22) — blue/black/expert stepped to NB density (dialogue, not theme dumps). Green kept A1.
+- **Other 8 languages:** green (Beginner) stories rewritten to match A1 bar; blue/black/expert still story-pass-1 density (ladder pass: de next).
 
 ## Story pass (Read → 1,200)
 
