@@ -5576,23 +5576,36 @@ function renderHomeStatus() {
 
   const practiceStat = getProgressPracticeStat();
   const streakStat = getHomeStreakStat();
-  const streakClasses = [
-    "home-stat",
-    streakStat.highlight ? "home-stat--highlight" : "",
-    streakStat.atRisk ? "home-stat--risk" : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  // Study is already the power-button caption — never repeat it as a chip with a length.
+  const showPractice =
+    practiceStat &&
+    practiceStat.kind !== "extras" &&
+    practiceStat.kind !== "extras-ready";
 
-  container.innerHTML = `
+  const parts = [];
+  if (showPractice) {
+    parts.push(`
     <div class="home-stat${practiceStat.highlight ? " home-stat--highlight" : ""}" aria-label="${escapeAttr(practiceStat.ariaLabel)}">
       <span class="home-stat__value">${escapeHtml(String(practiceStat.value))}</span>
       <span class="home-stat__label">${escapeHtml(practiceStat.label)}</span>
-    </div>
+    </div>`);
+  }
+  if (streakStat) {
+    const streakClasses = [
+      "home-stat",
+      streakStat.highlight ? "home-stat--highlight" : "",
+      streakStat.atRisk ? "home-stat--risk" : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    parts.push(`
     <div class="${streakClasses}" aria-label="${escapeAttr(streakStat.ariaLabel)}">
       <span class="home-stat__value">${streakStat.value}</span>
       <span class="home-stat__label">${escapeHtml(streakStat.label)}</span>
-    </div>`;
+    </div>`);
+  }
+
+  container.innerHTML = parts.join("");
 }
 
 function renderPowerOnExtras({
