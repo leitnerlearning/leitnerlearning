@@ -1,6 +1,6 @@
 # Leitner Learning
 
-Review cards just before you forget. Stories with translations.
+Review just before you forget. Stories with translations.
 
 **Live:** [leitnerlearning.com](https://leitnerlearning.com)
 

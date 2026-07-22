@@ -1,7 +1,7 @@
 {
   "name": "Leitner Learning",
   "short_name": "Leitner",
-  "description": "Review cards just before you forget. Stories with translations.",
+  "description": "Review just before you forget. Stories with translations.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
