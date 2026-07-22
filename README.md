@@ -1,6 +1,6 @@
 # Leitner Learning
 
-Free language learning in your browser. No account.
+Review cards just before you forget. Stories with translations.
 
 **Live:** [leitnerlearning.com](https://leitnerlearning.com)
 
