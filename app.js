@@ -6,7 +6,8 @@ const LEGACY_STORAGE_KEYS = [
 const BOX_COUNT = 6;
 
 const BOX_INTERVALS_DAYS = [0, 1, 3, 7, 14, 30];
-const DAILY_GOAL_CAPS = [10, 15, 20, 30];
+/** Daily / Extra bite sizes (Ferriss-style low bar; max one calm set). */
+const DAILY_GOAL_CAPS = [5, 10, 20];
 const DAILY_PRACTICE_CAP = 20;
 const DAILY_GOAL_CAP_KEY = "leitner-learning-daily-goal-cap";
 const VOICE_GENDER_KEY = "leitner-learning-voice-gender";
@@ -481,13 +482,13 @@ function getProgressPracticeStat() {
     };
   }
 
-  // Extra practice after goal - never a huge unpaid count on the home chip
+  // Extra practice after goal — one more bite (daily cap), never the full mountain
   if (daily.extraMode && outstanding > 0) {
     return {
-      value: "→",
+      value: String(cap),
       label: "Extra",
-      line: "Extra open",
-      ariaLabel: `Extra practice available. Work in small sets of about ${cap} ${setWord}.`,
+      line: `Extra · ${cap}`,
+      ariaLabel: `Extra practice: one more set of about ${cap} ${setWord}`,
       highlight: true,
       actionable: true,
       kind: "extras",
@@ -497,10 +498,10 @@ function getProgressPracticeStat() {
   // Goal complete, extras available (not yet in extra mode)
   if (outstanding > 0 && daily.goalMet) {
     return {
-      value: "→",
+      value: String(cap),
       label: "Extra",
-      line: "Extra ready",
-      ariaLabel: `Today's goal is done. Extra practice is available in small sets.`,
+      line: `Extra · ${cap}`,
+      ariaLabel: `Today's goal is done. Extra practice: one more set of about ${cap} ${setWord}`,
       highlight: false,
       actionable: true,
       kind: "extras-ready",
@@ -680,13 +681,25 @@ function shuffleInPlace(items, randomFn = Math.random) {
   return items;
 }
 
+function migrateDailyPracticeCap(n) {
+  if (DAILY_GOAL_CAPS.includes(n)) return n;
+  // Retired options → nearest calm bite
+  if (n === 15) return 10;
+  if (n === 30 || n > 20) return 20;
+  if (n > 0 && n < 5) return 5;
+  return DAILY_PRACTICE_CAP;
+}
+
 function getDailyPracticeCap() {
   const n = Number(storageGet(DAILY_GOAL_CAP_KEY));
-  return DAILY_GOAL_CAPS.includes(n) ? n : DAILY_PRACTICE_CAP;
+  const next = migrateDailyPracticeCap(n);
+  // Persist migration so old 15/30 settings don't stick forever
+  if (Number.isFinite(n) && n !== next) storageSet(DAILY_GOAL_CAP_KEY, String(next));
+  return next;
 }
 
 function setDailyPracticeCap(cap) {
-  const next = DAILY_GOAL_CAPS.includes(Number(cap)) ? Number(cap) : DAILY_PRACTICE_CAP;
+  const next = migrateDailyPracticeCap(Number(cap));
   storageSet(DAILY_GOAL_CAP_KEY, String(next));
   return next;
 }
