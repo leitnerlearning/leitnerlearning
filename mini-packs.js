@@ -111,7 +111,7 @@
     ['tur-retur', 'round-trip'],
     ['enveisbillett', 'one-way ticket'],
     ['å lande', 'to land'],
-    ['gate', 'gate'],
+    ['avgangstavle', 'departure board'],
     ['bagasjebånd', 'baggage carousel'],
   ]);
 
@@ -181,7 +181,7 @@
     ['Einfache Fahrt', 'one-way ticket'],
     ['landen', 'to land'],
     ['Gate', 'gate'],
-    ['Gepäckband', 'baggage carousel'],
+    ['Gepäckwagen', 'luggage trolley'],
   ]);
 
   packs.airport.byCategory["fr"] = buildEntries([
@@ -202,9 +202,9 @@
     ['carte d\'embarquement', 'boarding pass'],
     ['détecteur de métaux', 'metal detector'],
     ['escale', 'layover'],
-    ['porte d\'embarquement', 'boarding gate'],
+    ['pont d\'embarquement', 'jet bridge'],
     ['douane', 'customs'],
-    ['navette aéroport', 'airport shuttle'],
+    ['tableau des départs', 'departure board'],
   ]);
 
   packs.airport.byCategory["es"] = buildEntries([
@@ -226,7 +226,7 @@
     ['ida y vuelta', 'round-trip'],
     ['solo ida', 'one-way ticket'],
     ['aterrizar', 'to land'],
-    ['puerta de embarque', 'boarding gate'],
+    ['sala de embarque', 'boarding lounge'],
     ['cinta de equipaje', 'baggage carousel'],
   ]);
 
@@ -578,7 +578,7 @@
   packs.cafe.byCategory["sv"] = buildEntries([
     ['kaffe latte', 'latte'],
     ['notan tack', 'the bill please'],
-    ['uteservering', 'outdoor seating'],
+    ['uteterass', 'outdoor terrace'],
     ['dagens rätt', 'dish of the day'],
     ['servitör', 'waiter'],
     ['vinkort', 'wine list'],
@@ -1358,7 +1358,7 @@
   ]);
 
   packs.housing.byCategory["es"] = buildEntries([
-    ['piso', 'apartment / flat'],
+    ['vivienda', 'home / dwelling'],
     ['alquiler', 'rent'],
     ['casero', 'landlord'],
     ['inquilino', 'tenant'],
@@ -1589,7 +1589,7 @@
 
   packs.work.byCategory["es"] = buildEntries([
     ['periodo de prueba', 'probation period'],
-    ['jefe', 'boss / manager'],
+    ['gerente', 'manager'],
     ['confirmación de pedido', 'order confirmation'],
     ['jornada completa', 'full-time'],
     ['media jornada', 'part-time'],
@@ -1728,7 +1728,7 @@
   packs.shopping.byCategory["sv"] = buildEntries([
     ['streckkod', 'barcode'],
     ['kassa', 'checkout'],
-    ['rea', 'sale'],
+    ['utförsäljning', 'clearance sale'],
     ['kundvagn', 'shopping trolley'],
     ['medlemskort', 'loyalty card'],
     ['avdelning', 'department'],
