@@ -5052,7 +5052,7 @@ function formMatchVariants(form) {
   const lower = base.toLowerCase();
   const out = new Set([base, lower]);
   // Drop leading infinitive markers
-  const stripped = lower.replace(/^(å|att|at)\s+/i, "").trim();
+  const stripped = lower.replace(/^(å|att|at|to)\s+/i, "").trim();
   if (stripped) out.add(stripped);
   // Light suffix peel for Germanic / Romance / Slavic common endings
   const suffixes = [
@@ -5063,8 +5063,9 @@ function formMatchVariants(form) {
     "ar",
     "arna",
     "erna",
-    "or",
     "orna",
+    "or",
+    "erna",
     "n",
     "s",
     "es",
@@ -5079,26 +5080,51 @@ function formMatchVariants(form) {
     "ach",
     "em",
     "om",
+    "tion",
+    "zione",
+    "heit",
+    "keit",
   ];
   for (const suf of suffixes) {
     if (stripped.length > suf.length + 2 && stripped.endsWith(suf)) {
       out.add(stripped.slice(0, -suf.length));
     }
   }
-  // Common present/past light forms for short verbs
-  if (stripped.length >= 3) {
-    out.add(`${stripped}r`);
-    out.add(`${stripped}er`);
-    out.add(`${stripped}ar`);
-    out.add(`${stripped}t`);
-    out.add(`${stripped}te`);
-    out.add(`${stripped}de`);
+  // Common present/past + definite expansions (lemma → surface in stories).
+  // Short verbs (gå → går) need length ≥ 2; longer lemmas use the full set.
+  if (stripped.length >= 2) {
+    const light = ["r", "er", "ar", "t", "te", "de", "n", "s"];
+    const heavy = ["en", "et", "ene", "es", "na", "ne", "ern", "arna"];
+    for (const suf of light) out.add(`${stripped}${suf}`);
+    if (stripped.length >= 3) {
+      for (const suf of heavy) out.add(`${stripped}${suf}`);
+    }
   }
   return [...out].filter(Boolean);
 }
 
 function sentenceMatchesAnyForm(sentenceText, forms) {
-  return forms.some((f) => sentenceContainsForm(sentenceText, f));
+  if (!sentenceText || !forms?.length) return false;
+  if (forms.some((f) => sentenceContainsForm(sentenceText, f))) return true;
+  // Reverse soft match: peel story tokens (billetten → billett) against deck forms
+  const formSet = new Set(forms.map((f) => normalizeAnswer(f)).filter(Boolean));
+  if (!formSet.size) return false;
+  let tokens;
+  try {
+    tokens = String(sentenceText)
+      .split(/[^\p{L}\p{N}']+/u)
+      .filter((t) => t.length >= 2);
+  } catch {
+    tokens = String(sentenceText)
+      .split(/[^A-Za-z0-9æøåäöüÆØÅÄÖÜà-ÿ']+/i)
+      .filter((t) => t.length >= 2);
+  }
+  for (const tok of tokens) {
+    for (const v of formMatchVariants(tok)) {
+      if (formSet.has(normalizeAnswer(v))) return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -5141,19 +5167,37 @@ function pickClauseContainingForm(foreign, en, forms) {
   return { foreign: foreignOut, en: enOut };
 }
 
+/** Cache: categoryId|normalizedForm → example | null (misses cached too). */
+const storyExampleCache = new Map();
+
+function clearStoryExampleCache() {
+  storyExampleCache.clear();
+}
+
 /**
- * Pull a short natural sentence from Read stories that uses this card's L2 form.
+ * Pull a short natural sentence from Stories that uses this card's L2 form.
  * Prefer easier trails and shorter clauses so the teaching beat stays calm.
  */
 function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
   if (!card?.foreign) return null;
   const form = String(card.foreign).trim();
   if (!form) return null;
+  const cacheKey = `${categoryId || ""}|${normalizeAnswer(form)}`;
+  if (storyExampleCache.has(cacheKey)) {
+    return storyExampleCache.get(cacheKey);
+  }
+
   const forms = formMatchVariants(form);
-  if (!forms.length) return null;
+  if (!forms.length) {
+    storyExampleCache.set(cacheKey, null);
+    return null;
+  }
 
   const stories = typeof getStoriesForCategory === "function" ? getStoriesForCategory(categoryId) : [];
-  if (!stories.length) return null;
+  if (!stories.length) {
+    storyExampleCache.set(cacheKey, null);
+    return null;
+  }
 
   const trailScore = (trail) => {
     if (trail === "green-circle" || trail === "Starter") return 0;
@@ -5179,7 +5223,7 @@ function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
         glossKeys.some(
           (key) =>
             forms.some((f) => normalizeAnswer(f) === normalizeAnswer(key)) &&
-            sentenceContainsForm(fullForeign, key)
+            (sentenceContainsForm(fullForeign, key) || sentenceMatchesAnyForm(fullForeign, formMatchVariants(key)))
         );
       if (!matched) continue;
 
@@ -5199,6 +5243,7 @@ function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
     }
   }
 
+  storyExampleCache.set(cacheKey, best);
   return best;
 }
 
@@ -12292,6 +12337,7 @@ function applyCategorySwitch(nextCategoryId, { announce = true } = {}) {
   setActiveCategoryId(nextCategoryId);
   setSpeakMode(false);
   recognition = null;
+  clearStoryExampleCache();
 
   deck = loadDeck(nextCategoryId);
   sessionQueue = [];
