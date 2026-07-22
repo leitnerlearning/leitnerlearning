@@ -4741,7 +4741,7 @@ function scheduleTrackSwitchOverlayEnd(durationMs, options = {}) {
         // First-visit shell may still be hidden under the gate class
         document.documentElement.classList.remove("needs-welcome");
       }
-    }, 320);
+    }, 400);
     if (shouldFlashProgress) flashProgressLanguageControl();
   }, ms);
 }
@@ -4877,13 +4877,15 @@ function announceLanguagePortal(category = getActiveCategory(), options = {}) {
 
   // Paint the veil immediately (before any await) so Review never peeks through
   // when the welcome gate closes on first language pick.
+  // welcome: firstEntry only — mid-session Progress switches keep the music but
+  // a lighter card/veil (not the full first-door ceremony weight).
   const provisionalMs = Math.round(
     (Number(welcomePortalBeatmap?.duration) || 5.06) * 1000 + 420
   );
   showTrackSwitchOverlay(label, {
     flag,
     durationMs: provisionalMs,
-    welcome: true,
+    welcome: firstEntry,
     portal: true,
     flashProgress: !firstEntry,
     showKicker,
