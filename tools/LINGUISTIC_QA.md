@@ -25,6 +25,20 @@ Mechanical structure (`python3 tools/content_audit.py`) is **not** the same as l
 - [x] 12 stories light EN polish
 - [x] Unique forms still 1000; fixed broken `o` gloss
 
+## Read difficulty ladder (2026-07)
+
+Goal: trails match learner level (desirable difficulty). Beginner must not intimidate.
+
+| Trail | Label | Target | Notes |
+|-------|--------|--------|--------|
+| green-circle | Beginner | ~A1 | Short turns (~3–8 words); high-frequency core only |
+| blue-square | Intermediate | ~A2 | Everyday scenes; light connectors |
+| black-diamond | Advanced | ~B1 | Work/health/home; past OK; theme welcome |
+| double-black | Expert | ~B1+ | Opinion, plans, denser dialogue; theme weave OK |
+
+- **Norwegian:** full 12-story ladder rewrite (template).
+- **Other 9 languages:** green (Beginner) stories rewritten to match A1 bar; blue/black/expert still story-pass-1 density (ladder pass later).
+
 ## Story pass (Read → 1,200)
 
 Goal: natural dialogue that weaves high-frequency **core** and **theme** forms so Read serves the teachable set - not a word list.
