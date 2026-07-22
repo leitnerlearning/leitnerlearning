@@ -6684,10 +6684,12 @@ function scoreTranslationCandidate(entry, peers, toLang, sourceWordCount) {
   }
 
   // Single-word sources: prefer a compact gloss (super → Super, not Supervertical-align)
+  // L2 compounds → multi-word EN phrases often false friends (“user friendly”).
   if (sourceWordCount === 1) {
-    if (words.length === 1 && !entry.text.includes("-")) score += 0.04;
+    if (words.length === 1 && !entry.text.includes("-")) score += 0.06;
     if (words.length === 1 && entry.text.includes("-")) score -= 0.06;
-    if (words.length >= 3) score -= 0.04;
+    if (toEnglish && words.length === 2) score -= 0.05;
+    if (words.length >= 3) score -= 0.08;
     const outLen = text.replace(/\s+/g, "").length;
     if (entry._sourceLen > 0 && outLen > entry._sourceLen * 2.5 && outLen >= 12) {
       score -= 0.1;
@@ -6851,20 +6853,24 @@ async function fetchMyMemoryTranslation(trimmed, from, to) {
   const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(trimmed)}&langpair=${encodeURIComponent(`${from}|${to}`)}`;
   try {
     const response = await fetch(url);
-    if (response.status === 429) return { rateLimited: true, text: null };
-    if (!response.ok) return { rateLimited: false, text: null };
+    if (response.status === 429) return { rateLimited: true, text: null, data: null };
+    if (!response.ok) return { rateLimited: false, text: null, data: null };
     const data = await response.json();
-    if (data.responseStatus !== 200) return { rateLimited: false, text: null };
+    if (data.responseStatus !== 200) return { rateLimited: false, text: null, data: null };
     const picked = pickBestTranslationSuggestion(data, trimmed, to);
-    return { rateLimited: false, text: acceptTranslationCandidate(picked, trimmed) };
+    return {
+      rateLimited: false,
+      text: acceptTranslationCandidate(picked, trimmed),
+      data,
+    };
   } catch {
-    return { rateLimited: false, text: null };
+    return { rateLimited: false, text: null, data: null };
   }
 }
 
 /**
- * Fallback when MyMemory is rate-limited or empty.
- * Unofficial Google translate endpoint (client=gtx) - used only as backup.
+ * Fallback / peer when MyMemory is thin (especially L2→EN compounds).
+ * Unofficial Google translate endpoint (client=gtx).
  */
 async function fetchGoogleTranslateFallback(trimmed, from, to) {
   try {
@@ -6885,6 +6891,101 @@ async function fetchGoogleTranslateFallback(trimmed, from, to) {
   }
 }
 
+/** Pull several distinct gloss candidates from a MyMemory payload. */
+function collectMyMemoryCandidates(data, sourceText, toLang) {
+  const out = [];
+  const seen = new Set();
+  const add = (raw) => {
+    const accepted = acceptTranslationCandidate(raw, sourceText);
+    if (!accepted) return;
+    const key = normalizeAnswer(accepted);
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    out.push(accepted);
+  };
+  if (!data) return out;
+  if (data.responseData?.translatedText) add(data.responseData.translatedText);
+  // Prefer the ranked pick as well (may differ from raw primary)
+  const ranked = pickBestTranslationSuggestion(data, sourceText, toLang);
+  if (ranked) add(ranked);
+  if (Array.isArray(data.matches)) {
+    data.matches.slice(0, 8).forEach((entry) => {
+      if (entry?.translation) add(entry.translation);
+    });
+  }
+  return out;
+}
+
+/**
+ * Score a flashcard gloss candidate. Round-trip fidelity beats raw TM “match”.
+ * Catches brukskvalitet → “user friendly” (back-translates to brukervennlig).
+ */
+async function scoreFlashcardTranslationCandidate(source, candidate, from, to) {
+  let score = 0;
+  const srcWords = reviewTokens(source).length;
+  const candWords = reviewTokens(candidate).length;
+  const toEnglish = to === "en";
+  const srcCompact = normalizeAnswer(source).replace(/\s+/g, "");
+  const candCompact = normalizeAnswer(candidate).replace(/\s+/g, "");
+
+  if (isGarbageTranslation(candidate, source)) return -50;
+  if (!isPlausibleCardText(candidate)) return -50;
+
+  // Single L2 lemma → prefer a compact English gloss (noun/adjective), not a phrase
+  if (srcWords === 1 && toEnglish) {
+    if (candWords === 1) score += 4;
+    else if (candWords === 2) score += 0.5;
+    else if (candWords >= 3) score -= 3;
+    // “user friendly” style for a solid compound often fails round-trip
+    if (candWords >= 2 && srcCompact.length >= 8) score -= 1.5;
+  }
+
+  // Length sanity (not a paragraph, not a stub for a long source)
+  if (candCompact.length > srcCompact.length * 3 + 8) score -= 2;
+  if (srcCompact.length >= 6 && candCompact.length <= 2) score -= 3;
+
+  // Round-trip via Google (independent of MyMemory TM noise)
+  try {
+    const back = await fetchGoogleTranslateFallback(candidate, to, from);
+    if (back) {
+      const backN = normalizeAnswer(back);
+      const srcN = normalizeAnswer(source);
+      if (backN === srcN) score += 14;
+      else if (
+        softGlossMatch(back, source) ||
+        softGlossMatch(source, back) ||
+        particleAnswerMatches(back, source) ||
+        particleAnswerMatches(source, back)
+      ) {
+        score += 9;
+      } else if (
+        backN.length >= 4 &&
+        srcN.length >= 4 &&
+        (backN.includes(srcN) || srcN.includes(backN))
+      ) {
+        score += 4;
+      } else if (
+        srcWords === 1 &&
+        reviewTokens(back).length === 1 &&
+        editDistance(srcN, backN) <= 2
+      ) {
+        score += 6;
+      } else {
+        // Strong penalty: different lemma (brukskvalitet ↛ brukervennlig)
+        score -= 6;
+      }
+    }
+  } catch {
+    /* keep base score */
+  }
+
+  return score;
+}
+
+/**
+ * Flashcard translation: collect MyMemory + Google, pick by round-trip quality.
+ * Especially improves L2→EN compounds where TM invents false friends.
+ */
 async function fetchTranslationSuggestion(text, fromLang, toLang) {
   const trimmed = text.trim();
   if (!trimmed || !shouldRequestTranslation(trimmed)) return null;
@@ -6896,23 +6997,51 @@ async function fetchTranslationSuggestion(text, fromLang, toLang) {
     return translationSuggestionCache.get(cacheKey);
   }
 
-  // 1) MyMemory (primary)
-  let result = await fetchMyMemoryTranslation(trimmed, from, to);
-  // 2) Brief retry after rate limit
-  if (result.rateLimited || !result.text) {
-    if (result.rateLimited) {
-      await new Promise((resolve) => window.setTimeout(resolve, 450));
-      result = await fetchMyMemoryTranslation(trimmed, from, to);
-    }
+  const candidates = [];
+  const seen = new Set();
+  const pushCand = (value) => {
+    const accepted = acceptTranslationCandidate(value, trimmed);
+    if (!accepted) return;
+    const key = normalizeAnswer(accepted);
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    candidates.push(accepted);
+  };
+
+  // 1) MyMemory (primary list + ranked pick)
+  let mm = await fetchMyMemoryTranslation(trimmed, from, to);
+  if (mm.rateLimited) {
+    await new Promise((resolve) => window.setTimeout(resolve, 450));
+    mm = await fetchMyMemoryTranslation(trimmed, from, to);
   }
-  // 3) Google fallback so Check card can still offer epler/jenter etc.
-  let picked = result.text;
-  if (!picked) {
-    picked = await fetchGoogleTranslateFallback(trimmed, from, to);
+  collectMyMemoryCandidates(mm.data, trimmed, to).forEach(pushCand);
+  if (mm.text) pushCand(mm.text);
+
+  // 2) Google as peer (not last resort) — stronger for L2→EN compounds
+  const googleHit = await fetchGoogleTranslateFallback(trimmed, from, to);
+  if (googleHit) pushCand(googleHit);
+
+  if (!candidates.length) return null;
+
+  // Single candidate: use it
+  if (candidates.length === 1) {
+    translationSuggestionCache.set(cacheKey, candidates[0]);
+    return candidates[0];
   }
 
-  if (picked) translationSuggestionCache.set(cacheKey, picked);
-  return picked;
+  // Rank top few with round-trip (cap API cost)
+  const shortlist = candidates.slice(0, 5);
+  const scored = [];
+  for (const cand of shortlist) {
+    const score = await scoreFlashcardTranslationCandidate(trimmed, cand, from, to);
+    scored.push({ text: cand, score });
+  }
+  scored.sort((a, b) => b.score - a.score);
+
+  // Prefer best positive score; if all poor, still return the least-bad (better than silence)
+  const best = scored[0]?.text || candidates[0];
+  if (best) translationSuggestionCache.set(cacheKey, best);
+  return best;
 }
 
 /** Small Levenshtein for spelling picks (short tokens only). */
