@@ -8,7 +8,7 @@ Language learning. Review just before you forget. Stories with translations.
 
 - **Review** — flashcards that return when you need them (Leitner system)
 - **Stories** — short stories; tap a word for the meaning
-- **Library** — your deck, optional packs, add your own cards
+- **Cards** — your deck, optional packs, add your own
 - **Progress** — a calm view of what you have learned
 
 About 1,000 core words per language, plus short stories, for:

@@ -10168,6 +10168,7 @@ function updateDeckCount() {
   const n = Array.isArray(deck) ? deck.length : 0;
   const formatted = n.toLocaleString("en-US");
   // Live size of the user's deck (starter + added − deleted), not a fixed pack size.
+  // Calm meta under the Cards title — number is the signal, not a second control.
   deckCount.textContent = n === 1 ? "1 card" : `${formatted} cards`;
   deckCount.setAttribute("aria-label", `${formatted} cards in your deck`);
 }

@@ -5449,10 +5449,33 @@ html.needs-welcome body {
 
 .library-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 0.75rem;
   margin-bottom: 0.95rem;
+}
+
+/* Title + live deck size — count is quiet meta, not a chip fighting filters */
+.library-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.library-heading .panel-title {
+  margin: 0;
+}
+
+.library-deck-meta {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--text-secondary);
 }
 
 /* Rare / caution action - quiet at rest; soft red only on hover/focus */
@@ -5600,26 +5623,6 @@ html.needs-welcome body {
 
 
 
-/* Deck size is metadata, not a selected control - keep it quiet */
-.count-badge {
-  display: inline-block;
-  margin-left: 0.35rem;
-  vertical-align: middle;
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  font-variant-numeric: tabular-nums;
-  background: color-mix(in srgb, var(--surface-2, #f4f6fb) 88%, var(--ink) 4%);
-  border: 1px solid var(--border-strong);
-  color: var(--text-secondary);
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  transition:
-    background 0.25s var(--ease),
-    color 0.25s var(--ease),
-    border-color 0.25s var(--ease);
-}
-
 /* Library section jump - sticky index for long decks.
    Full-width white bar (matches search / cards).
    Chips keep natural width; free space is split evenly between them
@@ -5714,14 +5717,21 @@ html.needs-welcome body {
 
   .library-header {
     margin-bottom: 1.15rem;
+    align-items: flex-start;
   }
 
   .library-header .panel-title {
     font-size: 1.35rem;
   }
 
-  .library-header .btn {
+  .library-deck-meta {
+    font-size: 0.95rem;
+  }
+
+  .library-header .btn,
+  .library-reset-btn {
     min-height: 2.25rem;
+    margin-top: 0.15rem;
   }
 
   .add-card-form {
@@ -6686,9 +6696,8 @@ html.needs-welcome body {
     box-sizing: border-box;
   }
 
-  .count-badge {
-    font-size: var(--text-2xs);
-    padding: 0.2rem 0.45rem;
+  .library-deck-meta {
+    font-size: 0.86rem;
   }
 }
 

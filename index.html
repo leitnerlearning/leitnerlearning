@@ -87,7 +87,7 @@
         "inLanguage": ["en", "nb", "sv", "da", "de", "fr", "es", "it", "nl", "pt", "pl"]
       }
     </script>
-    <link rel="stylesheet" href="styles.css?v=313" />
+    <link rel="stylesheet" href="styles.css?v=314" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -177,7 +177,7 @@
             Review
           </button>
           <button class="tab" data-tab="read" role="tab" aria-selected="false">Stories</button>
-          <button class="tab" data-tab="cards" role="tab" aria-selected="false">Library</button>
+          <button class="tab" data-tab="cards" role="tab" aria-selected="false">Cards</button>
           <button class="tab" data-tab="stats" role="tab" aria-selected="false">Progress</button>
         </nav>
       </header>
@@ -212,7 +212,7 @@
             <div class="empty-icon empty-icon--idle" id="empty-icon" aria-hidden="true"></div>
             <h2 id="empty-title">You're all caught up</h2>
             <p id="empty-message">
-              Nothing to review right now. Open Library, or come back later.
+              Nothing to review right now. Open Cards, or come back later.
             </p>
             <div id="empty-preview" class="word-preview" hidden aria-label="Sample words"></div>
             <div class="empty-actions" id="empty-actions">
@@ -265,7 +265,7 @@
                 <span class="read-bridge-btn__label">Stories</span>
               </button>
               <button type="button" class="btn secondary hidden" id="empty-library-btn" data-tab-jump="cards">
-                Library
+                Cards
               </button>
             </div>
           </div>
@@ -448,10 +448,16 @@
 
         <section id="cards-panel" class="panel" role="tabpanel" hidden>
           <div class="library-header">
-            <h2 class="panel-title">
-              Library
-              <span id="deck-count" class="count-badge" aria-label="Cards in your deck">0 cards</span>
-            </h2>
+            <div class="library-heading">
+              <h2 class="panel-title" id="cards-panel-title">Cards</h2>
+              <p
+                class="library-deck-meta"
+                id="deck-count"
+                aria-live="polite"
+              >
+                0 cards
+              </p>
+            </div>
             <button id="reset-deck-btn" class="library-reset-btn" type="button">
               Reset Deck
             </button>
@@ -900,6 +906,6 @@
     <script src="lang/pl-pack.js?v=12"></script>
     <script src="mini-packs.js?v=35"></script>
     <script src="srs-core.js?v=4"></script>
-    <script src="app.js?v=399"></script>
+    <script src="app.js?v=400"></script>
   </body>
 </html>

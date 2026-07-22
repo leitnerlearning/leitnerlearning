@@ -32,7 +32,7 @@ We do **not** sell: streak guilt, gem shops, leaderboard theater, or AI that inv
 | Area | Intent |
 |------|--------|
 | **Review** | Leitner SRS; type/speak; direction toggle L2↔EN |
-| **Library** | Full deck, add/edit/delete, Check card, filters, live **N cards** count |
+| **Cards** (tab id `cards`) | Full deck, add/edit/delete, Check card, filters; live count under title |
 | **Stories** (tab id `read`) | Trail difficulties (green → double-black); natural dialogue stories |
 | **Progress** | Boxes, reading stats, Basics modal, voice gender |
 | **Portal** | Welcome ceremony (music/flag); no seizure-risk flashes |
@@ -118,8 +118,8 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 4. Commit with a complete-sentence message (what + why).
 5. `git push origin main` (GitHub Pages).
 
-### Library deck count
-- `#deck-count` shows **live** `deck.length` as “N cards” (user’s deck, not a fixed marketing number).
+### Cards deck count
+- `#deck-count` (`.library-deck-meta`) shows **live** `deck.length` as “N cards” under the Cards title — quiet meta, not a chip.
 
 ### Speech / voices
 - Prefer school-region tags (`pt-BR`, `de-DE`, etc.).
