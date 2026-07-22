@@ -10,8 +10,7 @@ const BOX_INTERVALS_DAYS = [0, 1, 3, 7, 14, 30];
 const DAILY_GOAL_CAPS = [5, 10, 20];
 const DAILY_PRACTICE_CAP = 20;
 const DAILY_GOAL_CAP_KEY = "leitner-learning-daily-goal-cap";
-/** After daily goal: always one tiny Study set (not tied to daily goal size). */
-const EXTRA_STUDY_CAP = 5;
+
 const VOICE_GENDER_KEY = "leitner-learning-voice-gender";
 const VOICE_GENDERS = ["female", "male"];
 
@@ -484,13 +483,13 @@ function getProgressPracticeStat() {
     };
   }
 
-  // Study after goal — fixed tiny bite (EXTRA_STUDY_CAP), never the full mountain
+  // Study after goal — caption under logo only (no length chip; no mountain count)
   if (daily.extraMode && outstanding > 0) {
     return {
-      value: String(EXTRA_STUDY_CAP),
+      value: "",
       label: "Study",
-      line: `Study · ${EXTRA_STUDY_CAP}`,
-      ariaLabel: `Study: one more set of ${EXTRA_STUDY_CAP} cards`,
+      line: "Study",
+      ariaLabel: "Study: continue reviewing due cards",
       highlight: true,
       actionable: true,
       kind: "extras",
@@ -500,10 +499,10 @@ function getProgressPracticeStat() {
   // Goal complete, more due available (not yet in study/extra mode)
   if (outstanding > 0 && daily.goalMet) {
     return {
-      value: String(EXTRA_STUDY_CAP),
+      value: "",
       label: "Study",
-      line: `Study · ${EXTRA_STUDY_CAP}`,
-      ariaLabel: `Today's goal is done. Study: one more set of ${EXTRA_STUDY_CAP} cards`,
+      line: "Study",
+      ariaLabel: "Today's goal is done. Study to keep reviewing",
       highlight: false,
       actionable: true,
       kind: "extras-ready",
@@ -1015,12 +1014,8 @@ function enableExtraPractice() {
 
 function getDailyRemainingCount(state = ensureDailyPracticeState()) {
   if (state.extraMode) {
-    // Remaining in the current Study bite only (session queue), not all due
-    if (sessionQueue.length > 0 || currentCard) {
-      const inSession = sessionQueue.length + (currentCard ? 1 : 0);
-      return inSession;
-    }
-    return Math.min(EXTRA_STUDY_CAP, getOutstandingDueCount(state));
+    // Study mode: all outstanding due (they go as long as they want)
+    return getOutstandingDueCount(state);
   }
 
   const dueIds = new Set(getDueCards(deck).map((card) => card.id));
@@ -2956,12 +2951,11 @@ function buildSessionQueue() {
   const completed = new Set(state.completedIds);
 
   if (state.extraMode) {
-    // Fixed small Study bite — not the whole remaining mountain
+    // Open Study: all remaining due — low bar to start, no artificial stop
     sessionQueue = due
       .filter((card) => !completed.has(card.id))
       .sort(compareCardsForPractice)
-      .map((card) => card.id)
-      .slice(0, EXTRA_STUDY_CAP);
+      .map((card) => card.id);
     return;
   }
 
