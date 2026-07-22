@@ -132,7 +132,7 @@ let readMenuTrail = null;
 let editingCardId = null;
 let addCardReviewOpen = false;
 let addCardReviewState = null;
-/** Signatures of pairs already applied in this review session (stop A→B→A loops). */
+/** Signatures of pairs / offers already applied in this review session (stop A→B→A loops). */
 let addCardReviewApplyHistory = [];
 /** Snapshot of the form before the user started typing / picking suggestions. */
 let addCardFormBaseline = { foreign: "", native: "" };
@@ -8091,8 +8091,9 @@ function markSuggestionPicked() {
 }
 
 /**
- * After a suggestion pick fills both sides, land on Add — not L2 focus
- * (which would immediately re-open “Suggested translation” for the same pair).
+ * After a suggestion pick fills both sides: run Check automatically.
+ * One tap should get them to Looks good when the pair is already sound —
+ * not “pick bubble → Add → same prompt → tap → again”.
  */
 function finishAddCardSuggestionPick(polished, editedSide = "native") {
   const foreignInput = document.getElementById("new-foreign");
@@ -8102,7 +8103,12 @@ function finishAddCardSuggestionPick(polished, editedSide = "native") {
   addCardLastEditedSide = editedSide;
   markSuggestionPicked();
   syncAddCardResetButton();
-  document.getElementById("add-card-submit")?.focus({ preventScroll: true });
+  // Auto-check the pair they just accepted from the field bubble.
+  if (polished.foreign && polished.native) {
+    void openAddCardReview({ fromSuggestionPick: true });
+  } else {
+    document.getElementById("add-card-submit")?.focus({ preventScroll: true });
+  }
 }
 
 function shouldShowAddCardSuggestions() {
@@ -9426,6 +9432,80 @@ function getAddCardConfirmLabel(translation) {
   return editing ? "Save Anyway" : "Add Anyway";
 }
 
+/** Fingerprint of what Check is asking the user to accept (not the form pair). */
+function translationOfferKey(translation) {
+  if (!translation || translation.matches) return "looks-good";
+  const field = translation.targetField || "none";
+  if (field === "pair" || field === "swap") {
+    return [
+      field,
+      normalizeAnswer(translation.suggestedForeign || ""),
+      normalizeAnswer(translation.suggestedNative || ""),
+      stripFlashcardPunctuation(translation.suggestedForeign || ""),
+      stripFlashcardPunctuation(translation.suggestedNative || ""),
+    ].join("|");
+  }
+  if (translation.suggestedValue) {
+    return [
+      field,
+      normalizeAnswer(translation.suggestedValue),
+      stripFlashcardPunctuation(translation.suggestedValue),
+    ].join("|");
+  }
+  // Non-actionable status (unclear, etc.)
+  return `msg|${translation.title || ""}|${translation.copy || ""}`;
+}
+
+/** True when the form already has what this offer would write (lemma match). */
+function offerAlreadySatisfied(translation, foreign, native) {
+  if (!translation || translation.matches) return true;
+  const f = stripFlashcardPunctuation(foreign);
+  const n = stripFlashcardPunctuation(native);
+  if (translation.targetField === "pair" || translation.targetField === "swap") {
+    const sf = stripFlashcardPunctuation(translation.suggestedForeign || "");
+    const sn = stripFlashcardPunctuation(translation.suggestedNative || "");
+    return (
+      normalizeAnswer(sf) === normalizeAnswer(f) &&
+      normalizeAnswer(sn) === normalizeAnswer(n)
+    );
+  }
+  if (translation.targetField === "foreign" && translation.suggestedValue) {
+    return (
+      normalizeAnswer(translation.suggestedValue) === normalizeAnswer(f)
+    );
+  }
+  if (translation.targetField === "native" && translation.suggestedValue) {
+    return (
+      normalizeAnswer(translation.suggestedValue) === normalizeAnswer(n)
+    );
+  }
+  return false;
+}
+
+/**
+ * Force Looks good after the user already accepted the machine’s advice
+ * (or the same prompt would only repeat). No second identical tap.
+ */
+function settleAddCardReviewAsLooksGood(foreign, native) {
+  const f = stripFlashcardPunctuation(foreign);
+  const n = stripFlashcardPunctuation(native);
+  const related = getRelatedEntriesForReview(f, n);
+  const localPair = findLocalDeckPair(f, n);
+  const duplicate = findDeckCardByForeign(f, editingCardId);
+  renderAddCardReviewContext({
+    foreign: f,
+    native: n,
+    duplicate,
+    suggestedNative: n,
+    suggestedForeign: f,
+    related,
+    localPair,
+    spellingCorrectedNative: null,
+    spellingCorrectedForeign: null,
+    forceLooksGood: !duplicate,
+  });
+}
+
 function renderAddCardReviewContext({
   foreign,
   native,
@@ -9436,12 +9516,13 @@ function renderAddCardReviewContext({
   localPair = null,
   spellingCorrectedNative = null,
   spellingCorrectedForeign = null,
+  forceLooksGood = false,
 }) {
   const container = document.getElementById("add-card-review-context");
   if (!container) return;
 
   const blocks = [];
-  const translation = getTranslationReviewSummary(
+  let translation = getTranslationReviewSummary(
     foreign,
     native,
     suggestedNative,
@@ -9450,6 +9531,21 @@ function renderAddCardReviewContext({
     spellingCorrectedNative,
     spellingCorrectedForeign
   );
+  // User already accepted this path — don't re-prompt the same advice.
+  if (
+    forceLooksGood &&
+    !duplicate &&
+    translation &&
+    !translation.matches
+  ) {
+    translation = {
+      matches: true,
+      targetField: null,
+      suggestedValue: null,
+      title: "Looks good",
+      copy: "",
+    };
+  }
 
   if (duplicate) {
     const packSource = describeDeckCardPackSource(duplicate);
@@ -9595,6 +9691,7 @@ async function applyReviewSuggestion() {
   const state = addCardReviewState;
   if (!state?.translation || state.translation.matches) return;
 
+  const acceptedOfferKey = translationOfferKey(state.translation);
   const { targetField, suggestedValue, suggestedForeign, suggestedNative } = state.translation;
   if (!targetField) return;
   if (targetField !== "swap" && targetField !== "pair" && !suggestedValue) return;
@@ -9635,7 +9732,7 @@ async function applyReviewSuggestion() {
     nextForeign = preferDisplayForm(nextForeign);
   }
 
-  // Fold remaining spelling/casing into this same apply (fewer Check card hops)
+  // Fold remaining real spelling into this apply (not capital nags)
   try {
     const polished = await polishCardPair(nextForeign, nextNative);
     nextForeign = polished.foreign;
@@ -9644,10 +9741,14 @@ async function applyReviewSuggestion() {
     /* keep unpolished pair */
   }
 
-  const sig = `${normalizeAnswer(nextForeign)}|${normalizeAnswer(nextNative)}|${nextForeign}|${nextNative}`;
-  // Already applied this exact pair, or too many hops: settle instead of looping
-  const shouldSettle =
-    addCardReviewApplyHistory.includes(sig) || addCardReviewApplyHistory.length >= 4;
+  const pairSig = `pair|${normalizeAnswer(nextForeign)}|${normalizeAnswer(nextNative)}|${nextForeign}|${nextNative}`;
+  const offerSig = `offer|${acceptedOfferKey}`;
+  const hopCount = addCardReviewApplyHistory.filter((h) => String(h).startsWith("pair|")).length;
+  // Same pair, same offer, or too many hops → stop asking
+  const shouldSettleEarly =
+    addCardReviewApplyHistory.includes(pairSig) ||
+    addCardReviewApplyHistory.includes(offerSig) ||
+    hopCount >= 3;
 
   if (foreignInput) foreignInput.value = nextForeign;
   if (nativeInput) nativeInput.value = nextNative;
@@ -9655,23 +9756,19 @@ async function applyReviewSuggestion() {
   if (reviewNative) reviewNative.textContent = nextNative;
   syncAddCardResetButton();
 
-  if (shouldSettle) {
-    renderAddCardReviewContext({
-      foreign: nextForeign,
-      native: nextNative,
-      duplicate: findDeckCardByForeign(nextForeign, editingCardId),
-      suggestedNative: nextNative,
-      suggestedForeign: nextForeign,
-      related: getRelatedEntriesForReview(nextForeign, nextNative),
-      localPair: findLocalDeckPair(nextForeign, nextNative),
-      spellingCorrectedNative: null,
-      spellingCorrectedForeign: null,
-    });
+  addCardReviewApplyHistory.push(pairSig);
+  addCardReviewApplyHistory.push(offerSig);
+
+  if (shouldSettleEarly) {
+    settleAddCardReviewAsLooksGood(nextForeign, nextNative);
     return;
   }
 
-  addCardReviewApplyHistory.push(sig);
-  openAddCardReview();
+  // Re-check once; if advice is unchanged or already applied, settle to Looks good.
+  await openAddCardReview({
+    afterApply: true,
+    acceptedOfferKey,
+  });
 }
 
 function closeAddCardReview() {
@@ -9684,10 +9781,15 @@ function closeAddCardReview() {
   document.getElementById("add-card-edit-existing")?.classList.add("hidden");
 }
 
-async function openAddCardReview() {
+async function openAddCardReview(options = {}) {
   const foreign = document.getElementById("new-foreign")?.value.trim();
   const native = document.getElementById("new-native")?.value.trim();
   if (!foreign || !native) return;
+
+  // Fresh open from Add (not mid-apply): clear hop history so a new card starts clean.
+  if (!options.afterApply) {
+    addCardReviewApplyHistory = [];
+  }
 
   hideLibrarySuggestions();
 
@@ -9785,6 +9887,43 @@ async function openAddCardReview() {
     spellingCorrectedNative,
     spellingCorrectedForeign,
   });
+
+  // After the user accepted advice: never re-show the same prompt.
+  if (options.afterApply || options.fromSuggestionPick) {
+    const t = addCardReviewState?.translation;
+    if (duplicate) return;
+    if (!t || t.matches) return;
+
+    const newOfferKey = translationOfferKey(t);
+    const accepted = options.acceptedOfferKey;
+    const sameOffer =
+      (accepted && newOfferKey === accepted) ||
+      addCardReviewApplyHistory.includes(`offer|${newOfferKey}`);
+    const alreadyHave = offerAlreadySatisfied(t, foreign, native);
+
+    if (sameOffer || alreadyHave) {
+      settleAddCardReviewAsLooksGood(foreign, native);
+      return;
+    }
+
+    // Field-bubble pick: if Check only restates a soft pair fix that matches
+    // the bubble pair, settle — one tap already chose that pair.
+    if (
+      options.fromSuggestionPick &&
+      (t.targetField === "pair" || t.targetField === "swap") &&
+      offerAlreadySatisfied(
+        {
+          ...t,
+          suggestedForeign: t.suggestedForeign || foreign,
+          suggestedNative: t.suggestedNative || native,
+        },
+        foreign,
+        native
+      )
+    ) {
+      settleAddCardReviewAsLooksGood(foreign, native);
+    }
+  }
 }
 
 function setAddCardFormBaseline(foreign = "", native = "") {
