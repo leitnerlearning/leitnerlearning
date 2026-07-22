@@ -5027,13 +5027,114 @@ function sentenceContainsForm(sentenceText, form) {
 }
 
 /**
+ * Soft form variants so a deck lemma can still hit a conjugated story line
+ * (gå → Går, billett → billetten) without inventing freeform morphology.
+ */
+function formMatchVariants(form) {
+  const base = String(form || "").trim();
+  if (!base) return [];
+  const lower = base.toLowerCase();
+  const out = new Set([base, lower]);
+  // Drop leading infinitive markers
+  const stripped = lower.replace(/^(å|att|at)\s+/i, "").trim();
+  if (stripped) out.add(stripped);
+  // Light suffix peel for Germanic / Romance / Slavic common endings
+  const suffixes = [
+    "ene",
+    "et",
+    "en",
+    "er",
+    "ar",
+    "arna",
+    "erna",
+    "or",
+    "orna",
+    "n",
+    "s",
+    "es",
+    "os",
+    "as",
+    "e",
+    "a",
+    "i",
+    "y",
+    "ów",
+    "ami",
+    "ach",
+    "em",
+    "om",
+  ];
+  for (const suf of suffixes) {
+    if (stripped.length > suf.length + 2 && stripped.endsWith(suf)) {
+      out.add(stripped.slice(0, -suf.length));
+    }
+  }
+  // Common present/past light forms for short verbs
+  if (stripped.length >= 3) {
+    out.add(`${stripped}r`);
+    out.add(`${stripped}er`);
+    out.add(`${stripped}ar`);
+    out.add(`${stripped}t`);
+    out.add(`${stripped}te`);
+    out.add(`${stripped}de`);
+  }
+  return [...out].filter(Boolean);
+}
+
+function sentenceMatchesAnyForm(sentenceText, forms) {
+  return forms.some((f) => sentenceContainsForm(sentenceText, f));
+}
+
+/**
+ * Prefer the single clause that carries the form when a story line has two beats.
+ * Keeps the miss example calm and scannable.
+ */
+function pickClauseContainingForm(foreign, en, forms) {
+  const f = String(foreign || "").trim();
+  const e = String(en || "").trim();
+  if (!f) return { foreign: f, en: e };
+
+  const splitClauses = (text) =>
+    String(text || "")
+      .split(/(?<=[.!?…])\s+/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+  const fParts = splitClauses(f);
+  if (fParts.length <= 1) return { foreign: f, en: e };
+
+  const eParts = splitClauses(e);
+  let bestIdx = 0;
+  let bestLen = Infinity;
+  fParts.forEach((part, i) => {
+    if (!sentenceMatchesAnyForm(part, forms)) return;
+    if (part.length < bestLen) {
+      bestLen = part.length;
+      bestIdx = i;
+    }
+  });
+  if (bestLen === Infinity) return { foreign: f, en: e };
+
+  const foreignOut = fParts[bestIdx];
+  const enOut =
+    eParts.length === fParts.length
+      ? eParts[bestIdx]
+      : eParts.length === 1
+        ? e
+        : eParts[Math.min(bestIdx, eParts.length - 1)] || e;
+  return { foreign: foreignOut, en: enOut };
+}
+
+/**
  * Pull a short natural sentence from Read stories that uses this card's L2 form.
- * Prefer easier trails and shorter lines so the teaching beat stays calm.
+ * Prefer easier trails and shorter clauses so the teaching beat stays calm.
  */
 function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
   if (!card?.foreign) return null;
   const form = String(card.foreign).trim();
   if (!form) return null;
+  const forms = formMatchVariants(form);
+  if (!forms.length) return null;
 
   const stories = typeof getStoriesForCategory === "function" ? getStoriesForCategory(categoryId) : [];
   if (!stories.length) return null;
@@ -5050,19 +5151,34 @@ function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
 
   for (const story of stories) {
     const sentences = story.sentences || [];
+    // Also allow matching via story gloss keys (lemma → surface form in line)
+    const glossKeys = Object.keys(story.glosses || {});
     for (const s of sentences) {
-      const foreign = sentenceForeignText(s);
-      if (!sentenceContainsForm(foreign, form)) continue;
-      const en = String(s.en || "").trim();
-      if (!en) continue;
-      // Prefer short, easy lines; slight penalty if form is only a tiny substring of a long line
+      const fullForeign = sentenceForeignText(s);
+      const fullEn = String(s.en || "").trim();
+      if (!fullForeign || !fullEn) continue;
+
+      const matched =
+        sentenceMatchesAnyForm(fullForeign, forms) ||
+        glossKeys.some(
+          (key) =>
+            forms.some((f) => normalizeAnswer(f) === normalizeAnswer(key)) &&
+            sentenceContainsForm(fullForeign, key)
+        );
+      if (!matched) continue;
+
+      const clause = pickClauseContainingForm(fullForeign, fullEn, forms);
+      if (!clause.foreign || !clause.en) continue;
+      // Prefer short, easy clauses; slight penalty for tiny forms in long lines
       const score =
         trailScore(story.trail) * 1000 +
-        foreign.length +
-        (form.length <= 2 && foreign.length > 40 ? 80 : 0);
+        clause.foreign.length +
+        (form.length <= 2 && clause.foreign.length > 36 ? 80 : 0) +
+        // Prefer exact form over soft variant
+        (sentenceContainsForm(clause.foreign, form) ? 0 : 25);
       if (score < bestScore) {
         bestScore = score;
-        best = { foreign, en, storyId: story.id };
+        best = { foreign: clause.foreign, en: clause.en, storyId: story.id };
       }
     }
   }
@@ -5086,19 +5202,19 @@ function showFeedbackExample(example, card = currentCard) {
 }
 
 /**
- * Prefer: Read story → stored example → phrase → simple in-language line.
+ * Prefer: Read story (natural clause) → stored example → phrase → simple line.
  * Never return the bare card pair — the answer pill already shows the gloss.
- * (Glue used to fall back to {ikke, not} under the pill: pure redundancy.)
+ * Silence beats a dishonest template under the miss.
  */
 function getCardContextExample(card) {
   if (!card) return null;
 
   const fromStory = findExampleSentenceForCard(card);
-  if (fromStory) return fromStory;
+  if (fromStory?.foreign && fromStory?.en) return fromStory;
 
   const storedL2 = String(card.exampleForeign || "").trim();
   const storedEn = String(card.exampleNative || "").trim();
-  if (storedL2 && storedEn) {
+  if (storedL2 && storedEn && !isRedundantFeedbackExample({ foreign: storedL2, en: storedEn }, card, storedEn)) {
     return { foreign: storedL2, en: storedEn };
   }
 
@@ -5110,7 +5226,10 @@ function getCardContextExample(card) {
 
   // Multi-word / sentence cards already are usable context (not a bare lemma).
   if (card.band === "phrase" || /\s|[?!…]/.test(foreign)) {
-    return { foreign, en: native };
+    // Prefer a short phrase card only when it is not just the lemma restated
+    if (foreign.length >= 8 || /\s/.test(foreign)) {
+      return { foreign, en: native };
+    }
   }
 
   // Glue / tiny words: no fake “I need et” — and no restated pair under the pill.
@@ -5156,20 +5275,36 @@ function isRedundantFeedbackExample(example, card, answerText) {
 /**
  * Tiny in-context lines for single theme lemmas when Read has no match.
  * Patterns stay honest and short - not full generative sentences.
+ * Prefer silence over a false “I need delay / Jeg trenger forsinkelse” line.
  */
 function buildSimpleThemeExample(foreign, native, langCode) {
   const lang = String(langCode || "nb").split("-")[0].toLowerCase();
-  const f = foreign;
-  const n = native.replace(/^to\s+/i, "").trim();
+  const f = String(foreign || "").trim();
+  const n = String(native || "")
+    .replace(/^to\s+/i, "")
+    .trim();
+  if (!f || !n) return null;
+
+  // Abstract / event nouns that sound absurd under “I need …”
+  const notNeedNoun =
+    /^(delay|strike|fever|cough|pain|noise|interest|loan|budget|salary|invoice|deadline|emergency|allergy|refund|transfer|route|zone|rush hour|departure|arrival|boarding|security)/i.test(
+      n
+    ) ||
+    /^(forsinkelse|streik|feber|hoste|smerte|støy|rente|lån|budsjett|lønn|faktura|frist|nødsituasjon|allergi|refusjon|overgang|rute|sone|rushtid|avgang|ankomst|ombordstigning)/i.test(
+      f
+    );
+
   const isVerb =
     /^to\s+/i.test(native) ||
     /^(å|att|at)\s+/i.test(foreign) ||
     cardLooksLikeInfinitive(foreign, lang);
   const isQuality =
-    /^(delayed|cancelled|canceled|expensive|cheap|open|closed|full|quiet|noisy|delicious|furnished|available)/i.test(
-      native
+    /^(delayed|cancelled|canceled|expensive|cheap|open|closed|full|quiet|noisy|delicious|furnished|available|mild|spicy|free|busy|shared)/i.test(
+      n
     ) ||
-    /^(forsinket|kansellert|dyr|billig|åpen|stengt|mett|stille|støyende)/i.test(foreign);
+    /^(forsinket|kansellert|dyr|billig|åpen|stengt|mett|stille|støyende|mild|krydret|ledig|opptatt|felles)/i.test(
+      f
+    );
 
   const need = {
     nb: [`Jeg trenger ${f}.`, `I need ${n}.`],
@@ -5182,7 +5317,7 @@ function buildSimpleThemeExample(foreign, native, langCode) {
     it: [`Mi serve ${f}.`, `I need ${n}.`],
     nl: [`Ik heb ${f} nodig.`, `I need ${n}.`],
     pt: [`Preciso de ${f}.`, `I need ${n}.`],
-    pl: [`Potrzebuję: ${f}.`, `I need ${n}.`],
+    pl: [`Potrzebuję ${f}.`, `I need ${n}.`],
   };
   const quality = {
     nb: [`Det er ${f}.`, `It is ${n}.`],
@@ -5210,13 +5345,39 @@ function buildSimpleThemeExample(foreign, native, langCode) {
     pt: [`Você pode ${f}?`, `Can you ${n}?`],
     pl: [`Czy możesz ${f}?`, `Can you ${n}?`],
   };
+  // Concrete place/object: “Where is the …?” often more honest than “I need …”
+  const where = {
+    nb: [`Hvor er ${f}?`, `Where is ${n}?`],
+    no: [`Hvor er ${f}?`, `Where is ${n}?`],
+    sv: [`Var är ${f}?`, `Where is ${n}?`],
+    da: [`Hvor er ${f}?`, `Where is ${n}?`],
+    de: [`Wo ist ${f}?`, `Where is ${n}?`],
+    fr: [`Où est ${f} ?`, `Where is ${n}?`],
+    es: [`¿Dónde está ${f}?`, `Where is ${n}?`],
+    it: [`Dov'è ${f}?`, `Where is ${n}?`],
+    nl: [`Waar is ${f}?`, `Where is ${n}?`],
+    pt: [`Onde fica ${f}?`, `Where is ${n}?`],
+    pl: [`Gdzie jest ${f}?`, `Where is ${n}?`],
+  };
+
+  const looksLikePlace =
+    /^(the |a |an )?(stop|station|desk|office|room|gate|platform|track|airport|hospital|library|market|café|cafe|pharmacy|bank|terminal|elevator|balcony|mailbox)/i.test(
+      n
+    ) ||
+    /^(holdeplass|stasjon|pult|kontor|rom|gate|spor|flyplass|sykehus|bibliotek|marked|kafe|apotek|bank|terminal|heis|balkong|postkasse)/i.test(
+      f
+    );
 
   let pair;
   if (isVerb) pair = verb[lang] || verb.nb;
   else if (isQuality) pair = quality[lang] || quality.nb;
+  else if (looksLikePlace) pair = where[lang] || where.nb;
+  else if (notNeedNoun) return null;
   else pair = need[lang] || need.nb;
 
   if (!pair) return null;
+  // Refuse multi-word deck phrases under a one-slot template (sounds invented)
+  if (/\s/.test(f) && f.length > 18 && !isVerb) return null;
   return { foreign: pair[0], en: pair[1] };
 }
 

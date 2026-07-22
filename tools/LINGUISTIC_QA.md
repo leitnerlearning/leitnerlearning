@@ -46,6 +46,7 @@ Goal: natural dialogue that weaves high-frequency **core** and **theme** forms s
 
 - **All 10 languages:** structure PASS + linguistic PASS 1 (NB PASS 2).
 - **All 10 languages: story pass 1 COMPLETE** (nb…sv). Re-open only for a named defect.
+- **2026-07-22:** native-speaker spot-check pass on all Read stories + miss-example pipeline raised to prefer story clauses, soft form match, silence over false templates.
 - Continuous improvement always welcome; re-open a language only for a **named defect**.
 - Do not thrash certified decks without evidence.
 

@@ -99,7 +99,7 @@ const READ_STORIES = [
       { nb: "Hva anbefaler du?", en: "What do you recommend?" },
       { nb: "Vegetarisk suppe er god i dag. Dessert senere hvis du vil.", en: "The vegetarian soup is good today. Dessert later if you want." },
       { nb: "Et ostesmørbrød, takk. Er det krydret?", en: "A cheese sandwich, please. Is it spicy?" },
-      { nb: "Nei, mildt. Vi er åpne til tre. Takeaway går fint hvis du har hastverk.", en: "No, mild. We're open until three. Takeaway is fine if you're in a hurry." },
+      { nb: "Nei, mildt. Vi har åpent til tre. Takeaway går fint hvis du har hastverk.", en: "No, mild. We're open until three. Takeaway is fine if you're in a hurry." },
       { nb: "Kan jeg få regningen nå? Tips er greit her, ikke sant?", en: "Can I get the bill now? Tipping is fine here, right?" },
       { nb: "Ja. Det blir førtifem kroner. Ha en fin dag!", en: "Yes. That's forty-five kroner. Have a nice day!" },
     ],
@@ -177,7 +177,7 @@ const READ_STORIES = [
       { nb: "Ja. Trenger du noe fra pensumlista til emnet ditt?", en: "Yes. Do you need anything from the reading list for your course?" },
       { nb: "Kanskje senere. Jeg har gruppearbeid med en medstudent først. Kan du gjenta det?", en: "Maybe later. I have group work with a classmate first. Could you repeat that?" },
       { nb: "Husk å notere. Kontortid hos læreren er i morgen. Oppmelding til lab er online.", en: "Remember to take notes. The teacher's office hours are tomorrow. Lab enrollment is online." },
-      { nb: "Takk. Jeg håper jeg skal bestå eksamen. Masteroppgaven kommer senere.", en: "Thanks. I hope I'll pass the exam. The master's thesis comes later." },
+      { nb: "Takk. Jeg håper jeg består eksamen. Masteroppgaven kommer senere.", en: "Thanks. I hope I'll pass the exam. The master's thesis comes later." },
       { nb: "Lykke til med eksamen neste uke!", en: "Good luck with the exam next week!" },
     ],
     glosses: {
