@@ -8110,8 +8110,8 @@ function shouldShowAddCardSuggestions() {
 }
 
 /**
- * One-pass spelling + capitalization polish for both sides.
- * Used after picks/applies so Check card is not a multi-step casing treadmill.
+ * One-pass spelling polish for both sides (real typos only).
+ * Does not capitalize ordinary lowercase flashcard forms (brukskvalitet stays lower).
  */
 async function polishCardPair(foreign, native) {
   const f0 = stripFlashcardPunctuation(foreign);
@@ -8126,19 +8126,28 @@ async function polishCardPair(foreign, native) {
 
   let nextNative = n0;
   let nextForeign = f0;
-  if (nFix && orthographyFixIsPlausible(n0, nFix)) {
+  if (nFix && orthographyFixIsPlausible(n0, nFix, "en")) {
     nextNative = stripFlashcardPunctuation(nFix);
   }
-  if (fFix && orthographyFixIsPlausible(f0, fFix)) {
+  if (fFix && orthographyFixIsPlausible(f0, fFix, foreignCode)) {
     nextForeign = stripFlashcardPunctuation(fFix);
-  } else if (fFix && isCasingOnlyDiff(f0, fFix)) {
-    nextForeign = stripFlashcardPunctuation(fFix);
-  }
-  if (nFix && isCasingOnlyDiff(n0, nFix)) {
-    nextNative = stripFlashcardPunctuation(nFix);
   }
 
-  // Prefer display form for learning side (cv → CV) without re-uppercasing normal words
+  // Keep user casing when the “fix” is only unwanted capitalization.
+  if (
+    isCasingOnlyDiff(f0, nextForeign) &&
+    !casingChangeIsFlashcardPreferred(f0, nextForeign, foreignCode)
+  ) {
+    nextForeign = f0;
+  }
+  if (
+    isCasingOnlyDiff(n0, nextNative) &&
+    !casingChangeIsFlashcardPreferred(n0, nextNative, "en")
+  ) {
+    nextNative = n0;
+  }
+
+  // Acronyms only (cv → CV) — never Title Case ordinary L2 words
   nextForeign = preferDisplayForm(nextForeign);
   return {
     foreign: nextForeign,
@@ -8230,11 +8239,15 @@ async function updateForeignSuggestions() {
     if (token !== foreignSuggestToken || activeSuggestField !== "foreign") return;
     if (input.value.trim() !== query) return;
     renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
-      void (async () => {
-        const polished = await polishCardPair(item.foreign, item.native);
-        if (token !== foreignSuggestToken) return;
-        finishAddCardSuggestionPick(polished, "foreign");
-      })();
+      // Exact bubble pair — silent polish was rewriting words after the pick.
+      if (token !== foreignSuggestToken) return;
+      finishAddCardSuggestionPick(
+        {
+          foreign: stripFlashcardPunctuation(item.foreign),
+          native: stripFlashcardPunctuation(item.native),
+        },
+        "foreign"
+      );
     });
   };
 
@@ -8306,11 +8319,14 @@ async function updateForeignSuggestions() {
 /**
  * True soft spelling fix only: same token count, at most one token is a 1-edit
  * typo, all others exact. Blocks meaning rewrites (sword → hard one).
+ * Casing-only: only when it matches flashcard casing (not brukskvalitet → Brukskvalitet).
  */
-function isSafeSoftSpellingFix(userText, suggestedText) {
+function isSafeSoftSpellingFix(userText, suggestedText, langCode = null) {
   if (!userText || !suggestedText) return false;
   if (!isPlausibleCardText(suggestedText)) return false;
-  if (isCasingOnlyDiff(userText, suggestedText)) return true;
+  if (isCasingOnlyDiff(userText, suggestedText)) {
+    return casingChangeIsFlashcardPreferred(userText, suggestedText, langCode);
+  }
   if (isApostropheGrammarDiff(userText, suggestedText)) return true;
   const wu = reviewTokens(userText);
   const ws = reviewTokens(suggestedText);
@@ -8442,12 +8458,15 @@ async function updateNativeSuggestions() {
     if (token !== nativeSuggestToken || activeSuggestField !== "native") return;
     if (input.value.trim() !== query) return;
     renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
-      void (async () => {
-        // Polish spelling + casing on pick so Check card isn't a multi-step treadmill
-        const polished = await polishCardPair(item.foreign, item.native);
-        if (token !== nativeSuggestToken) return;
-        finishAddCardSuggestionPick(polished, "native");
-      })();
+      // Exact bubble pair — silent polish was rewriting words after the pick.
+      if (token !== nativeSuggestToken) return;
+      finishAddCardSuggestionPick(
+        {
+          foreign: stripFlashcardPunctuation(item.foreign),
+          native: stripFlashcardPunctuation(item.native),
+        },
+        "native"
+      );
     });
   };
 
@@ -8741,6 +8760,74 @@ function isCasingOnlyDiff(a, b) {
 }
 
 /**
+ * Whether a casing-only change is worth offering or applying on a flashcard.
+ * Deck ideal: ordinary words stay lowercase on both sides.
+ * Allow: acronyms (cv→CV), English I / proper nouns, German noun Title Case,
+ * downcasing unnecessary Title Case (Hello→hello).
+ * Reject: ordinary lower → Title (brukskvalitet → Brukskvalitet).
+ */
+function casingChangeIsFlashcardPreferred(userText, suggestedText, langCode = null) {
+  const u = stripFlashcardPunctuation(userText);
+  const s = stripFlashcardPunctuation(suggestedText);
+  if (!u || !s || !isCasingOnlyDiff(u, s)) return false;
+
+  const base = String(langCode || "en")
+    .toLowerCase()
+    .split("-")[0];
+
+  // Consonant acronyms: cv → CV
+  if (preferDisplayForm(u.toLowerCase()) === s) return true;
+
+  const uToks = reviewTokens(u);
+  const sToks = reviewTokens(s);
+  if (uToks.length === sToks.length && uToks.length > 0) {
+    let allPreferred = true;
+    for (let i = 0; i < uToks.length; i += 1) {
+      if (uToks[i] === sToks[i]) continue;
+      if (!isCasingOnlyDiff(uToks[i], sToks[i])) {
+        allPreferred = false;
+        break;
+      }
+      const key = normalizeAnswer(sToks[i]);
+      // English I / proper nouns
+      if ((base === "en" || !langCode) && key === "i" && sToks[i] === "I") continue;
+      if (
+        (base === "en" || !langCode) &&
+        typeof ENGLISH_PROPER_LOWER !== "undefined" &&
+        ENGLISH_PROPER_LOWER.has(key) &&
+        sToks[i] === titleCaseWord(sToks[i])
+      ) {
+        continue;
+      }
+      if (isFlashcardAcronymToken(sToks[i])) continue;
+      // Downcase ordinary Title Case
+      if (sToks[i] === sToks[i].toLowerCase() && uToks[i] !== uToks[i].toLowerCase()) {
+        continue;
+      }
+      // German nouns: Title Case is real orthography
+      if (
+        base === "de" &&
+        /^[A-ZÄÖÜ][a-zäöüß'+-]*$/.test(sToks[i]) &&
+        !GERMAN_FUNCTION_LOWER.has(key)
+      ) {
+        continue;
+      }
+      allPreferred = false;
+      break;
+    }
+    if (allPreferred) return true;
+  }
+
+  // Whole-string downcase of unnecessary capitals
+  if (s === s.toLowerCase() && u !== u.toLowerCase()) return true;
+
+  // Ordinary lower → Title/ALLCAPS: not a flashcard “fix”
+  if (u === u.toLowerCase() && s !== s.toLowerCase()) return false;
+
+  return false;
+}
+
+/**
  * Same letters if we strip punctuation (banana's ≈ bananas in normalizeAnswer).
  * Those are NOT safe auto-fixes - possessives/plurals mean different things.
  */
@@ -8820,8 +8907,10 @@ function orthographyFixIsPlausible(userText, correctedText, langCode = null) {
     if (anyDiff && onlyAcronymShout) return false;
   }
 
-  // Pure capitalization / acronym form (ATM, Norway) - not noise above
-  if (isCasingOnlyDiff(userClean, fixClean)) return true;
+  // Capitalization only when it matches flashcard casing (not lower → Title nag)
+  if (isCasingOnlyDiff(userClean, fixClean)) {
+    return casingChangeIsFlashcardPreferred(userClean, fixClean, code);
+  }
   // Grammar: apostrophe placement
   if (isApostropheGrammarDiff(userClean, fixClean)) return true;
   // Other normalize-only noise still blocked
@@ -8888,10 +8977,30 @@ function getTranslationReviewSummary(
     foreignGibberish || looksLikeGibberish(suggestedNative)
       ? null
       : stripFlashcardPunctuation(suggestedNative) || null;
-  const safeSuggestedForeign =
-    nativeGibberish || looksLikeGibberish(suggestedForeign)
-      ? null
-      : preferDisplayForm(suggestedForeign) || null;
+  // Coerce MT casing to deck style; keep user lower form when MT only Title-cases.
+  let safeSuggestedForeign = null;
+  if (!nativeGibberish && !looksLikeGibberish(suggestedForeign)) {
+    let f = stripFlashcardPunctuation(suggestedForeign);
+    if (f) {
+      const cased = applyFlashcardCasingConvention(
+        f,
+        getActiveCategory()?.foreignLang || ""
+      );
+      if (cased) f = cased;
+      f = preferDisplayForm(f);
+      if (
+        isCasingOnlyDiff(foreign, f) &&
+        !casingChangeIsFlashcardPreferred(
+          foreign,
+          f,
+          getActiveCategory()?.foreignLang || ""
+        )
+      ) {
+        f = stripFlashcardPunctuation(foreign);
+      }
+      safeSuggestedForeign = f || null;
+    }
+  }
 
   // Orthography (spelling + capitalization). Independent of MT. User can still Add.
   const safeSpellingNative =
@@ -9062,10 +9171,16 @@ function getTranslationReviewSummary(
     usableSuggestedNative && isStrongTranslationMatch(native, usableSuggestedNative, "en");
 
   // Safe one-token spelling only (feal→feel). Never multi-word false friends.
+  // Casing-only capital nags (brukskvalitet→Brukskvalitet) are not spelling issues.
   const nativeSafeSpell =
-    usableSuggestedNative && isSafeSoftSpellingFix(native, usableSuggestedNative);
+    usableSuggestedNative && isSafeSoftSpellingFix(native, usableSuggestedNative, "en");
   const foreignSafeSpell =
-    usableSuggestedForeign && isSafeSoftSpellingFix(foreign, usableSuggestedForeign);
+    usableSuggestedForeign &&
+    isSafeSoftSpellingFix(
+      foreign,
+      usableSuggestedForeign,
+      getActiveCategory()?.foreignLang || ""
+    );
   const hasSpellingIssue = nativeSafeSpell || foreignSafeSpell;
 
   // Fields look swapped (English in Norwegian box and vice versa)
@@ -9132,10 +9247,16 @@ function getTranslationReviewSummary(
     !nativeGibberish &&
     !hasSpellingIssue
   ) {
+    // Only offer capitalization when it matches deck casing (never lower→Title nag).
     if (
       englishIsAnchor &&
       usableSuggestedForeign &&
-      isCasingOnlyDiff(foreign, usableSuggestedForeign)
+      isCasingOnlyDiff(foreign, usableSuggestedForeign) &&
+      casingChangeIsFlashcardPreferred(
+        foreign,
+        usableSuggestedForeign,
+        getActiveCategory()?.foreignLang || ""
+      )
     ) {
       const fix = makePairFix(
         "Suggested capitalization",
@@ -9148,7 +9269,8 @@ function getTranslationReviewSummary(
     if (
       learningIsAnchor &&
       usableSuggestedNative &&
-      isCasingOnlyDiff(native, usableSuggestedNative)
+      isCasingOnlyDiff(native, usableSuggestedNative) &&
+      casingChangeIsFlashcardPreferred(native, usableSuggestedNative, "en")
     ) {
       const fix = makePairFix(
         "Suggested capitalization",
