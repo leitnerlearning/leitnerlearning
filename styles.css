@@ -144,8 +144,9 @@ body {
   max-width: min(780px, 100%);
   margin: 0 auto;
   padding: 2.5rem 1.5rem 3rem;
-  /* One viewport unit only - 100vh + large padding was a common dead-scroll cause */
+  /* Fill the window; avoid forcing content taller than the viewport when possible */
   min-height: 100dvh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   /* Do not set overflow-x here - it breaks sticky Library jump chips. */
@@ -7322,8 +7323,8 @@ html.needs-welcome body {
 }
 
 .read-focus-nb {
-  /* Enough room for multi-line sentences without forcing half a viewport of empty scroll */
-  min-height: clamp(4.25rem, 14vw, 6.75rem);
+  /* ~2 lines of stage room — not a half-viewport empty box (that caused page drag). */
+  min-height: clamp(2.75rem, 8vw, 4.25rem);
   padding: 0.25rem 0.15rem;
   font-size: clamp(1.35rem, 4.9vw, 1.9rem);
   font-weight: 700;
@@ -7346,8 +7347,8 @@ html.needs-welcome body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.35rem;
-  margin-top: 0.45rem;
+  min-height: 1.85rem;
+  margin-top: 0.35rem;
 }
 
 .read-gloss {
@@ -7380,6 +7381,7 @@ html.needs-welcome body {
 }
 
 .read-gloss.is-collapsed {
+  /* Keep slot height stable when closed — avoids layout jump on gloss open */
   visibility: hidden;
 }
 
@@ -7415,14 +7417,18 @@ html.needs-welcome body {
 }
 
 .read-focus-en-slot {
-  min-height: 2.75rem;
-  margin: 0.55rem 0 0;
-  padding-top: 0.55rem;
+  min-height: 2.5rem;
+  margin: 0.45rem 0 0;
+  padding-top: 0.45rem;
   border-top: 1px solid var(--border);
 }
 
+/* Collapsed English: reclaim vertical space (was still reserving ~2.75rem). */
 .read-focus-en-slot.is-collapsed {
-  border-top-color: rgba(54, 95, 207, 0.06);
+  min-height: 0;
+  margin: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 .read-focus-en {
@@ -7635,40 +7641,37 @@ html.needs-welcome body {
 }
 
 @media (min-width: 721px) {
-  /* - Desktop Read: sentence is hero; chrome stays calm and aligned - */
+  /* - Desktop Read: sentence is hero; chrome stays calm — fit one viewport - */
   .app.read-focus {
-    padding-top: 1.5rem;
+    padding-top: 1.35rem;
+    padding-bottom: 1.35rem;
   }
 
   .app.read-focus .header {
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
   }
 
   .app.read-focus .brand {
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.4rem;
   }
 
   .app.read-focus .brand-logo {
-    width: min(168px, 22vw);
+    width: min(156px, 20vw);
   }
 
   .read-shell {
     width: min(100%, 40rem);
     margin-inline: auto;
-    padding: 1.2rem 1.4rem 1.1rem;
-  }
-
-  .read-focus-nb {
-    min-height: clamp(3.75rem, 10vh, 5.75rem);
+    padding: 1.05rem 1.25rem 0.95rem;
   }
 
   .read-header {
-    gap: 0.4rem;
-    margin-bottom: 0.9rem;
+    gap: 0.35rem;
+    margin-bottom: 0.7rem;
   }
 
   .read-title-row {
-    min-height: 2.85rem;
+    min-height: 2.65rem;
     border-radius: 0.8rem;
   }
 
@@ -7700,8 +7703,8 @@ html.needs-welcome body {
   }
 
   .read-progress-row {
-    min-height: 1.65rem;
-    gap: 0.4rem;
+    min-height: 1.5rem;
+    gap: 0.35rem;
   }
 
   .read-progress-bar {
@@ -7709,30 +7712,31 @@ html.needs-welcome body {
   }
 
   .read-context--before {
-    height: 2rem;
-    margin-bottom: 0.55rem;
-    padding: 0 0.65rem;
+    height: 1.85rem;
+    margin-bottom: 0.45rem;
+    padding: 0 0.55rem;
   }
 
   .read-context-track {
-    font-size: 0.92rem;
+    font-size: 0.9rem;
   }
 
-  /* Sentence stage - more air, clearer focal card */
+  /* Sentence stage — room for ~2–3 lines, not empty half-page */
   .read-focus {
-    padding: 1.35rem 1.5rem 1.2rem;
+    padding: 1.1rem 1.25rem 1rem;
     border-radius: var(--radius-sm);
   }
 
   .read-focus-nb {
-    min-height: clamp(8.5rem, 18vh, 11rem);
-    font-size: clamp(1.45rem, 2.1vw, 1.85rem);
-    line-height: 1.5;
-    padding: 0.35rem 0.25rem;
+    min-height: clamp(3.25rem, 7vh, 5rem);
+    font-size: clamp(1.4rem, 2vw, 1.8rem);
+    line-height: 1.48;
+    padding: 0.3rem 0.2rem;
   }
 
   .read-gloss-slot {
-    margin-top: 0.35rem;
+    margin-top: 0.3rem;
+    min-height: 1.75rem;
   }
 
   .read-footer {
@@ -7876,20 +7880,21 @@ html.needs-welcome body {
     font-size: 0.82rem;
   }
 
-  /* Sentence stage - primary focus, more air than chrome */
+  /* Sentence stage - primary focus without forcing page scroll */
   .read-focus {
-    padding: 1.15rem 0.85rem 1rem;
+    padding: 1rem 0.8rem 0.9rem;
   }
 
   .read-focus-nb {
-    min-height: clamp(6.5rem, 22vh, 9rem);
+    min-height: clamp(3rem, 12vh, 5rem);
     font-size: clamp(1.28rem, 5.6vw, 1.55rem);
     line-height: 1.48;
     padding: 0.25rem 0.1rem;
   }
 
   .read-gloss-slot {
-    margin-top: 0.45rem;
+    margin-top: 0.35rem;
+    min-height: 1.7rem;
   }
 
   .read-focus-en-slot {
@@ -8036,7 +8041,20 @@ html.needs-welcome body {
   }
 
   .read-focus-nb {
-    min-height: clamp(3.25rem, 12vh, 5rem);
+    min-height: clamp(2.5rem, 10vh, 4rem);
+  }
+
+  .read-focus {
+    padding: 0.75rem 0.85rem 0.7rem;
+  }
+
+  .read-context--before {
+    height: 1.5rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .app.read-focus .header {
+    margin-bottom: 0.55rem;
   }
 }
 
@@ -8199,11 +8217,20 @@ html.needs-welcome body {
   }
 
   .read-shell {
-    padding: 0.65rem 0.75rem 0.55rem;
+    padding: 0.55rem 0.65rem 0.5rem;
   }
 
   .read-focus-nb {
-    min-height: 4.5rem;
+    min-height: 2.75rem;
+  }
+
+  .read-focus {
+    padding: 0.65rem 0.7rem 0.55rem;
+  }
+
+  .read-gloss-slot {
+    min-height: 1.5rem;
+    margin-top: 0.25rem;
   }
 
   .library-header {
