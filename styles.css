@@ -153,6 +153,78 @@ body {
   box-sizing: border-box;
 }
 
+/*
+ * Crawlable product footer — real HTML for search engines (SPA shell is JS-heavy).
+ * Quiet enough not to compete with Review/Read; still honest for humans who scroll.
+ */
+.seo-footer {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: min(780px, 100%);
+  margin: 0 auto;
+  padding: 0 1.5rem 2.25rem;
+  box-sizing: border-box;
+  color: var(--text-tertiary);
+}
+
+.seo-footer-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.seo-footer-copy {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 450;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  max-width: 42rem;
+}
+
+.seo-footer-copy strong {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.seo-noscript {
+  position: relative;
+  z-index: 2;
+  max-width: min(780px, 100%);
+  margin: 2rem auto;
+  padding: 1.25rem 1.5rem;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
+.seo-noscript h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.seo-noscript p {
+  margin: 0 0 0.65rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.seo-noscript p:last-child {
+  margin-bottom: 0;
+}
+
+/* Welcome gate: keep crawlable footer available but don’t steal the door */
+html.needs-welcome .seo-footer {
+  opacity: 0.85;
+}
+
 main,
 .panel {
   max-width: 100%;

@@ -1,0 +1,5 @@
+# Leitner Learning — https://leitnerlearning.com
+User-agent: *
+Allow: /
+
+Sitemap: https://leitnerlearning.com/sitemap.xml

@@ -1,7 +1,7 @@
 {
   "name": "Leitner Learning",
   "short_name": "Leitner",
-  "description": "Neuroload Language",
+  "description": "Learn a language with honest Review and real Read stories. Free in the browser.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

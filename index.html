@@ -6,14 +6,35 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta name="description" content="Neuroload Language" />
+    <!--
+      Discoverability: real product copy for crawlers + link previews.
+      (Old “Neuroload Language” meta hid the product from search.)
+    -->
+    <title>Leitner Learning — Language learning with Review and Read</title>
+    <meta
+      name="description"
+      content="Learn a language with honest spaced repetition and real stories. Daily Review on high-frequency words, Read with tap-to-gloss, exact forms only. Norwegian, Swedish, Danish, German, French, Spanish, Italian, Dutch, Portuguese, and Polish. Free in the browser — no account."
+    />
+    <meta
+      name="keywords"
+      content="Leitner Learning, language learning, spaced repetition, Leitner system, learn Norwegian, learn Swedish, learn Danish, learn German, learn French, learn Spanish, flashcards, reading practice, tap to gloss"
+    />
+    <meta name="author" content="Leitner Learning" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="googlebot" content="index, follow" />
+    <link rel="canonical" href="https://leitnerlearning.com/" />
     <meta http-equiv="Cache-Control" content="no-cache" />
     <meta name="theme-color" content="#365fcf" />
-    <title>Leitner Learning</title>
     <!-- Link previews: Messenger, WhatsApp, iMessage, Slack, LinkedIn, etc. -->
     <meta property="og:site_name" content="Leitner Learning" />
-    <meta property="og:title" content="Leitner Learning" />
-    <meta property="og:description" content="Neuroload Language" />
+    <meta
+      property="og:title"
+      content="Leitner Learning — Language learning with Review and Read"
+    />
+    <meta
+      property="og:description"
+      content="Honest Review + real Read stories. High-frequency decks, tap-to-gloss, exact forms. 10 languages. Free in the browser."
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://leitnerlearning.com/" />
     <meta property="og:locale" content="en_US" />
@@ -28,10 +49,19 @@
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Leitner Learning" />
+    <meta
+      property="og:image:alt"
+      content="Leitner Learning — Review and Read language learning"
+    />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Leitner Learning" />
-    <meta name="twitter:description" content="Neuroload Language" />
+    <meta
+      name="twitter:title"
+      content="Leitner Learning — Language learning with Review and Read"
+    />
+    <meta
+      name="twitter:description"
+      content="Honest Review + real Read stories. High-frequency decks, tap-to-gloss, exact forms. 10 languages. Free in the browser."
+    />
     <meta
       name="twitter:image"
       content="https://leitnerlearning.com/brand/og-share.png?v=8"
@@ -48,7 +78,62 @@
     <meta name="apple-mobile-web-app-title" content="Leitner Learning" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <link rel="stylesheet" href="styles.css?v=307" />
+    <!-- Structured data for Google (SoftwareApplication + WebSite) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://leitnerlearning.com/#website",
+            "url": "https://leitnerlearning.com/",
+            "name": "Leitner Learning",
+            "description": "Language learning with honest spaced repetition and real stories. Review + Read. Ten languages. Free in the browser.",
+            "inLanguage": "en",
+            "publisher": { "@id": "https://leitnerlearning.com/#org" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://leitnerlearning.com/#org",
+            "name": "Leitner Learning",
+            "url": "https://leitnerlearning.com/",
+            "logo": "https://leitnerlearning.com/brand/logo-icon.svg",
+            "email": "leitnerlearning@gmail.com"
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://leitnerlearning.com/#app",
+            "name": "Leitner Learning",
+            "url": "https://leitnerlearning.com/",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "browserRequirements": "Requires JavaScript",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "description": "Learn languages with Leitner spaced repetition (Review) and graded stories with tap-to-gloss (Read). Exact correct forms only. Norwegian, Swedish, Danish, German, French, Spanish, Italian, Dutch, Portuguese (Brazil), and Polish.",
+            "inLanguage": [
+              "en",
+              "nb",
+              "sv",
+              "da",
+              "de",
+              "fr",
+              "es",
+              "it",
+              "nl",
+              "pt-BR",
+              "pl"
+            ],
+            "isAccessibleForFree": true,
+            "publisher": { "@id": "https://leitnerlearning.com/#org" }
+          }
+        ]
+      }
+    </script>
+    <link rel="stylesheet" href="styles.css?v=308" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -72,6 +157,26 @@
     </script>
   </head>
   <body>
+    <noscript>
+      <div class="seo-noscript">
+        <h1>Leitner Learning</h1>
+        <p>
+          The serious, beautiful way to learn a language: honest Review with
+          Leitner spaced repetition, and Read stories with tap-to-gloss.
+          High-frequency decks, exact correct forms, free in the browser.
+        </p>
+        <p>
+          Languages: Norwegian, Swedish, Danish, German, French, Spanish,
+          Italian, Dutch, Portuguese (Brazil), and Polish.
+        </p>
+        <p>
+          Please enable JavaScript to use the app, or open
+          <a href="https://leitnerlearning.com/">leitnerlearning.com</a>
+          in a modern browser.
+        </p>
+      </div>
+    </noscript>
+
     <div class="ambient-brand" aria-hidden="true">
       <div class="ambient-glow ambient-glow--primary"></div>
       <div class="ambient-glow ambient-glow--secondary"></div>
@@ -863,6 +968,21 @@
         <div class="about-body basics-body" id="basics-body"></div>
       </div>
     </div>
+
+    <!--
+      Crawlable product pitch (real HTML, not only JS). Quiet footer so search
+      engines and link previews can name the product without a SPA empty shell.
+    -->
+    <footer class="seo-footer" role="contentinfo">
+      <h1 class="seo-footer-title">Leitner Learning</h1>
+      <p class="seo-footer-copy">
+        Language learning with honest <strong>Review</strong> (Leitner spaced
+        repetition) and <strong>Read</strong> (real stories, tap-to-gloss). About
+        1,000 high-frequency words per language, exact correct forms only, free
+        in the browser — no account. Norwegian, Swedish, Danish, German, French,
+        Spanish, Italian, Dutch, Portuguese (Brazil), and Polish.
+      </p>
+    </footer>
 
     <script src="norwegian-frequency-deck.js?v=28"></script>
     <script src="norwegian-reading-vocab.js?v=9"></script>
