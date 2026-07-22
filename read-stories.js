@@ -464,7 +464,7 @@ const READ_STORIES = [
     sentences: [
       { nb: "Hva skal du gjøre i sommer?", en: "What are you going to do this summer?" },
       { nb: "Jeg vil reise noen uker, hvis det går. Og du?", en: "I want to travel a few weeks, if it works out. And you?" },
-      { nb: "Kanskje Lofoten. Jeg booker tur-retur i appen i kveld.", en: "Maybe Lofoten. I'm booking a round-trip in the app tonight." },
+      { nb: "Kanskje Lofoten. Jeg betaler med Vipps i appen i kveld.", en: "Maybe Lofoten. I'm paying with Vipps in the app tonight." },
       { nb: "Har du pass klart? Bagasjen må gjennom innsjekking.", en: "Is your passport ready? The luggage has to go through check-in." },
       { nb: "Ja. Bare håndbagasje. Boardingkortet får jeg etter sikkerhetskontrollen.", en: "Yes. Hand luggage only. I get the boarding pass after security." },
       { nb: "Jeg blir her og jobber overtid. Sparingen går til ferien neste år.", en: "I'm staying and working overtime. The savings go to next year's holiday." },
@@ -476,7 +476,8 @@ const READ_STORIES = [
     glosses: {
       planer: "plans",
       reise: "to travel",
-      booker: "am booking",
+      Vipps: "Norwegian mobile payment",
+      betaler: "pay / am paying",
       "tur-retur": "round-trip",
       pass: "passport",
       Bagasjen: "the luggage",

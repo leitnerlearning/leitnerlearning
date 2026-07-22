@@ -8642,6 +8642,41 @@ function looksLikeGibberish(text) {
   return words.some((word) => wordLooksLikeGibberish(word));
 }
 
+/**
+ * L2 token that is basically an English word from the EN side + a suffix
+ * (showene ← shows, continue* ← continue). Blocks false LOOKS GOOD on
+ * MT-invented “translations” of junk English phrases.
+ */
+function l2BorrowsEnglishStems(foreign, native) {
+  const enTokens = normalizeAnswer(String(native || ""))
+    .split(/\s+/)
+    .map((w) => w.replace(/[^a-zæøåäöü]/gi, ""))
+    .filter((w) => w.length >= 4);
+  if (!enTokens.length) return false;
+
+  const l2Tokens = normalizeAnswer(String(foreign || ""))
+    .split(/\s+/)
+    .map((w) => w.replace(/[^a-zæøåäöü]/gi, ""))
+    .filter((w) => w.length >= 5);
+  if (!l2Tokens.length) return false;
+
+  for (const l2 of l2Tokens) {
+    for (const en of enTokens) {
+      if (l2 === en) continue; // shared international words are fine
+      // L2 starts with English stem and adds material (show + ene)
+      if (l2.startsWith(en) && l2.length >= en.length + 2) return true;
+      // English is stem+s and L2 is stem+suffix (shows → showene)
+      if (en.endsWith("s") && en.length >= 5) {
+        const stem = en.slice(0, -1);
+        if (stem.length >= 4 && l2.startsWith(stem) && l2 !== en && l2.length >= stem.length + 2) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
 /** Never ask the translation API to "fix" keyboard mash into a real word. */
 function shouldRequestTranslation(text) {
   const trimmed = String(text || "").trim();
@@ -9249,6 +9284,18 @@ function getTranslationReviewSummary(
   // learningIsAnchor: NB→EN matches user EN exactly → Norwegian is solid source
   const englishIsAnchor = foreignStrong && !nativeGibberish;
   const learningIsAnchor = nativeStrong && !foreignGibberish;
+
+  // L2 that is English-from-the-EN-side + suffix (showene ← shows): never green,
+  // never re-suggest the same mash as “better Norwegian”.
+  if (isPhrase && l2BorrowsEnglishStems(foreign, native)) {
+    return {
+      matches: false,
+      targetField: null,
+      suggestedValue: null,
+      title: "Hard to check online",
+      copy: "That pair is hard to verify. Only save if both sides look right to you.",
+    };
+  }
 
   // LOOKS GOOD:
   //  - single-word: one strong direction is enough (common lemmas)
