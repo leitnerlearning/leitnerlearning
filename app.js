@@ -8245,11 +8245,17 @@ async function updateForeignSuggestions() {
     if (token !== foreignSuggestToken || activeSuggestField !== "foreign") return;
     if (input.value.trim() !== query) return;
     renderSuggestionList(container, suggestions.slice(0, 6), (item) => {
-      // Exact bubble pair — silent polish was rewriting words after the pick.
+      // Exact bubble pair — keep the L2 form the user typed when only casing differs.
       if (token !== foreignSuggestToken) return;
+      const typedL2 = input.value.trim();
+      const { foreignCode } = getCategoryLanguageCodes();
       finishAddCardSuggestionPick(
         {
-          foreign: stripFlashcardPunctuation(item.foreign),
+          foreign: preferUserFlashcardForm(
+            typedL2,
+            item.foreign,
+            foreignCode
+          ),
           native: stripFlashcardPunctuation(item.native),
         },
         "foreign"
@@ -8270,19 +8276,21 @@ async function updateForeignSuggestions() {
     const spellingFixedForeign = await fetchLearningSpellingCorrection(query, foreignCode);
     if (token !== foreignSuggestToken || input.value.trim() !== query) return;
 
-    const spellingFixed = Boolean(
+    // Keep typed L2 casing when the “fix” is only Title Case (brukskvalitet stays lower).
+    let foreignSide = query;
+    if (
       spellingFixedForeign &&
-        stripFlashcardPunctuation(spellingFixedForeign) !== stripFlashcardPunctuation(query)
-    );
-    const foreignForMt = spellingFixed
-      ? preferDisplayForm(spellingFixedForeign)
-      : query;
-    let nativeSide = await fetchTranslationSuggestion(foreignForMt, foreignCode, nativeCode);
+      orthographyFixIsPlausible(query, spellingFixedForeign, foreignCode)
+    ) {
+      foreignSide = preferUserFlashcardForm(query, spellingFixedForeign, foreignCode);
+    }
+    const spellingFixedReal =
+      normalizeAnswer(foreignSide) !== normalizeAnswer(query);
+
+    let nativeSide = await fetchTranslationSuggestion(foreignSide, foreignCode, nativeCode);
     if (token !== foreignSuggestToken || input.value.trim() !== query) return;
 
-    let foreignSide = foreignForMt;
-
-    if (!spellingFixed && nativeSide) {
+    if (!spellingFixedReal && nativeSide) {
       const correctedForeign = await correctSideViaRoundTrip(
         query,
         nativeSide,
@@ -8293,9 +8301,9 @@ async function updateForeignSuggestions() {
       if (token !== foreignSuggestToken || input.value.trim() !== query) return;
       if (
         correctedForeign &&
-        stripFlashcardPunctuation(correctedForeign) !== stripFlashcardPunctuation(query)
+        normalizeAnswer(correctedForeign) !== normalizeAnswer(query)
       ) {
-        foreignSide = preferDisplayForm(correctedForeign);
+        foreignSide = preferUserFlashcardForm(query, correctedForeign, foreignCode);
         const retranslated = await fetchTranslationSuggestion(
           foreignSide,
           foreignCode,
@@ -8306,12 +8314,14 @@ async function updateForeignSuggestions() {
       }
     }
 
+    // Always present L2 as the user typed it when only casing would change.
+    foreignSide = preferUserFlashcardForm(query, foreignSide, foreignCode);
+
     if (nativeSide) {
       addSuggestion({
         foreign: foreignSide,
-        native: nativeSide,
+        native: stripFlashcardPunctuation(nativeSide),
         meta:
-          spellingFixed ||
           normalizeAnswer(foreignSide) !== normalizeAnswer(query)
             ? "Suggested · spelling fixed"
             : "Suggested translation",
@@ -8523,9 +8533,11 @@ async function updateNativeSuggestions() {
     }
 
     if (foreignSide) {
+      // Deck casing on L2 from EN→L2 (no random Title Case on ordinary words).
+      const foreignDisplay = preferUserFlashcardForm("", foreignSide, foreignCode);
       addSuggestion({
-        foreign: foreignSide,
-        native: nativeSide,
+        foreign: foreignDisplay,
+        native: stripFlashcardPunctuation(nativeSide),
         meta:
           spellingFixed ||
           normalizeAnswer(nativeSide) !== normalizeAnswer(query)
@@ -8763,6 +8775,36 @@ function isCasingOnlyDiff(a, b) {
   const y = stripFlashcardPunctuation(b);
   if (!x || !y || x === y) return false;
   return x.toLocaleLowerCase() === y.toLocaleLowerCase();
+}
+
+/**
+ * Prefer the learner’s typed form when the machine only Title-cases it.
+ * Deck ideal: ordinary L2 words stay lowercase (brukskvalitet not Brukskvalitet).
+ * Real spelling fixes and flashcard-preferred casing (acronyms, DE nouns) still pass through.
+ */
+function preferUserFlashcardForm(userText, candidate, langCode = null) {
+  const u = stripFlashcardPunctuation(userText || "");
+  let c = stripFlashcardPunctuation(candidate || "");
+  if (!c && !u) return "";
+  if (!c) return preferDisplayForm(u);
+  if (!u) {
+    const cased = applyFlashcardCasingConvention(c, langCode);
+    return preferDisplayForm(cased || c);
+  }
+  if (u === c) return preferDisplayForm(u);
+
+  // Only casing differs: keep the user’s form unless deck rules prefer the change.
+  if (isCasingOnlyDiff(u, c)) {
+    if (casingChangeIsFlashcardPreferred(u, c, langCode)) {
+      return preferDisplayForm(c);
+    }
+    return preferDisplayForm(u);
+  }
+
+  // Different letters (real spell/lemma change): deck casing on the candidate.
+  const cased = applyFlashcardCasingConvention(c, langCode);
+  if (cased) c = cased;
+  return preferDisplayForm(c);
 }
 
 /**
