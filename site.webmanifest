@@ -1,7 +1,7 @@
 {
   "name": "Leitner Learning",
   "short_name": "Leitner",
-  "description": "Get the forms right. Spaced cards and short stories. Free in the browser.",
+  "description": "Leitner Learning",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
