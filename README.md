@@ -7,7 +7,7 @@ Language learning. Review just before you forget. Stories with translations.
 ## What it is
 
 - **Review** — flashcards that return when you need them (Leitner system)
-- **Read** — short stories; tap a word for the meaning
+- **Stories** — short stories; tap a word for the meaning
 - **Library** — your deck, optional packs, add your own cards
 - **Progress** — a calm view of what you have learned
 

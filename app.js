@@ -4611,7 +4611,7 @@ function updateReadLanguageIndicator(category = getActiveCategory()) {
   if (empty && !empty.hidden) {
     const copyEl = document.getElementById("read-empty-copy");
     if (copyEl && !getStoriesForCategory().length) {
-      copyEl.textContent = `Reading for ${label} is still being prepared.`;
+      copyEl.textContent = `Stories for ${label} are still being prepared.`;
     }
   }
 }
@@ -11475,7 +11475,7 @@ function setReadEmptyVisible(show, { title = "", copy = "", showBrowse = false }
   if (copyEl) {
     copyEl.textContent =
       copy ||
-      `Reading for ${category?.label || "this language"} is still being prepared.`;
+      `Stories for ${category?.label || "this language"} are still being prepared.`;
   }
   if (browseBtn) {
     browseBtn.classList.toggle("hidden", !showBrowse);
@@ -11496,7 +11496,7 @@ function renderReadPanel() {
     closeReadMenu();
     setReadEmptyVisible(true, {
       title: "No stories yet",
-      copy: `Reading for ${getActiveCategory()?.label || "this language"} is still being prepared.`,
+      copy: `Stories for ${getActiveCategory()?.label || "this language"} are still being prepared.`,
       showBrowse: false,
     });
     return;

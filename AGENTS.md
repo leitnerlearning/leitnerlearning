@@ -33,7 +33,7 @@ We do **not** sell: streak guilt, gem shops, leaderboard theater, or AI that inv
 |------|--------|
 | **Review** | Leitner SRS; type/speak; direction toggle L2↔EN |
 | **Library** | Full deck, add/edit/delete, Check card, filters, live **N cards** count |
-| **Read** | Trail difficulties (green → double-black); natural dialogue stories |
+| **Stories** (tab id `read`) | Trail difficulties (green → double-black); natural dialogue stories |
 | **Progress** | Boxes, reading stats, Basics modal, voice gender |
 | **Portal** | Welcome ceremony (music/flag); no seizure-risk flashes |
 
