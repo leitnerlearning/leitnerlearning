@@ -1,17 +1,17 @@
 # Leitner Learning
 
-Language learning in the browser. Free. No account.
+Free language learning in your browser. No account.
 
 **Live:** [leitnerlearning.com](https://leitnerlearning.com)
 
 ## What it is
 
-- **Review** — spaced repetition (Leitner boxes); exact forms only  
-- **Read** — short stories with tap-for-meaning  
-- **Library** — deck, packs, your cards  
-- **Progress** — calm truth about your work  
+- **Review** — flashcards that return when you need them (Leitner system)
+- **Read** — short stories; tap a word for the meaning
+- **Library** — your deck, optional packs, add your own cards
+- **Progress** — a calm view of what you have learned
 
-High-frequency decks (~1,000 forms) and stories for:
+About 1,000 core words per language, plus short stories, for:
 
 Norwegian · Swedish · Danish · German · French · Spanish · Italian · Dutch · Portuguese (Brazil) · Polish
 

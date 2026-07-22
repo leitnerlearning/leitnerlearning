@@ -5839,7 +5839,8 @@ function updatePracticeFocusClass() {
   const practicePanel = document.getElementById("practice-panel");
   if (!app || !practicePanel) return;
   const onPracticeTab = practicePanel.classList.contains("active") && !practicePanel.hidden;
-  app.classList.toggle("practice-focus", onPracticeTab && Boolean(currentCard));
+  // Whole Review tab (home + active card) — tighter chrome + no empty page bounce.
+  app.classList.toggle("practice-focus", onPracticeTab);
   updateCategoryPickerAvailability();
 }
 

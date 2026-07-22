@@ -1,7 +1,7 @@
 {
   "name": "leitnerlearning",
   "private": true,
-  "description": "Leitner Learning — language learning in the browser",
+  "description": "Free language learning in your browser. Flashcards that return when you need them. Short stories: tap a word for the meaning.",
   "scripts": {
     "test": "node tests/srs-simulation.js && node tests/tts-routing.js"
   }

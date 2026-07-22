@@ -1,7 +1,7 @@
 {
   "name": "Leitner Learning",
   "short_name": "Leitner",
-  "description": "Language learning. Free in the browser.",
+  "description": "Free language learning in your browser. Flashcards that return when you need them. Short stories: tap a word for the meaning. No account.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
