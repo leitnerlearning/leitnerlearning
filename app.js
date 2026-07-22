@@ -136,6 +136,11 @@ let addCardReviewOpen = false;
 let addCardReviewState = null;
 /** Signatures of pairs / offers already applied in this review session (stop A→B→A loops). */
 let addCardReviewApplyHistory = [];
+/**
+ * Normalized pair keys seen during this Check session (opening pair + every apply).
+ * If a new offer would restore a seen pair → settle (anti-ping-pong).
+ */
+let addCardReviewSeenPairs = new Set();
 /** Snapshot of the form before the user started typing / picking suggestions. */
 let addCardFormBaseline = { foreign: "", native: "" };
 /** Which add-card side the user last typed in: "native" | "foreign" | null */
@@ -9455,28 +9460,78 @@ function translationOfferKey(translation) {
   return `msg|${translation.title || ""}|${translation.copy || ""}`;
 }
 
-/** True when the form already has what this offer would write (lemma match). */
-function offerAlreadySatisfied(translation, foreign, native) {
-  if (!translation || translation.matches) return true;
+/** Normalized key for a flashcard pair in this Check session. */
+function addCardPairSeenKey(foreign, native) {
+  return `${normalizeAnswer(stripFlashcardPunctuation(foreign || ""))}|${normalizeAnswer(stripFlashcardPunctuation(native || ""))}`;
+}
+
+function rememberAddCardReviewPair(foreign, native) {
+  const key = addCardPairSeenKey(foreign, native);
+  if (key === "|") return;
+  addCardReviewSeenPairs.add(key);
+}
+
+/**
+ * What the form would become if the user accepted this offer
+ * (other side kept when only one field is targeted).
+ */
+function offerResultingPair(translation, foreign, native) {
+  if (!translation || translation.matches) return null;
   const f = stripFlashcardPunctuation(foreign);
   const n = stripFlashcardPunctuation(native);
   if (translation.targetField === "pair" || translation.targetField === "swap") {
     const sf = stripFlashcardPunctuation(translation.suggestedForeign || "");
     const sn = stripFlashcardPunctuation(translation.suggestedNative || "");
-    return (
-      normalizeAnswer(sf) === normalizeAnswer(f) &&
-      normalizeAnswer(sn) === normalizeAnswer(n)
-    );
+    if (!sf || !sn) return null;
+    return { foreign: sf, native: sn };
   }
   if (translation.targetField === "foreign" && translation.suggestedValue) {
-    return (
-      normalizeAnswer(translation.suggestedValue) === normalizeAnswer(f)
-    );
+    const sf = stripFlashcardPunctuation(translation.suggestedValue);
+    if (!sf) return null;
+    return { foreign: sf, native: n };
   }
   if (translation.targetField === "native" && translation.suggestedValue) {
-    return (
-      normalizeAnswer(translation.suggestedValue) === normalizeAnswer(n)
-    );
+    const sn = stripFlashcardPunctuation(translation.suggestedValue);
+    if (!sn) return null;
+    return { foreign: f, native: sn };
+  }
+  return null;
+}
+
+/** True when the form already has what this offer would write (lemma match). */
+function offerAlreadySatisfied(translation, foreign, native) {
+  if (!translation || translation.matches) return true;
+  const resulting = offerResultingPair(translation, foreign, native);
+  if (!resulting) return false;
+  return (
+    normalizeAnswer(resulting.foreign) === normalizeAnswer(stripFlashcardPunctuation(foreign)) &&
+    normalizeAnswer(resulting.native) === normalizeAnswer(stripFlashcardPunctuation(native))
+  );
+}
+
+/**
+ * After Apply: offer would put us back on a pair already visited this Check
+ * (classic fortsett ↔ fortsette ping-pong). Soft-match covers near-twins.
+ */
+function offerRevisitsSeenPair(translation, foreign, native) {
+  const resulting = offerResultingPair(translation, foreign, native);
+  if (!resulting) return false;
+  if (addCardReviewSeenPairs.has(addCardPairSeenKey(resulting.foreign, resulting.native))) {
+    return true;
+  }
+  // Soft revisit: same idea as a seen pair (inflection / one-edit twins)
+  for (const key of addCardReviewSeenPairs) {
+    const sep = key.indexOf("|");
+    if (sep < 0) continue;
+    const seenF = key.slice(0, sep);
+    const seenN = key.slice(sep + 1);
+    if (!seenF || !seenN) continue;
+    if (
+      softGlossMatch(resulting.foreign, seenF) &&
+      softGlossMatch(resulting.native, seenN)
+    ) {
+      return true;
+    }
   }
   return false;
 }
@@ -9583,13 +9638,25 @@ function renderAddCardReviewContext({
           : "Use suggested translation";
     // Skip extra hint when the copy already says "Tap to…"
     // Actionable blocks are tappable; skip extra "Tap to…" line when title is enough
+    const enUnchanged =
+      translation.targetField === "pair" &&
+      translation.suggestedNative &&
+      normalizeAnswer(translation.suggestedNative) === normalizeAnswer(native);
+    const l2Unchanged =
+      translation.targetField === "pair" &&
+      translation.suggestedForeign &&
+      normalizeAnswer(translation.suggestedForeign) === normalizeAnswer(foreign);
     const actionHint =
       !actionable || (translation.copy && /^Tap to\b/i.test(translation.copy.trim()))
         ? ""
         : translation.targetField === "swap"
           ? "Tap to swap sides"
           : translation.targetField === "pair"
-            ? "Tap to apply both"
+            ? enUnchanged && !l2Unchanged
+              ? "Tap to use this Norwegian"
+              : l2Unchanged && !enUnchanged
+                ? "Tap to use this English"
+                : "Tap to apply both"
             : "Tap to use suggestion";
     blocks.push(`
       <section
@@ -9713,6 +9780,10 @@ async function applyReviewSuggestion() {
   const reviewForeign = document.getElementById("review-foreign");
   const reviewNative = document.getElementById("review-native");
 
+  const prevForeign = stripFlashcardPunctuation(foreignInput?.value.trim() || state.foreign || "");
+  const prevNative = stripFlashcardPunctuation(nativeInput?.value.trim() || state.native || "");
+  rememberAddCardReviewPair(prevForeign, prevNative);
+
   let nextForeign =
     targetField === "swap" || targetField === "pair"
       ? stripFlashcardPunctuation(suggestedForeign)
@@ -9743,11 +9814,11 @@ async function applyReviewSuggestion() {
   const pairSig = `pair|${normalizeAnswer(nextForeign)}|${normalizeAnswer(nextNative)}|${nextForeign}|${nextNative}`;
   const offerSig = `offer|${acceptedOfferKey}`;
   const hopCount = addCardReviewApplyHistory.filter((h) => String(h).startsWith("pair|")).length;
-  // Same pair, same offer, or too many hops → stop asking
+  // Same pair, same offer, or second hop → stop asking (anti thrash)
   const shouldSettleEarly =
     addCardReviewApplyHistory.includes(pairSig) ||
     addCardReviewApplyHistory.includes(offerSig) ||
-    hopCount >= 3;
+    hopCount >= 2;
 
   if (foreignInput) foreignInput.value = nextForeign;
   if (nativeInput) nativeInput.value = nextNative;
@@ -9755,6 +9826,7 @@ async function applyReviewSuggestion() {
   if (reviewNative) reviewNative.textContent = nextNative;
   syncAddCardResetButton();
 
+  rememberAddCardReviewPair(nextForeign, nextNative);
   addCardReviewApplyHistory.push(pairSig);
   addCardReviewApplyHistory.push(offerSig);
 
@@ -9763,10 +9835,11 @@ async function applyReviewSuggestion() {
     return;
   }
 
-  // Re-check once; if advice is unchanged or already applied, settle to Looks good.
+  // Re-check once; inverse / same / already-applied advice settles to Looks good.
   await openAddCardReview({
     afterApply: true,
     acceptedOfferKey,
+    previousPair: { foreign: prevForeign, native: prevNative },
   });
 }
 
@@ -9774,6 +9847,7 @@ function closeAddCardReview() {
   addCardReviewOpen = false;
   addCardReviewState = null;
   addCardReviewApplyHistory = [];
+  addCardReviewSeenPairs = new Set();
   document.getElementById("add-card-review")?.classList.add("hidden");
   const confirmBtn = document.getElementById("add-card-confirm");
   if (confirmBtn) confirmBtn.disabled = false;
@@ -9788,7 +9862,9 @@ async function openAddCardReview(options = {}) {
   // Fresh open from Add (not mid-apply): clear hop history so a new card starts clean.
   if (!options.afterApply) {
     addCardReviewApplyHistory = [];
+    addCardReviewSeenPairs = new Set();
   }
+  rememberAddCardReviewPair(foreign, native);
 
   hideLibrarySuggestions();
 
@@ -9887,7 +9963,7 @@ async function openAddCardReview(options = {}) {
     spellingCorrectedForeign,
   });
 
-  // After the user accepted advice: never re-show the same prompt.
+  // After the user accepted advice: never re-show the same prompt or its inverse.
   if (options.afterApply || options.fromSuggestionPick) {
     const t = addCardReviewState?.translation;
     if (duplicate) return;
@@ -9899,8 +9975,11 @@ async function openAddCardReview(options = {}) {
       (accepted && newOfferKey === accepted) ||
       addCardReviewApplyHistory.includes(`offer|${newOfferKey}`);
     const alreadyHave = offerAlreadySatisfied(t, foreign, native);
+    // fortsett → fortsette → fortsett: second red is the trust wound
+    const pingPong =
+      options.afterApply && offerRevisitsSeenPair(t, foreign, native);
 
-    if (sameOffer || alreadyHave) {
+    if (sameOffer || alreadyHave || pingPong) {
       settleAddCardReviewAsLooksGood(foreign, native);
       return;
     }
