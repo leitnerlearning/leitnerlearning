@@ -5269,7 +5269,10 @@ function showFeedbackExample(example, card = currentCard) {
   el.querySelector(".feedback-example-l2")?.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
+    // Pause auto-advance so hearing the line isn’t cut off mid-TTS.
+    clearCardAdvanceTimer();
     if (typeof speakForeign === "function") speakForeign(l2);
+    finishCardAndContinue(EXAMPLE_HEAR_RESUME_MS);
   });
 }
 
@@ -5467,9 +5470,15 @@ function cardLooksLikeInfinitive(foreign, lang) {
 /**
  * After a miss/reveal: show the answer pill, plus a real-sentence beat when we have one.
  * Skip when the “example” only restates the card (prompt + gloss already on screen).
+ * Clear the wrong typed answer so the pill + example teach, not a red dirty field.
  */
 function showIncorrectWithExample(card, answerText) {
   showFeedback(answerText, "incorrect");
+  const input = document.getElementById("answer-input");
+  if (input) {
+    input.value = "";
+    setAnswerIncorrectState(false);
+  }
   const example = getCardContextExample(card);
   if (example && !isRedundantFeedbackExample(example, card, answerText)) {
     showFeedbackExample(example, card);
