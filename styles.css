@@ -4094,39 +4094,34 @@ html.needs-welcome body {
   box-shadow: 0 1px 0 color-mix(in srgb, white 70%, transparent) inset;
 }
 
+/* Visual mark only — not a control. Hearing lives on example words. */
 .basics-glyph {
-  appearance: none;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* ≥44px touch target — hear is the primary action */
   min-width: 2.85rem;
   min-height: 2.85rem;
   padding: 0.28rem 0.5rem;
-  border: 1px solid color-mix(in srgb, var(--brand) 28%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
   border-radius: 0.8rem;
   background:
     linear-gradient(
       160deg,
-      color-mix(in srgb, white 70%, var(--brand)) 0%,
-      var(--brand-soft) 100%
+      color-mix(in srgb, white 78%, var(--brand)) 0%,
+      color-mix(in srgb, var(--brand-soft) 88%, white) 100%
     );
   color: var(--brand-deep);
   font-size: 1.5rem;
   font-weight: 750;
   line-height: 1;
   letter-spacing: -0.02em;
-  cursor: pointer;
-  touch-action: manipulation;
+  cursor: default;
+  user-select: none;
+  pointer-events: none;
   box-shadow:
-    0 4px 12px color-mix(in srgb, var(--brand) 12%, transparent),
-    0 0 0 1px color-mix(in srgb, white 50%, transparent) inset;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease,
-    border-color 0.15s ease;
+    0 2px 8px color-mix(in srgb, var(--brand) 8%, transparent),
+    0 0 0 1px color-mix(in srgb, white 55%, transparent) inset;
 }
 
 .basics-glyph--sm {
@@ -4141,25 +4136,6 @@ html.needs-welcome body {
   font-size: 1.05rem;
   letter-spacing: 0.01em;
   padding-inline: 0.4rem;
-}
-
-.basics-glyph:hover,
-.basics-glyph:focus-visible {
-  background:
-    linear-gradient(
-      160deg,
-      color-mix(in srgb, white 55%, var(--brand)) 0%,
-      color-mix(in srgb, var(--brand) 22%, white) 100%
-    );
-  border-color: color-mix(in srgb, var(--brand) 40%, transparent);
-  box-shadow:
-    0 6px 16px color-mix(in srgb, var(--brand) 18%, transparent),
-    0 0 0 1px color-mix(in srgb, white 55%, transparent) inset;
-  outline: none;
-}
-
-.basics-glyph:active {
-  transform: scale(0.96);
 }
 
 .basics-sound-copy {
@@ -4209,7 +4185,8 @@ html.needs-welcome body {
   align-items: baseline;
   gap: 0.28rem;
   max-width: 100%;
-  padding: 0.18rem 0.45rem 0.18rem 0.35rem;
+  min-height: 2rem;
+  padding: 0.28rem 0.5rem 0.28rem 0.4rem;
   border-radius: 999px;
   background: color-mix(in srgb, white 72%, var(--surface-2, #f4f6fb));
   border: 1px solid color-mix(in srgb, var(--brand) 10%, var(--border));
@@ -4230,17 +4207,18 @@ html.needs-welcome body {
   appearance: none;
   display: inline;
   margin: 0;
-  padding: 0.12rem 0.2rem;
+  padding: 0.15rem 0.22rem;
   border: 0;
   border-radius: 0.3rem;
   background: none;
   color: var(--brand-deep);
   font: inherit;
-  font-size: 0.84rem;
+  font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  text-decoration: none;
-  text-underline-offset: 0.12em;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--brand) 28%, transparent);
+  text-underline-offset: 0.14em;
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -4249,8 +4227,12 @@ html.needs-welcome body {
 .basics-word:focus-visible {
   color: var(--brand);
   background: color-mix(in srgb, var(--brand) 10%, transparent);
-  text-decoration: underline;
+  text-decoration-color: var(--brand);
   outline: none;
+}
+
+.basics-word:active {
+  transform: scale(0.98);
 }
 
 .basics-empty {

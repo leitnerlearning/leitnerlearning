@@ -13275,15 +13275,11 @@ function renderLanguageBasics(category = getActiveCategory()) {
         : "basics-sound-list";
       const items = (section.items || [])
         .map((item) => {
-          const glyph = String(item.glyph || "").trim();
-          const speak = String(item.speak || item.glyph || "").trim();
+          const glyph = String(item.glyph || item.speak || "").trim();
           // Packs may use glyphClass ("basics-glyph--pair"); older data uses glyphSize.
           const sizeClass = basicsGlyphSizeClass(item);
-          // Honesty: when the button plays a carrier word, say so for screen readers.
-          const glyphAria =
-            speak && glyph && normalizeAnswer(speak) !== normalizeAnswer(glyph)
-              ? `Hear ${glyph}, as in ${speak}`
-              : `Hear ${glyph || speak}`;
+          // Glyph is a visual label only — examples are the sole hear controls
+          // (avoids double affordance and “tap æ, hear a word” mismatch).
           const examples = (item.examples || [])
             .map((ex) => {
               const word = ex.text || ex.speak || "";
@@ -13303,16 +13299,14 @@ function renderLanguageBasics(category = getActiveCategory()) {
             .join("");
           return `
             <li class="basics-sound-row">
-              <button type="button" class="basics-glyph${sizeClass}" data-speak="${escapeAttr(
-                speak
-              )}" aria-label="${escapeAttr(glyphAria)}">${escapeHtml(
-                glyph || speak
-              )}</button>
+              <span class="basics-glyph${sizeClass}" aria-hidden="true">${escapeHtml(
+                glyph
+              )}</span>
               <div class="basics-sound-copy">
                 <p class="basics-sound-approx">${item.approxHtml || ""}</p>
                 ${
                   examples
-                    ? `<div class="basics-sound-examples">${examples}</div>`
+                    ? `<div class="basics-sound-examples" role="group" aria-label="Example words">${examples}</div>`
                     : ""
                 }
               </div>
@@ -13344,7 +13338,7 @@ function openBasicsModal(returnFocusId) {
   }
   const kicker = document.getElementById("basics-hero-kicker");
   if (kicker) {
-    kicker.textContent = "Letters & sounds · tap to hear";
+    kicker.textContent = "Letters & sounds · tap a word to hear";
   }
   const flagEl = document.getElementById("basics-hero-flag");
   if (flagEl) {

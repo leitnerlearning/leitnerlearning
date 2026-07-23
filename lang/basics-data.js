@@ -19,8 +19,8 @@
 
   /**
    * Norwegian (Bokmål) — excellence bar for all languages.
-   * Speak policy: never bare letters for TTS (carrier word). Glyph is visual;
-   * examples are real words with glosses. School Bokmål; keep calm and short.
+   * Glyph = visual label only (not tappable). Hearing = example words only.
+   * Optional item.speak is legacy/unused for UI. School Bokmål; calm and short.
    */
   window.LANGUAGE_BASICS["nb-bokmal"] = {
     previewGlyphs: ["æ", "ø", "å"],
@@ -112,7 +112,7 @@
             examples: [
               { speak: "kjøpe", text: "kjøpe", gloss: "to buy" },
               { speak: "kjøkken", text: "kjøkken", gloss: "kitchen" },
-              { speak: "ikke", text: "ikke", gloss: "not" },
+              { speak: "kjøtt", text: "kjøtt", gloss: "meat" },
             ],
           },
           {
