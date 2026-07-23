@@ -1041,11 +1041,13 @@ function hasDailyGoalRemaining(daily = ensureDailyPracticeState()) {
 }
 
 function pausePracticeSession() {
-  // Leaving Review must not leave a mid-miss auto-advance timer running.
+  // Leaving Review must not leave a mid-miss auto-advance timer running,
+  // or miss-example / prompt Hear still talking on another tab.
   clearCardAdvanceTimer();
   clearSpeakScheduling();
   stopActiveRecognition();
   setListeningUI(false);
+  if (typeof stopAllSpeech === "function") stopAllSpeech();
 
   if (!currentCard) return;
 
@@ -12481,6 +12483,7 @@ function applyCategorySwitch(nextCategoryId, { announce = true } = {}) {
   setActiveCategoryId(nextCategoryId);
   setSpeakMode(false);
   recognition = null;
+  if (typeof stopAllSpeech === "function") stopAllSpeech();
   clearStoryExampleCache();
 
   deck = loadDeck(nextCategoryId);
@@ -12665,6 +12668,13 @@ function submitAnswer(options = {}) {
 
 function switchTab(tabName) {
   if (isWelcomeOpen()) return;
+
+  // Leaving any tab: stop TTS and close Stories gloss so meaning/voice don’t orphan.
+  if (typeof stopAllSpeech === "function") stopAllSpeech();
+  if (tabName !== "read") {
+    closeReadGloss();
+    closeReadMenu();
+  }
 
   document.querySelectorAll(".tab").forEach((tab) => {
     const isActive = tab.dataset.tab === tabName;
