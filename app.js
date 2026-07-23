@@ -101,6 +101,8 @@ let currentCardAttempts = 0;
 let speakCardDelayTimer = null;
 let speakAttemptTimer = null;
 let cardAdvanceTimer = null;
+/** Absolute time when the current card auto-advance should fire (for honest listen pauses). */
+let cardAdvanceDeadline = 0;
 let libraryFilter = "all";
 let librarySearch = "";
 let libraryRenderToken = 0;
@@ -3276,8 +3278,6 @@ const SPEAK_ADVANCE_CORRECT_MS = 4000;
 const SPEAK_ADVANCE_WRONG_MS = 5000;
 const TYPING_ADVANCE_CORRECT_MS = 4500;
 const TYPING_ADVANCE_WRONG_MS = 5500;
-/** After tapping miss-example L2 to hear: pause auto-advance long enough to listen. */
-const EXAMPLE_HEAR_RESUME_MS = 2800;
 const MAX_CLOSE_RETRIES = 2;
 /** Cap quiet re-listens so Chrome "network" errors cannot loop forever. */
 const SPEAK_SOFT_RETRY_MAX = 2;
@@ -3302,6 +3302,33 @@ function clearCardAdvanceTimer() {
     window.clearTimeout(cardAdvanceTimer);
     cardAdvanceTimer = null;
   }
+  cardAdvanceDeadline = 0;
+}
+
+/** Listen window for miss/Show TTS — scales with line length, never under ~3.2s. */
+function estimateListenMs(text) {
+  const n = String(text || "").trim().length;
+  return Math.min(9000, Math.max(3200, 2200 + n * 70));
+}
+
+/**
+ * Speak during a pending card advance without cutting TTS short.
+ * Reschedule advance to max(time left, listen estimate) — never shorter than remaining.
+ */
+function pauseAdvanceForListen(text, speakFn) {
+  const remaining =
+    cardAdvanceDeadline > Date.now()
+      ? cardAdvanceDeadline - Date.now()
+      : cardAdvanceTimer
+        ? 500
+        : 0;
+  const wasAdvancing = remaining > 0 || Boolean(cardAdvanceTimer);
+
+  if (typeof speakFn === "function") speakFn();
+  else if (typeof speakForeign === "function") speakForeign(text);
+
+  if (!wasAdvancing) return;
+  finishCardAndContinue(Math.max(remaining, estimateListenMs(text)));
 }
 
 function clearSpeakScheduling() {
@@ -3660,11 +3687,14 @@ function finishCardAndContinue(delayMs) {
   setListeningUI(false);
   clearCardAdvanceTimer();
 
+  const ms = Math.max(0, Number(delayMs) || 0);
+  cardAdvanceDeadline = Date.now() + ms;
   cardAdvanceTimer = window.setTimeout(() => {
     cardAdvanceTimer = null;
+    cardAdvanceDeadline = 0;
     advanceCard();
     resumeSpeakModeIfNeeded();
-  }, delayMs);
+  }, ms);
 }
 
 function resumeSpeakModeIfNeeded() {
@@ -5271,10 +5301,7 @@ function showFeedbackExample(example, card = currentCard) {
   el.querySelector(".feedback-example-l2")?.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
-    // Pause auto-advance so hearing the line isn’t cut off mid-TTS.
-    clearCardAdvanceTimer();
-    if (typeof speakForeign === "function") speakForeign(l2);
-    finishCardAndContinue(EXAMPLE_HEAR_RESUME_MS);
+    pauseAdvanceForListen(l2);
   });
 }
 
@@ -12636,9 +12663,15 @@ function initEventListeners() {
     clearSpeakScheduling();
     stopActiveRecognition();
     setListeningUI(false);
-    speakPromptForCard(currentCard);
-    if (speakModeActive) {
-      scheduleSpeakForCurrentCard(2200);
+    const promptText = getPromptDisplayText(currentCard);
+    // During miss auto-advance, never cut Hear short by advancing early.
+    if (cardAdvanceTimer || cardAdvanceDeadline > Date.now()) {
+      pauseAdvanceForListen(promptText, () => speakPromptForCard(currentCard));
+    } else {
+      speakPromptForCard(currentCard);
+      if (speakModeActive) {
+        scheduleSpeakForCurrentCard(2200);
+      }
     }
   });
 
