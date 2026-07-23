@@ -1039,6 +1039,12 @@ function hasDailyGoalRemaining(daily = ensureDailyPracticeState()) {
 }
 
 function pausePracticeSession() {
+  // Leaving Review must not leave a mid-miss auto-advance timer running.
+  clearCardAdvanceTimer();
+  clearSpeakScheduling();
+  stopActiveRecognition();
+  setListeningUI(false);
+
   if (!currentCard) return;
 
   const daily = ensureDailyPracticeState();
@@ -3469,17 +3475,31 @@ function scheduleSpeakForCurrentCard(delayMs = SPEAK_CARD_DELAY_MS) {
   }, delayMs);
 }
 
-function handleSpeakAttemptTimeout() {
+/**
+ * Speak heard nothing usable. Not a miss: do not demote, requeue, or auto-advance.
+ * Aligns with empty typing (“Type or say…”) honesty — silence ≠ wrong English.
+ */
+function handleSpeakSoftNoAnswer() {
   if (!speakModeActive || !currentCard) return;
 
   stopActiveRecognition();
   setListeningUI(false);
+  setAnswerIncorrectState(false);
 
-  const answerText = getAnswerTargetText(currentCard);
-  setAnswerIncorrectState(true);
-  handleIncorrect();
-  const withExample = showIncorrectWithExample(currentCard, answerText);
-  finishCardAndContinue(getAdvanceDelay(false, true, { withExample }));
+  if (speakSoftRetries < SPEAK_SOFT_RETRY_MAX) {
+    speakSoftRetries += 1;
+    showFeedback("No answer heard · try again", "revealed", { autoHideMs: 2800 });
+    scheduleSpeakForCurrentCard(900);
+    return;
+  }
+
+  speakSoftRetries = 0;
+  showFeedback("No answer heard · tap Speak or type", "revealed", { autoHideMs: 4000 });
+}
+
+/** @deprecated name kept for call sites — soft silence path only */
+function handleSpeakAttemptTimeout() {
+  handleSpeakSoftNoAnswer();
 }
 
 function bestTranscriptFromSpeechEvent(event) {
@@ -3610,12 +3630,19 @@ function beginSpeakAttempt() {
       speakSoftRetries = 0;
       if (event.error === "network") {
         setSpeakMode(false);
+        showFeedback("Speech unavailable · type instead", "revealed", { autoHideMs: 4000 });
+        return;
+      }
+      // no-speech exhausted soft retries — stay on card, no demote
+      if (speakModeActive && currentCard) {
+        handleSpeakSoftNoAnswer();
       }
       return;
     }
 
-    if (speakModeActive) {
-      handleSpeakAttemptTimeout();
+    // Unknown recognition error: soft end, not a graded miss
+    if (speakModeActive && currentCard) {
+      handleSpeakSoftNoAnswer();
     }
   };
 
@@ -3627,14 +3654,24 @@ function beginSpeakAttempt() {
       return;
     }
 
-    // Desktop: one more listen window. Mobile: do not auto-restart (toast + flaky).
+    // Desktop: one more listen window. Mobile: clear Listening (never leave stuck).
     if (!isCoarsePointerDevice() && speakModeActive && currentCard) {
       try {
         rec.start();
         setListeningUI(true);
+        return;
       } catch {
-        /* ignore */
+        /* fall through to soft idle */
       }
+    }
+
+    setListeningUI(false);
+    if (speakModeActive && currentCard) {
+      if (speakSoftRetries < SPEAK_SOFT_RETRY_MAX) {
+        speakSoftRetries += 1;
+        scheduleSpeakForCurrentCard(600);
+      }
+      // Exhausted: stay on card with Speak still on — user can tap Speak or type.
     }
   };
 
