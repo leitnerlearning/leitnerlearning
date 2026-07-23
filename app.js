@@ -753,7 +753,6 @@ function selectDailyGoalCap(cap) {
   if (keepId) {
     sessionQueue = sessionQueue.filter((id) => id !== keepId);
   }
-  closeGoalCapModal();
   renderAll();
 }
 
@@ -11327,6 +11326,11 @@ function openReadGloss(button) {
   glossEl.classList.toggle("is-extra", !inDeck);
   glossEl.classList.remove("is-collapsed");
   glossEl.hidden = false;
+
+  // Hear the word when meaning opens — same teaching beat as Review miss examples.
+  if (surface && typeof speakForeign === "function") {
+    speakForeign(surface);
+  }
 }
 
 function alignReadContextTrack(contextBefore) {
@@ -12844,10 +12848,6 @@ function initEventListeners() {
     }
   });
 
-  document.getElementById("daily-goal-chip")?.addEventListener("click", () => {
-    // Theme progress only — no daily goal picker (floss model).
-  });
-
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       const basics = document.getElementById("basics-modal");
@@ -12857,10 +12857,6 @@ function initEventListeners() {
       }
       const welcome = document.getElementById("welcome-modal");
       if (welcome && !welcome.classList.contains("hidden")) return;
-      if (isGoalCapOpen()) {
-        closeGoalCapModal();
-        return;
-      }
       const about = document.getElementById("about-modal");
       if (about && !about.classList.contains("hidden")) {
         closeAboutModal();
@@ -13051,41 +13047,6 @@ function initConfirmModal() {
 function isAboutOpen() {
   const modal = document.getElementById("about-modal");
   return Boolean(modal && !modal.classList.contains("hidden"));
-}
-
-function isGoalCapOpen() {
-  const modal = document.getElementById("goal-cap-modal");
-  return Boolean(modal && !modal.classList.contains("hidden"));
-}
-
-function openGoalCapModal() {
-  if (isWelcomeOpen() || isAboutOpen()) return;
-  const modal = document.getElementById("goal-cap-modal");
-  if (!modal) return;
-  const cap = getDailyPracticeCap();
-  modal.querySelectorAll("[data-goal-cap]").forEach((btn) => {
-    const value = Number(btn.dataset.goalCap);
-    const selected = value === cap;
-    btn.classList.toggle("is-selected", selected);
-    btn.setAttribute("aria-checked", selected ? "true" : "false");
-  });
-  modal.classList.remove("hidden");
-  document.body.classList.add("modal-open");
-  const selectedBtn =
-    modal.querySelector("[data-goal-cap].is-selected") ||
-    modal.querySelector("[data-goal-cap]");
-  selectedBtn?.focus({ preventScroll: true });
-}
-
-function closeGoalCapModal() {
-  const modal = document.getElementById("goal-cap-modal");
-  if (!modal) return;
-  modal.classList.add("hidden");
-  if (!isWelcomeOpen() && !isAboutOpen()) {
-    const confirmOpen = !document.getElementById("confirm-modal")?.classList.contains("hidden");
-    if (!confirmOpen) document.body.classList.remove("modal-open");
-  }
-  document.getElementById("daily-goal-chip")?.focus({ preventScroll: true });
 }
 
 function openAboutModal() {

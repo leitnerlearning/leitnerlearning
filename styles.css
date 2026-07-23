@@ -2016,6 +2016,7 @@ main {
   display: none;
 }
 
+/* Theme Study set progress label only (not a button / not a goal picker). */
 .daily-goal-chip {
   appearance: none;
   -webkit-appearance: none;
@@ -2025,7 +2026,6 @@ main {
   min-height: 2.15rem;
   min-width: 3.5rem;
   padding: 0.32rem 0.85rem;
-  /* Neutral rest - same family as Progress prefs chips; never a permanent “pressed” wash */
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   background: var(--surface-glass-strong);
@@ -2038,23 +2038,9 @@ main {
   font-weight: 650;
   letter-spacing: -0.02em;
   line-height: 1;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition:
-    color 0.15s var(--ease),
-    background 0.15s var(--ease),
-    border-color 0.15s var(--ease),
-    box-shadow 0.15s var(--ease),
-    transform 0.12s ease;
-}
-
-/* Theme Study set: still neutral at rest (not a settings control) */
-.daily-goal-chip.is-theme-chip {
   cursor: default;
-  /* Match daily chip rest - progress is on the bar, not a filled pill */
-  border-color: var(--border-strong);
-  background: var(--surface-glass-strong);
-  color: var(--text-secondary);
+  user-select: none;
+  pointer-events: none;
 }
 
 .practice-meta.is-theme .daily-progress,
@@ -2072,28 +2058,6 @@ main {
   letter-spacing: -0.02em;
   color: inherit;
   text-align: center;
-}
-
-.daily-goal-chip:hover,
-.daily-goal-chip:focus-visible {
-  color: var(--brand-deep);
-  background: var(--brand-soft);
-  border-color: transparent;
-  outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
-}
-
-.daily-goal-chip.is-theme-chip:hover,
-.daily-goal-chip.is-theme-chip:focus-visible {
-  /* Theme label isn’t a control - don’t flash the interactive hover */
-  color: var(--text-secondary);
-  background: var(--surface-glass-strong);
-  border-color: var(--border-strong);
-  box-shadow: none;
-}
-
-.daily-goal-chip:active:not(.is-theme-chip) {
-  transform: scale(0.98);
 }
 
 /*

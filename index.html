@@ -93,7 +93,7 @@
         "inLanguage": ["en", "nb", "sv", "da", "de", "fr", "es", "it", "nl", "pt", "pl"]
       }
     </script>
-    <link rel="stylesheet" href="styles.css?v=322" />
+    <link rel="stylesheet" href="styles.css?v=323" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -198,15 +198,15 @@
         <section id="practice-panel" class="panel active" role="tabpanel">
           <!-- Daily Goal strip: chip + bar (hidden in extra mode / no goal) -->
           <div class="practice-goal-strip hidden" id="practice-meta">
-            <button
-              type="button"
-              class="daily-goal-chip hidden"
+            <!-- Theme Study progress label only (not a control; no goal picker). -->
+            <span
+              class="daily-goal-chip is-theme-chip hidden"
               id="daily-goal-chip"
-              aria-haspopup="dialog"
-              aria-controls="goal-cap-modal"
+              role="status"
+              aria-live="polite"
             >
               <span class="daily-goal-chip__count" id="daily-goal-count">0/0</span>
-            </button>
+            </span>
             <div
               class="daily-progress hidden"
               id="daily-progress"
@@ -798,9 +798,6 @@
       })();
     </script>
 
-    <!-- Daily goal modal removed (floss model: Study once to keep streak; no target picker). -->
-    <div class="goal-cap-modal hidden" id="goal-cap-modal" hidden aria-hidden="true"></div>
-
     <div
       class="confirm-modal hidden"
       id="confirm-modal"
@@ -914,6 +911,6 @@
     <script src="lang/pl-pack.js?v=15"></script>
     <script src="mini-packs.js?v=35"></script>
     <script src="srs-core.js?v=4"></script>
-    <script src="app.js?v=408"></script>
+    <script src="app.js?v=409"></script>
   </body>
 </html>
