@@ -11477,6 +11477,8 @@ function navigateReadSentence(delta) {
   if (!story) return;
 
   closeReadGloss();
+  // Stop prior sentence TTS so Hear doesn't bleed over the next line.
+  if (typeof stopAllSpeech === "function") stopAllSpeech();
   readSentenceIndex = Math.min(
     Math.max(readSentenceIndex + delta, 0),
     story.sentences.length - 1
@@ -11569,6 +11571,7 @@ function switchReadStory(storyId) {
   }
 
   closeReadGloss();
+  if (typeof stopAllSpeech === "function") stopAllSpeech();
   closeReadMenu();
   saveReadProgress();
   renderReadPanel();
@@ -12547,6 +12550,11 @@ function preparePracticeSession() {
 function startPractice() {
   if (!currentCard && !sessionJustCompleted) {
     preparePracticeSession();
+    // Resume Packs → Study mid-set after leaving Review (queue was parked on tab leave).
+    // Do not auto-start the daily due list — only resume an active theme session.
+    if (themeSessionPackId && sessionQueue.length > 0) {
+      nextInSession();
+    }
   }
   renderPractice();
 }
