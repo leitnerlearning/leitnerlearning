@@ -12925,7 +12925,20 @@ function initEventListeners() {
     if (removeBtn) {
       const packId = removeBtn.getAttribute("data-pack-remove");
       if (!packId) return;
-      removeThematicPack(packId);
+      const pack = getThematicPackById(packId);
+      const title = pack?.title || "Theme";
+      const owned = deck.filter((c) => c.packId === packId).length;
+      // Larger Remove targets made accidental mass-delete too easy — confirm first.
+      void (async () => {
+        const confirmed = await showConfirm(
+          owned > 0
+            ? `Remove ${title}? This drops ${owned} theme card${owned === 1 ? "" : "s"} from your deck. Core words stay.`
+            : `Remove ${title}?`,
+          { confirmLabel: "Remove", cancelLabel: "Cancel" }
+        );
+        if (!confirmed) return;
+        removeThematicPack(packId);
+      })();
       return;
     }
 
