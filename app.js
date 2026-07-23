@@ -2984,6 +2984,8 @@ function nextInSession() {
         title: pack?.title || "Theme",
         reviewed: themeSessionTotal || sessionReviewed || 0,
       };
+      // Land on Review home with a calm finish caption (see formatHomePowerTeaser).
+      sessionJustCompleted = true;
       clearThemePracticeSession();
     }
     currentCard = null;
@@ -5726,14 +5728,28 @@ function renderHomeStatus() {
     </div>`;
 }
 
+/**
+ * One quiet line under Study: theme finish (if any), else next unlock when idle.
+ * Title-style captions — not full sentences.
+ */
+function formatHomePowerTeaser({ canStudy = false } = {}) {
+  if (lastThemeSessionNote) {
+    const title = String(lastThemeSessionNote.title || "Theme").trim() || "Theme";
+    const n = Number(lastThemeSessionNote.reviewed) || 0;
+    return n > 0 ? `${title} · ${n} done` : `${title} · done`;
+  }
+  if (!canStudy) return formatNextReviewTeaser();
+  return "";
+}
+
 function renderPowerOnExtras({
   teaserEl,
   readBridgeBtn,
-  showTeaser = false,
+  canStudy = false,
   showReadBridge = false,
 } = {}) {
   if (teaserEl) {
-    const teaser = showTeaser ? formatNextReviewTeaser() : "";
+    const teaser = formatHomePowerTeaser({ canStudy });
     teaserEl.textContent = teaser;
     teaserEl.classList.toggle("hidden", !teaser);
   }
@@ -5786,15 +5802,15 @@ function renderEmptyState() {
     mode: canStudy ? "start" : "complete",
     ariaLabel: canStudy ? "Study" : "Nothing due right now",
     hint,
-    celebrate: Boolean(sessionJustCompleted && canStudy),
+    // Soft finish pulse after a theme set or a daily session that emptied the queue.
+    celebrate: Boolean(sessionJustCompleted),
     enabled: canStudy,
   });
-  // When nothing is due: one honest unlock line under the orb (not a second CTA).
-  // When there is work: silence — Study + streak are enough.
+  // One quiet line: theme finish (e.g. Dining · 8 done) or unlock when idle.
   renderPowerOnExtras({
     teaserEl: powerTeaserEl,
     readBridgeBtn,
-    showTeaser: !canStudy,
+    canStudy,
     showReadBridge: false,
   });
   renderHomeStatus();
