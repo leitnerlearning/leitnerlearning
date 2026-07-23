@@ -17,99 +17,112 @@
 (function () {
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
 
+  /**
+   * Norwegian (Bokmål) — excellence bar for all languages.
+   * Speak policy: never bare letters for TTS (carrier word). Glyph is visual;
+   * examples are real words with glosses. School Bokmål; keep calm and short.
+   */
   window.LANGUAGE_BASICS["nb-bokmal"] = {
+    previewGlyphs: ["æ", "ø", "å"],
     sections: [
       {
         title: "Special letters",
         items: [
           {
             glyph: "æ",
-            speak: "æ",
-            approxHtml: "<strong>a</strong> in <em>cat</em>",
+            speak: "ære",
+            approxHtml: "Like <strong>a</strong> in <em>cat</em> · lips flatter than <span class=\"basics-letter\">e</span>",
             examples: [
               { speak: "ære", text: "ære", gloss: "honor" },
-              { speak: "være", text: "være", gloss: "be" },
+              { speak: "være", text: "være", gloss: "to be" },
+              { speak: "lære", text: "lære", gloss: "to learn" },
             ],
           },
           {
             glyph: "ø",
-            speak: "ø",
-            approxHtml: "<strong>uh</strong>, lips rounded",
+            speak: "øl",
+            approxHtml: "Like <strong>u</strong> in <em>burn</em> · lips rounded",
             examples: [
               { speak: "øl", text: "øl", gloss: "beer" },
               { speak: "søster", text: "søster", gloss: "sister" },
+              { speak: "rød", text: "rød", gloss: "red" },
             ],
           },
           {
             glyph: "å",
-            speak: "å",
-            approxHtml: "<strong>o</strong> in <em>or</em>",
+            speak: "år",
+            approxHtml: "Like <strong>o</strong> in <em>or</em> / British <em>law</em>",
             examples: [
               { speak: "år", text: "år", gloss: "year" },
-              { speak: "gå", text: "gå", gloss: "go" },
+              { speak: "gå", text: "gå", gloss: "to go" },
+              { speak: "hånd", text: "hånd", gloss: "hand" },
             ],
           },
         ],
       },
       {
-        title: "Same shape, different sound",
+        title: "Letters that surprise English ears",
         compact: true,
         items: [
           {
             glyph: "j",
-            speak: "j",
+            speak: "ja",
             glyphSize: "sm",
-            approxHtml: "<strong>y</strong> in <em>yes</em>",
+            approxHtml: "Always <strong>y</strong> in <em>yes</em> · never English <span class=\"basics-letter\">j</span>",
             examples: [
               { speak: "ja", text: "ja", gloss: "yes" },
               { speak: "jeg", text: "jeg", gloss: "I" },
+              { speak: "jul", text: "jul", gloss: "Christmas" },
             ],
           },
           {
             glyph: "y",
-            speak: "y",
+            speak: "by",
             glyphSize: "sm",
-            approxHtml: "<strong>ee</strong> in <em>see</em>, lips rounded",
+            approxHtml: "Like <strong>ee</strong> in <em>see</em> · lips rounded (French <em>u</em>)",
             examples: [
               { speak: "by", text: "by", gloss: "town" },
               { speak: "syk", text: "syk", gloss: "sick" },
+              { speak: "ny", text: "ny", gloss: "new" },
             ],
           },
           {
             glyph: "r",
-            speak: "r",
+            speak: "rød",
             glyphSize: "sm",
             approxHtml:
-              'Tapped or rolled · not English <span class="basics-letter">r</span>',
+              "Tapped or rolled · not English <span class=\"basics-letter\">r</span>",
             examples: [
               { speak: "rød", text: "rød", gloss: "red" },
               { speak: "bra", text: "bra", gloss: "good" },
+              { speak: "tre", text: "tre", gloss: "three / tree" },
             ],
           },
         ],
       },
       {
-        title: "Letter pairs",
+        title: "Soft and hard pairs",
         compact: true,
         items: [
           {
             glyph: "kj",
-            speak: "kj",
+            speak: "kjøpe",
             glyphSize: "pair",
-            approxHtml: "Soft <strong>h</strong> in <em>huge</em> (<em>hyuge</em>)",
+            approxHtml: "Soft <strong>h</strong> · like the start of <em>huge</em> (<em>hyuge</em>)",
             examples: [
-              { speak: "kjøpe", text: "kjøpe", gloss: "buy" },
+              { speak: "kjøpe", text: "kjøpe", gloss: "to buy" },
               { speak: "kjøkken", text: "kjøkken", gloss: "kitchen" },
+              { speak: "ikke", text: "ikke", gloss: "not" },
             ],
           },
           {
             glyph: "skj",
             speak: "skje",
             glyphSize: "pair",
-            approxHtml: "<strong>sh</strong> · same for <em>ski</em>, <em>sky</em>",
+            approxHtml: "<strong>sh</strong> · also <em>ski</em>, <em>sky</em> before front vowels",
             examples: [
               { speak: "skje", text: "skje", gloss: "spoon" },
-              { speak: "ski", text: "ski", gloss: "" },
+              { speak: "ski", text: "ski", gloss: "ski" },
               { speak: "sky", text: "sky", gloss: "cloud" },
             ],
           },
@@ -117,42 +130,87 @@
             glyph: "sk",
             speak: "skole",
             glyphSize: "pair",
-            approxHtml: "Hard <strong>sk</strong> before a/o/u",
+            approxHtml: "Hard <strong>sk</strong> before <em>a o u å</em>",
             examples: [
               { speak: "skole", text: "skole", gloss: "school" },
               { speak: "skatt", text: "skatt", gloss: "tax" },
+              { speak: "skog", text: "skog", gloss: "forest" },
+            ],
+          },
+          {
+            glyph: "hj / hv",
+            speak: "hjem",
+            glyphSize: "pair",
+            approxHtml: "<strong>h</strong> is silent · <em>hj</em> ≈ <em>y</em>, <em>hv</em> ≈ <em>v</em>",
+            examples: [
+              { speak: "hjem", text: "hjem", gloss: "home" },
+              { speak: "hjelp", text: "hjelp", gloss: "help" },
+              { speak: "hva", text: "hva", gloss: "what" },
+              { speak: "hvor", text: "hvor", gloss: "where" },
+            ],
+          },
+          {
+            glyph: "gj",
+            speak: "gjøre",
+            glyphSize: "pair",
+            approxHtml: "Soft · often like <strong>y</strong> before front vowels",
+            examples: [
+              { speak: "gjøre", text: "gjøre", gloss: "to do" },
+              { speak: "gjennom", text: "gjennom", gloss: "through" },
             ],
           },
         ],
       },
       {
-        title: "Two-letter vowels",
+        title: "Vowel pairs",
         compact: true,
         items: [
           {
             glyph: "ei",
-            speak: "ei",
+            speak: "nei",
             glyphSize: "pair",
             approxHtml: "Like <strong>ay</strong> in <em>say</em>",
             examples: [
               { speak: "nei", text: "nei", gloss: "no" },
               { speak: "vei", text: "vei", gloss: "road" },
+              { speak: "hei", text: "hei", gloss: "hi" },
             ],
           },
           {
             glyph: "øy",
-            speak: "øy",
+            speak: "høy",
             glyphSize: "pair",
             approxHtml: "<strong>ø</strong> then a quick <strong>y</strong> (yes-sound)",
             examples: [
               { speak: "høy", text: "høy", gloss: "high" },
               { speak: "øy", text: "øy", gloss: "island" },
+              { speak: "røyke", text: "røyke", gloss: "to smoke" },
+            ],
+          },
+          {
+            glyph: "au",
+            speak: "sau",
+            glyphSize: "pair",
+            approxHtml: "Like <strong>ow</strong> in <em>how</em>",
+            examples: [
+              { speak: "sau", text: "sau", gloss: "sheep" },
+              { speak: "august", text: "august", gloss: "August" },
+            ],
+          },
+          {
+            glyph: "ai",
+            speak: "mai",
+            glyphSize: "pair",
+            approxHtml: "Like <strong>eye</strong> · less common than <em>ei</em>",
+            examples: [
+              { speak: "mai", text: "mai", gloss: "May" },
+              { speak: "hai", text: "hai", gloss: "shark" },
             ],
           },
         ],
       },
       {
-        title: "Useful patterns",
+        title: "Rhythm & typing",
         compact: true,
         items: [
           {
@@ -163,26 +221,38 @@
             examples: [
               { speak: "norsk", text: "norsk", gloss: "Norwegian" },
               { speak: "skole", text: "skole", gloss: "school" },
+              { speak: "vindu", text: "vindu", gloss: "window" },
             ],
           },
           {
             glyph: "tone",
             speak: "bønder",
             glyphSize: "pair",
-            approxHtml: "Norwegian pitch accent is light. Listen more than you analyse",
+            approxHtml: "Light pitch accent · listen more than you analyse",
             examples: [
               { speak: "bønder", text: "bønder", gloss: "farmers" },
               { speak: "bønner", text: "bønner", gloss: "beans" },
             ],
           },
           {
-            glyph: "ae / oe / aa",
-            speak: "vaere",
+            glyph: "ae oe aa",
+            speak: "være",
             glyphSize: "pair",
-            approxHtml: "ASCII fallbacks for æ/ø/å when typing. Still the same letters",
+            approxHtml: "When you can’t type æ/ø/å · still the same letters",
             examples: [
               { speak: "være", text: "være", gloss: "to be" },
+              { speak: "søster", text: "søster", gloss: "sister" },
               { speak: "år", text: "år", gloss: "year" },
+            ],
+          },
+          {
+            glyph: "det / de",
+            speak: "det",
+            glyphSize: "pair",
+            approxHtml: "<em>det</em> often sounds like <strong>de</strong> · spelling keeps the <span class=\"basics-letter\">t</span>",
+            examples: [
+              { speak: "det", text: "det", gloss: "it / that" },
+              { speak: "de", text: "de", gloss: "they" },
             ],
           },
         ],

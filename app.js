@@ -13275,29 +13275,38 @@ function renderLanguageBasics(category = getActiveCategory()) {
         : "basics-sound-list";
       const items = (section.items || [])
         .map((item) => {
-          const speak = item.speak || item.glyph || "";
+          const glyph = String(item.glyph || "").trim();
+          const speak = String(item.speak || item.glyph || "").trim();
           // Packs may use glyphClass ("basics-glyph--pair"); older data uses glyphSize.
           const sizeClass = basicsGlyphSizeClass(item);
+          // Honesty: when the button plays a carrier word, say so for screen readers.
+          const glyphAria =
+            speak && glyph && normalizeAnswer(speak) !== normalizeAnswer(glyph)
+              ? `Hear ${glyph}, as in ${speak}`
+              : `Hear ${glyph || speak}`;
           const examples = (item.examples || [])
             .map((ex) => {
               const word = ex.text || ex.speak || "";
-              const gloss = ex.gloss != null ? String(ex.gloss) : "";
+              if (!String(word).trim()) return "";
+              const gloss = ex.gloss != null ? String(ex.gloss).trim() : "";
               const glossHtml = gloss
                 ? `<span class="basics-example-gloss">${escapeHtml(gloss)}</span>`
                 : "";
+              const wordSpeak = ex.speak || word;
               return `<span class="basics-example">
                 <button type="button" class="basics-word" data-speak="${escapeAttr(
-                  ex.speak || word
-                )}">${escapeHtml(word)}</button>${glossHtml}
+                  wordSpeak
+                )}" aria-label="Hear ${escapeAttr(word)}">${escapeHtml(word)}</button>${glossHtml}
               </span>`;
             })
+            .filter(Boolean)
             .join("");
           return `
             <li class="basics-sound-row">
               <button type="button" class="basics-glyph${sizeClass}" data-speak="${escapeAttr(
                 speak
-              )}" aria-label="Hear ${escapeAttr(item.glyph || speak)}">${escapeHtml(
-                item.glyph || speak
+              )}" aria-label="${escapeAttr(glyphAria)}">${escapeHtml(
+                glyph || speak
               )}</button>
               <div class="basics-sound-copy">
                 <p class="basics-sound-approx">${item.approxHtml || ""}</p>
@@ -13332,6 +13341,10 @@ function openBasicsModal(returnFocusId) {
   const title = document.getElementById("basics-title");
   if (title) {
     title.textContent = category?.label || "Basics";
+  }
+  const kicker = document.getElementById("basics-hero-kicker");
+  if (kicker) {
+    kicker.textContent = "Letters & sounds · tap to hear";
   }
   const flagEl = document.getElementById("basics-hero-flag");
   if (flagEl) {

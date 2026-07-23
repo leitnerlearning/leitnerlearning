@@ -4008,7 +4008,7 @@ html.needs-welcome body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0;
+  gap: 0.2rem;
 }
 
 .basics-modal-title {
@@ -4026,6 +4026,16 @@ html.needs-welcome body {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+}
+
+/* One calm line under the language name — discovery without tutorial chrome */
+.basics-hero-kicker {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  color: var(--text-secondary);
 }
 
 .basics-close-btn {
@@ -4090,9 +4100,10 @@ html.needs-welcome body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  /* ≥44px touch target — hear is the primary action */
   min-width: 2.85rem;
   min-height: 2.85rem;
-  padding: 0.2rem 0.45rem;
+  padding: 0.28rem 0.5rem;
   border: 1px solid color-mix(in srgb, var(--brand) 28%, transparent);
   border-radius: 0.8rem;
   background:
@@ -4107,6 +4118,7 @@ html.needs-welcome body {
   line-height: 1;
   letter-spacing: -0.02em;
   cursor: pointer;
+  touch-action: manipulation;
   box-shadow:
     0 4px 12px color-mix(in srgb, var(--brand) 12%, transparent),
     0 0 0 1px color-mix(in srgb, white 50%, transparent) inset;
@@ -4118,15 +4130,17 @@ html.needs-welcome body {
 }
 
 .basics-glyph--sm {
-  min-width: 2.5rem;
-  min-height: 2.5rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
   font-size: 1.28rem;
 }
 
 .basics-glyph--pair {
-  min-width: 3rem;
-  font-size: 1.12rem;
-  letter-spacing: 0.02em;
+  min-width: 3.15rem;
+  min-height: 2.75rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  padding-inline: 0.4rem;
 }
 
 .basics-glyph:hover,
@@ -4216,23 +4230,26 @@ html.needs-welcome body {
   appearance: none;
   display: inline;
   margin: 0;
-  padding: 0.05rem 0.15rem;
+  padding: 0.12rem 0.2rem;
   border: 0;
-  border-radius: 0.25rem;
+  border-radius: 0.3rem;
   background: none;
   color: var(--brand-deep);
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   text-decoration: none;
+  text-underline-offset: 0.12em;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .basics-word:hover,
 .basics-word:focus-visible {
   color: var(--brand);
   background: color-mix(in srgb, var(--brand) 10%, transparent);
+  text-decoration: underline;
   outline: none;
 }
 
