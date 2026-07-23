@@ -5005,18 +5005,11 @@ html.needs-welcome body {
 
 /* Library → Packs filter only: compact optional grid (not a second product) */
 .library-themes {
-  /* Tight to the card sections below (DINING · 20…) - no dead air */
-  margin: 0 0 0.75rem;
-  /* Clear fixed TOP when the last pack row is in view (Work Add stays tappable) */
-  padding: 0 0 4.75rem;
+  /* Flush above SHOP · 20… — float TOP clearance lives on .card-list only */
+  margin: 0 0 0.55rem;
+  padding: 0;
   border: none;
   background: transparent;
-}
-
-/* When pack cards follow, keep packs flush above DINING · N — clearance lives on .card-list */
-.library-themes:has(+ .library-jump:not(.hidden)),
-.library-themes:has(+ .card-list .card-group) {
-  padding-bottom: 0;
 }
 
 .library-themes.hidden {
