@@ -5658,13 +5658,6 @@ function renderEmptyState() {
   emptyEl.classList.remove("empty-state--power-complete");
   setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, false);
   setEmptyStatePowerAction(powerEl, powerHintEl);
-  // No Stories bridge, no unlock teaser — only Study + streak.
-  renderPowerOnExtras({
-    teaserEl: powerTeaserEl,
-    readBridgeBtn,
-    showTeaser: false,
-    showReadBridge: false,
-  });
   setEmptyStateSecondaryActions({ libraryBtn, showLibrary: false });
 
   const emptyPreview = document.getElementById("empty-preview");
@@ -5691,6 +5684,14 @@ function renderEmptyState() {
     hint,
     celebrate: Boolean(sessionJustCompleted && canStudy),
     enabled: canStudy,
+  });
+  // When nothing is due: one honest unlock line under the orb (not a second CTA).
+  // When there is work: silence — Study + streak are enough.
+  renderPowerOnExtras({
+    teaserEl: powerTeaserEl,
+    readBridgeBtn,
+    showTeaser: !canStudy,
+    showReadBridge: false,
   });
   renderHomeStatus();
 }
@@ -10676,15 +10677,10 @@ function renderCardList() {
     return;
   }
 
-  // Phrases / Yours / search: flat list, but keep Essentials→Wider jump bar
-  // so those filters don’t strip deck navigation.
+  // Phrases / Yours / search: flat list only. Jump bar is for All (full deck bands).
+  // Keeping Essentials→Wider on filtered views fought the filter and yanked people away.
   if (searching || libraryFilter === "phrase" || libraryFilter === "yours") {
-    if (searching) {
-      clearLibraryJumpNav();
-    } else {
-      renderLibraryJumpNav(getLibraryBandJumpSectionsFromDeck());
-      setActiveLibraryJump(null);
-    }
+    clearLibraryJumpNav();
     list.innerHTML = `<div class="card-group-list"></div>`;
     renderCardsInBatches(filtered, list.querySelector(".card-group-list"), token, () => {
       if (token === libraryRenderToken) bindCardListListeners(list);
@@ -10698,11 +10694,8 @@ function renderCardList() {
     const cards = filtered.filter((card) =>
       band === null ? !card.band : card.band === band
     );
-    // Keep empty Yours section on full library so the list layout stays stable
-    // when the first personal card is added (Yours itself is a filter, not a jump chip).
-    const alwaysShowYours =
-      band === null && libraryFilter === "all" && !searching;
-    if (!cards.length && !alwaysShowYours) continue;
+    // Skip empty bands — including empty Yours (use the Yours filter when you care).
+    if (!cards.length) continue;
     sections.push({
       band,
       label: band ? BAND_LABELS[band] : "Yours",
