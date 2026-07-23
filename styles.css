@@ -2269,7 +2269,13 @@ main {
   margin-bottom: 0.85rem;
 }
 
-/* Direction - plain caption only (always L2 → English). No pill / no control chrome. */
+/* Direction - plain caption only (always L2 → English). No pill / no control chrome.
+ * Shown on the first card of a session; then quiet (see updateDirectionLabelVisibility). */
+.practice-card-top.is-quiet {
+  margin-bottom: 0;
+  min-height: 0;
+}
+
 .direction-label {
   display: block;
   margin: 0;
@@ -2288,6 +2294,10 @@ main {
   cursor: default;
   user-select: none;
   pointer-events: none;
+}
+
+.direction-label.hidden {
+  display: none;
 }
 
 

@@ -5917,10 +5917,7 @@ function renderPractice() {
     promptHint.classList.add("hidden");
   }
 
-  const directionLabel = document.getElementById("prompt-direction");
-  if (directionLabel) {
-    directionLabel.textContent = labels.promptLabel;
-  }
+  updateDirectionLabelVisibility(labels);
 
   hideFeedback();
   ensureCardAttemptState();
@@ -5934,6 +5931,21 @@ function renderPractice() {
     input.lang = String(labels.answerLang || "en").split("-")[0];
   }
   if (!speakModeActive) focusAnswerInput();
+}
+
+/**
+ * Direction is always L2 → English. Show the caption on the first card of a
+ * session only; after that it restates a fixed fact (quiet chrome).
+ */
+function updateDirectionLabelVisibility(labels = getDirectionLabels(getActiveCategory())) {
+  const directionLabel = document.getElementById("prompt-direction");
+  const top = document.querySelector(".practice-card-top");
+  if (!directionLabel) return;
+  directionLabel.textContent = labels.promptLabel || "";
+  const show = sessionReviewed === 0;
+  directionLabel.hidden = !show;
+  directionLabel.classList.toggle("hidden", !show);
+  top?.classList.toggle("is-quiet", !show);
 }
 
 function escapeHtml(str) {
@@ -11949,9 +11961,7 @@ function applyPracticeDirectionUI() {
   const speakBtn = document.getElementById("speak-btn");
   const revealBtn = document.getElementById("reveal-btn");
 
-  if (directionLabel) {
-    directionLabel.textContent = labels.promptLabel;
-  }
+  updateDirectionLabelVisibility(labels);
 
   if (answerInput) {
     updateAnswerInputPlaceholder();
@@ -12534,7 +12544,8 @@ function submitAnswer(options = {}) {
 
   const answerText = getAnswerTargetText(currentCard);
 
-  if (speakModeActive && result.near) {
+  // Near-miss soft retry for type and speak (one close typo shouldn't demote harder than speech).
+  if (result.near) {
     currentCardAttempts += 1;
     setAnswerFieldHighlight(true);
     setAnswerIncorrectState(false);
@@ -12544,7 +12555,9 @@ function submitAnswer(options = {}) {
       const triesLeft = MAX_CLOSE_RETRIES - currentCardAttempts + 1;
       showFeedback(`Try again · ${triesLeft} left`, "near");
       if (!options.fromSpeech) focusAnswerInput();
-      scheduleSpeakForCurrentCard(SPEAK_RETRY_DELAY_MS);
+      if (speakModeActive) {
+        scheduleSpeakForCurrentCard(SPEAK_RETRY_DELAY_MS);
+      }
       return;
     }
   }
