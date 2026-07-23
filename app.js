@@ -3276,6 +3276,8 @@ const SPEAK_ADVANCE_CORRECT_MS = 4000;
 const SPEAK_ADVANCE_WRONG_MS = 5000;
 const TYPING_ADVANCE_CORRECT_MS = 4500;
 const TYPING_ADVANCE_WRONG_MS = 5500;
+/** After tapping miss-example L2 to hear: pause auto-advance long enough to listen. */
+const EXAMPLE_HEAR_RESUME_MS = 2800;
 const MAX_CLOSE_RETRIES = 2;
 /** Cap quiet re-listens so Chrome "network" errors cannot loop forever. */
 const SPEAK_SOFT_RETRY_MAX = 2;
