@@ -3130,6 +3130,9 @@ function handleCorrect() {
 }
 
 function handleIncorrect(requeue = true) {
+  // Miss / Show still counts as an honest review for the day (floss one tooth).
+  // Do not mark the card complete — it demotes and may requeue.
+  recordGoalStreak();
   const updated = demote(currentCard);
   updateCardInDeck(updated);
   currentCard = updated;
