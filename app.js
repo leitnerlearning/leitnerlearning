@@ -98,6 +98,8 @@ let speakListening = false;
 let speakAttemptId = 0;
 let currentCardId = null;
 let currentCardAttempts = 0;
+/** True after correct/miss/Show settled this card — block double demote/promote until advance. */
+let cardSettled = false;
 let speakCardDelayTimer = null;
 let speakAttemptTimer = null;
 let cardAdvanceTimer = null;
@@ -1056,6 +1058,8 @@ function pausePracticeSession() {
   currentCard = null;
   currentCardId = null;
   resetCardAttempts();
+  cardSettled = false;
+  unlockSettledCardControls();
   hideFeedback();
 }
 
@@ -3431,16 +3435,39 @@ function ensureCardAttemptState() {
   if (!currentCard) {
     currentCardId = null;
     currentCardAttempts = 0;
+    cardSettled = false;
     return;
   }
   if (currentCard.id !== currentCardId) {
     currentCardId = currentCard.id;
     currentCardAttempts = 0;
+    cardSettled = false;
+    unlockSettledCardControls();
   }
 }
 
 function resetCardAttempts() {
   currentCardAttempts = 0;
+}
+
+function unlockSettledCardControls() {
+  const input = document.getElementById("answer-input");
+  if (input) {
+    input.disabled = false;
+    input.removeAttribute("aria-disabled");
+  }
+  document.getElementById("reveal-btn")?.removeAttribute("disabled");
+}
+
+/** Lock input/Show after a card is graded so double-submit cannot demote twice. */
+function settleCurrentCard() {
+  cardSettled = true;
+  const input = document.getElementById("answer-input");
+  if (input) {
+    input.disabled = true;
+    input.setAttribute("aria-disabled", "true");
+  }
+  document.getElementById("reveal-btn")?.setAttribute("disabled", "true");
 }
 
 function setAnswerFieldHighlight(nearMiss) {
@@ -12549,7 +12576,7 @@ function beginPracticeSession() {
 function submitAnswer(options = {}) {
   const answerInput = document.getElementById("answer-input");
   const answer = answerInput?.value || "";
-  if (!currentCard) return;
+  if (!currentCard || cardSettled) return;
 
   if (!answer.trim()) {
     if (speakModeActive) {
@@ -12561,6 +12588,7 @@ function submitAnswer(options = {}) {
   }
 
   ensureCardAttemptState();
+  if (cardSettled) return;
   const result = evaluateAnswer(answer, currentCard, { fromSpeech: options.fromSpeech });
 
   if (result.correct) {
@@ -12574,6 +12602,7 @@ function submitAnswer(options = {}) {
       answerInput.value = result.matched;
     }
     handleCorrect();
+    settleCurrentCard();
     showFeedback(getAnswerTargetText(currentCard), "correct");
     finishCardAndContinue(getAdvanceDelay(true, options.fromSpeech));
     return;
@@ -12604,6 +12633,7 @@ function submitAnswer(options = {}) {
   setAnswerReceivedState(false);
   setAnswerIncorrectState(true);
   handleIncorrect();
+  settleCurrentCard();
   const withExample = showIncorrectWithExample(currentCard, answerText);
 
   finishCardAndContinue(getAdvanceDelay(false, options.fromSpeech, { withExample }));
@@ -12695,11 +12725,12 @@ function initEventListeners() {
   });
 
   document.getElementById("reveal-btn")?.addEventListener("click", () => {
-    if (!currentCard) return;
+    if (!currentCard || cardSettled) return;
     const answerText = getAnswerTargetText(currentCard);
     setAnswerReceivedState(false);
     setAnswerIncorrectState(true);
     handleIncorrect();
+    settleCurrentCard();
     const withExample = showIncorrectWithExample(currentCard, answerText);
     finishCardAndContinue(
       getAdvanceDelay(false, speakModeActive, { withExample })
