@@ -13339,7 +13339,7 @@ function openBasicsModal(returnFocusId) {
   }
   const kicker = document.getElementById("basics-hero-kicker");
   if (kicker) {
-    kicker.textContent = "Letters & sounds · tap a word to hear";
+    kicker.textContent = "Tap to hear";
   }
   const flagEl = document.getElementById("basics-hero-flag");
   if (flagEl) {
@@ -13347,7 +13347,7 @@ function openBasicsModal(returnFocusId) {
   }
   modal.setAttribute(
     "aria-label",
-    `Letters and sounds for ${category?.label || "this language"}`
+    `${category?.label || "Basics"} · tap to hear`
   );
   renderLanguageBasics(category);
   modal.classList.remove("hidden");

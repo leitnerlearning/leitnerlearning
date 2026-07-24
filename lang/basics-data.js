@@ -34,21 +34,21 @@
     previewGlyphs: ["æ", "ø", "å"],
     sections: [
       {
-        title: "Special letters",
+        title: "Special",
         items: [
           {
             glyph: "æ",
             speak: "ære",
-            approxHtml: "Like <strong>a</strong> in <em>cat</em> · lips flatter than <span class=\"basics-letter\">e</span>",
+            approxHtml: "<strong>a</strong> in <em>cat</em>",
             examples: [
               { speak: "ære", text: "ære", gloss: "honor" },
-              { speak: "være", text: "være", gloss: "to be" },
+              { speak: "være", text: "være", gloss: "be" },
             ],
           },
           {
             glyph: "ø",
             speak: "øl",
-            approxHtml: "Like <strong>u</strong> in <em>burn</em> · lips rounded",
+            approxHtml: "<strong>u</strong> in <em>burn</em> · rounded",
             examples: [
               { speak: "øl", text: "øl", gloss: "beer" },
               { speak: "søster", text: "søster", gloss: "sister" },
@@ -57,23 +57,23 @@
           {
             glyph: "å",
             speak: "år",
-            approxHtml: "Like <strong>o</strong> in <em>or</em> / British <em>law</em>",
+            approxHtml: "<strong>o</strong> in <em>or</em>",
             examples: [
               { speak: "år", text: "år", gloss: "year" },
-              { speak: "gå", text: "gå", gloss: "to go" },
+              { speak: "gå", text: "gå", gloss: "go" },
             ],
           },
         ],
       },
       {
-        title: "Letters that surprise English ears",
+        title: "Surprises",
         compact: true,
         items: [
           {
             glyph: "j",
             speak: "ja",
             glyphSize: "sm",
-            approxHtml: "Always <strong>y</strong> in <em>yes</em> · never English <span class=\"basics-letter\">j</span>",
+            approxHtml: "<strong>y</strong> in <em>yes</em>",
             examples: [
               { speak: "ja", text: "ja", gloss: "yes" },
               { speak: "jeg", text: "jeg", gloss: "I" },
@@ -83,7 +83,7 @@
             glyph: "y",
             speak: "by",
             glyphSize: "sm",
-            approxHtml: "Like <strong>ee</strong> in <em>see</em> · lips rounded (French <em>u</em>)",
+            approxHtml: "<strong>ee</strong> · rounded lips",
             examples: [
               { speak: "by", text: "by", gloss: "town" },
               { speak: "syk", text: "syk", gloss: "sick" },
@@ -93,8 +93,7 @@
             glyph: "r",
             speak: "rød",
             glyphSize: "sm",
-            approxHtml:
-              "Tapped or rolled · not English <span class=\"basics-letter\">r</span>",
+            approxHtml: "Tapped · not English <span class=\"basics-letter\">r</span>",
             examples: [
               { speak: "rød", text: "rød", gloss: "red" },
               { speak: "bra", text: "bra", gloss: "good" },
@@ -103,16 +102,16 @@
         ],
       },
       {
-        title: "Soft and hard pairs",
+        title: "Pairs",
         compact: true,
         items: [
           {
             glyph: "kj",
             speak: "kjøpe",
             glyphSize: "pair",
-            approxHtml: "Soft <strong>h</strong> · like the start of <em>huge</em> (<em>hyuge</em>)",
+            approxHtml: "Soft <strong>h</strong> · <em>huge</em>",
             examples: [
-              { speak: "kjøpe", text: "kjøpe", gloss: "to buy" },
+              { speak: "kjøpe", text: "kjøpe", gloss: "buy" },
               { speak: "kjøkken", text: "kjøkken", gloss: "kitchen" },
             ],
           },
@@ -120,7 +119,7 @@
             glyph: "skj",
             speak: "skje",
             glyphSize: "pair",
-            approxHtml: "<strong>sh</strong> · also <em>ski</em>, <em>sky</em> before front vowels",
+            approxHtml: "<strong>sh</strong>",
             examples: [
               { speak: "skje", text: "skje", gloss: "spoon" },
               { speak: "ski", text: "ski", gloss: "ski" },
@@ -130,7 +129,7 @@
             glyph: "sk",
             speak: "skole",
             glyphSize: "pair",
-            approxHtml: "Hard <strong>sk</strong> before <em>a o u å</em>",
+            approxHtml: "Hard <strong>sk</strong> before a o u å",
             examples: [
               { speak: "skole", text: "skole", gloss: "school" },
               { speak: "skatt", text: "skatt", gloss: "tax" },
@@ -140,7 +139,7 @@
             glyph: "hj",
             speak: "hjem",
             glyphSize: "pair",
-            approxHtml: "<strong>h</strong> silent · sounds like <strong>y</strong> in <em>yes</em>",
+            approxHtml: "Silent <strong>h</strong> · <strong>y</strong>",
             examples: [
               { speak: "hjem", text: "hjem", gloss: "home" },
               { speak: "hjelp", text: "hjelp", gloss: "help" },
@@ -150,7 +149,7 @@
             glyph: "hv",
             speak: "hva",
             glyphSize: "pair",
-            approxHtml: "<strong>h</strong> silent · sounds like <strong>v</strong>",
+            approxHtml: "Silent <strong>h</strong> · <strong>v</strong>",
             examples: [
               { speak: "hva", text: "hva", gloss: "what" },
               { speak: "hvor", text: "hvor", gloss: "where" },
@@ -160,23 +159,23 @@
             glyph: "gj",
             speak: "gjøre",
             glyphSize: "pair",
-            approxHtml: "Soft · often like <strong>y</strong> before front vowels",
+            approxHtml: "Soft · often <strong>y</strong>",
             examples: [
-              { speak: "gjøre", text: "gjøre", gloss: "to do" },
+              { speak: "gjøre", text: "gjøre", gloss: "do" },
               { speak: "gjennom", text: "gjennom", gloss: "through" },
             ],
           },
         ],
       },
       {
-        title: "Vowel pairs",
+        title: "Vowels",
         compact: true,
         items: [
           {
             glyph: "ei",
             speak: "nei",
             glyphSize: "pair",
-            approxHtml: "Like <strong>ay</strong> in <em>say</em>",
+            approxHtml: "<strong>ay</strong> in <em>say</em>",
             examples: [
               { speak: "nei", text: "nei", gloss: "no" },
               { speak: "vei", text: "vei", gloss: "road" },
@@ -186,7 +185,7 @@
             glyph: "øy",
             speak: "høy",
             glyphSize: "pair",
-            approxHtml: "<strong>ø</strong> then a quick <strong>y</strong> (yes-sound)",
+            approxHtml: "<strong>ø</strong> + <strong>y</strong>",
             examples: [
               { speak: "høy", text: "høy", gloss: "high" },
               { speak: "øy", text: "øy", gloss: "island" },
@@ -196,7 +195,7 @@
             glyph: "au",
             speak: "sau",
             glyphSize: "pair",
-            approxHtml: "Like <strong>ow</strong> in <em>how</em>",
+            approxHtml: "<strong>ow</strong> in <em>how</em>",
             examples: [
               { speak: "sau", text: "sau", gloss: "sheep" },
               { speak: "august", text: "august", gloss: "August" },
@@ -206,7 +205,7 @@
             glyph: "ai",
             speak: "mai",
             glyphSize: "pair",
-            approxHtml: "Like <strong>eye</strong> · less common than <em>ei</em>",
+            approxHtml: "<strong>eye</strong>",
             examples: [
               { speak: "mai", text: "mai", gloss: "May" },
               { speak: "hai", text: "hai", gloss: "shark" },
@@ -215,14 +214,14 @@
         ],
       },
       {
-        title: "Rhythm & typing",
+        title: "Rhythm",
         compact: true,
         items: [
           {
             glyph: "stress",
             speak: "norsk",
             glyphSize: "pair",
-            approxHtml: "Usually on the <strong>first</strong> syllable of the root",
+            approxHtml: "Usually the <strong>first</strong> syllable",
             examples: [
               { speak: "norsk", text: "norsk", gloss: "Norwegian" },
               { speak: "skole", text: "skole", gloss: "school" },
@@ -232,7 +231,7 @@
             glyph: "tone",
             speak: "bønder",
             glyphSize: "pair",
-            approxHtml: "Light pitch accent · listen more than you analyse",
+            approxHtml: "Pitch accent · listen first",
             examples: [
               { speak: "bønder", text: "bønder", gloss: "farmers" },
               { speak: "bønner", text: "bønner", gloss: "beans" },
@@ -242,19 +241,19 @@
             glyph: "ae oe aa",
             speak: "være",
             glyphSize: "pair",
-            approxHtml: "When you can’t type æ/ø/å · still the same letters",
+            approxHtml: "æ ø å when typing",
             examples: [
-              { speak: "være", text: "være", gloss: "to be" },
+              { speak: "være", text: "være", gloss: "be" },
               { speak: "år", text: "år", gloss: "year" },
             ],
           },
           {
-            glyph: "det / de",
+            glyph: "det",
             speak: "det",
             glyphSize: "pair",
-            approxHtml: "<em>det</em> often sounds like <strong>de</strong> · spelling keeps the <span class=\"basics-letter\">t</span>",
+            approxHtml: "Often sounds like <strong>de</strong>",
             examples: [
-              { speak: "det", text: "det", gloss: "it / that" },
+              { speak: "det", text: "det", gloss: "it" },
               { speak: "de", text: "de", gloss: "they" },
             ],
           },
