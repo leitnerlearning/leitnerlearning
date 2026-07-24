@@ -992,16 +992,16 @@
     { foreign: 'fare', native: 'danger', rank: 988, category: 'noun', band: 'G' },
     { foreign: 'bestilling', native: 'order', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'mening', native: 'opinion', rank: 990, category: 'noun', band: 'G' },
-    { foreign: 'beslutning', native: 'decision', rank: 991, category: 'noun', band: 'G' },
-    { foreign: 'kontrakt', native: 'contract', rank: 992, category: 'noun', band: 'G' },
-    { foreign: 'underskrift', native: 'signature', rank: 993, category: 'noun', band: 'G' },
-    { foreign: 'formular', native: 'form', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'ansøgning', native: 'application', rank: 995, category: 'noun', band: 'G' },
-    { foreign: 'frist', native: 'deadline', rank: 996, category: 'noun', band: 'G' },
-    { foreign: 'invitation', native: 'invitation', rank: 997, category: 'noun', band: 'G' },
-    { foreign: 'fødselsdag', native: 'birthday', rank: 998, category: 'noun', band: 'G' },
-    { foreign: 'gave', native: 'gift', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'tålmodighed', native: 'patience', rank: 1000, category: 'noun', band: 'G' }
+    { foreign: "snak langsommere", native: "speak more slowly", rank: 991, category: "phrase", band: "phrase" },
+    { foreign: 'langsommere', native: 'more slowly', rank: 992, category: 'adverb', band: 'G' },
+    { foreign: 'billigere', native: 'cheaper', rank: 993, category: 'adjective', band: 'G' },
+    { foreign: 'adgangskoden', native: 'the password', rank: 994, category: 'noun', band: 'G' },
+    { foreign: 'allergisk', native: 'allergic', rank: 995, category: 'adjective', band: 'G' },
+    { foreign: 'forsinket', native: 'delayed', rank: 996, category: 'adjective', band: 'G' },
+    { foreign: 'enig', native: 'in agreement / agree', rank: 997, category: 'adjective', band: 'G' },
+    { foreign: 'synes', native: 'think / find (opinion)', rank: 998, category: 'verb', band: 'G' },
+    { foreign: 'udgangen', native: 'the exit', rank: 999, category: 'noun', band: 'G' },
+    { foreign: 'inkluderet', native: 'included', rank: 1000, category: 'adjective', band: 'G' }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

@@ -992,16 +992,16 @@
     { foreign: 'strona internetowa', native: 'website', rank: 988, category: 'phrase', band: 'phrase' },
     { foreign: 'link', native: 'link', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'plik', native: 'file', rank: 990, category: 'noun', band: 'G' },
-    { foreign: 'folder', native: 'folder', rank: 991, category: 'noun', band: 'G' },
-    { foreign: 'chmura', native: 'cloud', rank: 992, category: 'noun', band: 'G' },
-    { foreign: 'kopia zapasowa pliku', native: 'file backup', rank: 993, category: 'phrase', band: 'phrase' },
-    { foreign: 'wirus', native: 'virus', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'aktualizacja', native: 'update', rank: 995, category: 'noun', band: 'G' },
-    { foreign: 'ustawienie', native: 'setting', rank: 996, category: 'noun', band: 'G' },
-    { foreign: 'powiadomienie', native: 'notification', rank: 997, category: 'noun', band: 'G' },
-    { foreign: 'podróż', native: 'trip', rank: 998, category: 'noun', band: 'G' },
-    { foreign: 'turystyka', native: 'tourism', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'mapa', native: 'map', rank: 1000, category: 'noun', band: 'G' }
+    { foreign: "jeszcze raz", native: "once more", rank: 991, category: "phrase", band: "phrase" },
+    { foreign: "wolniej", native: "more slowly", rank: 992, category: "adverb", band: "G" },
+    { foreign: "tańszy", native: "cheaper", rank: 993, category: "adjective", band: "G" },
+    { foreign: "hasło do wifi", native: "Wi‑Fi password", rank: 994, category: "phrase", band: "phrase" },
+    { foreign: "alergiczny", native: "allergic", rank: 995, category: "adjective", band: "G" },
+    { foreign: "opóźniony", native: "delayed", rank: 996, category: "adjective", band: "G" },
+    { foreign: "zgodny", native: "in agreement / agree", rank: 997, category: "adjective", band: "G" },
+    { foreign: "uważać", native: "think / find (opinion)", rank: 998, category: "verb", band: "G" },
+    { foreign: "wyjście", native: "the exit", rank: 999, category: "noun", band: "G" },
+    { foreign: "wliczony", native: "included", rank: 1000, category: "adjective", band: "G" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

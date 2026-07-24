@@ -992,16 +992,16 @@
     { foreign: 'raramente', native: 'rarely', rank: 988, category: 'adverb', band: 'G' },
     { foreign: 'tercero', native: 'third', rank: 989, category: 'number', band: 'G' },
     { foreign: 'once', native: 'eleven', rank: 990, category: 'number', band: 'G' },
-    { foreign: 'trece', native: 'thirteen', rank: 991, category: 'number', band: 'G' },
-    { foreign: 'catorce', native: 'fourteen', rank: 992, category: 'number', band: 'G' },
-    { foreign: 'quince', native: 'fifteen', rank: 993, category: 'number', band: 'G' },
-    { foreign: 'buen provecho', native: 'enjoy your meal', rank: 994, category: 'phrase', band: 'phrase' },
-    { foreign: 'felicidades', native: 'congratulations', rank: 995, category: 'noun', band: 'G' },
-    { foreign: 'diviértete', native: 'have fun', rank: 996, category: 'noun', band: 'G' },
-    { foreign: 'cuídate', native: 'take care', rank: 997, category: 'noun', band: 'G' },
-    { foreign: 'está bien', native: 'it\'s fine', rank: 998, category: 'phrase', band: 'phrase' },
-    { foreign: 'entiendo', native: 'I understand', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'no sé', native: 'I don\'t know', rank: 1000, category: 'phrase', band: 'phrase' }
+    { foreign: "una vez más", native: "once more", rank: 991, category: "phrase", band: "phrase" },
+    { foreign: "hable más despacio", native: "speak more slowly", rank: 992, category: "phrase", band: "phrase" },
+    { foreign: "más barato", native: "cheaper", rank: 993, category: "phrase", band: "phrase" },
+    { foreign: "la contraseña", native: "the password", rank: 994, category: "noun", band: "G" },
+    { foreign: "alérgico", native: "allergic", rank: 995, category: "adjective", band: "G" },
+    { foreign: "retrasado", native: "delayed", rank: 996, category: "adjective", band: "G" },
+    { foreign: "de acuerdo", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase" },
+    { foreign: "qué piensas", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
+    { foreign: "la salida", native: "the exit", rank: 999, category: "noun", band: "G" },
+    { foreign: "incluido", native: "included", rank: 1000, category: "adjective", band: "G" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

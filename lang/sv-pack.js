@@ -992,16 +992,16 @@
     { foreign: 'flexibel', native: 'flexible', rank: 988, category: 'adjective', band: 'G' },
     { foreign: 'stabil', native: 'stable', rank: 989, category: 'adjective', band: 'G' },
     { foreign: 'instabil', native: 'unstable', rank: 990, category: 'adjective', band: 'G' },
-    { foreign: 'pålitlig', native: 'reliable', rank: 991, category: 'adjective', band: 'G' },
-    { foreign: 'opålitlig', native: 'unreliable', rank: 992, category: 'adjective', band: 'G' },
-    { foreign: 'ärlig', native: 'honest', rank: 993, category: 'adjective', band: 'G' },
-    { foreign: 'oärlig', native: 'dishonest', rank: 994, category: 'adjective', band: 'G' },
-    { foreign: 'snäll', native: 'kind', rank: 995, category: 'adjective', band: 'G' },
-    { foreign: 'elak', native: 'mean', rank: 996, category: 'adjective', band: 'G' },
-    { foreign: 'generös', native: 'generous', rank: 997, category: 'adjective', band: 'G' },
-    { foreign: 'girig', native: 'greedy', rank: 998, category: 'adjective', band: 'G' },
-    { foreign: 'tålmodig', native: 'patient', rank: 999, category: 'adjective', band: 'G' },
-    { foreign: 'otålmodig', native: 'impatient', rank: 1000, category: 'adjective', band: 'G' }
+    { foreign: "wifi-lösenord", native: "Wi‑Fi password", rank: 991, category: "noun", band: "G" },
+    { foreign: 'långsammare', native: 'more slowly', rank: 992, category: 'adverb', band: 'G' },
+    { foreign: 'billigare', native: 'cheaper', rank: 993, category: 'adjective', band: 'G' },
+    { foreign: 'lösenordet', native: 'the password', rank: 994, category: 'noun', band: 'G' },
+    { foreign: 'allergisk', native: 'allergic', rank: 995, category: 'adjective', band: 'G' },
+    { foreign: 'försenad', native: 'delayed', rank: 996, category: 'adjective', band: 'G' },
+    { foreign: 'överens', native: 'in agreement / agree', rank: 997, category: 'adjective', band: 'G' },
+    { foreign: 'tycker', native: 'think / find (opinion)', rank: 998, category: 'verb', band: 'G' },
+    { foreign: 'utgången', native: 'the exit', rank: 999, category: 'noun', band: 'G' },
+    { foreign: 'inkluderad', native: 'included', rank: 1000, category: 'adjective', band: 'G' }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

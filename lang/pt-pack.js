@@ -992,16 +992,16 @@
     { foreign: 'sílaba', native: 'syllable', rank: 988, category: 'noun', band: 'G' },
     { foreign: 'gramática', native: 'grammar', rank: 989, category: 'adjective', band: 'G' },
     { foreign: 'vocabulário', native: 'vocabulary', rank: 990, category: 'noun', band: 'G' },
-    { foreign: 'dicionário', native: 'dictionary', rank: 991, category: 'noun', band: 'G' },
-    { foreign: 'tradução', native: 'translation', rank: 992, category: 'noun', band: 'G' },
-    { foreign: 'pronúncia', native: 'pronunciation', rank: 993, category: 'noun', band: 'G' },
-    { foreign: 'sotaque', native: 'accent', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'celular', native: 'cell phone', rank: 995, category: 'noun', band: 'G' },
-    { foreign: 'smartphone', native: 'smartphone', rank: 996, category: 'noun', band: 'G' },
-    { foreign: 'tela', native: 'screen', rank: 997, category: 'noun', band: 'G' },
-    { foreign: 'teclado', native: 'keyboard', rank: 998, category: 'noun', band: 'G' },
-    { foreign: 'mouse', native: 'mouse', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'carregador', native: 'charger', rank: 1000, category: 'noun', band: 'G' }
+    { foreign: "mais uma vez", native: "once more", rank: 991, category: "phrase", band: "phrase" },
+    { foreign: "mais devagar", native: "more slowly", rank: 992, category: "phrase", band: "phrase" },
+    { foreign: "mais barato", native: "cheaper", rank: 993, category: "phrase", band: "phrase" },
+    { foreign: "a senha", native: "the password", rank: 994, category: "noun", band: "G" },
+    { foreign: "alérgico", native: "allergic", rank: 995, category: "adjective", band: "G" },
+    { foreign: "atrasado", native: "delayed", rank: 996, category: "adjective", band: "G" },
+    { foreign: "de acordo", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase" },
+    { foreign: "o que você acha", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
+    { foreign: "a saída", native: "the exit", rank: 999, category: "noun", band: "G" },
+    { foreign: "incluído", native: "included", rank: 1000, category: "adjective", band: "G" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

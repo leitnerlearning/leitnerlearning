@@ -992,16 +992,16 @@
     { foreign: 'hardware', native: 'hardware', rank: 988, category: 'noun', band: 'G' },
     { foreign: 'algorithmus', native: 'algorithm', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'ki', native: 'AI', rank: 990, category: 'noun', band: 'G' },
-    { foreign: 'visualisierung', native: 'visualization', rank: 991, category: 'noun', band: 'G' },
-    { foreign: 'dashboard', native: 'dashboard', rank: 992, category: 'noun', band: 'G' },
-    { foreign: 'berichtswesen', native: 'reporting', rank: 993, category: 'noun', band: 'G' },
-    { foreign: 'qualitätssicherung', native: 'quality assurance', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'krankenwagen', native: 'ambulance', rank: 995, category: 'noun', band: 'G' },
-    { foreign: 'gefahr', native: 'danger', rank: 996, category: 'noun', band: 'G' },
-    { foreign: 'bestellung', native: 'order', rank: 997, category: 'noun', band: 'G' },
-    { foreign: 'meinung', native: 'opinion', rank: 998, category: 'noun', band: 'G' },
-    { foreign: 'entscheidung', native: 'decision', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'vertrag', native: 'contract', rank: 1000, category: 'noun', band: 'G' }
+    { foreign: "WLAN-Passwort", native: "Wi‑Fi password", rank: 991, category: "noun", band: "G" },
+    { foreign: 'langsamer', native: 'more slowly', rank: 992, category: 'adverb', band: 'G' },
+    { foreign: 'billiger', native: 'cheaper', rank: 993, category: 'adjective', band: 'G' },
+    { foreign: 'das Passwort', native: 'the password', rank: 994, category: 'noun', band: 'G' },
+    { foreign: 'allergisch', native: 'allergic', rank: 995, category: 'adjective', band: 'G' },
+    { foreign: 'verspätet', native: 'delayed', rank: 996, category: 'adjective', band: 'G' },
+    { foreign: 'einverstanden', native: 'in agreement / agree', rank: 997, category: 'adjective', band: 'G' },
+    { foreign: "was denkst du", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
+    { foreign: 'der Ausgang', native: 'the exit', rank: 999, category: 'noun', band: 'G' },
+    { foreign: 'inbegriffen', native: 'included', rank: 1000, category: 'adjective', band: 'G' }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

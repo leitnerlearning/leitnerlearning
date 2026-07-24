@@ -992,16 +992,16 @@
     { foreign: 'email', native: 'email', rank: 988, category: 'noun', band: 'G' },
     { foreign: 'chiffre', native: 'digit / figure', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'total', native: 'total', rank: 990, category: 'noun', band: 'G' },
-    { foreign: 'collègue', native: 'colleague', rank: 991, category: 'noun', band: 'G' },
-    { foreign: 'résultat', native: 'result', rank: 992, category: 'noun', band: 'G' },
-    { foreign: 'échec', native: 'failure', rank: 993, category: 'noun', band: 'G' },
-    { foreign: 'tristesse', native: 'sadness', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'chuchoter', native: 'to whisper', rank: 995, category: 'verb', band: 'G' },
-    { foreign: 'réussir', native: 'to succeed', rank: 996, category: 'verb', band: 'G' },
-    { foreign: 'échouer', native: 'to fail', rank: 997, category: 'verb', band: 'G' },
-    { foreign: 'combattre', native: 'to fight', rank: 998, category: 'verb', band: 'G' },
-    { foreign: 'horaire', native: 'timetable', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'correspondance', native: 'connection / transfer', rank: 1000, category: 'noun', band: 'G' }
+    { foreign: 'encore une fois', native: 'once more', rank: 991, category: 'phrase', band: 'phrase' },
+    { foreign: "parlez plus lentement", native: "speak more slowly", rank: 992, category: "phrase", band: "phrase" },
+    { foreign: 'moins cher', native: 'cheaper', rank: 993, category: 'phrase', band: 'phrase' },
+    { foreign: 'le mot de passe', native: 'the password', rank: 994, category: 'phrase', band: 'phrase' },
+    { foreign: 'allergique', native: 'allergic', rank: 995, category: 'adjective', band: 'G' },
+    { foreign: 'en retard', native: 'delayed', rank: 996, category: 'phrase', band: 'phrase' },
+    { foreign: "d'accord", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase" },
+    { foreign: "que penses-tu", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
+    { foreign: 'la sortie', native: 'the exit', rank: 999, category: 'noun', band: 'G' },
+    { foreign: 'inclus', native: 'included', rank: 1000, category: 'adjective', band: 'G' }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

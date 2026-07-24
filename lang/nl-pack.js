@@ -992,16 +992,16 @@
     { foreign: 'salaris', native: 'salary', rank: 988, category: 'noun', band: 'G' },
     { foreign: 'loonsverhoging', native: 'raise', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'vakantie', native: 'vacation', rank: 990, category: 'noun', band: 'G' },
-    { foreign: 'vrije dag', native: 'day off', rank: 991, category: 'phrase', band: 'phrase' },
-    { foreign: 'overwerk', native: 'overtime', rank: 992, category: 'noun', band: 'G' },
-    { foreign: 'werktijden', native: 'working hours', rank: 993, category: 'noun', band: 'G' },
-    { foreign: 'cv', native: 'resume / CV', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'sollicitatie', native: 'job application', rank: 995, category: 'noun', band: 'G' },
-    { foreign: 'sollicitatiegesprek', native: 'job interview', rank: 996, category: 'noun', band: 'G' },
-    { foreign: 'vacature', native: 'job opening', rank: 997, category: 'noun', band: 'G' },
-    { foreign: 'contract', native: 'contract', rank: 998, category: 'noun', band: 'G' },
-    { foreign: 'handtekening', native: 'signature', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'document', native: 'document', rank: 1000, category: 'noun', band: 'G' }
+    { foreign: 'nog een keer', native: 'once more', rank: 991, category: 'phrase', band: 'phrase' },
+    { foreign: 'langzamer', native: 'more slowly', rank: 992, category: 'adverb', band: 'G' },
+    { foreign: 'goedkoper', native: 'cheaper', rank: 993, category: 'adjective', band: 'G' },
+    { foreign: 'het wachtwoord', native: 'the password', rank: 994, category: 'noun', band: 'G' },
+    { foreign: 'allergisch', native: 'allergic', rank: 995, category: 'adjective', band: 'G' },
+    { foreign: 'vertraagd', native: 'delayed', rank: 996, category: 'adjective', band: 'G' },
+    { foreign: 'het eens', native: 'in agreement / agree', rank: 997, category: 'phrase', band: 'phrase' },
+    { foreign: "wat denk je", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
+    { foreign: 'de uitgang', native: 'the exit', rank: 999, category: 'noun', band: 'G' },
+    { foreign: 'inbegrepen', native: 'included', rank: 1000, category: 'adjective', band: 'G' }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

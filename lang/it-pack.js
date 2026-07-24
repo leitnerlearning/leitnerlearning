@@ -992,16 +992,16 @@
     { foreign: 'economico', native: 'inexpensive', rank: 988, category: 'adjective', band: 'G' },
     { foreign: 'piccante', native: 'spicy', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'salato', native: 'salty', rank: 990, category: 'noun', band: 'G' },
-    { foreign: 'amaro', native: 'bitter', rank: 991, category: 'noun', band: 'G' },
-    { foreign: 'cotto', native: 'cooked', rank: 992, category: 'noun', band: 'G' },
-    { foreign: 'crudo', native: 'raw', rank: 993, category: 'noun', band: 'G' },
-    { foreign: 'arrosto', native: 'roast', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'fritto', native: 'fried', rank: 995, category: 'noun', band: 'G' },
-    { foreign: 'vegetariano', native: 'vegetarian', rank: 996, category: 'noun', band: 'G' },
-    { foreign: 'vegano', native: 'vegan', rank: 997, category: 'noun', band: 'G' },
-    { foreign: 'divertiti', native: 'have fun', rank: 998, category: 'noun', band: 'G' },
-    { foreign: 'capisco', native: 'I understand', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'scontrino', native: 'receipt', rank: 1000, category: 'noun', band: 'G' }
+    { foreign: "ancora una volta", native: "once more", rank: 991, category: "phrase", band: "phrase" },
+    { foreign: "più lentamente", native: "more slowly", rank: 992, category: "phrase", band: "phrase" },
+    { foreign: "più economico", native: "cheaper", rank: 993, category: "phrase", band: "phrase" },
+    { foreign: "la password", native: "the password", rank: 994, category: "noun", band: "G" },
+    { foreign: "allergico", native: "allergic", rank: 995, category: "adjective", band: "G" },
+    { foreign: "in ritardo", native: "delayed", rank: 996, category: "phrase", band: "phrase" },
+    { foreign: "d'accordo", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase" },
+    { foreign: "cosa ne pensi", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
+    { foreign: "l'uscita", native: "the exit", rank: 999, category: "noun", band: "G" },
+    { foreign: "incluso", native: "included", rank: 1000, category: "adjective", band: "G" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
