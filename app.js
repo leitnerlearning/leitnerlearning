@@ -1743,6 +1743,80 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["huis", "huys"],
     ["uit", "uyt"],
   ],
+  // French — same-lemma ASR / elision (accents already orthography-soft)
+  fr: [
+    ["c'est", "cest"],
+    ["s'il vous plaît", "sil vous plait", "svp"],
+    ["s'il te plaît", "sil te plait", "stp"],
+    ["aujourd'hui", "aujourdhui"],
+    ["qu'est-ce que", "quest ce que"],
+    ["est-ce que", "est ce que"],
+    ["d'accord", "daccord"],
+    ["peut-être", "peut etre", "peutetre"],
+    ["parce que", "parceque"],
+    ["au revoir", "aurevoir"],
+    ["à bientôt", "a bientot", "abientot"],
+    ["ça va", "ca va"],
+    ["comment ça va", "comment ca va"],
+    ["s'il", "sil"],
+    ["n'est-ce pas", "nest ce pas"],
+  ],
+  // Spanish — same-lemma typing/ASR (never sí≈si or por qué≈porque)
+  es: [
+    ["por favor", "porfavor", "xfa"],
+    ["qué tal", "que tal"],
+    ["cómo estás", "como estas"],
+    ["cómo está", "como esta"],
+    ["buenos días", "buenos dias"],
+    ["buenas noches", "buenasnoches"],
+    ["mucho gusto", "muchogusto"],
+    ["de nada", "denada"],
+    ["hasta luego", "hastaluego"],
+    ["hasta mañana", "hasta manana"],
+    ["adónde", "adonde"],
+    ["también", "tambien"],
+    ["aquí", "aqui"],
+    ["allí", "alli"],
+    ["mañana", "manana"],
+    ["información", "informacion"],
+  ],
+  // Italian — same-lemma ASR / spacing (not different lemmas)
+  it: [
+    ["per favore", "perfavore"],
+    ["per piacere", "perpiacere"],
+    ["perché", "perche"],
+    ["com'è", "come e"],
+    ["cos'è", "cos e"],
+    ["dov'è", "dove e"],
+    ["c'è", "c e"],
+    ["buongiorno", "buon giorno"],
+    ["buonasera", "buona sera"],
+    ["buonanotte", "buona notte"],
+    ["come stai", "comestai"],
+    ["come sta", "comesta"],
+    ["più", "piu"],
+    ["però", "pero"],
+    ["già", "gia"],
+    ["così", "cosi"],
+  ],
+  // Portuguese (BR teaching) — same-lemma ASR / typing (not gender swaps)
+  pt: [
+    ["por favor", "porfavor"],
+    ["tudo bem", "tudobem"],
+    ["bom dia", "bomdia"],
+    ["boa noite", "boanoite"],
+    ["com licença", "comlicenca", "com licenca"],
+    ["de nada", "denada"],
+    ["até logo", "ate logo", "atelogo"],
+    ["até amanhã", "ate amanha"],
+    ["você", "voce", "vc"],
+    ["está", "ta"],
+    ["estão", "estao"],
+    ["não", "nao"],
+    ["também", "tambem"],
+    ["amanhã", "amanha"],
+    ["informação", "informacao"],
+  ],
 };
 
 const SPEECH_HOMOPHONE_LOOKUP = (() => {
@@ -1770,6 +1844,10 @@ function getAnswerSpeechLang(card = currentCard) {
   if (lower.startsWith("sv")) return "sv";
   if (lower.startsWith("de")) return "de";
   if (lower.startsWith("nl")) return "nl";
+  if (lower.startsWith("fr")) return "fr";
+  if (lower.startsWith("es")) return "es";
+  if (lower.startsWith("it")) return "it";
+  if (lower.startsWith("pt")) return "pt";
   // Map speech BCP-47-ish tags to our homophone tables
   if (lower.startsWith("en")) return "en";
   const short = lower.split("-")[0];
