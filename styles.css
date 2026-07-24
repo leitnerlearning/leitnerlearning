@@ -2034,10 +2034,7 @@ body:has(#stats-panel.active) #stats-panel.active {
   color: var(--text-secondary);
 }
 
-/*
- * Daily Goal strip - chip + bar as one unit above home/card.
- *  [ Goal  3/15 ]   then a short track under it
- */
+/* Theme set strip only (chip + bar) — not a daily goal picker. */
 .practice-goal-strip,
 .practice-meta {
   display: flex;
@@ -2115,22 +2112,6 @@ body:has(#stats-panel.active) #stats-panel.active {
   background: color-mix(in srgb, rgba(72, 187, 120, 0.1) 80%, var(--surface-glass-strong));
   border-color: rgba(56, 161, 105, 0.28);
 }
-
-/* Legacy class hooks still used in media queries */
-.meta-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--chip-min-h);
-  font-size: var(--chip-font);
-  font-weight: 600;
-  padding: var(--chip-pad-y) var(--chip-pad-x);
-  background: var(--surface-glass);
-  border: 1px solid var(--border);
-  border-radius: var(--chip-radius);
-  color: var(--text-secondary);
-}
-
 
 .daily-progress {
   width: 100%;
@@ -3254,40 +3235,7 @@ body:has(#stats-panel.active) #stats-panel.active {
   display: none;
 }
 
-/* Legacy dual chips (kept for any residual markup) */
-.home-stat {
-  padding: 0.65rem 0.55rem 0.6rem;
-  border-radius: var(--radius-sm);
-  background: var(--surface-glass-strong);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-sm);
-  text-align: center;
-}
-
-.home-stat__value {
-  display: block;
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--text);
-  line-height: 1.05;
-}
-
-.home-stat__label {
-  display: block;
-  margin-top: 0.3rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
-  line-height: 1.25;
-}
-
-/*
- * Streak under Study — one calm number + label (room after removing Stories / goal chips).
- * Not a second primary action; quiet companion to the logo.
- */
+/* Streak under Study — one calm number + label; not a second primary action. */
 .study-streak {
   display: flex;
   flex-direction: column;
@@ -3333,11 +3281,7 @@ body:has(#stats-panel.active) #stats-panel.active {
   line-height: 1.2;
 }
 
-/*
- * Power cue under the logo:
- *  Sentence case ("Start review") - not a headline, not ALL CAPS
- *  Actionable: brand weight · Idle/done: quiet tertiary
- */
+/* Power cue under the logo: one word when there is work; silence when idle. */
 .power-on-hint {
   margin: 0;
   max-width: 14rem;
@@ -3360,14 +3304,6 @@ body:has(#stats-panel.active) #stats-panel.active {
   color: var(--text-tertiary);
   font-weight: 550;
   font-size: 0.86rem;
-}
-
-.power-on-streak {
-  margin: -0.15rem 0 0;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  color: var(--brand);
 }
 
 .power-on-teaser {
@@ -6116,19 +6052,19 @@ html.needs-welcome body {
 }
 
 .library-empty-title {
-  margin: 0 0 0.35rem;
-  font-size: 1.05rem;
-  font-weight: 750;
-  letter-spacing: -0.025em;
-  color: var(--ink);
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--text-secondary);
 }
 
 .library-empty-copy {
-  margin: 0;
+  margin: 0.35rem 0 0;
   font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.4;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
 }
 
 .card-item {
@@ -6575,33 +6511,6 @@ html.needs-welcome body {
     width: 100%;
     max-width: 100%;
     gap: 0.5rem;
-  }
-
-  .home-stat {
-    min-width: 0;
-    padding: 0.6rem 0.35rem 0.55rem;
-    box-sizing: border-box;
-  }
-
-  .home-stat__value {
-    font-size: clamp(1.1rem, 4.5vw, 1.35rem);
-  }
-
-  .home-stat__label {
-    font-size: clamp(0.56rem, 2.4vw, 0.66rem);
-    letter-spacing: 0.02em;
-    line-height: 1.15;
-    max-width: 100%;
-    white-space: normal;
-    overflow-wrap: break-word;
-    text-wrap: balance;
-  }
-
-  .meta-chip {
-    font-size: var(--chip-font);
-    padding: var(--chip-pad-y) 0.7rem;
-    max-width: 100%;
-    box-sizing: border-box;
   }
 
   .library-deck-meta {
@@ -8367,14 +8276,6 @@ ul.box-stats {
 
   .empty-home-status {
     gap: 0.4rem;
-  }
-
-  .home-stat {
-    padding: 0.45rem 0.5rem 0.4rem;
-  }
-
-  .home-stat__value {
-    font-size: 1.1rem;
   }
 
   .about-logo {

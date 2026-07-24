@@ -5297,7 +5297,7 @@ function updateReadLanguageIndicator(category = getActiveCategory()) {
   if (empty && !empty.hidden) {
     const copyEl = document.getElementById("read-empty-copy");
     if (copyEl && !getStoriesForCategory().length) {
-      copyEl.textContent = `Stories for ${label} are still being prepared.`;
+      copyEl.textContent = `No stories for ${label} yet.`;
     }
   }
 }
@@ -6591,20 +6591,11 @@ function renderWordPreview(containerId, words, clickable = false) {
   }
 }
 
-function setEmptyStateIcon(mode) {
-  const iconEl = document.getElementById("empty-icon");
-  if (!iconEl) return;
-  const earned = mode === "earned";
-  iconEl.textContent = earned ? "✓" : "";
-  iconEl.classList.toggle("empty-icon--earned", earned);
-  iconEl.classList.toggle("empty-icon--idle", !earned);
-}
-
 function setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, enabled) {
   emptyEl.classList.toggle("empty-state--actions", enabled);
-  iconEl.classList.toggle("hidden", enabled);
-  titleEl.classList.toggle("hidden", enabled);
-  messageEl.classList.toggle("hidden", enabled || !messageEl.textContent.trim());
+  iconEl?.classList.toggle("hidden", enabled);
+  titleEl?.classList.toggle("hidden", enabled);
+  messageEl?.classList.toggle("hidden", enabled || !messageEl.textContent.trim());
 }
 
 function setEmptyStatePowerAction(
@@ -6712,10 +6703,6 @@ function renderPowerOnExtras({
   }
 }
 
-function setEmptyStateSecondaryActions({ libraryBtn, showLibrary = false }) {
-  libraryBtn?.classList.toggle("hidden", !showLibrary);
-}
-
 function renderEmptyState() {
   const emptyEl = document.getElementById("practice-empty");
   const iconEl = document.getElementById("empty-icon");
@@ -6724,12 +6711,10 @@ function renderEmptyState() {
   const powerEl = document.getElementById("empty-power");
   const powerHintEl = document.getElementById("power-on-hint");
   const powerTeaserEl = document.getElementById("power-on-teaser");
-  const libraryBtn = document.getElementById("empty-library-btn");
 
   emptyEl.classList.remove("empty-state--power-complete");
   setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, false);
   setEmptyStatePowerAction(powerEl, powerHintEl);
-  setEmptyStateSecondaryActions({ libraryBtn, showLibrary: false });
 
   const emptyPreview = document.getElementById("empty-preview");
   if (emptyPreview) emptyPreview.hidden = true;
@@ -11740,20 +11725,19 @@ function renderCardList() {
     } else {
       clearLibraryJumpNav();
     }
+    // One quiet line — no restated second sentence.
+    const emptyLine = searching
+      ? "No matches"
+      : libraryFilter === "yours"
+        ? "Cards you add show up here"
+        : libraryFilter === "phrase"
+          ? "No phrases yet"
+          : libraryFilter === "themes"
+            ? "Add a pack to fill this"
+            : "No cards";
     list.innerHTML = `
       <div class="library-empty">
-        <p class="library-empty-title">${searching ? "No matches" : "Nothing here"}</p>
-        <p class="library-empty-copy">${
-          searching
-            ? "Try another search."
-            : libraryFilter === "yours"
-              ? "Cards you add show up here."
-              : libraryFilter === "phrase"
-                ? "No phrases in this deck yet."
-                : libraryFilter === "themes"
-                  ? "Add a pack to put those cards in your deck."
-                  : "No cards in this view."
-        }</p>
+        <p class="library-empty-title">${emptyLine}</p>
       </div>`;
     updateLibraryScrollTopVisibility();
     return;
@@ -11812,8 +11796,7 @@ function renderCardList() {
     clearLibraryJumpNav();
     list.innerHTML = `
       <div class="library-empty">
-        <p class="library-empty-title">Nothing here</p>
-        <p class="library-empty-copy">No cards in this view.</p>
+        <p class="library-empty-title">No cards</p>
       </div>`;
     updateLibraryScrollTopVisibility();
     return;
@@ -12809,7 +12792,7 @@ function setReadEmptyVisible(show, { title = "", copy = "", showBrowse = false }
   if (copyEl) {
     copyEl.textContent =
       copy ||
-      `Stories for ${category?.label || "this language"} are still being prepared.`;
+      `No stories for ${category?.label || "this language"} yet.`;
   }
   if (browseBtn) {
     browseBtn.classList.toggle("hidden", !showBrowse);
@@ -12830,7 +12813,7 @@ function renderReadPanel() {
     closeReadMenu();
     setReadEmptyVisible(true, {
       title: "No stories yet",
-      copy: `Stories for ${getActiveCategory()?.label || "this language"} are still being prepared.`,
+      copy: `No stories for ${getActiveCategory()?.label || "this language"} yet.`,
       showBrowse: false,
     });
     return;
