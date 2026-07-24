@@ -5737,15 +5737,30 @@ function showFeedbackExample(example) {
 }
 
 /**
- * Miss teaching beat: Stories clause only, and at most once per card lifetime.
- * No templates, no stored pack examples, no bare lemma restatement.
+ * Miss teaching beat: at most once per card lifetime.
+ * Prefer a live Stories clause; fall back to curated exampleForeign on the card
+ * (e.g. survival ranks). No bare lemma restatement, no dishonest templates.
  */
 function getMissStoryExample(card) {
   if (!card || card.storyExampleShown) return null;
+
   const fromStory = findExampleSentenceForCard(card);
-  if (!fromStory?.foreign || !fromStory?.en) return null;
-  if (isRedundantFeedbackExample(fromStory, card, fromStory.en)) return null;
-  return fromStory;
+  if (fromStory?.foreign && fromStory?.en) {
+    if (!isRedundantFeedbackExample(fromStory, card, fromStory.en)) {
+      return fromStory;
+    }
+  }
+
+  const storedL2 = String(card.exampleForeign || "").trim();
+  const storedEn = String(card.exampleNative || "").trim();
+  if (storedL2 && storedEn) {
+    const stored = { foreign: storedL2, en: storedEn };
+    if (!isRedundantFeedbackExample(stored, card, storedEn)) {
+      return stored;
+    }
+  }
+
+  return null;
 }
 
 function markStoryExampleShown(card) {
@@ -6352,8 +6367,8 @@ function renderPractice() {
         progressBar.setAttribute(
           "aria-label",
           daily.goalMet
-            ? `Daily goal complete: ${daily.reviewed} of ${daily.goal}`
-            : `${daily.reviewed} of ${daily.goal} cards reviewed today`
+            ? `Reviewed ${daily.reviewed} of ${daily.goal} due cards`
+            : `${daily.reviewed} of ${daily.goal} due cards reviewed`
         );
       }
     }
