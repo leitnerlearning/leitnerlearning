@@ -1811,21 +1811,33 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["goedemorgen", "goeiemorgen"],
     ["goedemiddag", "goeiemiddag"],
     ["goedenavond", "goeienavond"],
+    ["goedenacht", "goeienacht"],
     ["alsjeblieft", "alsjeblief", "ajb"],
     ["alstublieft", "asb"],
     ["bedankt", "bedank"],
+    ["dank je wel", "dankjewel", "dank je"],
     ["tot ziens", "totziens"],
     ["tot straks", "totstraks"],
     ["graag gedaan", "graaggedaan"],
-    ["hoe gaat het", "hoegaathet"],
+    ["hoe gaat het", "hoegaathet", "hoe gaatie"],
+    ["ik heet", "ik heten"],
     ["tijd", "tyd"],
     ["zijn", "zyn"],
     ["huis", "huys"],
     ["uit", "uyt"],
     ["nog een keer", "nog 1 keer"],
     ["wifi-wachtwoord", "wifi wachtwoord", "wifiwachtwoord"],
+    ["het wachtwoord", "wachtwoord"],
     ["vertraagd", "vertraging", "is vertraagd"],
     ["ik begrijp het niet", "ik begrijp niet"],
+    ["langzamer", "langzamer alstublieft", "langzamer alsjeblieft"],
+    ["waar is de uitgang", "waar is de uitgang alstublieft"],
+    ["ik ben allergisch", "ik ben allergisch voor"],
+    ["stroom inbegrepen", "stroom is inbegrepen"],
+    ["kun je me helpen", "kunt u me helpen", "kan je me helpen"],
+    ["te laat", "telaat"],
+    ["te vroeg", "tevroeg"],
+    ["te duur", "teduur"],
   ],
   // French — same-lemma ASR / elision (accents already orthography-soft)
   fr: [
@@ -2069,6 +2081,24 @@ function germanSpeechCode(word) {
   return w.slice(0, 8);
 }
 
+/**
+ * Lightweight Dutch ASR code: ij≈ei, g/ch, then metaphone-ish core.
+ */
+function dutchSpeechCode(word) {
+  let w = normalizeAnswer(word)
+    .replace(/ij/g, "ei")
+    .replace(/y/g, "i")
+    .replace(/[^a-z]/g, "");
+  if (!w) return "";
+  w = w
+    .replace(/sch/g, "s")
+    .replace(/ch/g, "g")
+    .replace(/ck/g, "k")
+    .replace(/[aeiouy]/g, (ch, i) => (i === 0 ? ch : ""))
+    .replace(/(.)\1+/g, "$1");
+  return w.slice(0, 8);
+}
+
 function speechCode(word, lang) {
   const base = String(lang || "")
     .toLowerCase()
@@ -2078,6 +2108,7 @@ function speechCode(word, lang) {
     return norwegianSpeechCode(word);
   }
   if (base === "de") return germanSpeechCode(word);
+  if (base === "nl") return dutchSpeechCode(word);
   return englishSpeechCode(word);
 }
 
