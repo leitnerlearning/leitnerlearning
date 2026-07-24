@@ -1702,6 +1702,47 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["göra", "gora", "goera"],
     ["förstå", "forstaa", "forsta"],
   ],
+  // German — umlaut digraph typing + common ASR (ß↔ss also via orthography fold)
+  de: [
+    ["ich", "isch"],
+    ["nicht", "nich"],
+    ["für", "fuer"],
+    ["über", "ueber"],
+    ["schön", "schoen"],
+    ["können", "koennen"],
+    ["möchten", "moechten"],
+    ["möchte", "moechte"],
+    ["größer", "groesser", "grosser"],
+    ["groß", "gross"],
+    ["straße", "strasse"],
+    ["weiß", "weiss"],
+    ["heißen", "heissen"],
+    ["süß", "suess"],
+    ["spät", "spaet"],
+    ["zählen", "zaehlen"],
+    ["ärgern", "aergern"],
+    ["hören", "hoeren"],
+    ["früh", "frueh"],
+    ["tür", "tuer"],
+  ],
+  // Dutch — same-lemma ASR / informal spelling (not different words)
+  nl: [
+    ["niet", "nie"],
+    ["goedemorgen", "goeiemorgen"],
+    ["goedemiddag", "goeiemiddag"],
+    ["goedenavond", "goeienavond"],
+    ["alsjeblieft", "alsjeblief", "ajb"],
+    ["alstublieft", "asb"],
+    ["bedankt", "bedank"],
+    ["tot ziens", "totziens"],
+    ["tot straks", "totstraks"],
+    ["graag gedaan", "graaggedaan"],
+    ["hoe gaat het", "hoegaathet"],
+    ["tijd", "tyd"],
+    ["zijn", "zyn"],
+    ["huis", "huys"],
+    ["uit", "uyt"],
+  ],
 };
 
 const SPEECH_HOMOPHONE_LOOKUP = (() => {
@@ -1727,6 +1768,8 @@ function getAnswerSpeechLang(card = currentCard) {
   if (lower.startsWith("nb") || lower.startsWith("no")) return "nb";
   if (lower.startsWith("da")) return "da";
   if (lower.startsWith("sv")) return "sv";
+  if (lower.startsWith("de")) return "de";
+  if (lower.startsWith("nl")) return "nl";
   // Map speech BCP-47-ish tags to our homophone tables
   if (lower.startsWith("en")) return "en";
   const short = lower.split("-")[0];

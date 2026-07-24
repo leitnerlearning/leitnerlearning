@@ -75,10 +75,10 @@ const READ_STORIES = [
       { nb: "Ja. Sol og ikke for kaldt.", en: "Yes. Sun and not too cold." },
       { nb: "Skal du til byen?", en: "Are you going into town?" },
       { nb: "Ja. Jeg skal kjøpe brød.", en: "Yes. I'm going to buy bread." },
-      { nb: "God natt!", en: "Good night!" },
-      { nb: "Han bor her også.", en: "He lives here too." },
       { nb: "Ha det bra!", en: "Bye! / Take care!" },
       { nb: "Ha det! Vi ses.", en: "Bye! See you." },
+      { nb: "God natt!", en: "Good night!" },
+      { nb: "Han bor her også.", en: "He lives here too." },
     ],
     glosses: {
       "God natt": "Good night",
