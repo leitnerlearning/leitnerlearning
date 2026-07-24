@@ -643,7 +643,7 @@
     { foreign: 'slutsats', native: 'conclusion', rank: 639, category: 'noun', band: 'E' },
     { foreign: 'referens', native: 'reference', rank: 640, category: 'noun', band: 'E' },
     { foreign: 'citat', native: 'quote', rank: 641, category: 'noun', band: 'E' },
-    { foreign: 'plagiat', native: 'plagiarism', rank: 642, category: 'noun', band: 'E' },
+    { foreign: 'boardingkort', native: 'boarding pass', rank: 642, category: 'noun', band: 'E' },
     { foreign: 'etik', native: 'ethics', rank: 643, category: 'noun', band: 'E' },
     { foreign: 'hållbarhet', native: 'sustainability', rank: 644, category: 'noun', band: 'E' },
     { foreign: 'jämställdhet', native: 'equality', rank: 645, category: 'noun', band: 'E' },

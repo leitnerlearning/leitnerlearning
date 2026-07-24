@@ -151,14 +151,14 @@ Optional override: `go spine (cap 50)` (same pattern for content/craft). Ship-al
 
 **Content** (`go content` · cap 100)
 
-| # | Unit | Default unit cap |
-|---|------|------------------|
-| 1 | Basics integrity — Danish | 25 |
-| 2 | Basics integrity — all 10 | 40 |
-| 3 | Stories naturalness — double-black | 20 |
-| 4 | Stories naturalness — black | 20 |
-| 5 | Core deck honesty — open language gaps | 25 |
-| 6 | Survival phrase alignment | 20 |
+| # | Unit | Default unit cap | Status |
+|---|------|------------------|--------|
+| 1 | Basics integrity — Danish | 25 | done |
+| 2 | Basics integrity — all 10 | 40 | done |
+| 3 | Stories naturalness — double-black | 20 | done |
+| 4 | Stories naturalness — black | 20 | done |
+| 5 | Core deck honesty — open language gaps | 25 | done |
+| 6 | Survival phrase alignment | 20 | done |
 
 **Craft** (`go craft` · cap 40)
 
