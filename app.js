@@ -117,6 +117,28 @@ let lastPackActionNote = null;
 const PACK_ACTION_NOTE_MS = 7000;
 const LIBRARY_BATCH_SIZE = 35;
 const LIBRARY_SCROLL_TOP_THRESHOLD = 360;
+
+/** Page Y offset — body is the scrollport on Safari (trackpad); window on others. */
+function getPageScrollY() {
+  return (
+    window.scrollY ||
+    window.pageYOffset ||
+    document.documentElement.scrollTop ||
+    document.body.scrollTop ||
+    0
+  );
+}
+
+function scrollPageTo(top, behavior = "auto") {
+  const y = Math.max(0, Number(top) || 0);
+  try {
+    window.scrollTo({ top: y, left: 0, behavior });
+  } catch {
+    window.scrollTo(0, y);
+  }
+  document.documentElement.scrollTop = y;
+  document.body.scrollTop = y;
+}
 /** Rank ranges shown next to section titles and in jump-chip tooltips. */
 const LIBRARY_JUMP_RANGE = {
   A: "1–50",
@@ -10796,7 +10818,7 @@ function handlePageFloatTop() {
   if (header) {
     header.scrollIntoView({ behavior: "smooth", block: "start" });
   } else {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollPageTo(0, "smooth");
   }
 
   if (!isCardsPanelActive()) return;
@@ -10817,7 +10839,7 @@ function handlePageFloatTop() {
 function updatePageFloatTopVisibility() {
   const libraryDock = document.getElementById("library-float-actions");
   const progressDock = document.getElementById("progress-float-actions");
-  const scrolled = window.scrollY > LIBRARY_SCROLL_TOP_THRESHOLD;
+  const scrolled = getPageScrollY() > LIBRARY_SCROLL_TOP_THRESHOLD;
 
   if (libraryDock) {
     libraryDock.classList.toggle("hidden", !(isCardsPanelActive() && scrolled));
@@ -13014,8 +13036,8 @@ function switchTab(tabName) {
 }
 
 /**
- * Cards / Progress need real document scroll. Desktop Safari can keep
- * overflow:hidden or a fixed-height shell after Review/modals — force unlock.
+ * Cards / Progress scroll on body (Safari trackpad + keyboard).
+ * Clear leftover modal locks; scroll body to top (not only window).
  */
 function ensureDocumentScrollUnlocked() {
   const aboutOpen = !document.getElementById("about-modal")?.classList.contains("hidden");
@@ -13025,20 +13047,14 @@ function ensureDocumentScrollUnlocked() {
   if (!aboutOpen && !basicsOpen && !confirmOpen && !welcomeOpen) {
     document.body.classList.remove("modal-open");
   }
-  // Clear accidental inline locks (none set by us normally; safety for WebKit).
   document.documentElement.style.removeProperty("overflow");
   document.documentElement.style.removeProperty("height");
   document.documentElement.style.removeProperty("max-height");
   document.body.style.removeProperty("overflow");
   document.body.style.removeProperty("height");
   document.body.style.removeProperty("max-height");
-  // Jump to top of the long tab so scroll position isn't "stuck" mid-air.
   requestAnimationFrame(() => {
-    try {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-    } catch {
-      window.scrollTo(0, 0);
-    }
+    scrollPageTo(0, "auto");
   });
 }
 
@@ -13302,7 +13318,10 @@ function initEventListeners() {
     handlePageFloatTop();
   });
 
+  // Body is the page scrollport (Safari trackpad); window may not fire.
   window.addEventListener("scroll", updatePageFloatTopVisibility, { passive: true });
+  document.addEventListener("scroll", updatePageFloatTopVisibility, { passive: true, capture: true });
+  document.body?.addEventListener("scroll", updatePageFloatTopVisibility, { passive: true });
 
   document.querySelectorAll(".category-picker-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {

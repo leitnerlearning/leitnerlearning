@@ -72,18 +72,19 @@ html {
   width: 100%;
   max-width: 100%;
   /*
-   * Do NOT use overflow-x: clip here. On desktop Safari, clip/hidden on the
-   * root can make the page refuse to scroll vertically at all (Cards/Progress).
-   * Horizontal spill is contained via max-width on .app / panels instead.
+   * Single scrollport model (critical for Mac trackpad on Safari):
+   * html is a fixed viewport shell; body is THE scroller.
+   * Keyboard often scrolls the document even when trackpad wheel fails if
+   * overflow lives only on html — two-finger scroll targets body instead.
    */
-  overflow-x: hidden;
-  overflow-y: scroll;
-  overscroll-behavior-x: none;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
   margin: 0;
-  min-height: 100dvh;
+  /* Fill the html shell; content taller than this scrolls *inside* body */
+  height: 100%;
   width: 100%;
   max-width: 100%;
   font-family: var(--font);
@@ -96,9 +97,9 @@ body {
   line-height: 1.47059;
   letter-spacing: -0.022em;
   position: relative;
-  /* Body grows with content; html is the only page scrollport (Safari-safe). */
   overflow-x: hidden;
-  overflow-y: visible;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: none;
 }
 
@@ -1972,46 +1973,27 @@ main {
 }
 
 /*
- * Cards + Progress: force real document scroll on desktop Safari.
- * Flex + root overflow tricks that Chrome tolerates can leave WebKit with a
- * viewport-tall shell and nowhere to scroll. Flatten the chain for these tabs.
+ * Cards + Progress: keep the body scrollport (trackpad + keyboard).
+ * Flatten flex so long content grows the body scroll height; never reassign
+ * overflow-y to html (Safari two-finger scroll targets body).
  */
-html:has(#cards-panel.active),
-html:has(#stats-panel.active) {
-  overflow-x: hidden !important;
-  overflow-y: scroll !important;
-  height: auto !important;
-  max-height: none !important;
-  overscroll-behavior-y: auto;
-}
-
-body:has(#cards-panel.active),
-body:has(#stats-panel.active) {
-  overflow: visible !important;
-  height: auto !important;
-  max-height: none !important;
-  min-height: 100vh;
-}
-
 body:has(#cards-panel.active) .app,
 body:has(#stats-panel.active) .app {
-  display: block !important;
-  height: auto !important;
-  max-height: none !important;
-  min-height: 100vh;
-  overflow: visible !important;
+  display: block;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
 }
 
 body:has(#cards-panel.active) .app main,
 body:has(#stats-panel.active) .app main,
 body:has(#cards-panel.active) #cards-panel.active,
 body:has(#stats-panel.active) #stats-panel.active {
-  display: block !important;
-  flex: none !important;
-  height: auto !important;
-  min-height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
+  display: block;
+  flex: none;
+  height: auto;
+  min-height: auto;
+  overflow: visible;
 }
 
 /* Beat any panel-specific display rules when the tab is not active */
@@ -3556,7 +3538,7 @@ button.feedback-example-l2:focus-visible {
 }
 
 body.modal-open {
-  /* Only block page scroll while a modal is open — not overflow-x tricks */
+  /* Lock the real scrollport (body) while a modal is open */
   overflow: hidden !important;
   overscroll-behavior: none;
 }
