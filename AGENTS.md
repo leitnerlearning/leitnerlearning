@@ -121,6 +121,10 @@ Founder approves **new product behavior**. Agents own **integrity** (bugs, platf
 
 ### Continuous multipass (hybrid — founder uses the app; agent keeps slicing)
 
+**Go slice count (founder law · permanent):** bare `go` = **1** integrity/craft slice; `go N` = **N** slices; one report after a multipass unit.
+
+
+
 Founder does **not** need to type **go** for each integrity slice when a session is open (or when a standing scheduled run is active). Default is **keep improving within ship-alone**.
 
 **Agent may continuously work on (thin slices, ship + short report):**
