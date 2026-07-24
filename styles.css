@@ -2806,28 +2806,21 @@ button.feedback-example-l2:focus-visible {
 }
 
 /*
- * Desktop Review: pin the page so trackpads/mice can't "play" empty vertical
- * rubber-band when the session already fits the window. Library/Progress still scroll.
+ * Desktop Review: calm overscroll only — do NOT lock body/html height.
+ * Nested overflow:hidden + 100dvh scrollports diverge in Safari vs Chrome
+ * (one browser scrolls, the other clips). Document scroll is the honest path.
+ * Library / Progress / Cards already use normal page scroll.
  */
 @media (min-width: 721px) {
   html:has(.app.practice-focus),
   body:has(.app.practice-focus) {
-    height: 100%;
-    overflow: hidden;
-    overscroll-behavior: none;
-  }
-
-  body:has(.app.practice-focus) {
-    height: 100dvh;
-    max-height: 100dvh;
+    overscroll-behavior-y: none;
   }
 
   .app.practice-focus {
-    height: 100dvh;
-    max-height: 100dvh;
-    min-height: 0;
-    overflow: hidden;
-    overscroll-behavior: none;
+    min-height: 100dvh;
+    min-height: 100svh;
+    overscroll-behavior-y: none;
     padding:
       max(1.25rem, env(safe-area-inset-top, 0px))
       1.5rem
@@ -2841,9 +2834,6 @@ button.feedback-example-l2:focus-visible {
   .app.practice-focus #practice-panel.active {
     flex: 1 1 auto;
     min-height: 0;
-    overflow: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -8018,27 +8008,35 @@ ul.box-stats {
 
 @media (max-width: 720px) {
   /*
-   * Mobile Read: lock document rubber-band. Story chrome fits one screen;
-   * only the panel scrolls if a long sentence needs it.
+   * Mobile Read: fill the visible viewport and scroll the sentence region.
+   * Full flex chain (app → main → panel → shell → .read-focus) so Safari and
+   * Chrome both get a real scrollport — locking only body without main:min-height:0
+   * is a common Safari “can’t scroll” trap.
    */
   html:has(.app.read-focus),
   body:has(.app.read-focus) {
     height: 100%;
+    height: 100dvh;
     overflow: hidden;
     overscroll-behavior: none;
   }
 
   body:has(.app.read-focus) {
-    height: 100dvh;
+    /* svh first (stable), dvh second when the browser UI collapses */
+    max-height: 100svh;
     max-height: 100dvh;
   }
 
   .app.read-focus {
+    height: 100%;
     height: 100dvh;
+    max-height: 100svh;
     max-height: 100dvh;
     min-height: 0;
     overflow: hidden;
     overscroll-behavior: none;
+    display: flex;
+    flex-direction: column;
     padding:
       max(0.65rem, env(safe-area-inset-top, 0px))
       0.9rem
@@ -8048,6 +8046,14 @@ ul.box-stats {
   .app.read-focus .header {
     flex-shrink: 0;
     margin-bottom: 0.45rem;
+  }
+
+  .app.read-focus main {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .app.read-focus #read-panel.active {
@@ -8075,9 +8081,11 @@ ul.box-stats {
   .app.read-focus .read-focus {
     flex: 1 1 auto;
     min-height: 0;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
   }
 
   /* - Mobile Read only: hero sentence, equal nav, 3-up options - */
