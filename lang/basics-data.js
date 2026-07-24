@@ -18,17 +18,23 @@
  * ── Excellence law (all 10 languages) ──
  * 1. Glyph = visual label only (not tappable). Hearing = example words only.
  * 2. Exactly TWO examples per item (primary + secondary). Never 3+.
- *    - Prevents orphan wrap (3+1 or 3 alone on line two) on phone and desktop.
- *    - Enough to teach; more belongs on a second glyph row (e.g. hj and hv separate).
  * 3. Prefer short everyday words so both chips stay on one row.
  * 4. Renderer hard-caps at 2 even if data has more (safety net).
+ * 5. MED tray, not a course:
+ *    MUST  = breaks English transfer in the first week of reading
+ *    SHOULD = high-frequency digraphs / lookalikes in the core 1k
+ *    COULD  = rare diphthongs, tone, typing tricks, listening quirks → omit from Basics
+ *    Prefer ≤ ~14 rows; if more, something is course not tray.
+ * 6. No instructional chrome (no “tap to hear” copy).
  */
 (function () {
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
 
   /**
-   * Norwegian (Bokmål) — excellence bar for all languages.
-   * Exactly 2 examples per row (see file header law). hj and hv are separate rows.
+   * Norwegian (Bokmål) — excellence bar (MED tray, not a course).
+   * MUST + SHOULD only: what breaks English transfer in early reading.
+   * Dropped COULD: au, ai, stress, tone, typing (ae/oe/aa), det.
+   * Exactly 2 examples per row. Glyph label only; words hear.
    */
   window.LANGUAGE_BASICS["nb-bokmal"] = {
     previewGlyphs: ["æ", "ø", "å"],
@@ -165,12 +171,6 @@
               { speak: "gjennom", text: "gjennom", gloss: "through" },
             ],
           },
-        ],
-      },
-      {
-        title: "Vowels",
-        compact: true,
-        items: [
           {
             glyph: "ei",
             speak: "nei",
@@ -189,72 +189,6 @@
             examples: [
               { speak: "høy", text: "høy", gloss: "high" },
               { speak: "øy", text: "øy", gloss: "island" },
-            ],
-          },
-          {
-            glyph: "au",
-            speak: "sau",
-            glyphSize: "pair",
-            approxHtml: "<strong>ow</strong> in <em>how</em>",
-            examples: [
-              { speak: "sau", text: "sau", gloss: "sheep" },
-              { speak: "august", text: "august", gloss: "August" },
-            ],
-          },
-          {
-            glyph: "ai",
-            speak: "mai",
-            glyphSize: "pair",
-            approxHtml: "<strong>eye</strong>",
-            examples: [
-              { speak: "mai", text: "mai", gloss: "May" },
-              { speak: "hai", text: "hai", gloss: "shark" },
-            ],
-          },
-        ],
-      },
-      {
-        title: "Rhythm",
-        compact: true,
-        items: [
-          {
-            glyph: "stress",
-            speak: "norsk",
-            glyphSize: "pair",
-            approxHtml: "Usually the <strong>first</strong> syllable",
-            examples: [
-              { speak: "norsk", text: "norsk", gloss: "Norwegian" },
-              { speak: "skole", text: "skole", gloss: "school" },
-            ],
-          },
-          {
-            glyph: "tone",
-            speak: "bønder",
-            glyphSize: "pair",
-            approxHtml: "Pitch accent · listen first",
-            examples: [
-              { speak: "bønder", text: "bønder", gloss: "farmers" },
-              { speak: "bønner", text: "bønner", gloss: "beans" },
-            ],
-          },
-          {
-            glyph: "ae oe aa",
-            speak: "være",
-            glyphSize: "pair",
-            approxHtml: "æ ø å when typing",
-            examples: [
-              { speak: "være", text: "være", gloss: "be" },
-              { speak: "år", text: "år", gloss: "year" },
-            ],
-          },
-          {
-            glyph: "det",
-            speak: "det",
-            glyphSize: "pair",
-            approxHtml: "Often sounds like <strong>de</strong>",
-            examples: [
-              { speak: "det", text: "det", gloss: "it" },
-              { speak: "de", text: "de", gloss: "they" },
             ],
           },
         ],
