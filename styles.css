@@ -3789,9 +3789,24 @@ html.needs-welcome body {
   color: var(--text-secondary) !important;
 }
 
-/* Standalone notes between sections (e.g. streak placement A/B) */
+/* Standalone notes between sections */
 .about-body > .about-note {
   margin: 0 0 0.85rem;
+}
+
+/* Quiet subcategory line — not a body bubble; stands off from How / Privacy */
+.about-streak {
+  margin: 0.15rem 0 0.9rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: var(--text-2xs);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  line-height: var(--lh-tight);
+  text-transform: none;
+  color: var(--brand-deep);
+  opacity: 0.88;
 }
 
 .about-links {
