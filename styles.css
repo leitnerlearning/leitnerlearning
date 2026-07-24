@@ -3789,6 +3789,11 @@ html.needs-welcome body {
   color: var(--text-secondary) !important;
 }
 
+/* Standalone notes between sections (e.g. streak placement A/B) */
+.about-body > .about-note {
+  margin: 0 0 0.85rem;
+}
+
 .about-links {
   list-style: none;
   margin: 0;
