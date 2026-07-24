@@ -992,15 +992,15 @@
     { foreign: 'economico', native: 'inexpensive', rank: 988, category: 'adjective', band: 'G' },
     { foreign: 'piccante', native: 'spicy', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'salato', native: 'salty', rank: 990, category: 'noun', band: 'G' },
-    { foreign: "ancora una volta", native: "once more", rank: 991, category: "phrase", band: "phrase" },
+    { foreign: "ancora una volta", native: "once more", rank: 991, category: "phrase", band: "phrase", exampleForeign: "Ancora una volta, per favore.", exampleNative: "Once more, please." },
     { foreign: "più lentamente", native: "more slowly", rank: 992, category: "phrase", band: "phrase" },
-    { foreign: "più economico", native: "cheaper", rank: 993, category: "phrase", band: "phrase" },
-    { foreign: "la password", native: "the password", rank: 994, category: "noun", band: "G" },
-    { foreign: "allergico", native: "allergic", rank: 995, category: "adjective", band: "G" },
-    { foreign: "in ritardo", native: "delayed", rank: 996, category: "phrase", band: "phrase" },
-    { foreign: "d'accordo", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase" },
-    { foreign: "cosa ne pensi", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
-    { foreign: "l'uscita", native: "the exit", rank: 999, category: "noun", band: "G" },
+    { foreign: "più economico", native: "cheaper", rank: 993, category: "phrase", band: "phrase", exampleForeign: "Avete qualcosa di più economico?", exampleNative: "Do you have something cheaper?" },
+    { foreign: "la password", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "Qual è la password del wifi?", exampleNative: "What's the Wi‑Fi password?" },
+    { foreign: "allergico", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Sono allergico alla penicillina.", exampleNative: "I'm allergic to penicillin." },
+    { foreign: "in ritardo", native: "delayed", rank: 996, category: "phrase", band: "phrase", exampleForeign: "Il treno è in ritardo?", exampleNative: "Is the train delayed?" },
+    { foreign: "d", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase", exampleForeign: "A domani!", exampleNative: "See you tomorrow!" },
+    { foreign: "cosa ne pensi", native: "what do you think", rank: 998, category: "phrase", band: "phrase", exampleForeign: "Cosa ne pensi?", exampleNative: "What do you think?" },
+    { foreign: "l", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Con latte?", exampleNative: "With milk?" },
     { foreign: "incluso", native: "included", rank: 1000, category: "adjective", band: "G" }
 
   ];

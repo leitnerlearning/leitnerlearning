@@ -992,15 +992,15 @@
     { foreign: 'email', native: 'email', rank: 988, category: 'noun', band: 'G' },
     { foreign: 'chiffre', native: 'digit / figure', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'total', native: 'total', rank: 990, category: 'noun', band: 'G' },
-    { foreign: 'encore une fois', native: 'once more', rank: 991, category: 'phrase', band: 'phrase' },
+    { foreign: "encore une fois", native: "once more", rank: 991, category: "phrase", band: "phrase", exampleForeign: "Encore une fois, s'il vous plaît.", exampleNative: "Once more, please." },
     { foreign: "parlez plus lentement", native: "speak more slowly", rank: 992, category: "phrase", band: "phrase" },
-    { foreign: 'moins cher', native: 'cheaper', rank: 993, category: 'phrase', band: 'phrase' },
-    { foreign: 'le mot de passe', native: 'the password', rank: 994, category: 'phrase', band: 'phrase' },
-    { foreign: 'allergique', native: 'allergic', rank: 995, category: 'adjective', band: 'G' },
-    { foreign: 'en retard', native: 'delayed', rank: 996, category: 'phrase', band: 'phrase' },
-    { foreign: "d'accord", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase" },
+    { foreign: "moins cher", native: "cheaper", rank: 993, category: "phrase", band: "phrase", exampleForeign: "Vous avez quelque chose de moins cher ?", exampleNative: "Do you have something cheaper?" },
+    { foreign: "le mot de passe", native: "the password", rank: 994, category: "phrase", band: "phrase", exampleForeign: "C'est quoi le mot de passe du wifi ?", exampleNative: "What's the Wi‑Fi password?" },
+    { foreign: "allergique", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Je suis allergique à la pénicilline.", exampleNative: "I'm allergic to penicillin." },
+    { foreign: "en retard", native: "delayed", rank: 996, category: "phrase", band: "phrase", exampleForeign: "Le train est-il en retard ?", exampleNative: "Is the train delayed?" },
+    { foreign: "d", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase", exampleForeign: "À demain !", exampleNative: "See you tomorrow!" },
     { foreign: "que penses-tu", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
-    { foreign: 'la sortie', native: 'the exit', rank: 999, category: 'noun', band: 'G' },
+    { foreign: "la sortie", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Où est la sortie ?", exampleNative: "Where is the exit?" },
     { foreign: 'inclus', native: 'included', rank: 1000, category: 'adjective', band: 'G' }
 
   ];

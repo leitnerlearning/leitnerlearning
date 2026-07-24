@@ -992,16 +992,16 @@
     { foreign: 'strona internetowa', native: 'website', rank: 988, category: 'phrase', band: 'phrase' },
     { foreign: 'link', native: 'link', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'plik', native: 'file', rank: 990, category: 'noun', band: 'G' },
-    { foreign: "jeszcze raz", native: "once more", rank: 991, category: "phrase", band: "phrase" },
-    { foreign: "wolniej", native: "more slowly", rank: 992, category: "adverb", band: "G" },
+    { foreign: "jeszcze raz", native: "once more", rank: 991, category: "phrase", band: "phrase", exampleForeign: "Jeszcze raz, proszę.", exampleNative: "Once more, please." },
+    { foreign: "wolniej", native: "more slowly", rank: 992, category: "adverb", band: "G", exampleForeign: "Nie rozumiem. Proszę wolniej.", exampleNative: "I don't understand. More slowly, please." },
     { foreign: "tańszy", native: "cheaper", rank: 993, category: "adjective", band: "G" },
-    { foreign: "hasło do wifi", native: "Wi‑Fi password", rank: 994, category: "phrase", band: "phrase" },
+    { foreign: "hasło do wifi", native: "Wi‑Fi password", rank: 994, category: "phrase", band: "phrase", exampleForeign: "Jakie jest hasło do wifi?", exampleNative: "What's the Wi‑Fi password?" },
     { foreign: "alergiczny", native: "allergic", rank: 995, category: "adjective", band: "G" },
     { foreign: "opóźniony", native: "delayed", rank: 996, category: "adjective", band: "G" },
     { foreign: "zgodny", native: "in agreement / agree", rank: 997, category: "adjective", band: "G" },
     { foreign: "uważać", native: "think / find (opinion)", rank: 998, category: "verb", band: "G" },
-    { foreign: "wyjście", native: "the exit", rank: 999, category: "noun", band: "G" },
-    { foreign: "wliczony", native: "included", rank: 1000, category: "adjective", band: "G" }
+    { foreign: "wyjście", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Gdzie jest wyjście?", exampleNative: "Where is the exit?" },
+    { foreign: "wliczony", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "Czy prąd jest wliczony w czynsz?", exampleNative: "Is electricity included in the rent?" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

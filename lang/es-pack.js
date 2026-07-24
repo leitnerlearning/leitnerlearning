@@ -994,13 +994,13 @@
     { foreign: 'once', native: 'eleven', rank: 990, category: 'number', band: 'G' },
     { foreign: "una vez más", native: "once more", rank: 991, category: "phrase", band: "phrase" },
     { foreign: "hable más despacio", native: "speak more slowly", rank: 992, category: "phrase", band: "phrase" },
-    { foreign: "más barato", native: "cheaper", rank: 993, category: "phrase", band: "phrase" },
-    { foreign: "la contraseña", native: "the password", rank: 994, category: "noun", band: "G" },
-    { foreign: "alérgico", native: "allergic", rank: 995, category: "adjective", band: "G" },
+    { foreign: "más barato", native: "cheaper", rank: 993, category: "phrase", band: "phrase", exampleForeign: "¿Tienen algo más barato?", exampleNative: "Do you have something cheaper?" },
+    { foreign: "la contraseña", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "¿Cuál es la contraseña del wifi?", exampleNative: "What's the Wi‑Fi password?" },
+    { foreign: "alérgico", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Soy alérgico a la penicilina.", exampleNative: "I'm allergic to penicillin." },
     { foreign: "retrasado", native: "delayed", rank: 996, category: "adjective", band: "G" },
-    { foreign: "de acuerdo", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase" },
-    { foreign: "qué piensas", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
-    { foreign: "la salida", native: "the exit", rank: 999, category: "noun", band: "G" },
+    { foreign: "de acuerdo", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase", exampleForeign: "Estoy de acuerdo.", exampleNative: "I agree." },
+    { foreign: "qué piensas", native: "what do you think", rank: 998, category: "phrase", band: "phrase", exampleForeign: "¿Qué piensas?", exampleNative: "What do you think?" },
+    { foreign: "la salida", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "¿Dónde está la salida?", exampleNative: "Where is the exit?" },
     { foreign: "incluido", native: "included", rank: 1000, category: "adjective", band: "G" }
 
   ];

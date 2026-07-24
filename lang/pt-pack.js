@@ -992,15 +992,15 @@
     { foreign: 'sílaba', native: 'syllable', rank: 988, category: 'noun', band: 'G' },
     { foreign: 'gramática', native: 'grammar', rank: 989, category: 'adjective', band: 'G' },
     { foreign: 'vocabulário', native: 'vocabulary', rank: 990, category: 'noun', band: 'G' },
-    { foreign: "mais uma vez", native: "once more", rank: 991, category: "phrase", band: "phrase" },
-    { foreign: "mais devagar", native: "more slowly", rank: 992, category: "phrase", band: "phrase" },
-    { foreign: "mais barato", native: "cheaper", rank: 993, category: "phrase", band: "phrase" },
-    { foreign: "a senha", native: "the password", rank: 994, category: "noun", band: "G" },
-    { foreign: "alérgico", native: "allergic", rank: 995, category: "adjective", band: "G" },
-    { foreign: "atrasado", native: "delayed", rank: 996, category: "adjective", band: "G" },
+    { foreign: "mais uma vez", native: "once more", rank: 991, category: "phrase", band: "phrase", exampleForeign: "Mais uma vez, por favor.", exampleNative: "Once more, please." },
+    { foreign: "mais devagar", native: "more slowly", rank: 992, category: "phrase", band: "phrase", exampleForeign: "Não entendo. Mais devagar, por favor.", exampleNative: "I don't understand. More slowly, please." },
+    { foreign: "mais barato", native: "cheaper", rank: 993, category: "phrase", band: "phrase", exampleForeign: "Tem algo mais barato?", exampleNative: "Do you have something cheaper?" },
+    { foreign: "a senha", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "Qual é a senha do wifi?", exampleNative: "What's the Wi‑Fi password?" },
+    { foreign: "alérgico", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Sou alérgico à penicilina.", exampleNative: "I'm allergic to penicillin." },
+    { foreign: "atrasado", native: "delayed", rank: 996, category: "adjective", band: "G", exampleForeign: "O trem está atrasado?", exampleNative: "Is the train delayed?" },
     { foreign: "de acordo", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase" },
-    { foreign: "o que você acha", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
-    { foreign: "a saída", native: "the exit", rank: 999, category: "noun", band: "G" },
+    { foreign: "o que você acha", native: "what do you think", rank: 998, category: "phrase", band: "phrase", exampleForeign: "O que você acha?", exampleNative: "What do you think?" },
+    { foreign: "a saída", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Onde fica a saída?", exampleNative: "Where is the exit?" },
     { foreign: "incluído", native: "included", rank: 1000, category: "adjective", band: "G" }
 
   ];

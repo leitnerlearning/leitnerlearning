@@ -992,16 +992,16 @@
     { foreign: 'salaris', native: 'salary', rank: 988, category: 'noun', band: 'G' },
     { foreign: 'loonsverhoging', native: 'raise', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'vakantie', native: 'vacation', rank: 990, category: 'noun', band: 'G' },
-    { foreign: 'nog een keer', native: 'once more', rank: 991, category: 'phrase', band: 'phrase' },
-    { foreign: 'langzamer', native: 'more slowly', rank: 992, category: 'adverb', band: 'G' },
-    { foreign: 'goedkoper', native: 'cheaper', rank: 993, category: 'adjective', band: 'G' },
-    { foreign: 'het wachtwoord', native: 'the password', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'allergisch', native: 'allergic', rank: 995, category: 'adjective', band: 'G' },
+    { foreign: "nog een keer", native: "once more", rank: 991, category: "phrase", band: "phrase", exampleForeign: "Nog een keer, alstublieft.", exampleNative: "Once more, please." },
+    { foreign: "langzamer", native: "more slowly", rank: 992, category: "adverb", band: "G", exampleForeign: "Ik begrijp het niet. Langzamer, alstublieft.", exampleNative: "I don't understand. More slowly, please." },
+    { foreign: "goedkoper", native: "cheaper", rank: 993, category: "adjective", band: "G", exampleForeign: "Hebben jullie iets goedkoper?", exampleNative: "Do you have something cheaper?" },
+    { foreign: "het wachtwoord", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "Dat ben ik vandaag. Het wachtwoord krijg je van een medewerker.", exampleNative: "That's me today. You'll get the password from a coworker." },
+    { foreign: "allergisch", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Ik ben allergisch voor penicilline.", exampleNative: "I'm allergic to penicillin." },
     { foreign: 'vertraagd', native: 'delayed', rank: 996, category: 'adjective', band: 'G' },
-    { foreign: 'het eens', native: 'in agreement / agree', rank: 997, category: 'phrase', band: 'phrase' },
-    { foreign: "wat denk je", native: "what do you think", rank: 998, category: "phrase", band: "phrase" },
-    { foreign: 'de uitgang', native: 'the exit', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'inbegrepen', native: 'included', rank: 1000, category: 'adjective', band: 'G' }
+    { foreign: "het eens", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase", exampleForeign: "Ik ben het eens.", exampleNative: "I agree." },
+    { foreign: "wat denk je", native: "what do you think", rank: 998, category: "phrase", band: "phrase", exampleForeign: "Wat denk je?", exampleNative: "What do you think?" },
+    { foreign: "de uitgang", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Waar is de uitgang?", exampleNative: "Where is the exit?" },
+    { foreign: "inbegrepen", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "Is stroom bij de huur inbegrepen?", exampleNative: "Is electricity included in the rent?" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

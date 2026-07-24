@@ -992,15 +992,15 @@
     { foreign: 'flexibel', native: 'flexible', rank: 988, category: 'adjective', band: 'G' },
     { foreign: 'stabil', native: 'stable', rank: 989, category: 'adjective', band: 'G' },
     { foreign: 'instabil', native: 'unstable', rank: 990, category: 'adjective', band: 'G' },
-    { foreign: "wifi-lösenord", native: "Wi‑Fi password", rank: 991, category: "noun", band: "G" },
-    { foreign: 'långsammare', native: 'more slowly', rank: 992, category: 'adverb', band: 'G' },
-    { foreign: 'billigare', native: 'cheaper', rank: 993, category: 'adjective', band: 'G' },
-    { foreign: 'lösenordet', native: 'the password', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'allergisk', native: 'allergic', rank: 995, category: 'adjective', band: 'G' },
-    { foreign: 'försenad', native: 'delayed', rank: 996, category: 'adjective', band: 'G' },
+    { foreign: "wifi-lösenord", native: "Wi‑Fi password", rank: 991, category: "noun", band: "G", exampleForeign: "Vad är wifi-lösenordet?", exampleNative: "What's the Wi‑Fi password?" },
+    { foreign: "långsammare", native: "more slowly", rank: 992, category: "adverb", band: "G", exampleForeign: "Jag förstår inte. Prata långsammare.", exampleNative: "I don't understand. Speak more slowly." },
+    { foreign: "billigare", native: "cheaper", rank: 993, category: "adjective", band: "G", exampleForeign: "Har ni något billigare?", exampleNative: "Do you have something cheaper?" },
+    { foreign: "lösenordet", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "Vad är wifi-lösenordet?", exampleNative: "What's the Wi‑Fi password?" },
+    { foreign: "allergisk", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Jag är allergisk mot penicillin.", exampleNative: "I'm allergic to penicillin." },
+    { foreign: "försenad", native: "delayed", rank: 996, category: "adjective", band: "G", exampleForeign: "Men bussarna är ofta fulla och försenade i rusningen.", exampleNative: "But the buses are often full and late in rush hour." },
     { foreign: 'överens', native: 'in agreement / agree', rank: 997, category: 'adjective', band: 'G' },
-    { foreign: 'tycker', native: 'think / find (opinion)', rank: 998, category: 'verb', band: 'G' },
-    { foreign: 'utgången', native: 'the exit', rank: 999, category: 'noun', band: 'G' },
+    { foreign: "tycker", native: "think / find (opinion)", rank: 998, category: "verb", band: "G", exampleForeign: "Vad tycker du?", exampleNative: "What do you think?" },
+    { foreign: "utgången", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Var är utgången?", exampleNative: "Where is the exit?" },
     { foreign: 'inkluderad', native: 'included', rank: 1000, category: 'adjective', band: 'G' }
 
   ];

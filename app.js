@@ -2134,7 +2134,18 @@ function maxNearMissDistance(expected) {
 
 function isSubstringNearMiss(user, expected) {
   if (user.length < 2 || expected.length < 2) return false;
-  return expected.includes(user) || user.includes(expected);
+  if (user === expected) return false;
+  // Prefix progress only — not "en"≈"en gang til" via loose includes (noisy near-miss).
+  if (expected.startsWith(user)) {
+    const minLen =
+      expected.length <= 4 ? 2 : Math.max(3, Math.ceil(expected.length * 0.4));
+    return user.length >= minLen;
+  }
+  // Mild overshoot (extra letter/space) still "close"
+  if (user.startsWith(expected) && user.length <= expected.length + 8) {
+    return true;
+  }
+  return false;
 }
 
 function evaluateAnswer(userAnswer, card, options = {}) {

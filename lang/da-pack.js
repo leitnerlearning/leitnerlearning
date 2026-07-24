@@ -993,15 +993,15 @@
     { foreign: 'bestilling', native: 'order', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'mening', native: 'opinion', rank: 990, category: 'noun', band: 'G' },
     { foreign: "snak langsommere", native: "speak more slowly", rank: 991, category: "phrase", band: "phrase" },
-    { foreign: 'langsommere', native: 'more slowly', rank: 992, category: 'adverb', band: 'G' },
-    { foreign: 'billigere', native: 'cheaper', rank: 993, category: 'adjective', band: 'G' },
-    { foreign: 'adgangskoden', native: 'the password', rank: 994, category: 'noun', band: 'G' },
-    { foreign: 'allergisk', native: 'allergic', rank: 995, category: 'adjective', band: 'G' },
-    { foreign: 'forsinket', native: 'delayed', rank: 996, category: 'adjective', band: 'G' },
-    { foreign: 'enig', native: 'in agreement / agree', rank: 997, category: 'adjective', band: 'G' },
-    { foreign: 'synes', native: 'think / find (opinion)', rank: 998, category: 'verb', band: 'G' },
-    { foreign: 'udgangen', native: 'the exit', rank: 999, category: 'noun', band: 'G' },
-    { foreign: 'inkluderet', native: 'included', rank: 1000, category: 'adjective', band: 'G' }
+    { foreign: "langsommere", native: "more slowly", rank: 992, category: "adverb", band: "G", exampleForeign: "Jeg forstår ikke. Tal langsommere.", exampleNative: "I don't understand. Speak more slowly." },
+    { foreign: "billigere", native: "cheaper", rank: 993, category: "adjective", band: "G", exampleForeign: "Har I noget billigere?", exampleNative: "Do you have something cheaper?" },
+    { foreign: "adgangskoden", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "Det er mig i dag. Adgangskoden får du af en medarbejder.", exampleNative: "That's me today. You'll get the password from a coworker." },
+    { foreign: "allergisk", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Jeg er allergisk over for penicillin.", exampleNative: "I'm allergic to penicillin." },
+    { foreign: "forsinket", native: "delayed", rank: 996, category: "adjective", band: "G", exampleForeign: "Er toget forsinket?", exampleNative: "Is the train delayed?" },
+    { foreign: "enig", native: "in agreement / agree", rank: 997, category: "adjective", band: "G", exampleForeign: "Jeg er enig.", exampleNative: "I agree." },
+    { foreign: "synes", native: "think / find (opinion)", rank: 998, category: "verb", band: "G", exampleForeign: "Hvad synes du?", exampleNative: "What do you think?" },
+    { foreign: "udgangen", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Hvor er udgangen?", exampleNative: "Where is the exit?" },
+    { foreign: "inkluderet", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "Er el inkluderet i lejen?", exampleNative: "Is electricity included in the rent?" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
