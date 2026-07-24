@@ -3158,6 +3158,8 @@ function handleIncorrect(requeue = true) {
 }
 
 function advanceCard() {
+  // Cut residual miss-example TTS so it never bleeds into the next prompt.
+  if (typeof stopAllSpeech === "function") stopAllSpeech();
   const hadCard = currentCard !== null;
   currentCard = nextInSession();
   if (hadCard && !currentCard && sessionReviewed > 0) {
@@ -3744,8 +3746,12 @@ function getAdvanceDelay(correct, fromSpeech = false, options = {}) {
   } else {
     ms = correct ? TYPING_ADVANCE_CORRECT_MS : TYPING_ADVANCE_WRONG_MS;
   }
-  // Give time to read a story line after a miss.
-  if (!correct && withExample) ms += 2200;
+  // Miss with context: time to hear the auto-spoken line (and re-tap if needed).
+  // Fixed +2200 was cutting longer story clauses short.
+  if (!correct && withExample) {
+    const listen = estimateListenMs(options.exampleText || "");
+    ms = Math.max(ms + 1200, listen + 900);
+  }
   return ms;
 }
 
@@ -5568,6 +5574,9 @@ function cardLooksLikeInfinitive(foreign, lang) {
  * After a miss/reveal: show the answer pill, plus a real-sentence beat when we have one.
  * Skip when the “example” only restates the card (prompt + gloss already on screen).
  * Clear the wrong typed answer so the pill + example teach, not a red dirty field.
+ * Auto-hears the L2 line (same teaching beat as Stories gloss). Tap re-hears and
+ * extends the advance window via pauseAdvanceForListen.
+ * @returns {string} L2 example text when shown (for advance timing), else "".
  */
 function showIncorrectWithExample(card, answerText) {
   showFeedback(answerText, "incorrect");
@@ -5579,10 +5588,14 @@ function showIncorrectWithExample(card, answerText) {
   const example = getCardContextExample(card);
   if (example && !isRedundantFeedbackExample(example, card, answerText)) {
     showFeedbackExample(example, card);
-    return true;
+    const l2 = String(example.foreign || "").trim();
+    if (l2 && typeof speakForeign === "function") {
+      speakForeign(l2);
+    }
+    return l2;
   }
   hideFeedbackExample();
-  return false;
+  return "";
 }
 
 function hideFeedback() {
@@ -12661,9 +12674,14 @@ function submitAnswer(options = {}) {
   setAnswerIncorrectState(true);
   handleIncorrect();
   settleCurrentCard();
-  const withExample = showIncorrectWithExample(currentCard, answerText);
+  const exampleText = showIncorrectWithExample(currentCard, answerText);
 
-  finishCardAndContinue(getAdvanceDelay(false, options.fromSpeech, { withExample }));
+  finishCardAndContinue(
+    getAdvanceDelay(false, options.fromSpeech, {
+      withExample: Boolean(exampleText),
+      exampleText,
+    })
+  );
 }
 
 function switchTab(tabName) {
@@ -12765,9 +12783,12 @@ function initEventListeners() {
     setAnswerIncorrectState(true);
     handleIncorrect();
     settleCurrentCard();
-    const withExample = showIncorrectWithExample(currentCard, answerText);
+    const exampleText = showIncorrectWithExample(currentCard, answerText);
     finishCardAndContinue(
-      getAdvanceDelay(false, speakModeActive, { withExample })
+      getAdvanceDelay(false, speakModeActive, {
+        withExample: Boolean(exampleText),
+        exampleText,
+      })
     );
   });
 
