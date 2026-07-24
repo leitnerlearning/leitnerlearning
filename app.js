@@ -989,7 +989,7 @@ function normalizeAnswer(text) {
   return text
     .toLowerCase()
     .trim()
-    .replace(/[.,!?;:'"“”‘’]/g, "")
+    .replace(/[.,!?;:'"“”‘’«»¿¡…]/g, "")
     // Same lemma with/without hyphen (wifi ≈ wi-fi ≈ wi‑fi; e-mail ≈ email)
     .replace(/[\u00ad\u2010-\u2015\u2212‐‑‒–—―−-]+/g, "")
     .replace(/\s+/g, " ");
@@ -1005,9 +1005,9 @@ function stripFlashcardPunctuation(text) {
   if (text == null) return "";
   return String(text)
     .trim()
-    .replace(/^["'“”‘’«»]+|["'“”‘’«»]+$/g, "")
-    .replace(/[\s.!…。．,;:]+$/u, "")
-    .replace(/^[\s.!…。．,;:]+/u, "")
+    .replace(/^["'“”‘’«»¿¡]+|["'“”‘’«»¿¡]+$/g, "")
+    .replace(/[\s.!…。．,;:¿¡?]+$/u, "")
+    .replace(/^[\s.!…。．,;:¿¡?]+/u, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -1061,6 +1061,13 @@ function stripAnswerParticles(text) {
   t = t.replace(/^to\s+/, "");
   // Leading "a " as ASCII for å (a være → være). English "a dog" → "dog" is usually fine too.
   t = t.replace(/^a\s+/, "");
+  // EN/ copula openers for short glosses: "i am allergic" ≈ "allergic", "is included" ≈ "included"
+  const enOpen = t.match(
+    /^(i'm|im|i am|je suis|soy|sono|ich bin|is|are|was|were|it's)\s+(.+)$/
+  );
+  if (enOpen && enOpen[2] && !/\s/.test(enOpen[2]) && enOpen[2].length >= 4) {
+    t = enOpen[2];
+  }
   // Leading articles / determiners (same lemma: das Passwort ≈ Passwort, la sortie ≈ sortie).
   // Only strip when the remainder is a *single* content token — never "en gang til" → "gang til".
   const articleStrip = t.match(
@@ -1069,6 +1076,8 @@ function stripAnswerParticles(text) {
   if (articleStrip && articleStrip[2] && !/\s/.test(articleStrip[2])) {
     t = articleStrip[2];
   }
+  // Leading "the " again after other peels (the password)
+  t = t.replace(/^the\s+/, "");
   return t.trim();
 }
 
@@ -1681,6 +1690,10 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["en gang til", "engang til"],
     ["hva synes du", "hva syns du"],
     ["jeg er enig", "jeg enig"],
+    ["snakk saktere", "snakk saktere takk"],
+    ["wifi-passordet", "wifi passordet", "wifipassordet"],
+    ["hvor er utgangen", "hvor er utgang"],
+    ["er toget forsinket", "er toget forsinka"],
   ],
   // Danish — same-lemma ASR / digraph typing (not different words)
   da: [
@@ -1706,6 +1719,9 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["en gang til", "engang til"],
     ["hvad synes du", "hvad syns du"],
     ["jeg er enig", "jeg enig"],
+    ["tal langsommere", "tal langsommere tak"],
+    ["adgangskoden", "adgangs koden"],
+    ["wifi-kode", "wifi kode", "wifikode"],
   ],
   // Swedish — same-lemma ASR / digraph typing
   sv: [
@@ -1730,6 +1746,7 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["en gång till", "en gang till"],
     ["vad tycker du", "va tycker du"],
     ["jag håller med", "jag haller med"],
+    ["wifi-lösenord", "wifi losenord", "wifilosenord"],
   ],
   // German — umlaut digraph typing + common ASR (ß↔ss also via orthography fold)
   de: [
@@ -2083,6 +2100,24 @@ function softDefiniteLemmaMatch(a, b) {
   return tryPair(x, y) || tryPair(y, x);
 }
 
+/**
+ * Same lemma with a light comparative/adverbial peel (billigere ≈ billig,
+ * langsamer ≈ langsam, wolniej ≈ wolny). Single-token only.
+ */
+function softComparativeLemmaMatch(a, b) {
+  const x = normalizeAnswer(a);
+  const y = normalizeAnswer(b);
+  if (!x || !y || x === y) return x === y;
+  if (/\s/.test(x) || /\s/.test(y)) return false;
+  const tryPair = (full, stem) => {
+    if (full.length < stem.length + 2 || stem.length < 4) return false;
+    if (!full.startsWith(stem)) return false;
+    const suf = full.slice(stem.length);
+    return /^(er|ere|are|ste|st|re|szy|ejszy|niej|ej)$/i.test(suf);
+  };
+  return tryPair(x, y) || tryPair(y, x);
+}
+
 /** Short polite tails learners often add after a correct phrase (not new content). */
 const POLITE_ANSWER_TAILS = new Set([
   "takk",
@@ -2128,10 +2163,13 @@ function answersAreClose(user, expected) {
   }
   // Definite suffix same lemma (passordet ≈ passord) — single-token only
   if (softDefiniteLemmaMatch(user, expected)) return true;
+  // Comparative/superlative light peel (billigere ≈ billig) — single-token only
+  if (softComparativeLemmaMatch(user, expected)) return true;
 
   const userCore = stripAnswerParticles(user) || user;
   const expectedCore = stripAnswerParticles(expected) || expected;
   if (softDefiniteLemmaMatch(userCore, expectedCore)) return true;
+  if (softComparativeLemmaMatch(userCore, expectedCore)) return true;
   const distance = Math.min(
     levenshtein(user, expected),
     levenshtein(userCore, expectedCore),
@@ -5841,7 +5879,8 @@ function getMissStoryExample(card) {
         stored &&
         !isRedundantFeedbackExample(stored, card, storedEn) &&
         fromStory.foreign.length > stored.foreign.length + 24 &&
-        sentenceContainsForm(stored.foreign, card.foreign)
+        (sentenceContainsForm(stored.foreign, card.foreign) ||
+          sentenceMatchesCardForm(stored.foreign, card.foreign))
       ) {
         return stored;
       }

@@ -2110,7 +2110,7 @@ body:has(#stats-panel.active) #stats-panel.active {
   border-color: var(--border-strong);
 }
 
-/* Goal done - quiet success, not a loud filled button */
+/* Theme chip complete state (class name is legacy; not a daily-goal chrome) */
 .daily-goal-chip.goal-met {
   color: #1f6b45;
   background: color-mix(in srgb, rgba(72, 187, 120, 0.1) 80%, var(--surface-glass-strong));
@@ -2546,6 +2546,12 @@ body:has(#stats-panel.active) #stats-panel.active {
   background: rgba(255, 255, 255, 0.55);
   border: 1px solid var(--border);
   box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback-example {
+    transition: none;
+  }
 }
 
 .feedback-example.hidden {
