@@ -4,23 +4,31 @@
  *
  * Shape:
  *   LANGUAGE_BASICS[categoryId] = {
+ *     previewGlyphs?: string[],
  *     sections: [{
  *       title, compact?,
  *       items: [{
  *         glyph, speak?, glyphSize?: "sm"|"pair",
  *         approxHtml,
- *         examples: [{ speak, text?, gloss }]
+ *         examples: [{ speak, text?, gloss }]  // EXACTLY 2 (see law below)
  *       }]
  *     }]
  *   }
+ *
+ * ── Excellence law (all 10 languages) ──
+ * 1. Glyph = visual label only (not tappable). Hearing = example words only.
+ * 2. Exactly TWO examples per item (primary + secondary). Never 3+.
+ *    - Prevents orphan wrap (3+1 or 3 alone on line two) on phone and desktop.
+ *    - Enough to teach; more belongs on a second glyph row (e.g. hj and hv separate).
+ * 3. Prefer short everyday words so both chips stay on one row.
+ * 4. Renderer hard-caps at 2 even if data has more (safety net).
  */
 (function () {
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
 
   /**
    * Norwegian (Bokmål) — excellence bar for all languages.
-   * Glyph = visual label only (not tappable). Hearing = example words only.
-   * Optional item.speak is legacy/unused for UI. School Bokmål; calm and short.
+   * Exactly 2 examples per row (see file header law). hj and hv are separate rows.
    */
   window.LANGUAGE_BASICS["nb-bokmal"] = {
     previewGlyphs: ["æ", "ø", "å"],
@@ -35,7 +43,6 @@
             examples: [
               { speak: "ære", text: "ære", gloss: "honor" },
               { speak: "være", text: "være", gloss: "to be" },
-              { speak: "lære", text: "lære", gloss: "to learn" },
             ],
           },
           {
@@ -45,7 +52,6 @@
             examples: [
               { speak: "øl", text: "øl", gloss: "beer" },
               { speak: "søster", text: "søster", gloss: "sister" },
-              { speak: "rød", text: "rød", gloss: "red" },
             ],
           },
           {
@@ -55,7 +61,6 @@
             examples: [
               { speak: "år", text: "år", gloss: "year" },
               { speak: "gå", text: "gå", gloss: "to go" },
-              { speak: "hånd", text: "hånd", gloss: "hand" },
             ],
           },
         ],
@@ -72,7 +77,6 @@
             examples: [
               { speak: "ja", text: "ja", gloss: "yes" },
               { speak: "jeg", text: "jeg", gloss: "I" },
-              { speak: "jul", text: "jul", gloss: "Christmas" },
             ],
           },
           {
@@ -83,7 +87,6 @@
             examples: [
               { speak: "by", text: "by", gloss: "town" },
               { speak: "syk", text: "syk", gloss: "sick" },
-              { speak: "ny", text: "ny", gloss: "new" },
             ],
           },
           {
@@ -95,7 +98,6 @@
             examples: [
               { speak: "rød", text: "rød", gloss: "red" },
               { speak: "bra", text: "bra", gloss: "good" },
-              { speak: "tre", text: "tre", gloss: "three / tree" },
             ],
           },
         ],
@@ -112,7 +114,6 @@
             examples: [
               { speak: "kjøpe", text: "kjøpe", gloss: "to buy" },
               { speak: "kjøkken", text: "kjøkken", gloss: "kitchen" },
-              { speak: "kjøtt", text: "kjøtt", gloss: "meat" },
             ],
           },
           {
@@ -123,7 +124,6 @@
             examples: [
               { speak: "skje", text: "skje", gloss: "spoon" },
               { speak: "ski", text: "ski", gloss: "ski" },
-              { speak: "sky", text: "sky", gloss: "cloud" },
             ],
           },
           {
@@ -134,17 +134,24 @@
             examples: [
               { speak: "skole", text: "skole", gloss: "school" },
               { speak: "skatt", text: "skatt", gloss: "tax" },
-              { speak: "skog", text: "skog", gloss: "forest" },
             ],
           },
           {
-            glyph: "hj / hv",
+            glyph: "hj",
             speak: "hjem",
             glyphSize: "pair",
-            approxHtml: "<strong>h</strong> is silent · <em>hj</em> ≈ <em>y</em>, <em>hv</em> ≈ <em>v</em>",
+            approxHtml: "<strong>h</strong> silent · sounds like <strong>y</strong> in <em>yes</em>",
             examples: [
               { speak: "hjem", text: "hjem", gloss: "home" },
               { speak: "hjelp", text: "hjelp", gloss: "help" },
+            ],
+          },
+          {
+            glyph: "hv",
+            speak: "hva",
+            glyphSize: "pair",
+            approxHtml: "<strong>h</strong> silent · sounds like <strong>v</strong>",
+            examples: [
               { speak: "hva", text: "hva", gloss: "what" },
               { speak: "hvor", text: "hvor", gloss: "where" },
             ],
@@ -173,7 +180,6 @@
             examples: [
               { speak: "nei", text: "nei", gloss: "no" },
               { speak: "vei", text: "vei", gloss: "road" },
-              { speak: "hei", text: "hei", gloss: "hi" },
             ],
           },
           {
@@ -184,7 +190,6 @@
             examples: [
               { speak: "høy", text: "høy", gloss: "high" },
               { speak: "øy", text: "øy", gloss: "island" },
-              { speak: "røyke", text: "røyke", gloss: "to smoke" },
             ],
           },
           {
@@ -221,7 +226,6 @@
             examples: [
               { speak: "norsk", text: "norsk", gloss: "Norwegian" },
               { speak: "skole", text: "skole", gloss: "school" },
-              { speak: "vindu", text: "vindu", gloss: "window" },
             ],
           },
           {
@@ -241,7 +245,6 @@
             approxHtml: "When you can’t type æ/ø/å · still the same letters",
             examples: [
               { speak: "være", text: "være", gloss: "to be" },
-              { speak: "søster", text: "søster", gloss: "sister" },
               { speak: "år", text: "år", gloss: "year" },
             ],
           },

@@ -4172,6 +4172,7 @@ html.needs-welcome body {
   color: var(--brand-deep);
 }
 
+/* Two chips by content law — prefer one row; wrap only if words are very long */
 .basics-sound-examples {
   display: flex;
   flex-wrap: wrap;

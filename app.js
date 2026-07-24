@@ -13278,9 +13278,10 @@ function renderLanguageBasics(category = getActiveCategory()) {
           const glyph = String(item.glyph || item.speak || "").trim();
           // Packs may use glyphClass ("basics-glyph--pair"); older data uses glyphSize.
           const sizeClass = basicsGlyphSizeClass(item);
-          // Glyph is a visual label only — examples are the sole hear controls
-          // (avoids double affordance and “tap æ, hear a word” mismatch).
+          // Glyph is a visual label only — examples are the sole hear controls.
+          // Excellence law: exactly two example chips (cap at 2 if data has more).
           const examples = (item.examples || [])
+            .slice(0, 2)
             .map((ex) => {
               const word = ex.text || ex.speak || "";
               if (!String(word).trim()) return "";
