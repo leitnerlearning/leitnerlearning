@@ -469,24 +469,31 @@
     ],
   };
 
+  /**
+   * German — excellence bar (MED tray). MUST + SHOULD for English speakers.
+   * ä/ö/ü/ß; j/v/w lookalikes; ch/sch; ei vs ie.
+   * Dropped COULD: capital-noun rule, ß/ss meta row, ie/ei contrast row.
+   * Exactly 2 examples. Glyph label only.
+   */
   window.LANGUAGE_BASICS.de = {
+    previewGlyphs: ["ä", "ö", "ü"],
     sections: [
       {
-        title: "Special letters",
+        title: "Special",
         items: [
           {
             glyph: "ä",
-            speak: "ä",
+            speak: "spät",
             approxHtml: "<strong>e</strong> in <em>bed</em>",
             examples: [
-              { speak: "Männer", text: "Männer", gloss: "men" },
               { speak: "spät", text: "spät", gloss: "late" },
+              { speak: "Männer", text: "Männer", gloss: "men" },
             ],
           },
           {
             glyph: "ö",
-            speak: "ö",
-            approxHtml: "<strong>uh</strong>, lips rounded",
+            speak: "schön",
+            approxHtml: "<strong>u</strong> in <em>burn</em> · rounded",
             examples: [
               { speak: "schön", text: "schön", gloss: "beautiful" },
               { speak: "hören", text: "hören", gloss: "hear" },
@@ -494,20 +501,102 @@
           },
           {
             glyph: "ü",
-            speak: "ü",
-            approxHtml: "<strong>ee</strong>, lips rounded",
+            speak: "über",
+            approxHtml: "<strong>ee</strong> · rounded lips",
             examples: [
               { speak: "über", text: "über", gloss: "over" },
-              { speak: "müde", text: "müde", gloss: "tired" },
+              { speak: "für", text: "für", gloss: "for" },
             ],
           },
           {
             glyph: "ß",
-            speak: "ss",
-            approxHtml: "Sharp <strong>s</strong> (ess-tsett)",
+            speak: "groß",
+            approxHtml: "Sharp <strong>s</strong> · same as <strong>ss</strong>",
             examples: [
-              { speak: "Straße", text: "Straße", gloss: "street" },
               { speak: "groß", text: "groß", gloss: "big" },
+              { speak: "weiß", text: "weiß", gloss: "white" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Surprises",
+        compact: true,
+        items: [
+          {
+            glyph: "j",
+            speak: "ja",
+            glyphSize: "sm",
+            approxHtml: "<strong>y</strong> in <em>yes</em>",
+            examples: [
+              { speak: "ja", text: "ja", gloss: "yes" },
+              { speak: "jetzt", text: "jetzt", gloss: "now" },
+            ],
+          },
+          {
+            glyph: "v",
+            speak: "von",
+            glyphSize: "sm",
+            approxHtml: "Often like English <strong>f</strong>",
+            examples: [
+              { speak: "von", text: "von", gloss: "from" },
+              { speak: "Vater", text: "Vater", gloss: "father" },
+            ],
+          },
+          {
+            glyph: "w",
+            speak: "was",
+            glyphSize: "sm",
+            approxHtml: "Like English <strong>v</strong>",
+            examples: [
+              { speak: "was", text: "was", gloss: "what" },
+              { speak: "wer", text: "wer", gloss: "who" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Pairs",
+        compact: true,
+        items: [
+          {
+            glyph: "ch",
+            speak: "ich",
+            glyphSize: "pair",
+            approxHtml: "Soft after i/e · rough after a/o/u",
+            examples: [
+              { speak: "ich", text: "ich", gloss: "I" },
+              { speak: "Nacht", text: "Nacht", gloss: "night" },
+            ],
+          },
+          {
+            glyph: "sch",
+            speak: "schon",
+            glyphSize: "pair",
+            approxHtml: "<strong>sh</strong> in <em>ship</em>",
+            examples: [
+              { speak: "schon", text: "schon", gloss: "already" },
+              { speak: "Schule", text: "Schule", gloss: "school" },
+            ],
+          },
+          {
+            glyph: "ei",
+            speak: "nein",
+            glyphSize: "pair",
+            approxHtml: "<strong>eye</strong>",
+            examples: [
+              { speak: "nein", text: "nein", gloss: "no" },
+              { speak: "eins", text: "eins", gloss: "one" },
+            ],
+          },
+          {
+            glyph: "ie",
+            speak: "sie",
+            glyphSize: "pair",
+            approxHtml: "Long <strong>ee</strong>",
+            examples: [
+              { speak: "sie", text: "sie", gloss: "she / they" },
+              { speak: "die", text: "die", gloss: "the" },
             ],
           },
         ],
