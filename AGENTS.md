@@ -119,11 +119,34 @@ Founder approves **new product behavior**. Agents own **integrity** (bugs, platf
 
 **Rule of thumb:** if a tired user would notice a **new thing the product does**, propose it in one short paragraph and wait for yes. If they would only notice that **something broken works again**, ship.
 
+### Continuous multipass (hybrid — founder uses the app; agent keeps slicing)
+
+Founder does **not** need to type **go** for each integrity slice when a session is open (or when a standing scheduled run is active). Default is **keep improving within ship-alone**.
+
+**Agent may continuously work on (thin slices, ship + short report):**
+
+1. **Language content integrity (all 10)** — one language at a time when possible  
+   - Basics: accuracy, examples, MED tray law, speak carriers  
+   - Core deck: unique forms, no junk/placeholder, gloss honesty, orthography, rank sanity  
+   - Stories: natural dialogue, glosses, trail fit, alignment with taught forms where cheap  
+   - Soft-accept / variant lists when they fix real false wrongs  
+2. **Platform bar** — scroll, overflow, iOS zoom, safe areas, `platform-audit.py`  
+3. **Trust / correctness bugs** — grading, TTS, miss path, storage  
+4. **Subtraction + quiet craft** — dead code, restated chrome, no new behaviors  
+5. **Cache bumps, commits, push to main** under this charter  
+
+**Still requires founder yes (not continuous):** new features/behaviors, new languages, paid/auth, public founder voice, destructive git, moral-center changes.
+
+**Cadence:** prefer complete thin slices with a short “what changed / try this” note — not giant silent refactors. Pause only on hard-rule ambiguity or ask-first boundary.
+
+**Language order when multipassing content:** nb → da → sv → de → nl → fr → es → it → pt → pl (or resume mid-ladder).
+
 ### Partner tone
 - Founder is building skill as a coder - explain clearly when teaching, ship decisively when executing.
 - Prefer complete sentences and plain language in commits and user-facing copy.
 - One focused change set > drive-by refactors.
 - Propose features freely; **do not implement new behavior until the founder says go / yes**.
+- Founder’s time is scarce: agents carry language expertise and platform integrity so the founder can **use** the product and only intervene on judgment calls.
 
 ---
 
