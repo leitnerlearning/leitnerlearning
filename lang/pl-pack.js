@@ -994,12 +994,12 @@
     { foreign: 'plik', native: 'file', rank: 990, category: 'noun', band: 'G' },
     { foreign: "jeszcze raz", native: "once more", rank: 991, category: "phrase", band: "phrase", exampleForeign: "Jeszcze raz, proszę.", exampleNative: "Once more, please." },
     { foreign: "wolniej", native: "more slowly", rank: 992, category: "adverb", band: "G", exampleForeign: "Nie rozumiem. Proszę wolniej.", exampleNative: "I don't understand. More slowly, please." },
-    { foreign: "tańszy", native: "cheaper", rank: 993, category: "adjective", band: "G", exampleForeign: "Macie coś tańszego?", exampleNative: "Do you have something cheaper?" },
+    { foreign: "tańszy", native: "cheaper", rank: 993, category: "adjective", band: "G", exampleForeign: "Jest tańszy hotel?", exampleNative: "Is there a cheaper hotel?" },
     { foreign: "hasło do wifi", native: "Wi‑Fi password", rank: 994, category: "phrase", band: "phrase", exampleForeign: "Jakie jest hasło do wifi?", exampleNative: "What's the Wi‑Fi password?" },
-    { foreign: "alergiczny", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Mam uczulenie na penicylinę.", exampleNative: "I'm allergic to penicillin." },
-    { foreign: "opóźniony", native: "delayed", rank: 996, category: "adjective", band: "G", exampleForeign: "Czy pociąg ma opóźnienie?", exampleNative: "Is the train delayed?" },
-    { foreign: "zgodny", native: "in agreement / agree", rank: 997, category: "adjective", band: "G", exampleForeign: "Zgadzam się.", exampleNative: "I agree." },
-    { foreign: "uważać", native: "think / find (opinion)", rank: 998, category: "verb", band: "G", exampleForeign: "Co myślisz?", exampleNative: "What do you think?" },
+    { foreign: "alergiczny", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Jestem alergiczny na penicylinę.", exampleNative: "I'm allergic to penicillin." },
+    { foreign: "opóźniony", native: "delayed", rank: 996, category: "adjective", band: "G", exampleForeign: "Czy pociąg jest opóźniony?", exampleNative: "Is the train delayed?" },
+    { foreign: "zgadzam się", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase", exampleForeign: "Zgadzam się.", exampleNative: "I agree." },
+    { foreign: "co myślisz", native: "what do you think", rank: 998, category: "phrase", band: "phrase", exampleForeign: "Co myślisz?", exampleNative: "What do you think?" },
     { foreign: "wyjście", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Gdzie jest wyjście?", exampleNative: "Where is the exit?" },
     { foreign: "wliczony", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "Czy prąd jest wliczony w czynsz?", exampleNative: "Is electricity included in the rent?" }
 

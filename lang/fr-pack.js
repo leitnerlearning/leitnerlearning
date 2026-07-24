@@ -998,10 +998,10 @@
     { foreign: "le mot de passe", native: "the password", rank: 994, category: "phrase", band: "phrase", exampleForeign: "C'est quoi le mot de passe du wifi ?", exampleNative: "What's the Wi‑Fi password?" },
     { foreign: "allergique", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Je suis allergique à la pénicilline.", exampleNative: "I'm allergic to penicillin." },
     { foreign: "en retard", native: "delayed", rank: 996, category: "phrase", band: "phrase", exampleForeign: "Le train est-il en retard ?", exampleNative: "Is the train delayed?" },
-    { foreign: "d", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase", exampleForeign: "À demain !", exampleNative: "See you tomorrow!" },
-    { foreign: "que penses-tu", native: "what do you think", rank: 998, category: "phrase", band: "phrase", exampleForeign: "Qu'est-ce que tu en penses ?", exampleNative: "What do you think?" },
+    { foreign: "d'accord", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase", exampleForeign: "Je suis d'accord.", exampleNative: "I agree." },
+    { foreign: "que penses-tu", native: "what do you think", rank: 998, category: "phrase", band: "phrase", exampleForeign: "Que penses-tu ?", exampleNative: "What do you think?" },
     { foreign: "la sortie", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Où est la sortie ?", exampleNative: "Where is the exit?" },
-    { foreign: "inclus", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "L'électricité est comprise dans le loyer ?", exampleNative: "Is electricity included in the rent?" }
+    { foreign: "inclus", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "Le petit-déjeuner est-il inclus ?", exampleNative: "Is breakfast included?" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

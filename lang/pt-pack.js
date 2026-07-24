@@ -998,10 +998,10 @@
     { foreign: "a senha", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "Qual é a senha do wifi?", exampleNative: "What's the Wi‑Fi password?" },
     { foreign: "alérgico", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Sou alérgico à penicilina.", exampleNative: "I'm allergic to penicillin." },
     { foreign: "atrasado", native: "delayed", rank: 996, category: "adjective", band: "G", exampleForeign: "O trem está atrasado?", exampleNative: "Is the train delayed?" },
-    { foreign: "de acordo", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase", exampleForeign: "Eu concordo.", exampleNative: "I agree." },
+    { foreign: "de acordo", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase", exampleForeign: "Estou de acordo.", exampleNative: "I agree." },
     { foreign: "o que você acha", native: "what do you think", rank: 998, category: "phrase", band: "phrase", exampleForeign: "O que você acha?", exampleNative: "What do you think?" },
     { foreign: "a saída", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Onde fica a saída?", exampleNative: "Where is the exit?" },
-    { foreign: "incluído", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "A luz está incluída no aluguel?", exampleNative: "Is electricity included in the rent?" }
+    { foreign: "incluído", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "Está incluído no preço?", exampleNative: "Is it included in the price?" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

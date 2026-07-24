@@ -992,7 +992,7 @@
     { foreign: 'fare', native: 'danger', rank: 988, category: 'noun', band: 'G' },
     { foreign: 'bestilling', native: 'order', rank: 989, category: 'noun', band: 'G' },
     { foreign: 'mening', native: 'opinion', rank: 990, category: 'noun', band: 'G' },
-    { foreign: "snak langsommere", native: "speak more slowly", rank: 991, category: "phrase", band: "phrase", exampleForeign: "Jeg forstår ikke. Tal langsommere.", exampleNative: "I don't understand. Speak more slowly." },
+    { foreign: "snak langsommere", native: "speak more slowly", rank: 991, category: "phrase", band: "phrase", exampleForeign: "Jeg forstår ikke. Snak langsommere.", exampleNative: "I don't understand. Speak more slowly." },
     { foreign: "langsommere", native: "more slowly", rank: 992, category: "adverb", band: "G", exampleForeign: "Jeg forstår ikke. Tal langsommere.", exampleNative: "I don't understand. Speak more slowly." },
     { foreign: "billigere", native: "cheaper", rank: 993, category: "adjective", band: "G", exampleForeign: "Har I noget billigere?", exampleNative: "Do you have something cheaper?" },
     { foreign: "adgangskoden", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "Det er mig i dag. Adgangskoden får du af en medarbejder.", exampleNative: "That's me today. You'll get the password from a coworker." },

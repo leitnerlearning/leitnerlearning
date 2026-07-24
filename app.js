@@ -2538,6 +2538,9 @@ function mergeStarterIntoDeck(existing, category = getActiveCategory()) {
   for (const card of existingByKey.values()) {
     const key = normalizeAnswer(card.foreign);
     if (!key || usedKeys.has(key)) continue;
+    const foreignForm = String(card.foreign || "").trim();
+    // Drop truncated single-letter lemmas (e.g. old "d" / "l" survival bugs).
+    if (foreignForm.length <= 1) continue;
     const isUserCard = card.rank == null;
     const isPackCard = Boolean(card.packId);
     if (isUserCard || isPackCard || cardHasLearningProgress(card)) {
@@ -5792,6 +5795,10 @@ function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
   if (!card?.foreign) return null;
   const form = String(card.foreign).trim();
   if (!form) return null;
+  // Single letters / broken lemmas invent false cousins across Stories.
+  if (form.length <= 1) {
+    return null;
+  }
   const cacheKey = `${categoryId || ""}|${normalizeAnswer(form)}`;
   if (storyExampleCache.has(cacheKey)) {
     return storyExampleCache.get(cacheKey);
@@ -5914,21 +5921,58 @@ function showFeedbackExample(example) {
 }
 
 /**
+ * True when the L2 example line actually teaches this card's form.
+ * Exact surface or honest soft variants (gå→går) OK; synonyms and
+ * unrelated clauses are not. Single-letter / empty forms never pass.
+ */
+function exampleTeachesCardForm(example, card) {
+  if (!example?.foreign || !card?.foreign) return false;
+  const form = String(card.foreign).trim();
+  const line = String(example.foreign).trim();
+  if (!form || !line) return false;
+  // Corrupt or glue-letter cards must not pull random story hits.
+  if (form.length <= 1) return false;
+  if (form.length === 2 && !/\s/.test(form) && isGluePracticeCard?.(card)) {
+    return false;
+  }
+  // Prefer exact surface in the line; soft morph still honest for miss beat.
+  if (sentenceContainsForm(line, form)) return true;
+  if (sentenceMatchesCardForm(line, form)) {
+    // Multi-word: at least one solid content core must appear (not glue-only).
+    const content = contentTokensForStoryMatch(form);
+    if (!content.length) return false;
+    if (content.some((tok) => tok.length >= 3 && sentenceMatchesAnyForm(line, formMatchVariants(tok)))) {
+      return true;
+    }
+    // Single solid lemma with soft conjugation hit
+    if (content.length === 1 && content[0].length >= 3) return true;
+  }
+  return false;
+}
+
+/**
  * Miss teaching beat: at most once per card lifetime.
  * Prefer a live Stories clause; fall back to curated exampleForeign on the card
  * (e.g. survival ranks). Prefer curated when live hit is much longer (softer match).
- * No bare lemma restatement, no dishonest templates.
+ * Silence beats a line that does not teach the form.
  */
 function getMissStoryExample(card) {
   if (!card || card.storyExampleShown) return null;
 
-  const fromStory = findExampleSentenceForCard(card);
+  const form = String(card.foreign || "").trim();
+  // Never invent context for broken single-letter lemmas.
+  if (!form || form.length <= 1) return null;
+
+  const fromStoryRaw = findExampleSentenceForCard(card);
+  const fromStory =
+    fromStoryRaw && exampleTeachesCardForm(fromStoryRaw, card) ? fromStoryRaw : null;
+
   const storedL2 = String(card.exampleForeign || "").trim();
   const storedEn = String(card.exampleNative || "").trim();
+  const storedRaw =
+    storedL2 && storedEn ? { foreign: storedL2, en: storedEn } : null;
   const stored =
-    storedL2 && storedEn
-      ? { foreign: storedL2, en: storedEn }
-      : null;
+    storedRaw && exampleTeachesCardForm(storedRaw, card) ? storedRaw : null;
 
   if (fromStory?.foreign && fromStory?.en) {
     if (!isRedundantFeedbackExample(fromStory, card, fromStory.en)) {
@@ -5936,9 +5980,7 @@ function getMissStoryExample(card) {
       if (
         stored &&
         !isRedundantFeedbackExample(stored, card, storedEn) &&
-        fromStory.foreign.length > stored.foreign.length + 24 &&
-        (sentenceContainsForm(stored.foreign, card.foreign) ||
-          sentenceMatchesCardForm(stored.foreign, card.foreign))
+        fromStory.foreign.length > stored.foreign.length + 24
       ) {
         return stored;
       }
@@ -5970,12 +6012,24 @@ function getCardContextExample(card) {
   if (!card) return null;
 
   const fromStory = findExampleSentenceForCard(card);
-  if (fromStory?.foreign && fromStory?.en) return fromStory;
+  if (
+    fromStory?.foreign &&
+    fromStory?.en &&
+    exampleTeachesCardForm(fromStory, card) &&
+    !isRedundantFeedbackExample(fromStory, card, fromStory.en)
+  ) {
+    return fromStory;
+  }
 
   const storedL2 = String(card.exampleForeign || "").trim();
   const storedEn = String(card.exampleNative || "").trim();
-  if (storedL2 && storedEn && !isRedundantFeedbackExample({ foreign: storedL2, en: storedEn }, card, storedEn)) {
-    return { foreign: storedL2, en: storedEn };
+  const stored = storedL2 && storedEn ? { foreign: storedL2, en: storedEn } : null;
+  if (
+    stored &&
+    exampleTeachesCardForm(stored, card) &&
+    !isRedundantFeedbackExample(stored, card, storedEn)
+  ) {
+    return stored;
   }
 
   const foreign = String(card.foreign || "").trim();
@@ -6031,6 +6085,14 @@ function isRedundantFeedbackExample(example, card, answerText) {
 
   // Same L2 as the prompt (with EN matching gloss or the answer pill)
   if (exL2 === cardL2 && (exEn === cardEn || exEn === pill || !exEn)) {
+    return true;
+  }
+  // Bare lemma + trailing punctuation only (“Zgadzam się.” ≈ card)
+  if (
+    cardL2 &&
+    exL2.replace(/[.!?…]+$/u, "").trim() === cardL2 &&
+    (exEn === cardEn || exEn === pill || !exEn)
+  ) {
     return true;
   }
   // Same lemma after article strip only (la sortie ≈ sortie card)

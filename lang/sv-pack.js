@@ -997,11 +997,11 @@
     { foreign: "billigare", native: "cheaper", rank: 993, category: "adjective", band: "G", exampleForeign: "Har ni något billigare?", exampleNative: "Do you have something cheaper?" },
     { foreign: "lösenordet", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "Vad är wifi-lösenordet?", exampleNative: "What's the Wi‑Fi password?" },
     { foreign: "allergisk", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Jag är allergisk mot penicillin.", exampleNative: "I'm allergic to penicillin." },
-    { foreign: "försenad", native: "delayed", rank: 996, category: "adjective", band: "G", exampleForeign: "Men bussarna är ofta fulla och försenade i rusningen.", exampleNative: "But the buses are often full and late in rush hour." },
-    { foreign: "överens", native: "in agreement / agree", rank: 997, category: "adjective", band: "G", exampleForeign: "Jag håller med.", exampleNative: "I agree." },
+    { foreign: "försenad", native: "delayed", rank: 996, category: "adjective", band: "G", exampleForeign: "Bussen är försenad.", exampleNative: "The bus is delayed." },
+    { foreign: "överens", native: "in agreement / agree", rank: 997, category: "adjective", band: "G", exampleForeign: "Jag är överens.", exampleNative: "I agree." },
     { foreign: "tycker", native: "think / find (opinion)", rank: 998, category: "verb", band: "G", exampleForeign: "Vad tycker du?", exampleNative: "What do you think?" },
     { foreign: "utgången", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Var är utgången?", exampleNative: "Where is the exit?" },
-    { foreign: "inkluderad", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "Ingår el i hyran?", exampleNative: "Is electricity included in the rent?" }
+    { foreign: "inkluderad", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "Är el inkluderad i hyran?", exampleNative: "Is electricity included in the rent?" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
