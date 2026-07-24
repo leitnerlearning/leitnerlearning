@@ -2018,6 +2018,24 @@ function maxEditDistance(text) {
   return Math.max(2, Math.floor(len * 0.22));
 }
 
+/** Short polite tails learners often add after a correct phrase (not new content). */
+const POLITE_ANSWER_TAILS = new Set([
+  "takk",
+  "tak",
+  "tack",
+  "please",
+  "danke",
+  "merci",
+  "gracias",
+  "grazie",
+  "obrigado",
+  "obrigada",
+  "proszę",
+  "bitte",
+  "alsjeblieft",
+  "alstublieft",
+]);
+
 function answersAreClose(user, expected) {
   if (user === expected) return true;
   // Type æ ø å as ae/oe/aa (or plain a/o) - works for Norwegian answers
@@ -2026,7 +2044,22 @@ function answersAreClose(user, expected) {
   if (englishDialectSpellingMatches(user, expected)) return true;
   // å spise ≈ spise, to be ≈ be, a vaere ≈ være
   if (particleAnswerMatches(user, expected)) return true;
-  if (user.includes(expected) || expected.includes(user)) return true;
+  // Major L2 orthography folds (wifi ≈ wi-fi, café ≈ cafe, ß ≈ ss, …)
+  const foreignCode = getActiveCategory()?.foreignLang || "";
+  if (foreignOrthographyMatches(user, expected, foreignCode)) return true;
+  if (foreignOrthographyMatches(user, expected, "en")) return true;
+  // Phrase + polite tail only: "en gang til takk" for card "en gang til"
+  // Never accept short substrings ("en" ≉ "en gang til") — that was a false LOOKS GOOD path.
+  if (expected && user.startsWith(expected + " ")) {
+    const restTokens = user.slice(expected.length).trim().split(/\s+/).filter(Boolean);
+    if (
+      restTokens.length >= 1 &&
+      restTokens.length <= 2 &&
+      restTokens.every((t) => POLITE_ANSWER_TAILS.has(t))
+    ) {
+      return true;
+    }
+  }
 
   const userCore = stripAnswerParticles(user) || user;
   const expectedCore = stripAnswerParticles(expected) || expected;

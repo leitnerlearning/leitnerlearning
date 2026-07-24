@@ -1750,7 +1750,7 @@ main {
   }
 
   .answer-form input[type="text"] {
-    font-size: 16px; /* prevent iOS focus zoom */
+    font-size: max(16px, 1rem); /* prevent iOS focus zoom (incl. coarse pointer) */
     padding: 0.95rem 1rem;
     margin-bottom: 0.4rem;
   }
@@ -2309,7 +2309,8 @@ body:has(#stats-panel.active) #stats-panel.active {
 .answer-form input[type="text"] {
   width: 100%;
   padding: 1rem 1.2rem;
-  font-size: 1.1rem;
+  /* ≥16px always — iPad “desktop” width still zooms below 16px on focus */
+  font-size: max(1.1rem, 16px);
   font-family: inherit;
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
@@ -2879,7 +2880,7 @@ body:has(#stats-panel.active) #stats-panel.active {
 
   .answer-form input[type="text"] {
     padding: 1.05rem 1.25rem;
-    font-size: 1.12rem;
+    font-size: max(1.12rem, 16px);
     margin-bottom: 0.45rem;
   }
 
