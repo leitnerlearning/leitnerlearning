@@ -10865,6 +10865,14 @@ function observeLibraryJumpSections(sections) {
     .filter(Boolean);
   if (!targets.length) return;
 
+  // Body is the page scrollport (Safari trackpad). Observing the viewport
+  // (root: null) desyncs the active jump chip while two-finger scrolling.
+  const scrollRoot =
+    document.scrollingElement === document.body ||
+    (document.body && document.body.scrollHeight > document.body.clientHeight + 8)
+      ? document.body
+      : null;
+
   libraryJumpObserver = new IntersectionObserver(
     (entries) => {
       const visible = entries
@@ -10875,7 +10883,7 @@ function observeLibraryJumpSections(sections) {
       if (key) setActiveLibraryJump(key);
     },
     {
-      root: null,
+      root: scrollRoot,
       rootMargin: "-20% 0px -55% 0px",
       threshold: [0.08, 0.2, 0.4],
     }
