@@ -5219,8 +5219,10 @@ function formMatchVariants(form) {
 
   const stems = new Set([stripped]);
   for (const suf of peels) {
-    if (stripped.length > suf.length + 2 && stripped.endsWith(suf)) {
-      stems.add(stripped.slice(0, -suf.length));
+    // Keep enough stem that expansions cannot invent cousins (wohne→woh→woher).
+    if (stripped.length > suf.length + 3 && stripped.endsWith(suf)) {
+      const stem = stripped.slice(0, -suf.length);
+      if (stem.length >= 4) stems.add(stem);
     }
   }
 
@@ -5230,11 +5232,18 @@ function formMatchVariants(form) {
   for (const stem of stems) {
     if (!stem) continue;
     out.add(stem);
-    if (stem.length >= 2) {
+    // Expand only from solid stems — short stubs create false cousins across the deck.
+    if (stem.length >= 4) {
       for (const suf of light) out.add(`${stem}${suf}`);
     }
-    if (stem.length >= 3) {
+    if (stem.length >= 4) {
       for (const suf of heavy) out.add(`${stem}${suf}`);
+    }
+  }
+  // Short verbs still need a light present: gå → går (stem length 2–3).
+  if (stripped.length >= 2 && stripped.length <= 3) {
+    for (const suf of ["r", "er", "ar", "t", "n", "s"]) {
+      out.add(`${stripped}${suf}`);
     }
   }
   return [...out].filter(Boolean);
