@@ -470,6 +470,145 @@
   };
 
   /**
+   * Dutch — excellence bar (MED tray). MUST + SHOULD for English speakers.
+   * ij/ui/oe/eu; throaty g/ch; sch ≠ sh; r; long aa / ie / ou.
+   * Dropped COULD: stress, -je diminutive, dt spelling, v/w meta, aa/ee/oo bundle.
+   * Exactly 2 examples. Glyph label only.
+   */
+  window.LANGUAGE_BASICS.nl = {
+    previewGlyphs: ["ij", "ui", "oe"],
+    sections: [
+      {
+        title: "Special",
+        items: [
+          {
+            glyph: "ij",
+            speak: "ijs",
+            glyphSize: "pair",
+            approxHtml: "<strong>eye</strong>",
+            examples: [
+              { speak: "ijs", text: "ijs", gloss: "ice" },
+              { speak: "tijd", text: "tijd", gloss: "time" },
+            ],
+          },
+          {
+            glyph: "ui",
+            speak: "huis",
+            glyphSize: "pair",
+            approxHtml: "Rounded · unique to Dutch",
+            examples: [
+              { speak: "huis", text: "huis", gloss: "house" },
+              { speak: "uit", text: "uit", gloss: "out" },
+            ],
+          },
+          {
+            glyph: "oe",
+            speak: "boek",
+            glyphSize: "pair",
+            approxHtml: "<strong>oo</strong> in <em>boot</em>",
+            examples: [
+              { speak: "boek", text: "boek", gloss: "book" },
+              { speak: "goed", text: "goed", gloss: "good" },
+            ],
+          },
+          {
+            glyph: "eu",
+            speak: "leuk",
+            glyphSize: "pair",
+            approxHtml: "Rounded · a bit like French <em>eu</em>",
+            examples: [
+              { speak: "leuk", text: "leuk", gloss: "nice" },
+              { speak: "deur", text: "deur", gloss: "door" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Surprises",
+        compact: true,
+        items: [
+          {
+            glyph: "g",
+            speak: "goed",
+            glyphSize: "sm",
+            approxHtml: "Throaty · not English <span class=\"basics-letter\">g</span>",
+            examples: [
+              { speak: "goed", text: "goed", gloss: "good" },
+              { speak: "dag", text: "dag", gloss: "day" },
+            ],
+          },
+          {
+            glyph: "ch",
+            speak: "acht",
+            glyphSize: "pair",
+            approxHtml: "Same throaty family as <strong>g</strong>",
+            examples: [
+              { speak: "acht", text: "acht", gloss: "eight" },
+              { speak: "licht", text: "licht", gloss: "light" },
+            ],
+          },
+          {
+            glyph: "r",
+            speak: "rood",
+            glyphSize: "sm",
+            approxHtml: "Tapped · not English <span class=\"basics-letter\">r</span>",
+            examples: [
+              { speak: "rood", text: "rood", gloss: "red" },
+              { speak: "brood", text: "brood", gloss: "bread" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Pairs",
+        compact: true,
+        items: [
+          {
+            glyph: "sch",
+            speak: "school",
+            glyphSize: "pair",
+            approxHtml: "<strong>s</strong> + throaty · not English <em>sh</em>",
+            examples: [
+              { speak: "school", text: "school", gloss: "school" },
+              { speak: "schip", text: "schip", gloss: "ship" },
+            ],
+          },
+          {
+            glyph: "aa",
+            speak: "gaan",
+            glyphSize: "pair",
+            approxHtml: "Long clear <strong>ah</strong>",
+            examples: [
+              { speak: "gaan", text: "gaan", gloss: "go" },
+              { speak: "maan", text: "maan", gloss: "moon" },
+            ],
+          },
+          {
+            glyph: "ie",
+            speak: "niet",
+            glyphSize: "pair",
+            approxHtml: "Long <strong>ee</strong>",
+            examples: [
+              { speak: "niet", text: "niet", gloss: "not" },
+              { speak: "hier", text: "hier", gloss: "here" },
+            ],
+          },
+          {
+            glyph: "ou",
+            speak: "koud",
+            glyphSize: "pair",
+            approxHtml: "Like <strong>ou</strong> in <em>out</em>",
+            examples: [
+              { speak: "koud", text: "koud", gloss: "cold" },
+              { speak: "jou", text: "jou", gloss: "you" },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
+  /**
    * German — excellence bar (MED tray). MUST + SHOULD for English speakers.
    * ä/ö/ü/ß; j/v/w lookalikes; ch/sch; ei vs ie.
    * Dropped COULD: capital-noun rule, ß/ss meta row, ie/ei contrast row.
