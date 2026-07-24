@@ -121,7 +121,7 @@ Founder approves **new product behavior**. Agents own **integrity** (bugs, platf
 
 ### Continuous multipass (hybrid — founder uses the app; agent keeps slicing)
 
-**Go commands (founder law · permanent):**
+**Go commands (founder law · permanent · case-insensitive):**
 
 | Input | Meaning |
 |-------|---------|
@@ -129,12 +129,48 @@ Founder approves **new product behavior**. Agents own **integrity** (bugs, platf
 | `go N` | Exactly **N** slices; one report after the batch |
 | `go unit: <name>` | Finish named unit; as many slices as needed; default **cap 25** |
 | `go unit: <name> (cap N)` | Named unit with hard cap |
-| `go spine` | All **Spine** units in order (miss-context honesty → NB bar parity da → sv → de → platform bar seal → review fairness residual). Category cap **80**. |
-| `go content` | All **Content** units in order (Basics, stories naturalness, core deck honesty, survival alignment). Cap **100**. |
-| `go craft` | All **Craft** units in order (quiet chrome, Review home, Cards Check, Read gloss, About/copy). Cap **40**. |
+| `go spine` | All **Spine** units in order (see catalog). Category cap **80**. |
+| `go content` | All **Content** units in order. Cap **100**. |
+| `go craft` | All **Craft** units in order. Cap **40**. |
 | `go parked` | **Forbidden** without explicit founder yes |
 
-Optional override: `go spine (cap 50)`. Ship-alone only. One report after multipass unit/category. Stop a unit when done; do not burn leftover cap for thrash.
+Optional override: `go spine (cap 50)` (same pattern for content/craft). Ship-alone only. **One report after the whole category** (or after a solo unit). Stop each unit when done; skip units already sealed; do not burn leftover cap for thrash.
+
+#### Category catalogs (run in order; skip done)
+
+**Spine** (`go spine` · cap 80)
+
+| # | Unit | Default unit cap | Status |
+|---|------|------------------|--------|
+| 1 | Miss-context honesty | 20 | done (`65cafeb`) |
+| 2 | Norwegian bar parity — Danish | 30 | done (`c72507a`) |
+| 3 | Norwegian bar parity — Swedish | 30 | done (`f3300b0`) |
+| 4 | Norwegian bar parity — German | 30 | done (`29cb277`) |
+| 5 | Platform bar seal | 20 | open |
+| 6 | Review fairness residual | 20 | open |
+
+**Content** (`go content` · cap 100)
+
+| # | Unit | Default unit cap |
+|---|------|------------------|
+| 1 | Basics integrity — Danish | 25 |
+| 2 | Basics integrity — all 10 | 40 |
+| 3 | Stories naturalness — double-black | 20 |
+| 4 | Stories naturalness — black | 20 |
+| 5 | Core deck honesty — open language gaps | 25 |
+| 6 | Survival phrase alignment | 20 |
+
+**Craft** (`go craft` · cap 40)
+
+| # | Unit | Default unit cap |
+|---|------|------------------|
+| 1 | Quiet chrome subtraction | 15 |
+| 2 | Review home seal | 15 |
+| 3 | Cards Check trust residual | 15 |
+| 4 | Read gloss honesty | 15 |
+| 5 | About / copy quiet pass | 15 |
+
+**Parked** (`go parked` · explicit yes only): Meta/OG, new language, Themes expansion, paid/auth.
 
 
 **Agent may continuously work on (thin slices, ship + short report):**
