@@ -162,13 +162,13 @@ Optional override: `go spine (cap 50)` (same pattern for content/craft). Ship-al
 
 **Craft** (`go craft` · cap 40)
 
-| # | Unit | Default unit cap |
-|---|------|------------------|
-| 1 | Quiet chrome subtraction | 15 |
-| 2 | Review home seal | 15 |
-| 3 | Cards Check trust residual | 15 |
-| 4 | Read gloss honesty | 15 |
-| 5 | About / copy quiet pass | 15 |
+| # | Unit | Default unit cap | Status |
+|---|------|------------------|--------|
+| 1 | Quiet chrome subtraction | 15 | done |
+| 2 | Review home seal | 15 | done |
+| 3 | Cards Check trust residual | 15 | done |
+| 4 | Read gloss honesty | 15 | done |
+| 5 | About / copy quiet pass | 15 | done |
 
 **Parked** (`go parked` · explicit yes only): Meta/OG, new language, Themes expansion, paid/auth.
 

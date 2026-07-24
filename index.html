@@ -93,7 +93,7 @@
         "inLanguage": ["en", "nb", "sv", "da", "de", "fr", "es", "it", "nl", "pt", "pl"]
       }
     </script>
-    <link rel="stylesheet" href="styles.css?v=342" />
+    <link rel="stylesheet" href="styles.css?v=343" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -221,11 +221,10 @@
           </div>
 
           <div id="practice-empty" class="empty-state hidden">
-            <div class="empty-icon empty-icon--idle" id="empty-icon" aria-hidden="true"></div>
-            <h2 id="empty-title">You're all caught up</h2>
-            <p id="empty-message">
-              Nothing to review right now. Open Cards, or come back later.
-            </p>
+            <!-- Title/message kept for legacy renderEmptyState hooks; always hidden — Study is the home. -->
+            <div class="empty-icon empty-icon--idle hidden" id="empty-icon" aria-hidden="true"></div>
+            <h2 id="empty-title" class="hidden"></h2>
+            <p id="empty-message" class="hidden"></p>
             <div id="empty-preview" class="word-preview" hidden aria-label="Sample words"></div>
             <div class="empty-actions" id="empty-actions">
               <div class="empty-power hidden" id="empty-power">
@@ -265,17 +264,6 @@
                 <p class="power-on-teaser hidden" id="power-on-teaser" aria-live="polite"></p>
               </div>
               <div class="empty-home-status" id="empty-home-status" aria-live="polite"></div>
-              <!-- Stories bridge removed: Stories tab is the door. -->
-              <button
-                type="button"
-                class="read-bridge-btn hidden"
-                id="read-bridge-btn"
-                data-tab-jump="read"
-                aria-label="Go to Stories"
-                hidden
-              >
-                <span class="read-bridge-btn__label">Stories</span>
-              </button>
               <button type="button" class="btn secondary hidden" id="empty-library-btn" data-tab-jump="cards">
                 Cards
               </button>
@@ -837,7 +825,7 @@
 
           <section class="about-section" aria-labelledby="about-what-title">
             <h3 class="about-section-title" id="about-what-title">What</h3>
-            <p>Language Learning: Review Cards · Read Stories</p>
+            <p>Review cards · Read stories</p>
           </section>
 
           <section class="about-section" aria-labelledby="about-method-title">
@@ -855,7 +843,7 @@
 
           <section class="about-section" aria-labelledby="about-streak-title">
             <h3 class="about-section-title" id="about-streak-title">Streak</h3>
-            <p>Continues with review before midnight</p>
+            <p>One honest review that day</p>
           </section>
 
           <section class="about-section" aria-labelledby="about-trust-title">
@@ -913,6 +901,6 @@
     <script src="lang/pl-pack.js?v=32"></script>
     <script src="mini-packs.js?v=35"></script>
     <script src="srs-core.js?v=4"></script>
-    <script src="app.js?v=451"></script>
+    <script src="app.js?v=452"></script>
   </body>
 </html>

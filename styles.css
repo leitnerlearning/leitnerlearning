@@ -1797,8 +1797,7 @@ main {
     max-width: none;
   }
 
-  .empty-actions .btn,
-  .read-bridge-btn {
+  .empty-actions .btn {
     width: 100%;
     max-width: none;
     box-sizing: border-box;
@@ -3378,45 +3377,6 @@ body:has(#stats-panel.active) #stats-panel.active {
   color: var(--text-tertiary);
   line-height: 1.4;
   max-width: 16rem;
-}
-
-/* After Review - quiet door into Read (not a second hero CTA) */
-.read-bridge-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  max-width: 18rem;
-  margin-inline: auto;
-  margin-top: 0.85rem;
-  padding: 0.7rem 0.95rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-glass);
-  box-shadow: none;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition:
-    border-color 0.15s var(--ease),
-    background 0.15s var(--ease);
-}
-
-.read-bridge-btn:hover,
-.read-bridge-btn:focus-visible {
-  border-color: var(--brand-ring);
-  background: var(--brand-soft);
-  outline: none;
-}
-
-.read-bridge-btn:active {
-  transform: none;
-}
-
-.read-bridge-btn__label {
-  font-size: 0.9rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
-  color: var(--brand-deep);
 }
 
 .empty-state .btn + .btn {

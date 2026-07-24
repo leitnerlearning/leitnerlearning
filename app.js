@@ -946,22 +946,22 @@ function formatNextReviewTeaser(unlockMs = getNextReviewUnlockMs()) {
   const today = getLocalDayKey();
   const tomorrow = getLocalDayKey(new Date(Date.now() + daysToMs(1)));
 
-  // Title-style captions under the power button (not full sentences).
-  if (unlockDay === tomorrow) return "Unlocks Tomorrow";
+  // Quiet captions under Study (not full sentences, not marketing).
+  if (unlockDay === tomorrow) return "Tomorrow";
   if (unlockDay !== today) {
     const dayDiff = Math.max(
       2,
       Math.ceil((getLocalDayStartAfterDays(0, new Date(unlockMs)) - getLocalDayStartAfterDays(0)) / daysToMs(1))
     );
-    return `Unlocks In ~${dayDiff} Days`;
+    return `In ~${dayDiff} days`;
   }
 
   const minutes = Math.ceil(diff / 60000);
   const hours = Math.ceil(diff / 3600000);
-  if (hours >= 2) return `Unlocks In ~${hours} Hours`;
-  if (hours === 1) return "Unlocks In ~1 Hour";
-  if (minutes >= 2) return `Unlocks In ~${minutes} Min`;
-  return "Unlocks Soon";
+  if (hours >= 2) return `In ~${hours} hours`;
+  if (hours === 1) return "In ~1 hour";
+  if (minutes >= 2) return `In ~${minutes} min`;
+  return "Soon";
 }
 
 function promote(card) {
@@ -6483,17 +6483,13 @@ function formatHomePowerTeaser({ canStudy = false } = {}) {
 
 function renderPowerOnExtras({
   teaserEl,
-  readBridgeBtn,
   canStudy = false,
-  showReadBridge = false,
 } = {}) {
   if (teaserEl) {
     const teaser = formatHomePowerTeaser({ canStudy });
     teaserEl.textContent = teaser;
     teaserEl.classList.toggle("hidden", !teaser);
   }
-
-  readBridgeBtn?.classList.toggle("hidden", !showReadBridge);
 }
 
 function setEmptyStateSecondaryActions({ libraryBtn, showLibrary = false }) {
@@ -6508,12 +6504,8 @@ function renderEmptyState() {
   const powerEl = document.getElementById("empty-power");
   const powerHintEl = document.getElementById("power-on-hint");
   const powerTeaserEl = document.getElementById("power-on-teaser");
-  const readBridgeBtn = document.getElementById("read-bridge-btn");
   const libraryBtn = document.getElementById("empty-library-btn");
 
-  messageEl.classList.remove("hidden");
-  titleEl.classList.remove("hidden");
-  iconEl.classList.remove("hidden");
   emptyEl.classList.remove("empty-state--power-complete");
   setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, false);
   setEmptyStatePowerAction(powerEl, powerHintEl);
@@ -6521,10 +6513,18 @@ function renderEmptyState() {
 
   const emptyPreview = document.getElementById("empty-preview");
   if (emptyPreview) emptyPreview.hidden = true;
-  messageEl.textContent = "";
-  messageEl.classList.add("hidden");
-  titleEl.classList.add("hidden");
-  iconEl.classList.add("hidden");
+  if (messageEl) {
+    messageEl.textContent = "";
+    messageEl.classList.add("hidden");
+  }
+  if (titleEl) {
+    titleEl.textContent = "";
+    titleEl.classList.add("hidden");
+  }
+  if (iconEl) {
+    iconEl.textContent = "";
+    iconEl.classList.add("hidden");
+  }
 
   ensureDailyPracticeState();
   const outstanding = getOutstandingDueCount();
@@ -6548,9 +6548,7 @@ function renderEmptyState() {
   // One quiet line: theme finish (e.g. Dining · 8 done) or unlock when idle.
   renderPowerOnExtras({
     teaserEl: powerTeaserEl,
-    readBridgeBtn,
     canStudy,
-    showReadBridge: false,
   });
   renderHomeStatus();
 }
@@ -10215,9 +10213,29 @@ function getTranslationReviewSummary(
   //  - single-word: one strong direction is enough (common lemmas)
   //  - multi-word: both directions must agree — pure MT round-trip on junk
   //    phrases ("then continue shows" / invented L2) was false green before
-  const looksGoodAnchored = isPhrase
+  //  - refuse single-side green when the other side clearly disagrees with a
+  //    usable suggestion (not spelling-only, not soft-near)
+  let looksGoodAnchored = isPhrase
     ? englishIsAnchor && learningIsAnchor
     : englishIsAnchor || learningIsAnchor;
+  if (
+    looksGoodAnchored &&
+    !isPhrase &&
+    !(englishIsAnchor && learningIsAnchor)
+  ) {
+    const otherSideDisagrees =
+      (englishIsAnchor &&
+        usableSuggestedNative &&
+        !nativeStrong &&
+        !nativeSafeSpell &&
+        !softGlossMatch(native, usableSuggestedNative)) ||
+      (learningIsAnchor &&
+        usableSuggestedForeign &&
+        !foreignStrong &&
+        !foreignSafeSpell &&
+        !softGlossMatch(foreign, usableSuggestedForeign));
+    if (otherSideDisagrees) looksGoodAnchored = false;
+  }
   if (looksGoodAnchored && !foreignGibberish && !nativeGibberish && !hasSpellingIssue) {
     // Only offer capitalization when it matches deck casing (never lower→Title nag).
     if (
@@ -12016,33 +12034,77 @@ function parseReadSentence(text, phrases) {
   return tokens;
 }
 
+/** Story-line gloss for this surface form (case / normalize tolerant). */
+function storyGlossForToken(story, token) {
+  if (!story?.glosses) return null;
+  const raw = String(token || "").trim();
+  if (!raw) return null;
+  if (story.glosses[raw] != null) return String(story.glosses[raw]).trim() || null;
+  const lower = raw.toLowerCase();
+  for (const [k, v] of Object.entries(story.glosses)) {
+    if (String(k).toLowerCase() === lower) return String(v).trim() || null;
+  }
+  const n = normalizeAnswer(raw);
+  if (!n) return null;
+  for (const [k, v] of Object.entries(story.glosses)) {
+    if (normalizeAnswer(k) === n) return String(v).trim() || null;
+  }
+  return null;
+}
+
 function lookupReadWord(token, deckMap, story) {
   const hit = lookupReadVocabEntry(token, story);
   if (!hit) return null;
 
   const key = normalizeAnswer(token);
+  const storyNative = storyGlossForToken(story, token);
   const card = deckMap.get(key);
   if (card) {
-    return { source: "deck", foreign: card.foreign, native: card.native, card };
+    // Exact deck surface: prefer story gloss when the line teaches a sense.
+    return {
+      source: "deck",
+      foreign: card.foreign,
+      native: storyNative || card.native,
+      card,
+    };
   }
 
   for (const variant of generateLookupVariants(token)) {
+    if (variant === key) continue;
     const variantCard = deckMap.get(variant);
-    if (variantCard) {
-      return {
-        source: "deck",
-        foreign: token,
-        native: variantCard.native,
-        card: variantCard,
-        matchedLemma: variantCard.foreign,
-      };
+    if (!variantCard) continue;
+    // Soft lemma peel: if story gloss conflicts with the cousin card, trust the line.
+    if (storyNative) {
+      const glossEn = normalizeAnswer(String(storyNative).split("/")[0]);
+      const deckEn = normalizeAnswer(String(variantCard.native || "").split("/")[0]);
+      if (
+        glossEn &&
+        deckEn &&
+        glossEn !== deckEn &&
+        !softGlossMatch(storyNative, variantCard.native)
+      ) {
+        return {
+          source: hit.source || "gloss",
+          foreign: token,
+          native: storyNative,
+          card: null,
+          matchedLemma: hit.foreign !== token ? hit.foreign : null,
+        };
+      }
     }
+    return {
+      source: "deck",
+      foreign: token,
+      native: storyNative || variantCard.native,
+      card: variantCard,
+      matchedLemma: variantCard.foreign,
+    };
   }
 
   return {
     source: hit.source,
     foreign: token,
-    native: hit.native,
+    native: storyNative || hit.native,
     card: null,
     matchedLemma: hit.foreign !== token ? hit.foreign : null,
   };
