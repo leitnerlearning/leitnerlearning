@@ -1694,6 +1694,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["wifi-passordet", "wifi passordet", "wifipassordet"],
     ["hvor er utgangen", "hvor er utgang"],
     ["er toget forsinket", "er toget forsinka"],
+    ["jeg er allergisk", "jeg e allergisk"],
+    ["strøm inkludert", "strom inkludert"],
   ],
   // Danish — same-lemma ASR / digraph typing (not different words)
   da: [
@@ -1772,6 +1774,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["tür", "tuer"],
     ["noch einmal", "nochmal"],
     ["wlan-passwort", "wlan passwort", "wlanpasswort"],
+    ["verspätet", "verspaetet"],
+    ["einverstanden", "ein verstanden"],
   ],
   // Dutch — same-lemma ASR / informal spelling (not different words)
   nl: [
@@ -1792,6 +1796,7 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["uit", "uyt"],
     ["nog een keer", "nog 1 keer"],
     ["wifi-wachtwoord", "wifi wachtwoord", "wifiwachtwoord"],
+    ["vertraagd", "vertraging"],
   ],
   // French — same-lemma ASR / elision (accents already orthography-soft)
   fr: [
@@ -1812,6 +1817,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["n'est-ce pas", "nest ce pas"],
     ["encore une fois", "encore 1 fois"],
     ["que penses-tu", "que penses tu"],
+    ["inclus", "incluse", "compris", "comprise"],
+    ["en retard", "retard"],
   ],
   // Spanish — same-lemma typing/ASR (never sí≈si or por qué≈porque)
   es: [
@@ -1833,6 +1840,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["información", "informacion"],
     ["una vez más", "una vez mas"],
     ["qué piensas", "que piensas"],
+    ["retrasado", "retraso"],
+    ["incluido", "incluida"],
   ],
   // Italian — same-lemma ASR / spacing (not different lemmas)
   it: [
@@ -1853,6 +1862,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["già", "gia"],
     ["così", "cosi"],
     ["ancora una volta", "ancora 1 volta"],
+    ["incluso", "inclusa", "inclusi"],
+    ["in ritardo", "ritardo"],
   ],
   // Portuguese (BR teaching) — same-lemma ASR / typing (not gender swaps)
   pt: [
@@ -1895,6 +1906,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["jeszcze raz", "jeszcze 1 raz"],
     ["co myślisz", "co myslisz"],
     ["zgadzam się", "zgadzam sie"],
+    ["opóźniony", "opozniony"],
+    ["opóźnienie", "opoznienie"],
   ],
 };
 
@@ -2113,9 +2126,34 @@ function softComparativeLemmaMatch(a, b) {
     if (full.length < stem.length + 2 || stem.length < 4) return false;
     if (!full.startsWith(stem)) return false;
     const suf = full.slice(stem.length);
-    return /^(er|ere|are|ste|st|re|szy|ejszy|niej|ej)$/i.test(suf);
+    return /^(er|ere|are|ste|st|re|szy|ejszy|niej|ej|ego|emu|iej)$/i.test(suf);
   };
   return tryPair(x, y) || tryPair(y, x);
+}
+
+/**
+ * Romance participial / gender surface (retrasado ≈ retraso, incluida ≈ incluido).
+ * Single-token only; requires shared stem ≥ 4 letters.
+ */
+function softRomanceSurfaceMatch(a, b) {
+  const x = normalizeAnswer(a);
+  const y = normalizeAnswer(b);
+  if (!x || !y || x === y) return x === y;
+  if (/\s/.test(x) || /\s/.test(y)) return false;
+  const peel = (w) =>
+    w.replace(/(?:mente|zione|sion|ção|ción|dade|tät|heid)$/i, "").replace(
+      /(?:ado|ada|ados|adas|ido|ida|idos|idas|ato|ata|ito|ita|oso|osa|ico|ica|ski|ska|cki|cka)$/i,
+      ""
+    );
+  const sx = peel(x);
+  const sy = peel(y);
+  if (sx.length >= 4 && sx === sy) return true;
+  // retraso / retrasado shared prefix
+  const n = Math.min(sx.length, sy.length);
+  if (n >= 5 && sx.slice(0, n) === sy.slice(0, n) && Math.abs(x.length - y.length) <= 3) {
+    return true;
+  }
+  return false;
 }
 
 /** Short polite tails learners often add after a correct phrase (not new content). */
@@ -2165,11 +2203,13 @@ function answersAreClose(user, expected) {
   if (softDefiniteLemmaMatch(user, expected)) return true;
   // Comparative/superlative light peel (billigere ≈ billig) — single-token only
   if (softComparativeLemmaMatch(user, expected)) return true;
+  if (softRomanceSurfaceMatch(user, expected)) return true;
 
   const userCore = stripAnswerParticles(user) || user;
   const expectedCore = stripAnswerParticles(expected) || expected;
   if (softDefiniteLemmaMatch(userCore, expectedCore)) return true;
   if (softComparativeLemmaMatch(userCore, expectedCore)) return true;
+  if (softRomanceSurfaceMatch(userCore, expectedCore)) return true;
   const distance = Math.min(
     levenshtein(user, expected),
     levenshtein(userCore, expectedCore),
@@ -2180,7 +2220,25 @@ function answersAreClose(user, expected) {
   );
   // Score distance against the shorter core so "spise" vs "å spise" is not over-penalized
   const distanceBudget = Math.max(maxEditDistance(expected), maxEditDistance(expectedCore));
-  return distance <= distanceBudget;
+  if (distance <= distanceBudget) return true;
+  // Shared long stem (vertraagd ≈ vertraging, opóźniony ≈ opóźnienie)
+  if (softSharedStemMatch(userCore, expectedCore)) return true;
+  return false;
+}
+
+/** Same family when a long shared stem remains (delay words, etc.). Single-token only. */
+function softSharedStemMatch(a, b) {
+  const x = normalizeAnswer(a);
+  const y = normalizeAnswer(b);
+  if (!x || !y || x === y) return x === y;
+  if (/\s/.test(x) || /\s/.test(y)) return false;
+  if (x.length < 6 || y.length < 6) return false;
+  const n = Math.min(x.length, y.length);
+  // Require ≥6 shared prefix letters and total length close
+  if (n >= 6 && x.slice(0, 6) === y.slice(0, 6) && Math.abs(x.length - y.length) <= 4) {
+    return true;
+  }
+  return false;
 }
 
 /**
