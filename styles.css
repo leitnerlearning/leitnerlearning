@@ -4933,7 +4933,8 @@ html.needs-welcome body {
   width: 100%;
   padding: 0.55rem 0.8rem;
   font-family: inherit;
-  font-size: 0.95rem;
+  /* 16px minimum: iOS/iPadOS zooms the page on focus below this (including iPad “desktop” width) */
+  font-size: 16px;
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   background: var(--surface-glass);
@@ -4987,7 +4988,7 @@ html.needs-welcome body {
 .add-card-form input {
   padding: 0.55rem 0.8rem;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 16px; /* iOS/iPadOS focus zoom */
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   background: var(--surface-glass);
@@ -5557,7 +5558,8 @@ html.needs-welcome body {
   min-height: 2.55rem;
   padding: 0.7rem 1rem;
   font-family: inherit;
-  font-size: 0.95rem;
+  /* 16px minimum: iOS/iPadOS focus zoom (iPad often uses desktop CSS width) */
+  font-size: 16px;
   border: 1px solid var(--border-strong);
   border-radius: 999px;
   background: var(--surface-glass-strong);
@@ -5767,7 +5769,7 @@ html.needs-welcome body {
 
   .add-card-form input {
     padding: 0.6rem 0.9rem;
-    font-size: 0.96rem;
+    font-size: 16px; /* iOS/iPadOS focus zoom (desktop-width iPad too) */
   }
 
   .add-card-form-actions {
@@ -5787,7 +5789,7 @@ html.needs-welcome body {
 
   .library-search {
     padding: 0.75rem 1.05rem;
-    font-size: 0.95rem;
+    font-size: 16px;
   }
 
   /* All / Phrases / Yours / Packs - one equal row */
@@ -8559,3 +8561,43 @@ ul.box-stats {
   }
 }
 
+
+/* =============================================================================
+ * Platform safety — agent-owned bar (Safari / Chrome · phone / tablet / desktop)
+ * Founder cannot test every device. Prefer these patterns after any layout change.
+ * ============================================================================= */
+
+/*
+ * Touch / iPad: primary controls stay ≥44px when “desktop” width still means fingers.
+ * iPad often matches min-width: 721px but pointer: coarse.
+ */
+@media (pointer: coarse) {
+  .tab {
+    min-height: max(2.4rem, 44px);
+  }
+
+  .filter-chip {
+    min-height: max(2.15rem, 44px);
+  }
+
+  .library-jump-chip {
+    min-height: max(2rem, 44px);
+  }
+
+  .btn,
+  .answer-action,
+  .page-float-top-btn {
+    min-height: max(2.55rem, 44px);
+  }
+}
+
+/*
+ * Prefer reduced motion: already handled elsewhere; keep fixed chrome from fighting
+ * safe areas on notched phones (home indicator / Dynamic Island).
+ */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body {
+    /* Scrollport padding so last list rows clear the home indicator when needed */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}

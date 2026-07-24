@@ -63,6 +63,26 @@ Norwegian (nb), Swedish, Danish, German, French, Spanish, Italian, Dutch, Portug
 - Prefer discovery by use over instructional popups.
 - **Subtraction over addition.** Prefer removing restated copy, duplicate progress chrome, and empty-state marketing. One status surface per fact (e.g. theme set progress in the Review strip only - not also under the prompt).
 
+### Platform bar (agent owns — founder cannot test every device)
+The founder has a small device set (e.g. MacBook, iPhone, iPad) and limited time. **Agents must proactively guard cross-browser and cross-device integrity** after layout, scroll, or chrome changes — do not wait for a report from every surface.
+
+**Standing scroll model (2026-07):**
+- `html` = fixed viewport shell (`height: 100dvh; overflow: hidden`)
+- `body` = **the** page scrollport (`overflow-y: auto`) so **Safari Mac trackpad** and keyboard share one path
+- Do **not** put vertical page scroll only on `html` (trackpad fails, spacebar still “works”)
+- Do **not** use `overflow-x: clip` on `html`/`body` (WebKit can refuse vertical scroll)
+- Cards / Progress long pages: content grows `body`; sticky Library jump is relative to `body`
+- Measure scroll with `getPageScrollY()` / listen on `body` + `window`, not `window.scrollY` alone
+
+**Touch / iOS / iPad / Android (code-level bar):**
+- Text inputs **≥ 16px** font-size (iOS/iPadOS focus zoom). iPad often hits “desktop” width CSS — still needs 16px
+- Prefer **≥ 44px** min-height for primary controls when `(pointer: coarse)` (fingers on “wide” layouts)
+- Keep `viewport-fit=cover` + `env(safe-area-inset-*)` on fixed chrome and bottom docks
+- Nested scroll (e.g. mobile Stories sentence) needs a full flex chain: `app → main → panel → …` with `min-height: 0`
+- After changing overflow/height, re-check: **Review, Stories, Cards, Progress** × **Safari + Chrome** (desktop) and reason about **iPhone / iPad / Android Chrome** even without hardware
+
+**When shipping layout/CSS:** run `python3 tools/platform-audit.py` (or `node tools/platform-audit.mjs`); fix new antipatterns in the same change set when cheap.
+
 ### Safety & motion
 - Photosensitive-safe: soft motion only; no full-screen strobes.
 - Respect `prefers-reduced-motion` where relevant.
