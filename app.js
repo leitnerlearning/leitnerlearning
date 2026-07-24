@@ -1048,7 +1048,12 @@ function norwegianTypingMatches(user, expected) {
  * Typing å without the letter: "a vaere" / "aa vaere" ≈ "å være" / "være".
  */
 function stripAnswerParticles(text) {
-  let t = normalizeAnswer(text);
+  // Elided article before normalize strips the apostrophe (l'uscita → uscita)
+  let raw = String(text || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^l[''′’]/, "");
+  let t = normalizeAnswer(raw);
   if (!t) return "";
   // Norwegian infinitive marker (and common keyboard stand-ins)
   t = t.replace(/^(å|aa)\s+/, "");
@@ -1056,6 +1061,12 @@ function stripAnswerParticles(text) {
   t = t.replace(/^to\s+/, "");
   // Leading "a " as ASCII for å (a være → være). English "a dog" → "dog" is usually fine too.
   t = t.replace(/^a\s+/, "");
+  // Leading articles / determiners (same lemma: das Passwort ≈ Passwort, la sortie ≈ sortie).
+  // Only one leading token; never mid-phrase. Not a free “drop any short word.”
+  t = t.replace(
+    /^(der|die|das|den|dem|des|ein|eine|einen|einem|einer|le|la|les|un|une|des|el|los|las|una|unos|unas|il|lo|i|gli|het|de|o|os|as|um|uma|the|an)\s+/,
+    ""
+  );
   return t.trim();
 }
 
