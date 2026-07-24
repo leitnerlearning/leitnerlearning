@@ -121,7 +121,17 @@ Founder approves **new product behavior**. Agents own **integrity** (bugs, platf
 
 ### Continuous multipass (hybrid — founder uses the app; agent keeps slicing)
 
-**Go slice count (founder law · permanent):** bare `go` = **1** integrity/craft slice; `go N` = **N** slices; one report after a multipass unit.
+**Go commands (founder law · permanent):**
+
+| Input | Meaning |
+|-------|---------|
+| `go` | **1** integrity/craft slice |
+| `go N` | Exactly **N** slices; one report after the batch |
+| `go unit: <name>` | Finish the named unit; as many slices as needed; stop when done. Default **cap 25** if unspecified. |
+| `go unit: <name> (cap N)` | Same with hard cap N; report remaining work if hit. |
+
+Ship-alone only. One report after multipass unit (not after every micro-slice).
+
 
 
 
