@@ -234,36 +234,140 @@
     ],
   };
 
+  /** Danish — same MED excellence as da-pack (pack overwrites on load). Soft d/g are the signature. */
   window.LANGUAGE_BASICS.da = {
+    previewGlyphs: ["æ", "ø", "å"],
     sections: [
       {
-        title: "Special letters",
+        title: "Special",
         items: [
           {
             glyph: "æ",
-            speak: "æ",
+            speak: "ærlig",
             approxHtml: "<strong>a</strong> in <em>cat</em>",
             examples: [
-              { speak: "ære", text: "ære", gloss: "honor" },
-              { speak: "være", text: "være", gloss: "be" },
+              { speak: "ærlig", text: "ærlig", gloss: "honest" },
+              { speak: "læse", text: "læse", gloss: "read" },
             ],
           },
           {
             glyph: "ø",
-            speak: "ø",
-            approxHtml: "<strong>uh</strong>, lips rounded",
+            speak: "øl",
+            approxHtml: "<strong>u</strong> in <em>burn</em> · rounded",
             examples: [
               { speak: "øl", text: "øl", gloss: "beer" },
-              { speak: "søster", text: "søster", gloss: "sister" },
+              { speak: "øje", text: "øje", gloss: "eye" },
             ],
           },
           {
             glyph: "å",
-            speak: "å",
+            speak: "år",
             approxHtml: "<strong>o</strong> in <em>or</em>",
             examples: [
               { speak: "år", text: "år", gloss: "year" },
               { speak: "gå", text: "gå", gloss: "go" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Surprises",
+        compact: true,
+        items: [
+          {
+            glyph: "d",
+            speak: "mad",
+            glyphSize: "sm",
+            approxHtml: "Soft or silent at the end",
+            examples: [
+              { speak: "mad", text: "mad", gloss: "food" },
+              { speak: "gade", text: "gade", gloss: "street" },
+            ],
+          },
+          {
+            glyph: "g",
+            speak: "jeg",
+            glyphSize: "sm",
+            approxHtml: "Soft or almost silent",
+            examples: [
+              { speak: "jeg", text: "jeg", gloss: "I" },
+              { speak: "dag", text: "dag", gloss: "day" },
+            ],
+          },
+          {
+            glyph: "j",
+            speak: "ja",
+            glyphSize: "sm",
+            approxHtml: "<strong>y</strong> in <em>yes</em>",
+            examples: [
+              { speak: "ja", text: "ja", gloss: "yes" },
+              { speak: "jul", text: "jul", gloss: "Christmas" },
+            ],
+          },
+          {
+            glyph: "y",
+            speak: "by",
+            glyphSize: "sm",
+            approxHtml: "<strong>ee</strong> · rounded lips",
+            examples: [
+              { speak: "by", text: "by", gloss: "town" },
+              { speak: "ny", text: "ny", gloss: "new" },
+            ],
+          },
+          {
+            glyph: "r",
+            speak: "rød",
+            glyphSize: "sm",
+            approxHtml: "Guttural · not English <span class=\"basics-letter\">r</span>",
+            examples: [
+              { speak: "rød", text: "rød", gloss: "red" },
+              { speak: "bra", text: "bra", gloss: "good" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Pairs",
+        compact: true,
+        items: [
+          {
+            glyph: "hj",
+            speak: "hjem",
+            glyphSize: "pair",
+            approxHtml: "Silent <strong>h</strong> · <strong>y</strong>",
+            examples: [
+              { speak: "hjem", text: "hjem", gloss: "home" },
+              { speak: "hjælp", text: "hjælp", gloss: "help" },
+            ],
+          },
+          {
+            glyph: "hv",
+            speak: "hvad",
+            glyphSize: "pair",
+            approxHtml: "Silent <strong>h</strong> · <strong>v</strong>",
+            examples: [
+              { speak: "hvad", text: "hvad", gloss: "what" },
+              { speak: "hvor", text: "hvor", gloss: "where" },
+            ],
+          },
+          {
+            glyph: "ej",
+            speak: "vej",
+            glyphSize: "pair",
+            approxHtml: "<strong>eye</strong> · also in <em>jeg</em>",
+            examples: [
+              { speak: "vej", text: "vej", gloss: "road" },
+              { speak: "jeg", text: "jeg", gloss: "I" },
+            ],
+          },
+          {
+            glyph: "nd",
+            speak: "mand",
+            glyphSize: "pair",
+            approxHtml: "Often soft <strong>n</strong>",
+            examples: [
+              { speak: "mand", text: "mand", gloss: "man" },
+              { speak: "vende", text: "vende", gloss: "turn" },
             ],
           },
         ],
