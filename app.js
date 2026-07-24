@@ -2200,6 +2200,8 @@ function sanitizeDeck(cards) {
         exampleNative: card.exampleNative
           ? stripFlashcardPunctuation(card.exampleNative)
           : null,
+        // At most one Stories context beat per card lifetime (local deck).
+        storyExampleShown: Boolean(card.storyExampleShown),
       };
     });
 }
@@ -3760,6 +3762,9 @@ function beginSpeakAttempt() {
   }
 }
 
+/** One calm breath after a story-example miss — hear + glance, not a study break. */
+const MISS_STORY_EXAMPLE_MAX_MS = 6800;
+
 function getAdvanceDelay(correct, fromSpeech = false, options = {}) {
   const withExample = Boolean(options.withExample);
   let ms;
@@ -3768,11 +3773,10 @@ function getAdvanceDelay(correct, fromSpeech = false, options = {}) {
   } else {
     ms = correct ? TYPING_ADVANCE_CORRECT_MS : TYPING_ADVANCE_WRONG_MS;
   }
-  // Miss with context: time to hear the auto-spoken line (and re-tap if needed).
-  // Fixed +2200 was cutting longer story clauses short.
+  // Story example: cover auto-play + one calm breath of reading; then move on (SRS returns).
   if (!correct && withExample) {
     const listen = estimateListenMs(options.exampleText || "");
-    ms = Math.max(ms + 1200, listen + 900);
+    ms = Math.min(MISS_STORY_EXAMPLE_MAX_MS, Math.max(ms + 600, listen + 900));
   }
   return ms;
 }
@@ -5631,7 +5635,7 @@ function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
   return best;
 }
 
-function showFeedbackExample(example, card = currentCard) {
+function showFeedbackExample(example) {
   const el = document.getElementById("feedback-example");
   if (!el) return;
   if (!example?.foreign || !example?.en) {
@@ -5642,21 +5646,36 @@ function showFeedbackExample(example, card = currentCard) {
   const l2 = String(example.foreign).trim();
   el.classList.remove("hidden");
   el.setAttribute("lang", foreignLang);
-  // L2 is tappable to hear — same teaching beat as Stories gloss, no new chrome
-  el.innerHTML = `<button type="button" class="feedback-example-l2" lang="${escapeAttr(
+  // Plain text only — no re-hear control (Hear is for the prompt; keep miss beat simple).
+  el.innerHTML = `<span class="feedback-example-l2" lang="${escapeAttr(
     foreignLang
-  )}" aria-label="Hear example">${escapeHtml(
-    l2
-  )}</button><span class="feedback-example-en">${escapeHtml(example.en)}</span>`;
-  el.querySelector(".feedback-example-l2")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    pauseAdvanceForListen(l2);
-  });
+  )}">${escapeHtml(l2)}</span><span class="feedback-example-en">${escapeHtml(
+    String(example.en).trim()
+  )}</span>`;
+}
+
+/**
+ * Miss teaching beat: Stories clause only, and at most once per card lifetime.
+ * No templates, no stored pack examples, no bare lemma restatement.
+ */
+function getMissStoryExample(card) {
+  if (!card || card.storyExampleShown) return null;
+  const fromStory = findExampleSentenceForCard(card);
+  if (!fromStory?.foreign || !fromStory?.en) return null;
+  if (isRedundantFeedbackExample(fromStory, card, fromStory.en)) return null;
+  return fromStory;
+}
+
+function markStoryExampleShown(card) {
+  if (!card?.id || card.storyExampleShown) return;
+  const next = { ...card, storyExampleShown: true };
+  updateCardInDeck(next);
+  if (currentCard?.id === card.id) currentCard = next;
 }
 
 /**
  * Prefer: Read story (natural clause) → stored example → phrase → simple line.
+ * Used where full context is wanted; Review miss uses getMissStoryExample only.
  * Never return the bare card pair — the answer pill already shows the gloss.
  * Silence beats a dishonest template under the miss.
  */
@@ -5847,12 +5866,10 @@ function cardLooksLikeInfinitive(foreign, lang) {
 }
 
 /**
- * After a miss/reveal: show the answer pill, plus a real-sentence beat when we have one.
- * Skip when the “example” only restates the card (prompt + gloss already on screen).
- * Clear the wrong typed answer so the pill + example teach, not a red dirty field.
- * Auto-hears L2 (story clause when available, else the lemma) — same beat as Stories gloss.
- * Tap re-hears and extends the advance window via pauseAdvanceForListen.
- * @returns {string} L2 text that was spoken / shown (for advance timing), else "".
+ * After a miss/reveal: answer pill + optional Stories sentence (once per card).
+ * Story-only, auto-play once, one calm breath, no re-hear, no lemma auto-TTS.
+ * Hear remains the control for the prompt form.
+ * @returns {string} L2 story line when shown (for advance timing), else "".
  */
 function showIncorrectWithExample(card, answerText) {
   showFeedback(answerText, "incorrect");
@@ -5861,9 +5878,10 @@ function showIncorrectWithExample(card, answerText) {
     input.value = "";
     setAnswerIncorrectState(false);
   }
-  const example = getCardContextExample(card);
-  if (example && !isRedundantFeedbackExample(example, card, answerText)) {
-    showFeedbackExample(example, card);
+  const example = getMissStoryExample(card);
+  if (example) {
+    showFeedbackExample(example);
+    markStoryExampleShown(card);
     const l2 = String(example.foreign || "").trim();
     if (l2 && typeof speakForeign === "function") {
       speakForeign(l2);
@@ -5871,12 +5889,6 @@ function showIncorrectWithExample(card, answerText) {
     return l2;
   }
   hideFeedbackExample();
-  // No honest sentence: still seal the L2 form you missed (never a silent miss).
-  const lemma = String(card?.foreign || "").trim();
-  if (lemma && typeof speakForeign === "function") {
-    speakForeign(lemma);
-    return lemma;
-  }
   return "";
 }
 

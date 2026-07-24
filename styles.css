@@ -2655,8 +2655,7 @@ body:has(#stats-panel.active) #stats-panel.active {
   display: none;
 }
 
-/* L2 is a quiet hear control — not a second CTA */
-button.feedback-example-l2,
+/* L2 line is display-only (auto-played once); Hear is for the prompt */
 .feedback-example-l2 {
   display: block;
   width: 100%;
@@ -2668,19 +2667,9 @@ button.feedback-example-l2,
   color: var(--ink);
   font-weight: 600;
   letter-spacing: -0.02em;
-  cursor: pointer;
-  touch-action: manipulation;
+  cursor: default;
+  pointer-events: none;
   border-radius: 0.35rem;
-}
-
-button.feedback-example-l2:hover,
-button.feedback-example-l2:focus-visible {
-  color: var(--brand-deep);
-  outline: none;
-}
-
-button.feedback-example-l2:focus-visible {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand) 28%, transparent);
 }
 
 .feedback-example-en {
