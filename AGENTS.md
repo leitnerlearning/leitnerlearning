@@ -142,12 +142,12 @@ Optional override: `go spine (cap 50)` (same pattern for content/craft). Ship-al
 
 | # | Unit | Default unit cap | Status |
 |---|------|------------------|--------|
-| 1 | Miss-context honesty | 20 | done (`65cafeb`) |
-| 2 | Norwegian bar parity — Danish | 30 | done (`c72507a`) |
-| 3 | Norwegian bar parity — Swedish | 30 | done (`f3300b0`) |
-| 4 | Norwegian bar parity — German | 30 | done (`29cb277`) |
-| 5 | Platform bar seal | 20 | open |
-| 6 | Review fairness residual | 20 | open |
+| 1 | Miss-context honesty | 20 | done |
+| 2 | Norwegian bar parity — Danish | 30 | done |
+| 3 | Norwegian bar parity — Swedish | 30 | done |
+| 4 | Norwegian bar parity — German | 30 | done |
+| 5 | Platform bar seal | 20 | done |
+| 6 | Review fairness residual | 20 | done |
 
 **Content** (`go content` · cap 100)
 

@@ -2322,6 +2322,8 @@ body:has(#stats-panel.active) #stats-panel.active {
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   text-align: center;
+  /* Stop iOS from auto-zooming / auto-sizing the field independently */
+  -webkit-text-size-adjust: 100%;
 }
 
 .answer-form input[type="text"]:focus {
@@ -2351,6 +2353,20 @@ body:has(#stats-panel.active) #stats-panel.active {
   font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+/* Finger-first: Hear / Speak / Show stay ≥44px even on “wide” iPad layouts */
+@media (pointer: coarse) {
+  .answer-actions .btn,
+  .answer-action {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .tab {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
 }
 
 .answer-action--hear,

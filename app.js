@@ -113,15 +113,15 @@ const PACK_ACTION_NOTE_MS = 7000;
 const LIBRARY_BATCH_SIZE = 35;
 const LIBRARY_SCROLL_TOP_THRESHOLD = 360;
 
-/** Page Y offset — body is the scrollport on Safari (trackpad); window on others. */
+/**
+ * Page Y offset — body is the scrollport on Safari (trackpad); window/document
+ * may also move. Use the max so sticky Library jump and floats stay honest.
+ */
 function getPageScrollY() {
-  return (
-    window.scrollY ||
-    window.pageYOffset ||
-    document.documentElement.scrollTop ||
-    document.body.scrollTop ||
-    0
-  );
+  const winY = Number(window.scrollY || window.pageYOffset || 0) || 0;
+  const docY = Number(document.documentElement?.scrollTop || 0) || 0;
+  const bodyY = Number(document.body?.scrollTop || 0) || 0;
+  return Math.max(winY, docY, bodyY);
 }
 
 function scrollPageTo(top, behavior = "auto") {
@@ -1824,7 +1824,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["uit", "uyt"],
     ["nog een keer", "nog 1 keer"],
     ["wifi-wachtwoord", "wifi wachtwoord", "wifiwachtwoord"],
-    ["vertraagd", "vertraging"],
+    ["vertraagd", "vertraging", "is vertraagd"],
+    ["ik begrijp het niet", "ik begrijp niet"],
   ],
   // French — same-lemma ASR / elision (accents already orthography-soft)
   fr: [
@@ -2283,19 +2284,28 @@ function answersAreClose(user, expected) {
   return false;
 }
 
-/** Same family when a long shared stem remains (delay words, etc.). Single-token only. */
+/**
+ * Same family when a long shared stem remains (vertraagd ≈ vertraging).
+ * Single-token only. Rejects English freeform cousins (continue ≈ continuous).
+ */
 function softSharedStemMatch(a, b) {
   const x = normalizeAnswer(a);
   const y = normalizeAnswer(b);
   if (!x || !y || x === y) return x === y;
   if (/\s/.test(x) || /\s/.test(y)) return false;
   if (x.length < 6 || y.length < 6) return false;
-  const n = Math.min(x.length, y.length);
-  // Require ≥6 shared prefix letters and total length close
-  if (n >= 6 && x.slice(0, 6) === y.slice(0, 6) && Math.abs(x.length - y.length) <= 4) {
-    return true;
-  }
-  return false;
+  if (Math.abs(x.length - y.length) > 4) return false;
+  let i = 0;
+  while (i < x.length && i < y.length && x[i] === y[i]) i += 1;
+  if (i < 6) return false;
+  const shorter = Math.min(x.length, y.length);
+  if (i < Math.ceil(shorter * 0.6)) return false;
+  const t1 = x.slice(i);
+  const t2 = y.slice(i);
+  // English derivational cousins must not LOOKS GOOD on Review (EN answers).
+  const enCousin = /^(ous|ious|eous|ation|ition|ive|ally|ness|ment|able|ible)$/i;
+  if (enCousin.test(t1) || enCousin.test(t2)) return false;
+  return true;
 }
 
 /**
@@ -2351,7 +2361,8 @@ function maxNearMissDistance(expected) {
   if (len <= 3) return 1;
   if (len <= 6) return 2;
   if (len <= 12) return 3;
-  return Math.max(3, Math.floor(len * 0.4));
+  // Long EN phrases: cap so distant typos are a miss, not endless soft-retry.
+  return Math.min(4, Math.max(3, Math.floor(len * 0.25)));
 }
 
 function isSubstringNearMiss(user, expected) {
@@ -2363,8 +2374,9 @@ function isSubstringNearMiss(user, expected) {
       expected.length <= 4 ? 2 : Math.max(3, Math.ceil(expected.length * 0.4));
     return user.length >= minLen;
   }
-  // Mild overshoot (extra letter/space) still "close"
-  if (user.startsWith(expected) && user.length <= expected.length + 8) {
+  // Mild overshoot (extra letter/space) still "close" — not a long free tail.
+  const overshootCap = Math.min(3, Math.max(1, Math.floor(expected.length * 0.25)));
+  if (user.startsWith(expected) && user.length <= expected.length + overshootCap) {
     return true;
   }
   return false;

@@ -51,16 +51,39 @@ if re.search(r"window\.scrollY\s*>", app) and "getPageScrollY(" not in app:
     warn("window.scrollY used for UI thresholds — prefer getPageScrollY()")
 
 # --- iOS focus zoom ---
-for sel in (r"\.library-search\s*\{[^}]+\}", r"\.add-card-form input\s*\{[^}]+\}"):
+for sel in (
+    r"\.library-search\s*\{[^}]+\}",
+    r"\.add-card-form input\s*\{[^}]+\}",
+    r"\.answer-form input\[type=[\"']text[\"']\]\s*\{[^}]+\}",
+):
     for block in re.findall(sel, css, re.S):
         m = re.search(r"font-size:\s*([^;]+)", block)
         if not m:
             continue
         v = m.group(1).strip()
         if re.search(r"0\.9\d*rem|0\.8\d*rem|1[0-5]px", v) and not re.search(
-            r"16px|max\(16px", v
+            r"16px|max\(16px|max\(1\.\d+rem,\s*16px", v
         ):
             fail(f"Input font may zoom on iOS: {v}")
+
+# Answer field must always floor at 16px (base rule, not only mobile media)
+answer_blocks = re.findall(
+    r"\.answer-form input\[type=[\"']text[\"']\]\s*\{([^}]+)\}", css, re.S
+)
+if answer_blocks:
+    base = answer_blocks[0]
+    if not re.search(r"16px", base):
+        fail("Base .answer-form input missing 16px font-size floor (iPad desktop width zooms)")
+
+# --- Coarse pointer primary controls ---
+if "pointer: coarse" not in css:
+    warn("No (pointer: coarse) rules — finger targets on wide iPad may stay <44px")
+elif not re.search(
+    r"pointer:\s*coarse[^}]*\.answer-action|pointer:\s*coarse[\s\S]{0,400}min-height:\s*44px",
+    css,
+    re.S,
+):
+    warn("pointer:coarse present but answer-action may lack min-height 44px")
 
 # --- Viewport ---
 if "viewport-fit=cover" not in html:
@@ -71,6 +94,11 @@ if "safe-area-inset" not in css:
 # --- 100vh trap ---
 if "100vh" in css and "100dvh" not in css:
     warn("100vh without 100dvh — mobile browser chrome can clip UI")
+
+# --- getPageScrollY honesty (body scrollport) ---
+gps = re.search(r"function getPageScrollY\s*\(\)\s*\{([^}]+(?:\{[^}]*\}[^}]*)*)\}", app, re.S)
+if gps and "Math.max" not in gps.group(0) and "body" not in gps.group(0):
+    warn("getPageScrollY may ignore body.scrollTop when body is the scrollport")
 
 # --- Report ---
 print("Leitner platform audit\n")
