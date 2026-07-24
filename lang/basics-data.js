@@ -743,15 +743,22 @@
     ],
   };
 
+  /**
+   * French — excellence bar (MED tray). MUST + SHOULD for English speakers.
+   * é/è/ç/œ; French u; silent h & finals; ou; nasals on/an; oi.
+   * Dropped COULD: ê as own row (folded into è), à vs a spelling tip.
+   * Exactly 2 examples. Glyph label only.
+   */
   window.LANGUAGE_BASICS.fr = {
+    previewGlyphs: ["é", "è", "ç"],
     sections: [
       {
-        title: "Special letters",
+        title: "Special",
         items: [
           {
             glyph: "é",
-            speak: "é",
-            approxHtml: "<strong>ay</strong> in <em>day</em>",
+            speak: "café",
+            approxHtml: "<strong>ay</strong> in <em>café</em>",
             examples: [
               { speak: "café", text: "café", gloss: "coffee" },
               { speak: "été", text: "été", gloss: "summer" },
@@ -759,20 +766,111 @@
           },
           {
             glyph: "è",
-            speak: "è",
-            approxHtml: "<strong>e</strong> in <em>bed</em>",
+            speak: "très",
+            approxHtml: "<strong>e</strong> in <em>bed</em> · also <strong>ê</strong>",
             examples: [
-              { speak: "père", text: "père", gloss: "father" },
               { speak: "très", text: "très", gloss: "very" },
+              { speak: "père", text: "père", gloss: "father" },
             ],
           },
           {
             glyph: "ç",
-            speak: "ç",
+            speak: "ça",
             approxHtml: "Soft <strong>s</strong> before a/o/u",
             examples: [
+              { speak: "ça", text: "ça", gloss: "that" },
               { speak: "français", text: "français", gloss: "French" },
-              { speak: "garçon", text: "garçon", gloss: "boy" },
+            ],
+          },
+          {
+            glyph: "œ",
+            speak: "cœur",
+            approxHtml: "Like <strong>u</strong> in <em>blur</em> · rounded",
+            examples: [
+              { speak: "cœur", text: "cœur", gloss: "heart" },
+              { speak: "sœur", text: "sœur", gloss: "sister" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Surprises",
+        compact: true,
+        items: [
+          {
+            glyph: "u",
+            speak: "tu",
+            glyphSize: "sm",
+            approxHtml: "<strong>ee</strong> · round lips · not English <em>oo</em>",
+            examples: [
+              { speak: "tu", text: "tu", gloss: "you" },
+              { speak: "rue", text: "rue", gloss: "street" },
+            ],
+          },
+          {
+            glyph: "h",
+            speak: "hôtel",
+            glyphSize: "sm",
+            approxHtml: "Usually silent",
+            examples: [
+              { speak: "hôtel", text: "hôtel", gloss: "hotel" },
+              { speak: "homme", text: "homme", gloss: "man" },
+            ],
+          },
+          {
+            glyph: "·",
+            speak: "petit",
+            glyphSize: "sm",
+            approxHtml: "Final consonants often silent",
+            examples: [
+              { speak: "petit", text: "petit", gloss: "small" },
+              { speak: "grand", text: "grand", gloss: "big" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Pairs",
+        compact: true,
+        items: [
+          {
+            glyph: "ou",
+            speak: "vous",
+            glyphSize: "pair",
+            approxHtml: "<strong>oo</strong> in <em>food</em>",
+            examples: [
+              { speak: "vous", text: "vous", gloss: "you" },
+              { speak: "où", text: "où", gloss: "where" },
+            ],
+          },
+          {
+            glyph: "on",
+            speak: "bon",
+            glyphSize: "pair",
+            approxHtml: "Nasal · through the nose",
+            examples: [
+              { speak: "bon", text: "bon", gloss: "good" },
+              { speak: "mon", text: "mon", gloss: "my" },
+            ],
+          },
+          {
+            glyph: "an",
+            speak: "dans",
+            glyphSize: "pair",
+            approxHtml: "Nasal · also <strong>en</strong>",
+            examples: [
+              { speak: "dans", text: "dans", gloss: "in" },
+              { speak: "grand", text: "grand", gloss: "big" },
+            ],
+          },
+          {
+            glyph: "oi",
+            speak: "moi",
+            glyphSize: "pair",
+            approxHtml: "Like <strong>wa</strong> in <em>watt</em>",
+            examples: [
+              { speak: "moi", text: "moi", gloss: "me" },
+              { speak: "soir", text: "soir", gloss: "evening" },
             ],
           },
         ],
