@@ -76,13 +76,35 @@ def enrich_glosses(
     sentences: list[dict],
     glosses: dict[str, str],
     deck: dict[str, str],
-    target: int = 16,
+    target: int = 22,
 ) -> dict[str, str]:
     out = dict(glosses)
     if len(out) >= target:
+        # Still allow multi-word survival phrases below even when "full"
+        pass
+
+    full_text = " ".join(
+        (s.get("foreign") or s.get("nb") or "") for s in sentences
+    ).lower()
+
+    # 1) Multi-word / hyphen deck phrases that appear in the story
+    multi = sorted(
+        (k for k in deck if " " in k or "-" in k),
+        key=lambda k: (-len(k), k),
+    )
+    for key in multi:
+        if len(out) >= target + 6:
+            break
+        if key not in full_text:
+            continue
+        if any(k.lower() == key for k in out):
+            continue
+        out[key] = deck[key]
+
+    if len(out) >= target:
         return out
 
-    # Collect content tokens in order of first appearance
+    # 2) Collect content tokens in order of first appearance
     seen: set[str] = set()
     candidates: list[str] = []
     for s in sentences:
@@ -166,8 +188,8 @@ def enrich_nb() -> int:
             k = gm.group(1) or gm.group(2)
             glosses[k] = gm.group(3)
         before = len(glosses)
-        new_g = enrich_glosses(sents, glosses, deck, target=16)
-        if len(new_g) == before and new_g == glosses:
+        new_g = enrich_glosses(sents, glosses, deck, target=22)
+        if new_g == glosses:
             return m.group(0)
         changed += 1
         new_block = format_js_glosses(new_g, indent="    ")
@@ -213,8 +235,8 @@ def enrich_pack(path: Path) -> int:
                     "en": s.get("en") or "",
                 }
             )
-        new_g = enrich_glosses(norm, glosses, deck, target=16)
-        if len(new_g) > before:
+        new_g = enrich_glosses(norm, glosses, deck, target=22)
+        if new_g != glosses:
             st["glosses"] = new_g
             changed += 1
 

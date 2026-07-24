@@ -100,7 +100,9 @@ const READ_STORIES = [
       morgen: "morning",
       Også: "also / too",
       takk: "thanks / thank you",
-      dag: "day"
+      dag: "day",
+      "ha det": "goodbye",
+      "i dag": "today"
     },
   },
   {
@@ -141,7 +143,10 @@ const READ_STORIES = [
       takk: "thanks / thank you",
       dag: "day",
       fin: "fine / nice",
-      Hei: "hello / hi"
+      Hei: "hello / hi",
+      "hvor mye koster det": "how much does it cost",
+      "ha en fin dag": "have a nice day",
+      "i dag": "today"
     },
   },
   {
@@ -181,7 +186,11 @@ const READ_STORIES = [
       "Tusen takk": "thank you so much",
       borte: "away / gone",
       Hvor: "where",
-      Takk: "thanks / thank you"
+      Takk: "thanks / thank you",
+      "kan du hjelpe meg": "can you help me",
+      "hvor er": "where is",
+      gang: "time / occasion",
+      fin: "fine / nice"
     },
   },
 
@@ -208,7 +217,7 @@ const READ_STORIES = [
     ],
     glosses: {
       toalettet: "the toilet",
-      "åpent": "open",
+      åpent: "open",
       Unnskyld: "excuse me",
       "i morgen": "tomorrow",
       bøker: "books",
@@ -228,6 +237,11 @@ const READ_STORIES = [
       hjelpen: "the help",
       "Bare hyggelig": "you're welcome",
       emnet: "the course / subject",
+      "hvor er toalettet": "where is the toilet",
+      "takk for hjelpen": "thanks for the help",
+      "lykke til": "good luck",
+      "hvor er": "where is",
+      "i dag": "today"
     },
   },
   {
@@ -270,6 +284,9 @@ const READ_STORIES = [
       kassen: "the checkout",
       "I like måte": "same to you",
       "Velkommen igjen": "welcome again",
+      "ha en fin dag": "have a nice day",
+      "hvor er": "where is",
+      "i dag": "today"
     },
   },
   {
@@ -311,7 +328,10 @@ const READ_STORIES = [
       møtes: "meet (each other)",
       klokka: "o'clock / the clock",
       "Vi ses snart": "see you soon",
-      Biologi: "biology"
+      Biologi: "biology",
+      "jeg bor her": "I live here",
+      "jeg heter": "my name is / I am called",
+      morgen: "morning"
     },
   },
 
@@ -357,7 +377,10 @@ const READ_STORIES = [
       prøvetiden: "the trial period",
       Forstått: "understood",
       prosjektet: "the project",
-      Velkommen: "welcome"
+      Velkommen: "welcome",
+      "takk for hjelpen": "thanks for the help",
+      "lykke til": "good luck",
+      "i dag": "today"
     },
   },
   {
@@ -401,6 +424,9 @@ const READ_STORIES = [
       verre: "worse",
       legetime: "doctor's appointment",
       frisk: "well / healthy",
+      "takk for hjelpen": "thanks for the help",
+      Trenger: "need",
+      halsen: "the throat"
     },
   },
   {
@@ -444,6 +470,8 @@ const READ_STORIES = [
       postkassen: "the mailbox",
       naboen: "the neighbor",
       støy: "noise",
+      internett: "internet",
+      kommer: "comes / is coming"
     },
   },
 
@@ -489,6 +517,8 @@ const READ_STORIES = [
       avgangen: "the departure",
       kansellert: "cancelled",
       "Vi snakkes": "we'll talk",
+      "det regner": "it is raining",
+      "i morgen": "tomorrow"
     },
   },
   {
@@ -528,7 +558,12 @@ const READ_STORIES = [
       miljøet: "the environment",
       bestemmer: "decide",
       lunsj: "lunch",
-      Akkurat: "exactly / just"
+      Akkurat: "exactly / just",
+      Hvorfor: "why",
+      kanskje: "maybe",
+      sentrum: "downtown / city center",
+      snakker: "speaks / talk",
+      videre: "further / on"
     },
   },
   {
@@ -576,6 +611,7 @@ const READ_STORIES = [
       Terminalen: "the terminal",
       avgang: "departure",
       "holder kontakten": "stay in touch",
+      "hvor er": "where is"
     },
   },
 ];
