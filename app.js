@@ -1662,8 +1662,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
   // Danish — same-lemma ASR / digraph typing (not different words)
   da: [
     ["jeg", "je"],
-    ["mig", "meg", "mai"],
-    ["dig", "deg", "dai"],
+    ["mig", "meg"],
+    ["dig", "deg"],
     ["sig", "seg"],
     ["å", "aa", "a"],
     ["æ", "ae"],
@@ -1817,6 +1817,25 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["amanhã", "amanha"],
     ["informação", "informacao"],
   ],
+  // Polish — same-lemma ASR / spacing (special letters also orthography-folded)
+  pl: [
+    ["proszę", "prosze"],
+    ["dziękuję", "dziekuje", "dzieki"],
+    ["przepraszam", "przeprasmam"],
+    ["dzień dobry", "dzien dobry"],
+    ["dobry wieczór", "dobry wieczor"],
+    ["do widzenia", "dowidzenia"],
+    ["do zobaczenia", "dozobaczenia"],
+    ["jak się masz", "jak sie masz"],
+    ["nie rozumiem", "nierozumiem"],
+    ["mów wolniej", "mow wolniej"],
+    ["gdzie jest", "gdziejest"],
+    ["poproszę", "poprosze"],
+    ["na zdrowie", "nazdrowie"],
+    ["wszystko w porządku", "wszystko w porzadku"],
+    ["cześć", "czesc"],
+    ["przepraszam bardzo", "przeprasmam bardzo"],
+  ],
 };
 
 const SPEECH_HOMOPHONE_LOOKUP = (() => {
@@ -1848,6 +1867,7 @@ function getAnswerSpeechLang(card = currentCard) {
   if (lower.startsWith("es")) return "es";
   if (lower.startsWith("it")) return "it";
   if (lower.startsWith("pt")) return "pt";
+  if (lower.startsWith("pl")) return "pl";
   // Map speech BCP-47-ish tags to our homophone tables
   if (lower.startsWith("en")) return "en";
   const short = lower.split("-")[0];
