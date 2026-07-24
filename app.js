@@ -1881,6 +1881,7 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["cómo está", "como esta"],
     ["buenos días", "buenos dias"],
     ["buenas noches", "buenasnoches"],
+    ["buenas tardes", "buenas tardes"],
     ["mucho gusto", "muchogusto"],
     ["de nada", "denada"],
     ["hasta luego", "hastaluego"],
@@ -1891,10 +1892,22 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["allí", "alli"],
     ["mañana", "manana"],
     ["información", "informacion"],
-    ["una vez más", "una vez mas"],
+    ["una vez más", "una vez mas", "otra vez"],
     ["qué piensas", "que piensas"],
     ["retrasado", "retraso"],
     ["incluido", "incluida"],
+    ["no entiendo", "no entiendo nada"],
+    ["dónde está el baño", "donde esta el bano", "dónde está el baño"],
+    ["demasiado tarde", "muy tarde"],
+    ["demasiado temprano", "muy temprano"],
+    ["demasiado caro", "muy caro"],
+    ["muchas gracias", "muchas gracias"],
+    ["esta noche", "está noche"],
+    ["la contraseña", "la contrasena", "contraseña"],
+    ["la salida", "donde esta la salida", "dónde está la salida"],
+    ["soy alérgico", "soy alergico", "soy alérgica"],
+    ["hable más despacio", "mas despacio", "más despacio por favor"],
+    ["de acuerdo", "estoy de acuerdo"],
   ],
   // Italian — same-lemma ASR / spacing (not different lemmas)
   it: [
@@ -2135,6 +2148,29 @@ function frenchSpeechCode(word) {
   return w.slice(0, 8);
 }
 
+/**
+ * Lightweight Spanish ASR code: accents/ñ folded, then metaphone-ish core.
+ * Does not collapse sí/si as speech homophones (separate soft-accept table).
+ */
+function spanishSpeechCode(word) {
+  let w = normalizeAnswer(word)
+    .replace(/[áàä]/g, "a")
+    .replace(/[éèë]/g, "e")
+    .replace(/[íìï]/g, "i")
+    .replace(/[óòö]/g, "o")
+    .replace(/[úùü]/g, "u")
+    .replace(/ñ/g, "n")
+    .replace(/[^a-z]/g, "");
+  if (!w) return "";
+  w = w
+    .replace(/qu/g, "k")
+    .replace(/ch/g, "ch")
+    .replace(/ll/g, "y")
+    .replace(/[aeiouy]/g, (ch, i) => (i === 0 ? ch : ""))
+    .replace(/(.)\1+/g, "$1");
+  return w.slice(0, 8);
+}
+
 function speechCode(word, lang) {
   const base = String(lang || "")
     .toLowerCase()
@@ -2146,6 +2182,7 @@ function speechCode(word, lang) {
   if (base === "de") return germanSpeechCode(word);
   if (base === "nl") return dutchSpeechCode(word);
   if (base === "fr") return frenchSpeechCode(word);
+  if (base === "es") return spanishSpeechCode(word);
   return englishSpeechCode(word);
 }
 
