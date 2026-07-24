@@ -6,11 +6,6 @@ const LEGACY_STORAGE_KEYS = [
 const BOX_COUNT = 6;
 
 const BOX_INTERVALS_DAYS = [0, 1, 3, 7, 14, 30];
-/** Daily bite sizes (Ferriss-style low bar; max one calm set). */
-const DAILY_GOAL_CAPS = [5, 10, 20];
-const DAILY_PRACTICE_CAP = 20;
-const DAILY_GOAL_CAP_KEY = "leitner-learning-daily-goal-cap";
-
 const VOICE_GENDER_KEY = "leitner-learning-voice-gender";
 const VOICE_GENDERS = ["female", "male"];
 
@@ -472,148 +467,6 @@ function getOutstandingDueCount(daily = ensureDailyPracticeState(), cards = deck
   return getDueCards(cards).filter((card) => !completed.has(card.id)).length;
 }
 
-/**
- * Human-facing practice status for Review home + Progress.
- * Never dump the full unpaid mountain (e.g. 976 due) - the daily cap is
- * the honest "today" size. Big queues become calm labels + small sets.
- */
-function getProgressPracticeStat() {
-  const daily = ensureDailyPracticeState();
-  const cap = getDailyPracticeCap();
-  const remainingToday = getDailyRemainingCount(daily);
-  const outstanding = getOutstandingDueCount(daily);
-  const reviewDue = getReviewDueCards().length;
-  const newDue = getDueCards().filter(
-    (card) => isNewCard(card) && !daily.completedIds.includes(card.id)
-  ).length;
-  const setWord = cap === 1 ? "card" : "cards";
-
-  // In-progress daily goal (normal mode only - extra mode can make remaining = full backlog)
-  // Home chips: one-word labels. Prefer REMAINING over LEFT (LEFT is ambiguous).
-  if (!daily.extraMode && remainingToday > 0) {
-    return {
-      value: remainingToday,
-      label: "Remaining",
-      line: `${remainingToday} remaining`,
-      ariaLabel: `${remainingToday} card${remainingToday === 1 ? "" : "s"} remaining in today's review`,
-      highlight: true,
-      actionable: true,
-      kind: "left-today",
-    };
-  }
-
-  if (!daily.extraMode && daily.goalMet && daily.goal > 0) {
-    return {
-      value: `${daily.reviewed}/${daily.goal}`,
-      label: "Done",
-      line: `Done · ${daily.reviewed}/${daily.goal}`,
-      ariaLabel: `Completed today's goal: ${daily.reviewed} of ${daily.goal} cards reviewed`,
-      highlight: false,
-      actionable: false,
-      kind: "done-today",
-    };
-  }
-
-  // Study after goal — caption under logo only (no length chip; no mountain count)
-  if (daily.extraMode && outstanding > 0) {
-    return {
-      value: "",
-      label: "Study",
-      line: "Study",
-      ariaLabel: "Study: continue reviewing due cards",
-      highlight: true,
-      actionable: true,
-      kind: "extras",
-    };
-  }
-
-  // Goal complete, more due available (not yet in study/extra mode)
-  if (outstanding > 0 && daily.goalMet) {
-    return {
-      value: "",
-      label: "Study",
-      line: "Study",
-      ariaLabel: "Today's goal is done. Study to keep reviewing",
-      highlight: false,
-      actionable: true,
-      kind: "extras-ready",
-    };
-  }
-
-  // Reviews waiting (not yet framed as today's goal) - hide mountain size
-  if (reviewDue > 0) {
-    if (reviewDue > cap) {
-      return {
-        value: String(cap),
-        label: "Set",
-        line: `Set · up to ${cap}`,
-        ariaLabel: `Reviews are ready. Today's set is up to ${cap} ${setWord}.`,
-        highlight: true,
-        actionable: true,
-        kind: "reviews-soft",
-      };
-    }
-    return {
-      value: reviewDue,
-      label: "Due",
-      line: `${reviewDue} due`,
-      ariaLabel: `Review ${reviewDue} card${reviewDue === 1 ? "" : "s"} due for review`,
-      highlight: true,
-      actionable: true,
-      kind: "reviews",
-    };
-  }
-
-  // New cards / mixed outstanding - invite, don't intimidate
-  if (outstanding > 0) {
-    const allNew = newDue === outstanding;
-    if (allNew || outstanding > cap) {
-      return {
-        value: String(cap),
-        label: "Set",
-        line: allNew ? `Set · up to ${cap}` : `Set · up to ${cap}`,
-        ariaLabel: allNew
-          ? `New cards are waiting. Today's set is up to ${cap} ${setWord}.`
-          : `Cards are waiting. Today's set is up to ${cap} ${setWord}.`,
-        highlight: true,
-        actionable: true,
-        kind: "start-soft",
-      };
-    }
-    return {
-      value: outstanding,
-      label: "Due",
-      line: `${outstanding} due`,
-      ariaLabel: `${outstanding} card${outstanding === 1 ? "" : "s"} ready now`,
-      highlight: true,
-      actionable: true,
-      kind: "due-now",
-    };
-  }
-
-  const nextReview = getNextReviewStat();
-  if (nextReview) {
-    return {
-      ...nextReview,
-      line:
-        nextReview.label === "Next"
-          ? `Next · ${nextReview.value}`
-          : `${nextReview.value} · ${nextReview.label}`,
-      kind: "next",
-    };
-  }
-
-  return {
-    value: "✓",
-    label: "Clear",
-    line: "All clear for now",
-    ariaLabel: "All caught up for now",
-    highlight: false,
-    actionable: false,
-    kind: "caught-up",
-  };
-}
-
 function getNextReviewStat() {
   const unlockMs = getNextReviewUnlockMs();
   if (!unlockMs) return null;
@@ -679,13 +532,9 @@ function getHomeStreakStat(categoryId = activeCategoryId) {
 
   return {
     value: streak,
-    // One-word chip label; risk is color/aria, not a longer string.
+    // One-word chip label; risk is color only — no tutorial copy.
     label: "Streak",
-    ariaLabel: atRisk
-      ? `${streak}-day streak. Study once today to keep it.`
-      : streak > 0
-        ? `${streak}-day streak`
-        : "No streak yet",
+    ariaLabel: streak > 0 ? `${streak}-day streak` : "No streak yet",
     highlight: streak > 0,
     atRisk,
   };
@@ -710,76 +559,10 @@ function shuffleInPlace(items, randomFn = Math.random) {
   return items;
 }
 
-function migrateDailyPracticeCap(n) {
-  if (DAILY_GOAL_CAPS.includes(n)) return n;
-  // Retired options → nearest calm bite
-  if (n === 15) return 10;
-  if (n === 30 || n > 20) return 20;
-  if (n > 0 && n < 5) return 5;
-  return DAILY_PRACTICE_CAP;
-}
-
-function getDailyPracticeCap() {
-  const n = Number(storageGet(DAILY_GOAL_CAP_KEY));
-  const next = migrateDailyPracticeCap(n);
-  // Persist migration so old 15/30 settings don't stick forever
-  if (Number.isFinite(n) && n !== next) storageSet(DAILY_GOAL_CAP_KEY, String(next));
-  return next;
-}
-
-function setDailyPracticeCap(cap) {
-  const next = migrateDailyPracticeCap(Number(cap));
-  storageSet(DAILY_GOAL_CAP_KEY, String(next));
-  return next;
-}
-
 function computeDailyGoal(dueCount) {
   // No artificial daily target — due cards are the work; Study goes as long as they want.
   if (dueCount <= 0) return 0;
   return dueCount;
-}
-
-/** Recompute today's goal from the saved cap (raise or lower mid-day safely). */
-function applyCapToTodayState() {
-  const state = ensureDailyPracticeState();
-  const cap = getDailyPracticeCap();
-  const due = getDueCards(deck);
-  const completed = new Set(state.completedIds);
-  const remainingDue = due.filter((card) => !completed.has(card.id)).length;
-
-  if (state.reviewed === 0 && remainingDue === 0) {
-    state.goal = 0;
-    state.goalMet = deck.length > 0;
-    state.dailyQueue = [];
-    state.extraMode = false;
-    saveDailyPractice(state);
-    return state;
-  }
-
-  const newGoal = Math.max(state.reviewed, Math.min(cap, state.reviewed + remainingDue));
-  state.goal = newGoal;
-  state.goalMet = newGoal > 0 && state.reviewed >= newGoal;
-  if (!state.goalMet) state.extraMode = false;
-
-  const need = Math.max(0, state.goal - state.reviewed);
-  const completedInQueue = state.dailyQueue.filter((id) => completed.has(id));
-  const pending = state.dailyQueue.filter((id) => !completed.has(id));
-  state.dailyQueue = [...completedInQueue, ...pending.slice(0, need)];
-
-  refreshDailyPracticeQueue(state);
-  saveDailyPractice(state);
-  return state;
-}
-
-function selectDailyGoalCap(cap) {
-  setDailyPracticeCap(cap);
-  applyCapToTodayState();
-  const keepId = currentCard?.id || null;
-  buildSessionQueue();
-  if (keepId) {
-    sessionQueue = sessionQueue.filter((id) => id !== keepId);
-  }
-  renderAll();
 }
 
 function sortCardIdsByPracticePriority(cardIds, completed = new Set()) {
@@ -1055,11 +838,6 @@ function getDailyRemainingCount(state = ensureDailyPracticeState()) {
   return state.dailyQueue.filter(
     (id) => dueIds.has(id) && !state.completedIds.includes(id)
   ).length;
-}
-
-function hasDailyGoalRemaining(daily = ensureDailyPracticeState()) {
-  if (daily.extraMode || daily.goalMet || daily.goal <= 0) return false;
-  return getDailyRemainingCount(daily) > 0;
 }
 
 function pausePracticeSession() {
@@ -2600,10 +2378,10 @@ function enableThematicPack(packId, options = {}) {
 
   deck = ensureDeckIsUsable(merged);
   saveDeck();
-  // Rebuild today's queue so pack cards can enter when appropriate.
+  // Rebuild today's queue so pack cards can enter when due.
   try {
     const daily = ensureDailyPracticeState();
-    if (daily && !daily.goalMet) {
+    if (daily) {
       refreshDailyPracticeQueue(daily);
       saveDailyPractice(daily);
     }
@@ -3095,7 +2873,7 @@ function startThemePracticeSession(packId) {
     .filter((card) => !isDue(card))
     .sort(compareCardsForPractice);
 
-  const cap = Math.min(THEME_SESSION_CAP, getDailyPracticeCap() || THEME_SESSION_CAP);
+  const cap = THEME_SESSION_CAP;
   const ordered = [...dueReviews, ...dueNew];
   // If nothing is due, still offer a small intentional set from waiting cards.
   if (!ordered.length) {
