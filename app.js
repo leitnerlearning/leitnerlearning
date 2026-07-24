@@ -1062,11 +1062,13 @@ function stripAnswerParticles(text) {
   // Leading "a " as ASCII for å (a være → være). English "a dog" → "dog" is usually fine too.
   t = t.replace(/^a\s+/, "");
   // Leading articles / determiners (same lemma: das Passwort ≈ Passwort, la sortie ≈ sortie).
-  // Only one leading token; never mid-phrase. Not a free “drop any short word.”
-  t = t.replace(
-    /^(der|die|das|den|dem|des|ein|eine|einen|einem|einer|le|la|les|un|une|des|el|los|las|una|unos|unas|il|lo|i|gli|het|de|o|os|as|um|uma|the|an)\s+/,
-    ""
+  // Only strip when the remainder is a *single* content token — never "en gang til" → "gang til".
+  const articleStrip = t.match(
+    /^(der|die|das|den|dem|des|ein|eine|einen|einem|einer|le|la|les|un|une|des|el|los|las|una|unos|unas|il|lo|i|gli|het|de|o|os|as|um|uma|the|an|ett|den|det)\s+(.+)$/
   );
+  if (articleStrip && articleStrip[2] && !/\s/.test(articleStrip[2])) {
+    t = articleStrip[2];
+  }
   return t.trim();
 }
 
@@ -1671,6 +1673,9 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["kjøre", "kjore", "kjoere"],
     ["gjøre", "gjore", "gjoere"],
     ["skjønne", "skjonne", "skjoenne"],
+    ["en gang til", "engang til"],
+    ["hva synes du", "hva syns du"],
+    ["jeg er enig", "jeg enig"],
   ],
   // Danish — same-lemma ASR / digraph typing (not different words)
   da: [
@@ -1693,6 +1698,9 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["ikke", "ik"],
     ["køre", "kore", "koere"],
     ["gøre", "gore", "goere"],
+    ["en gang til", "engang til"],
+    ["hvad synes du", "hvad syns du"],
+    ["jeg er enig", "jeg enig"],
   ],
   // Swedish — same-lemma ASR / digraph typing
   sv: [
@@ -1714,6 +1722,9 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["köra", "kora", "koera"],
     ["göra", "gora", "goera"],
     ["förstå", "forstaa", "forsta"],
+    ["en gång till", "en gang till"],
+    ["vad tycker du", "va tycker du"],
+    ["jag håller med", "jag haller med"],
   ],
   // German — umlaut digraph typing + common ASR (ß↔ss also via orthography fold)
   de: [
@@ -1737,6 +1748,9 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["hören", "hoeren"],
     ["früh", "frueh"],
     ["tür", "tuer"],
+    ["was denkst du", "was denkst du"],
+    ["noch einmal", "nochmal"],
+    ["wlan-passwort", "wlan passwort"],
   ],
   // Dutch — same-lemma ASR / informal spelling (not different words)
   nl: [
@@ -1755,6 +1769,9 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["zijn", "zyn"],
     ["huis", "huys"],
     ["uit", "uyt"],
+    ["wat denk je", "wat denk je"],
+    ["nog een keer", "nog 1 keer"],
+    ["wifi-wachtwoord", "wifi wachtwoord"],
   ],
   // French — same-lemma ASR / elision (accents already orthography-soft)
   fr: [
@@ -1773,6 +1790,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["comment ça va", "comment ca va"],
     ["s'il", "sil"],
     ["n'est-ce pas", "nest ce pas"],
+    ["encore une fois", "encore 1 fois"],
+    ["que penses-tu", "que penses tu"],
   ],
   // Spanish — same-lemma typing/ASR (never sí≈si or por qué≈porque)
   es: [
@@ -1792,6 +1811,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["allí", "alli"],
     ["mañana", "manana"],
     ["información", "informacion"],
+    ["una vez más", "una vez mas"],
+    ["qué piensas", "que piensas"],
   ],
   // Italian — same-lemma ASR / spacing (not different lemmas)
   it: [
@@ -1811,6 +1832,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["però", "pero"],
     ["già", "gia"],
     ["così", "cosi"],
+    ["ancora una volta", "ancora 1 volta"],
+    ["cosa ne pensi", "cosa ne pensi"],
   ],
   // Portuguese (BR teaching) — same-lemma ASR / typing (not gender swaps)
   pt: [
@@ -1829,6 +1852,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["também", "tambem"],
     ["amanhã", "amanha"],
     ["informação", "informacao"],
+    ["mais uma vez", "mais 1 vez"],
+    ["o que você acha", "o que voce acha"],
   ],
   // Polish — same-lemma ASR / spacing (special letters also orthography-folded)
   pl: [
@@ -1848,6 +1873,9 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["wszystko w porządku", "wszystko w porzadku"],
     ["cześć", "czesc"],
     ["przepraszam bardzo", "przeprasmam bardzo"],
+    ["jeszcze raz", "jeszcze 1 raz"],
+    ["co myślisz", "co myslisz"],
+    ["zgadzam się", "zgadzam sie"],
   ],
 };
 
@@ -2031,6 +2059,28 @@ function maxEditDistance(text) {
   return Math.max(2, Math.floor(len * 0.22));
 }
 
+/**
+ * Same lemma with a light definite/plural suffix (passordet ≈ passord).
+ * Single-token only — never rewrite multi-word phrases.
+ */
+function softDefiniteLemmaMatch(a, b) {
+  const x = normalizeAnswer(a);
+  const y = normalizeAnswer(b);
+  if (!x || !y || x === y) return x === y;
+  if (/\s/.test(x) || /\s/.test(y)) return false;
+  const tryPair = (full, stem) => {
+    if (full.length < stem.length + 1 || stem.length < 4) return false;
+    if (!full.startsWith(stem)) return false;
+    const suf = full.slice(stem.length);
+    return (
+      suf.length >= 1 &&
+      suf.length <= 4 &&
+      /^(en|et|ene|na|ne|n|t|s|r|ar|er|or|arna|erna|orna)$/i.test(suf)
+    );
+  };
+  return tryPair(x, y) || tryPair(y, x);
+}
+
 /** Short polite tails learners often add after a correct phrase (not new content). */
 const POLITE_ANSWER_TAILS = new Set([
   "takk",
@@ -2073,9 +2123,12 @@ function answersAreClose(user, expected) {
       return true;
     }
   }
+  // Definite suffix same lemma (passordet ≈ passord) — single-token only
+  if (softDefiniteLemmaMatch(user, expected)) return true;
 
   const userCore = stripAnswerParticles(user) || user;
   const expectedCore = stripAnswerParticles(expected) || expected;
+  if (softDefiniteLemmaMatch(userCore, expectedCore)) return true;
   const distance = Math.min(
     levenshtein(user, expected),
     levenshtein(userCore, expectedCore),
@@ -2367,6 +2420,13 @@ function mergeStarterIntoDeck(existing, category = getActiveCategory()) {
         current.exampleForeign = entry.exampleForeign;
         current.exampleNative = entry.exampleNative;
       }
+      // rank/band polish from starter also counts as a real change for save
+      if (
+        entry.rank != null &&
+        current.rank !== entry.rank
+      ) {
+        examplesUpdated = true;
+      }
       merged.push(current);
       existingByKey.delete(key);
       continue;
@@ -2395,6 +2455,9 @@ function mergeStarterIntoDeck(existing, category = getActiveCategory()) {
     merged.some((card, index) => card !== existing[index]);
 
   if (!changed) return existing;
+  if (typeof clearStoryExampleCache === "function") {
+    clearStoryExampleCache();
+  }
   return merged.sort((a, b) => (a.rank ?? 99999) - (b.rank ?? 99999));
 }
 
@@ -5711,12 +5774,16 @@ function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
       if (!clause.foreign || !clause.en) continue;
       // Prefer short, easy clauses; slight penalty for tiny forms in long lines
       const exactPhrase = sentenceContainsForm(clause.foreign, form);
+      const fullPhraseInLine =
+        /\s/.test(form.trim()) && sentenceContainsForm(fullForeign, form);
       const score =
         trailScore(story.trail) * 1000 +
         clause.foreign.length +
         (form.length <= 2 && clause.foreign.length > 36 ? 80 : 0) +
         // Prefer exact form / full phrase over soft multi-word content hit
-        (exactPhrase ? 0 : matchedDirect ? 15 : 30);
+        (exactPhrase ? 0 : matchedDirect ? 15 : 30) +
+        // Multi-word survival cards: strong bonus when the whole phrase is in the line
+        (fullPhraseInLine ? -40 : 0);
       if (score < bestScore) {
         bestScore = score;
         best = { foreign: clause.foreign, en: clause.en, storyId: story.id };
@@ -6310,7 +6377,6 @@ function renderPractice() {
 
   const inTheme = Boolean(themeSessionPackId && themeSessionTotal > 0);
   // No daily goal chrome (floss model). Theme set still uses the strip as progress only.
-  const showGoal = false;
 
   if (practiceMeta) {
     practiceMeta.classList.toggle("hidden", !inTheme);
@@ -6363,25 +6429,10 @@ function renderPractice() {
         `${pack?.title || "Theme"}: ${done} of ${total}`
       );
     } else {
-      progressBar.classList.remove("is-theme-bar");
-      const showBar = showGoal;
-      progressBar.classList.toggle("hidden", !showBar);
-      progressBar.classList.toggle(
-        "is-complete",
-        Boolean(showBar && daily.goalMet)
-      );
-      if (showBar) {
-        const pct = Math.min(100, Math.round((daily.reviewed / daily.goal) * 100));
-        progressFill.style.width = `${pct}%`;
-        progressBar.setAttribute("aria-valuenow", String(daily.reviewed));
-        progressBar.setAttribute("aria-valuemax", String(daily.goal));
-        progressBar.setAttribute(
-          "aria-label",
-          daily.goalMet
-            ? `Reviewed ${daily.reviewed} of ${daily.goal} due cards`
-            : `${daily.reviewed} of ${daily.goal} due cards reviewed`
-        );
-      }
+      // Daily goal bar removed (floss model) — keep node for theme sessions only.
+      progressBar.classList.remove("is-theme-bar", "is-complete");
+      progressBar.classList.add("hidden");
+      progressFill.style.width = "0%";
     }
   }
 
