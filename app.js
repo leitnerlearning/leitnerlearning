@@ -1984,15 +1984,18 @@ const SPEECH_HOMOPHONE_GROUPS = {
   pl: [
     ["proszę", "prosze"],
     ["dziękuję", "dziekuje", "dzieki"],
+    ["dziękuję bardzo", "dziekuje bardzo", "bardzo dziękuję"],
     ["przepraszam", "przeprasmam"],
     ["dzień dobry", "dzien dobry"],
     ["dobry wieczór", "dobry wieczor"],
     ["do widzenia", "dowidzenia"],
     ["do zobaczenia", "dozobaczenia"],
     ["jak się masz", "jak sie masz"],
+    ["nazywam się", "nazywam sie"],
     ["nie rozumiem", "nierozumiem"],
-    ["mów wolniej", "mow wolniej"],
+    ["mów wolniej", "mow wolniej", "proszę wolniej", "wolniej"],
     ["gdzie jest", "gdziejest"],
+    ["gdzie jest toaleta", "gdzie jest toaleta", "gdzie jest lazienka"],
     ["poproszę", "poprosze"],
     ["na zdrowie", "nazdrowie"],
     ["wszystko w porządku", "wszystko w porzadku"],
@@ -2003,6 +2006,15 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["zgadzam się", "zgadzam sie"],
     ["opóźniony", "opozniony"],
     ["opóźnienie", "opoznienie"],
+    ["czy możesz mi pomóc", "czy mozesz mi pomoc", "możesz mi pomóc"],
+    ["za późno", "za pozno"],
+    ["za wcześnie", "za wczesnie"],
+    ["za drogo", "za drogo"],
+    ["dziś wieczorem", "dzis wieczorem"],
+    ["hasło do wifi", "haslo do wifi"],
+    ["wyjście", "wyjscie", "gdzie jest wyjście"],
+    ["jestem alergiczny", "jestem alergiczny na"],
+    ["wliczony", "wliczona"],
   ],
 };
 
@@ -2245,6 +2257,32 @@ function portugueseSpeechCode(word) {
   return w.slice(0, 8);
 }
 
+/**
+ * Lightweight Polish ASR code: ąęłńóśźż folded, then metaphone-ish core.
+ */
+function polishSpeechCode(word) {
+  let w = normalizeAnswer(word)
+    .replace(/ą/g, "a")
+    .replace(/ę/g, "e")
+    .replace(/ł/g, "l")
+    .replace(/ń/g, "n")
+    .replace(/ó/g, "o")
+    .replace(/ś/g, "s")
+    .replace(/ź/g, "z")
+    .replace(/ż/g, "z")
+    .replace(/ć/g, "c")
+    .replace(/[^a-z]/g, "");
+  if (!w) return "";
+  w = w
+    .replace(/sz/g, "sh")
+    .replace(/cz/g, "ch")
+    .replace(/rz/g, "zh")
+    .replace(/ch/g, "h")
+    .replace(/[aeiouy]/g, (ch, i) => (i === 0 ? ch : ""))
+    .replace(/(.)\1+/g, "$1");
+  return w.slice(0, 8);
+}
+
 function speechCode(word, lang) {
   const base = String(lang || "")
     .toLowerCase()
@@ -2259,6 +2297,7 @@ function speechCode(word, lang) {
   if (base === "es") return spanishSpeechCode(word);
   if (base === "it") return italianSpeechCode(word);
   if (base === "pt") return portugueseSpeechCode(word);
+  if (base === "pl") return polishSpeechCode(word);
   return englishSpeechCode(word);
 }
 
