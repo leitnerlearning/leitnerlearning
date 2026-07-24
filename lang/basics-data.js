@@ -197,14 +197,16 @@
   };
 
   /** Minimal stubs so Basics is available for every selectable language. */
+  /** Swedish — same MED excellence as sv-pack (pack overwrites on load). sj/tj are the signature. */
   window.LANGUAGE_BASICS.sv = {
+    previewGlyphs: ["å", "ä", "ö"],
     sections: [
       {
-        title: "Special letters",
+        title: "Special",
         items: [
           {
             glyph: "å",
-            speak: "å",
+            speak: "år",
             approxHtml: "<strong>o</strong> in <em>or</em>",
             examples: [
               { speak: "år", text: "år", gloss: "year" },
@@ -213,20 +215,112 @@
           },
           {
             glyph: "ä",
-            speak: "ä",
+            speak: "är",
             approxHtml: "<strong>a</strong> in <em>cat</em>",
             examples: [
-              { speak: "är", text: "är", gloss: "is / are" },
-              { speak: "här", text: "här", gloss: "here" },
+              { speak: "är", text: "är", gloss: "is" },
+              { speak: "nära", text: "nära", gloss: "near" },
             ],
           },
           {
             glyph: "ö",
-            speak: "ö",
-            approxHtml: "<strong>uh</strong>, lips rounded",
+            speak: "öl",
+            approxHtml: "<strong>u</strong> in <em>burn</em> · rounded",
             examples: [
-              { speak: "öga", text: "öga", gloss: "eye" },
-              { speak: "hör", text: "hör", gloss: "hear" },
+              { speak: "öl", text: "öl", gloss: "beer" },
+              { speak: "öra", text: "öra", gloss: "ear" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Surprises",
+        compact: true,
+        items: [
+          {
+            glyph: "j",
+            speak: "ja",
+            glyphSize: "sm",
+            approxHtml: "<strong>y</strong> in <em>yes</em>",
+            examples: [
+              { speak: "ja", text: "ja", gloss: "yes" },
+              { speak: "jag", text: "jag", gloss: "I" },
+            ],
+          },
+          {
+            glyph: "y",
+            speak: "ny",
+            glyphSize: "sm",
+            approxHtml: "<strong>ee</strong> · rounded lips",
+            examples: [
+              { speak: "ny", text: "ny", gloss: "new" },
+              { speak: "fyra", text: "fyra", gloss: "four" },
+            ],
+          },
+          {
+            glyph: "g",
+            speak: "göra",
+            glyphSize: "sm",
+            approxHtml: "Soft before e i y ä ö · like <strong>y</strong>",
+            examples: [
+              { speak: "göra", text: "göra", gloss: "do" },
+              { speak: "god", text: "god", gloss: "good" },
+            ],
+          },
+          {
+            glyph: "r",
+            speak: "röd",
+            glyphSize: "sm",
+            approxHtml: "Tapped · not English <span class=\"basics-letter\">r</span>",
+            examples: [
+              { speak: "röd", text: "röd", gloss: "red" },
+              { speak: "bra", text: "bra", gloss: "good" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Pairs",
+        compact: true,
+        items: [
+          {
+            glyph: "sj",
+            speak: "sjö",
+            glyphSize: "pair",
+            approxHtml: "Soft <strong>sh</strong>-like",
+            examples: [
+              { speak: "sjö", text: "sjö", gloss: "lake" },
+              { speak: "sju", text: "sju", gloss: "seven" },
+            ],
+          },
+          {
+            glyph: "tj",
+            speak: "tjej",
+            glyphSize: "pair",
+            approxHtml: "Soft · <strong>sh</strong> in <em>she</em>",
+            examples: [
+              { speak: "tjej", text: "tjej", gloss: "girl" },
+              { speak: "tjänst", text: "tjänst", gloss: "service" },
+            ],
+          },
+          {
+            glyph: "hj",
+            speak: "hjälp",
+            glyphSize: "pair",
+            approxHtml: "Silent <strong>h</strong> · <strong>y</strong>",
+            examples: [
+              { speak: "hjälp", text: "hjälp", gloss: "help" },
+              { speak: "hjärta", text: "hjärta", gloss: "heart" },
+            ],
+          },
+          {
+            glyph: "rs",
+            speak: "fors",
+            glyphSize: "pair",
+            approxHtml: "Often like <strong>sh</strong>",
+            examples: [
+              { speak: "fors", text: "fors", gloss: "rapids" },
+              { speak: "mars", text: "mars", gloss: "March" },
             ],
           },
         ],
