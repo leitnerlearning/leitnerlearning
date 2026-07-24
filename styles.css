@@ -73,8 +73,14 @@ html {
   width: 100%;
   max-width: 100%;
   overflow-x: clip;
+  /*
+   * Safari desktop: when overflow-x is non-visible, the vertical axis must be
+   * an explicit scrollport or Cards/Progress can refuse to scroll. html is the
+   * page scroller; body grows with content (see body overflow-y).
+   */
+  overflow-y: auto;
   overscroll-behavior-x: none;
-  /* Less “empty page bounce” when content already fits the viewport */
+  /* Calm empty rubber-band; does not block real page scroll */
   overscroll-behavior-y: none;
 }
 
@@ -94,8 +100,9 @@ body {
   letter-spacing: -0.022em;
   position: relative;
   overflow-x: clip;
+  /* Grow with Cards/Progress; do not create a second nested page scroller */
+  overflow-y: visible;
   overscroll-behavior-x: none;
-  overscroll-behavior-y: none;
 }
 
 /* Ambient brand - soft glow */
@@ -145,7 +152,7 @@ body {
   max-width: min(780px, 100%);
   margin: 0 auto;
   padding: 2.5rem 1.5rem 3rem;
-  /* Fill the window; avoid forcing content taller than the viewport when possible */
+  /* Fill the window when short; grow with long tabs (Cards / Progress) */
   min-height: 100dvh;
   min-height: 100svh;
   display: flex;
@@ -164,7 +171,11 @@ main {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  /*
+   * min-height: auto (not 0): document scroll for Cards/Progress on Safari.
+   * Nested scroll modes (e.g. mobile Read) set min-height: 0 explicitly.
+   */
+  min-height: auto;
 }
 
 /* Header */
@@ -1954,7 +1965,8 @@ main {
 .panel.active {
   display: block;
   flex: 1 1 auto;
-  min-height: 0;
+  /* auto: long panels grow the page (Safari document scroll). Nested modes override. */
+  min-height: auto;
 }
 
 /* Beat any panel-specific display rules when the tab is not active */
