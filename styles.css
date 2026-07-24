@@ -69,19 +69,16 @@ html {
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
   color-scheme: light;
-  /* clip (not hidden) avoids killing position:sticky on Library jump chips */
   width: 100%;
   max-width: 100%;
-  overflow-x: clip;
   /*
-   * Safari desktop: when overflow-x is non-visible, the vertical axis must be
-   * an explicit scrollport or Cards/Progress can refuse to scroll. html is the
-   * page scroller; body grows with content (see body overflow-y).
+   * Do NOT use overflow-x: clip here. On desktop Safari, clip/hidden on the
+   * root can make the page refuse to scroll vertically at all (Cards/Progress).
+   * Horizontal spill is contained via max-width on .app / panels instead.
    */
-  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: scroll;
   overscroll-behavior-x: none;
-  /* Calm empty rubber-band; does not block real page scroll */
-  overscroll-behavior-y: none;
 }
 
 body {
@@ -99,8 +96,8 @@ body {
   line-height: 1.47059;
   letter-spacing: -0.022em;
   position: relative;
-  overflow-x: clip;
-  /* Grow with Cards/Progress; do not create a second nested page scroller */
+  /* Body grows with content; html is the only page scrollport (Safari-safe). */
+  overflow-x: hidden;
   overflow-y: visible;
   overscroll-behavior-x: none;
 }
@@ -155,9 +152,10 @@ body {
   /* Fill the window when short; grow with long tabs (Cards / Progress) */
   min-height: 100dvh;
   min-height: 100svh;
+  height: auto;
   display: flex;
   flex-direction: column;
-  /* Do not set overflow-x here - it breaks sticky Library jump chips. */
+  overflow: visible;
   box-sizing: border-box;
 }
 
@@ -176,6 +174,8 @@ main {
    * Nested scroll modes (e.g. mobile Read) set min-height: 0 explicitly.
    */
   min-height: auto;
+  height: auto;
+  overflow: visible;
 }
 
 /* Header */
@@ -1967,6 +1967,51 @@ main {
   flex: 1 1 auto;
   /* auto: long panels grow the page (Safari document scroll). Nested modes override. */
   min-height: auto;
+  height: auto;
+  overflow: visible;
+}
+
+/*
+ * Cards + Progress: force real document scroll on desktop Safari.
+ * Flex + root overflow tricks that Chrome tolerates can leave WebKit with a
+ * viewport-tall shell and nowhere to scroll. Flatten the chain for these tabs.
+ */
+html:has(#cards-panel.active),
+html:has(#stats-panel.active) {
+  overflow-x: hidden !important;
+  overflow-y: scroll !important;
+  height: auto !important;
+  max-height: none !important;
+  overscroll-behavior-y: auto;
+}
+
+body:has(#cards-panel.active),
+body:has(#stats-panel.active) {
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 100vh;
+}
+
+body:has(#cards-panel.active) .app,
+body:has(#stats-panel.active) .app {
+  display: block !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 100vh;
+  overflow: visible !important;
+}
+
+body:has(#cards-panel.active) .app main,
+body:has(#stats-panel.active) .app main,
+body:has(#cards-panel.active) #cards-panel.active,
+body:has(#stats-panel.active) #stats-panel.active {
+  display: block !important;
+  flex: none !important;
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
 }
 
 /* Beat any panel-specific display rules when the tab is not active */
@@ -3511,7 +3556,9 @@ button.feedback-example-l2:focus-visible {
 }
 
 body.modal-open {
-  overflow: hidden;
+  /* Only block page scroll while a modal is open — not overflow-x tricks */
+  overflow: hidden !important;
+  overscroll-behavior: none;
 }
 
 body.welcome-open .app {

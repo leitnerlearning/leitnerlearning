@@ -13007,8 +13007,39 @@ function switchTab(tabName) {
   document.getElementById("progress-float-actions")?.classList.add("hidden");
   if (tabName === "cards" || tabName === "stats") {
     updatePageFloatTopVisibility();
+    // Safari desktop: clear any leftover scroll locks (modals / focus modes).
+    ensureDocumentScrollUnlocked();
   }
   updateCategoryPickerAvailability();
+}
+
+/**
+ * Cards / Progress need real document scroll. Desktop Safari can keep
+ * overflow:hidden or a fixed-height shell after Review/modals — force unlock.
+ */
+function ensureDocumentScrollUnlocked() {
+  const aboutOpen = !document.getElementById("about-modal")?.classList.contains("hidden");
+  const basicsOpen = !document.getElementById("basics-modal")?.classList.contains("hidden");
+  const confirmOpen = !document.getElementById("confirm-modal")?.classList.contains("hidden");
+  const welcomeOpen = isWelcomeOpen();
+  if (!aboutOpen && !basicsOpen && !confirmOpen && !welcomeOpen) {
+    document.body.classList.remove("modal-open");
+  }
+  // Clear accidental inline locks (none set by us normally; safety for WebKit).
+  document.documentElement.style.removeProperty("overflow");
+  document.documentElement.style.removeProperty("height");
+  document.documentElement.style.removeProperty("max-height");
+  document.body.style.removeProperty("overflow");
+  document.body.style.removeProperty("height");
+  document.body.style.removeProperty("max-height");
+  // Jump to top of the long tab so scroll position isn't "stuck" mid-air.
+  requestAnimationFrame(() => {
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    } catch {
+      window.scrollTo(0, 0);
+    }
+  });
 }
 
 function initEventListeners() {
