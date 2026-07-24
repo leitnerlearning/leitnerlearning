@@ -988,6 +988,8 @@ function normalizeAnswer(text) {
     .toLowerCase()
     .trim()
     .replace(/[.,!?;:'"“”‘’]/g, "")
+    // Same lemma with/without hyphen (wifi ≈ wi-fi ≈ wi‑fi; e-mail ≈ email)
+    .replace(/[\u00ad\u2010-\u2015\u2212‐‑‒–—―−-]+/g, "")
     .replace(/\s+/g, " ");
 }
 
@@ -1657,11 +1659,55 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["gjøre", "gjore", "gjoere"],
     ["skjønne", "skjonne", "skjoenne"],
   ],
+  // Danish — same-lemma ASR / digraph typing (not different words)
+  da: [
+    ["jeg", "je"],
+    ["mig", "meg", "mai"],
+    ["dig", "deg", "dai"],
+    ["sig", "seg"],
+    ["å", "aa", "a"],
+    ["æ", "ae"],
+    ["ø", "oe", "o"],
+    ["så", "saa"],
+    ["også", "ogsaa"],
+    ["gå", "gaa"],
+    ["få", "faa"],
+    ["hvor", "vor"],
+    ["hvem", "vem"],
+    ["hvad", "vad", "va"],
+    ["hvordan", "vordan"],
+    ["hvorfor", "vorfor"],
+    ["ikke", "ik"],
+    ["køre", "kore", "koere"],
+    ["gøre", "gore", "goere"],
+  ],
+  // Swedish — same-lemma ASR / digraph typing
+  sv: [
+    ["jag", "ja"],
+    ["mig", "mej"],
+    ["dig", "dej"],
+    ["sig", "sej"],
+    ["å", "aa", "a"],
+    ["ä", "ae"],
+    ["ö", "oe", "o"],
+    ["så", "saa"],
+    ["också", "ocksaa"],
+    ["gå", "gaa"],
+    ["få", "faa"],
+    ["var", "va"],
+    ["vad", "va"],
+    ["hur", "hurr"],
+    ["varför", "varfor"],
+    ["köra", "kora", "koera"],
+    ["göra", "gora", "goera"],
+    ["förstå", "forstaa", "forsta"],
+  ],
 };
 
 const SPEECH_HOMOPHONE_LOOKUP = (() => {
-  const out = { en: new Map(), nb: new Map() };
+  const out = {};
   for (const [lang, groups] of Object.entries(SPEECH_HOMOPHONE_GROUPS)) {
+    out[lang] = new Map();
     groups.forEach((group, index) => {
       const key = `${lang}:${index}`;
       for (const word of group) {
@@ -1679,6 +1725,8 @@ function getAnswerSpeechLang(card = currentCard) {
   const lang = getDirectionLabels(getActiveCategory(), card).answerLang || "en-US";
   const lower = String(lang).toLowerCase();
   if (lower.startsWith("nb") || lower.startsWith("no")) return "nb";
+  if (lower.startsWith("da")) return "da";
+  if (lower.startsWith("sv")) return "sv";
   // Map speech BCP-47-ish tags to our homophone tables
   if (lower.startsWith("en")) return "en";
   const short = lower.split("-")[0];
