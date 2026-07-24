@@ -302,6 +302,8 @@ function buildStarterDeck(category = getActiveCategory()) {
       rank: entry.rank,
       category: entry.category,
       band: entry.band,
+      exampleForeign: entry.exampleForeign || entry.example || null,
+      exampleNative: entry.exampleNative || entry.exampleEn || null,
     })
   );
 }
@@ -2328,6 +2330,7 @@ function mergeStarterIntoDeck(existing, category = getActiveCategory()) {
 
   const merged = [];
   const usedKeys = new Set();
+  let examplesUpdated = false;
 
   // Current curated set, preserving SRS when the word already exists.
   for (const entry of starter) {
@@ -2342,6 +2345,17 @@ function mergeStarterIntoDeck(existing, category = getActiveCategory()) {
       current.rank = entry.rank ?? current.rank;
       current.category = entry.category ?? current.category;
       current.band = entry.band ?? current.band;
+      // Curated story examples (e.g. survival ranks) — refresh when starter has them
+      if (entry.exampleForeign && entry.exampleNative) {
+        if (
+          current.exampleForeign !== entry.exampleForeign ||
+          current.exampleNative !== entry.exampleNative
+        ) {
+          examplesUpdated = true;
+        }
+        current.exampleForeign = entry.exampleForeign;
+        current.exampleNative = entry.exampleNative;
+      }
       merged.push(current);
       existingByKey.delete(key);
       continue;
@@ -2365,6 +2379,7 @@ function mergeStarterIntoDeck(existing, category = getActiveCategory()) {
 
   const changed =
     hadDuplicateKeys ||
+    examplesUpdated ||
     merged.length !== existing.length ||
     merged.some((card, index) => card !== existing[index]);
 
