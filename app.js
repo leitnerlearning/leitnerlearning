@@ -1930,6 +1930,18 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["ancora una volta", "ancora 1 volta"],
     ["incluso", "inclusa", "inclusi"],
     ["in ritardo", "ritardo"],
+    ["non capisco", "non capisco niente"],
+    ["dov'è il bagno", "dove e il bagno", "dov e il bagno"],
+    ["troppo tardi", "troppo tardi oggi"],
+    ["troppo presto", "troppo presto"],
+    ["troppo caro", "troppo cara"],
+    ["grazie mille", "grazie mille"],
+    ["la password", "la password del wifi"],
+    ["l'uscita", "l uscita", "dov'è l'uscita"],
+    ["sono allergico", "sono allergica", "sono allergico a"],
+    ["più lentamente", "parla più lentamente", "piu lentamente"],
+    ["d'accordo", "daccordo", "sono d'accordo"],
+    ["mi chiamo", "mi chiamo"],
   ],
   // Portuguese (BR teaching) — same-lemma ASR / typing (not gender swaps)
   pt: [
@@ -2171,6 +2183,28 @@ function spanishSpeechCode(word) {
   return w.slice(0, 8);
 }
 
+/**
+ * Lightweight Italian ASR code: accents folded, then metaphone-ish core.
+ */
+function italianSpeechCode(word) {
+  let w = normalizeAnswer(word)
+    .replace(/[àáä]/g, "a")
+    .replace(/[èéë]/g, "e")
+    .replace(/[ìíï]/g, "i")
+    .replace(/[òóö]/g, "o")
+    .replace(/[ùúü]/g, "u")
+    .replace(/[^a-z]/g, "");
+  if (!w) return "";
+  w = w
+    .replace(/ch/g, "k")
+    .replace(/gh/g, "g")
+    .replace(/gl/g, "l")
+    .replace(/sc/g, "sh")
+    .replace(/[aeiouy]/g, (ch, i) => (i === 0 ? ch : ""))
+    .replace(/(.)\1+/g, "$1");
+  return w.slice(0, 8);
+}
+
 function speechCode(word, lang) {
   const base = String(lang || "")
     .toLowerCase()
@@ -2183,6 +2217,7 @@ function speechCode(word, lang) {
   if (base === "nl") return dutchSpeechCode(word);
   if (base === "fr") return frenchSpeechCode(word);
   if (base === "es") return spanishSpeechCode(word);
+  if (base === "it") return italianSpeechCode(word);
   return englishSpeechCode(word);
 }
 
