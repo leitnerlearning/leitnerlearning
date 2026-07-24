@@ -1445,12 +1445,30 @@ function foldForeignOrthographyToken(word, langCode) {
     return w.replace(/ĳ/g, "ij").replace(/Ĳ/g, "ij");
   }
 
-  // French: œ/æ ligatures
+  // French: ligatures + accentless typing (café ≈ cafe)
   if (code === "fr") {
-    return w.replace(/œ/g, "oe").replace(/æ/g, "ae").replace(/Œ/g, "oe").replace(/Æ/g, "ae");
+    w = w
+      .replace(/œ/g, "oe")
+      .replace(/æ/g, "ae")
+      .replace(/Œ/g, "oe")
+      .replace(/Æ/g, "ae");
+    return stripCombiningMarks(w);
   }
 
-  // Portuguese (Brazil teaching standard): EP spellings fold to BR
+  // Spanish: acute accents / ü only — never fold ñ (año ≠ ano)
+  if (code === "es") {
+    const enye = "\uE000";
+    w = w.replace(/ñ/g, enye).replace(/Ñ/g, enye);
+    w = stripCombiningMarks(w);
+    return w.replace(new RegExp(enye, "g"), "ñ");
+  }
+
+  // Italian: accent marks optional for typing
+  if (code === "it") {
+    return stripCombiningMarks(w);
+  }
+
+  // Portuguese (Brazil teaching standard): EP spellings fold to BR + accents
   if (code === "pt") {
     if (PT_BR_EP_WORD_MAP[w]) return PT_BR_EP_WORD_MAP[w];
     // Safe cluster patterns only (not free-for-all letter deletion)
@@ -1458,6 +1476,17 @@ function foldForeignOrthographyToken(word, langCode) {
     w = w.replace(/ópt/g, "ót").replace(/opt(?=[ií])/g, "ot"); // óptimo / optimismo-ish
     w = w.replace(/ct(?=[aoãõeéiíuú])/g, "t"); // actual → atual, objecto → objeto
     w = w.replace(/pç/g, "ç"); // concepções edge cases
+    // Keep ã/õ as nasal markers; strip only acute/circumflex/grave for typing ease
+    w = w
+      .replace(/á/g, "a")
+      .replace(/â/g, "a")
+      .replace(/à/g, "a")
+      .replace(/é/g, "e")
+      .replace(/ê/g, "e")
+      .replace(/í/g, "i")
+      .replace(/ó/g, "o")
+      .replace(/ô/g, "o")
+      .replace(/ú/g, "u");
     return w;
   }
 
@@ -1475,8 +1504,35 @@ function foldForeignOrthographyToken(word, langCode) {
       .replace(/å/g, "aa");
   }
 
-  // Polish: rarely need soft-accept beyond case; keep exact forms
+  // Polish: learner ASCII fallbacks for special letters
+  if (code === "pl") {
+    return w
+      .replace(/ą/g, "a")
+      .replace(/ć/g, "c")
+      .replace(/ę/g, "e")
+      .replace(/ł/g, "l")
+      .replace(/ń/g, "n")
+      .replace(/ó/g, "o")
+      .replace(/ś/g, "s")
+      .replace(/ź/g, "z")
+      .replace(/ż/g, "z");
+  }
+
   return w;
+}
+
+/** Strip Unicode combining marks (accents) after NFD — for Romance typing soft-accept. */
+function stripCombiningMarks(word) {
+  try {
+    return String(word || "")
+      .normalize("NFD")
+      .replace(/\p{M}/gu, "");
+  } catch {
+    // Older engines without Unicode property escapes
+    return String(word || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
 }
 
 function foldForeignOrthography(text, langCode) {
