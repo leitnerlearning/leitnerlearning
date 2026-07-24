@@ -13337,17 +13337,13 @@ function openBasicsModal(returnFocusId) {
   if (title) {
     title.textContent = category?.label || "Basics";
   }
-  const kicker = document.getElementById("basics-hero-kicker");
-  if (kicker) {
-    kicker.textContent = "Tap to hear";
-  }
   const flagEl = document.getElementById("basics-hero-flag");
   if (flagEl) {
     flagEl.textContent = category?.flag || "🏳️";
   }
   modal.setAttribute(
     "aria-label",
-    `${category?.label || "Basics"} · tap to hear`
+    category?.label || "Basics"
   );
   renderLanguageBasics(category);
   modal.classList.remove("hidden");

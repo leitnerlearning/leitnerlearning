@@ -4008,7 +4008,7 @@ html.needs-welcome body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 0.2rem;
+  gap: 0;
 }
 
 .basics-modal-title {
@@ -4026,16 +4026,6 @@ html.needs-welcome body {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-}
-
-/* One calm line under the language name — discovery without tutorial chrome */
-.basics-hero-kicker {
-  margin: 0;
-  font-size: 0.78rem;
-  font-weight: 550;
-  letter-spacing: -0.01em;
-  line-height: 1.3;
-  color: var(--text-secondary);
 }
 
 .basics-close-btn {
