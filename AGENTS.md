@@ -137,7 +137,15 @@ Founder does **not** need to type **go** for each integrity slice when a session
 
 **Still requires founder yes (not continuous):** new features/behaviors, new languages, paid/auth, public founder voice, destructive git, moral-center changes.
 
-**Cadence:** prefer complete thin slices with a short “what changed / try this” note — not giant silent refactors. Pause only on hard-rule ambiguity or ask-first boundary.
+**Cadence / reporting (founder preference):**
+- Prefer **complete project units** before a check-in — e.g. the full multipass goal across **all scenarios and all 10 languages** (or the whole named project), not a report after every micro-commit.
+- **Do not** interrupt the founder with progress chatter mid-project unless:
+  1. Ask-first boundary (new feature/behavior, new language, paid/auth, etc.)
+  2. Hard-rule / moral-center ambiguity
+  3. Truly blocked after repeated failure
+  4. Founder uses **`/btw`** or cancels the turn
+- Internal thin commits + push are still OK for safety; **user-facing report waits for project completion** (or one of the exceptions above).
+- Not giant incoherent refactors: finish the unit cleanly, then one clear summary.
 
 **Language order when multipassing content:** nb → da → sv → de → nl → fr → es → it → pt → pl (or resume mid-ladder).
 
