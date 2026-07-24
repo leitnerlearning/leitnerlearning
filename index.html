@@ -93,7 +93,7 @@
         "inLanguage": ["en", "nb", "sv", "da", "de", "fr", "es", "it", "nl", "pt", "pl"]
       }
     </script>
-    <link rel="stylesheet" href="styles.css?v=346" />
+    <link rel="stylesheet" href="styles.css?v=347" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -220,12 +220,7 @@
             </div>
           </div>
 
-          <div id="practice-empty" class="empty-state hidden">
-            <!-- Title/message kept for legacy renderEmptyState hooks; always hidden — Study is the home. -->
-            <div class="empty-icon empty-icon--idle hidden" id="empty-icon" aria-hidden="true"></div>
-            <h2 id="empty-title" class="hidden"></h2>
-            <p id="empty-message" class="hidden"></p>
-            <div id="empty-preview" class="word-preview" hidden aria-label="Sample words"></div>
+          <div id="practice-empty" class="empty-state empty-state--power-complete hidden">
             <div class="empty-actions" id="empty-actions">
               <div class="empty-power hidden" id="empty-power">
                 <button
@@ -275,7 +270,6 @@
               </p>
             </div>
             <div class="prompt norwegian" id="prompt-text" lang="nb"> - </div>
-            <p class="prompt-hint hidden" id="prompt-hint"></p>
 
             <form id="answer-form" class="answer-form">
               <input
@@ -898,6 +892,6 @@
     <script src="lang/pl-pack.js?v=37"></script>
     <script src="mini-packs.js?v=35"></script>
     <script src="srs-core.js?v=4"></script>
-    <script src="app.js?v=459"></script>
+    <script src="app.js?v=460"></script>
   </body>
 </html>

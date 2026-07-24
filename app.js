@@ -448,74 +448,18 @@ function isNewCard(card) {
   return card.lastReviewedAt == null;
 }
 
-function getNewCards(cards = deck) {
-  return cards.filter(isNewCard);
-}
 
-function getReviewDueCards(cards = deck) {
-  return cards.filter((card) => !isNewCard(card) && isDue(card));
-}
 
 function getIntroducedCount(cards = deck) {
   return cards.filter((card) => !isNewCard(card)).length;
 }
 
-function getWaitingCount(cards = deck) {
-  return getNewCards(cards).length;
-}
 
 function getOutstandingDueCount(daily = ensureDailyPracticeState(), cards = deck) {
   const completed = new Set(daily.completedIds);
   return getDueCards(cards).filter((card) => !completed.has(card.id)).length;
 }
 
-function getNextReviewStat() {
-  const unlockMs = getNextReviewUnlockMs();
-  if (!unlockMs) return null;
-
-  const diff = unlockMs - Date.now();
-  if (diff <= 0) return null;
-
-  const unlockDay = getLocalDayKey(new Date(unlockMs));
-  const tomorrow = getLocalDayKey(new Date(Date.now() + daysToMs(1)));
-  const teaser = formatNextReviewTeaser(unlockMs);
-
-  if (unlockDay === tomorrow) {
-    return {
-      value: "Tomorrow",
-      label: "Next",
-      ariaLabel: teaser || "Reviews unlock tomorrow",
-      highlight: false,
-      actionable: false,
-    };
-  }
-
-  const hours = Math.ceil(diff / 3600000);
-  if (hours < 48) {
-    return {
-      value: `~${hours}h`,
-      label: "Next",
-      ariaLabel: teaser || `Reviews unlock in about ${hours} hours`,
-      highlight: false,
-      actionable: false,
-    };
-  }
-
-  const dayDiff = Math.max(
-    2,
-    Math.ceil(
-      (getLocalDayStartAfterDays(0, new Date(unlockMs)) - getLocalDayStartAfterDays(0)) /
-        daysToMs(1)
-    )
-  );
-  return {
-    value: `~${dayDiff}d`,
-    label: "Next",
-    ariaLabel: teaser || `Reviews unlock in about ${dayDiff} days`,
-    highlight: false,
-    actionable: false,
-  };
-}
 
 function isStreakAtRisk(categoryId = activeCategoryId) {
   const state = loadStreakState(categoryId);
@@ -553,13 +497,6 @@ function getDailyPracticeStorageKey(categoryId = activeCategoryId) {
   return `leitner-learning-daily-practice-${categoryId}`;
 }
 
-function shuffleInPlace(items, randomFn = Math.random) {
-  for (let i = items.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(randomFn() * (i + 1));
-    [items[i], items[j]] = [items[j], items[i]];
-  }
-  return items;
-}
 
 function computeDailyGoal(dueCount) {
   // Queue size = due cards (not a UI “daily goal” chip). Study goes as long as they want.
@@ -922,10 +859,6 @@ function getDisplayStreak(categoryId = activeCategoryId) {
   return 0;
 }
 
-function formatStreakLabel(count) {
-  if (count <= 0) return "";
-  return count === 1 ? "1-day streak" : `${count}-day streak`;
-}
 
 function getNextReviewUnlockMs() {
   const now = Date.now();
@@ -2673,19 +2606,11 @@ function evaluateAnswer(userAnswer, card, options = {}) {
   };
 }
 
-function checkAnswer(userAnswer, card) {
-  const result = evaluateAnswer(userAnswer, card);
-  return { correct: result.correct, close: result.close || false };
-}
 
 function formatInterval(box) {
   return getLearningLevel(box).interval || "";
 }
 
-function formatCategory(category) {
-  if (!category) return "";
-  return CATEGORY_LABELS[category] || category;
-}
 
 function isLegacyDeck(cards) {
   if (!Array.isArray(cards) || cards.length === 0) return true;
@@ -3012,10 +2937,6 @@ function mergeEnabledThematicPacks(cards, category = getActiveCategory()) {
   return next.sort((a, b) => (a.rank ?? 99999) - (b.rank ?? 99999));
 }
 
-function countPackCardsInDeck(packId, cards = deck) {
-  if (!packId) return 0;
-  return cards.filter((card) => card.packId === packId).length;
-}
 
 function countPackCoverage(pack, categoryId = activeCategoryId, cards = deck) {
   const entries = getPackEntriesForCategory(pack, categoryId);
@@ -3035,9 +2956,6 @@ function countPackCoverage(pack, categoryId = activeCategoryId, cards = deck) {
   };
 }
 
-function countNewPackCardsAvailable(pack, categoryId = activeCategoryId, cards = deck) {
-  return countPackCoverage(pack, categoryId, cards).missing;
-}
 
 function setPackActionNote(packId, message) {
   if (!packId || !message) return;
@@ -4701,29 +4619,6 @@ function pickBestVoice(lang, gender = preferredVoiceGender) {
 }
 
 /** Split long lines so Google TTS stays under its length limit. */
-function splitTtsChunks(text, maxLen = 160) {
-  const cleaned = String(text || "").replace(/\s+/g, " ").trim();
-  if (!cleaned) return [];
-  if (cleaned.length <= maxLen) return [cleaned];
-
-  const parts = [];
-  let rest = cleaned;
-  while (rest.length > maxLen) {
-    let cut = -1;
-    for (const sep of [". ", "? ", "! ", "; ", ", ", " "]) {
-      const at = rest.lastIndexOf(sep, maxLen);
-      if (at > maxLen * 0.4) {
-        cut = at + sep.length;
-        break;
-      }
-    }
-    if (cut <= 0) cut = maxLen;
-    parts.push(rest.slice(0, cut).trim());
-    rest = rest.slice(cut).trim();
-  }
-  if (rest) parts.push(rest);
-  return parts;
-}
 
 function googleTtsUrl(text, langTag) {
   // Prefer full regional tags Google understands (pt-BR, nb, es-ES…).
@@ -6297,59 +6192,6 @@ function markStoryExampleShown(card) {
  * Never return the bare card pair — the answer pill already shows the gloss.
  * Silence beats a dishonest template under the miss.
  */
-function getCardContextExample(card) {
-  if (!card) return null;
-
-  const fromStory = findExampleSentenceForCard(card);
-  if (
-    fromStory?.foreign &&
-    fromStory?.en &&
-    exampleTeachesCardForm(fromStory, card) &&
-    !isRedundantFeedbackExample(fromStory, card, fromStory.en)
-  ) {
-    return fromStory;
-  }
-
-  const storedL2 = String(card.exampleForeign || "").trim();
-  const storedEn = String(card.exampleNative || "").trim();
-  const stored = storedL2 && storedEn ? { foreign: storedL2, en: storedEn } : null;
-  if (
-    stored &&
-    exampleTeachesCardForm(stored, card) &&
-    !isRedundantFeedbackExample(stored, card, storedEn)
-  ) {
-    return stored;
-  }
-
-  const foreign = String(card.foreign || "").trim();
-  const native = String(card.native || "")
-    .split("/")[0]
-    .trim();
-  if (!foreign || !native) return null;
-
-  // Multi-word / sentence cards already are usable context (not a bare lemma).
-  if (card.band === "phrase" || /\s|[?!…]/.test(foreign)) {
-    // Prefer a short phrase card only when it is not just the lemma restated
-    if (foreign.length >= 8 || /\s/.test(foreign)) {
-      return { foreign, en: native };
-    }
-  }
-
-  // Glue / tiny words: no fake “I need et” — and no restated pair under the pill.
-  if (isGluePracticeCard(card) || foreign.length <= 2) {
-    return null;
-  }
-
-  const built = buildSimpleThemeExample(
-    foreign,
-    native,
-    getActiveCategory().foreignLang || "nb"
-  );
-  if (built) return built;
-
-  // Bare lemma again would only restate the prompt + answer pill.
-  return null;
-}
 
 /** True when the “example” is just the same flashcard again (skip it). */
 function isRedundantFeedbackExample(example, card, answerText) {
@@ -6400,120 +6242,7 @@ function isRedundantFeedbackExample(example, card, answerText) {
  * Patterns stay honest and short - not full generative sentences.
  * Prefer silence over a false “I need delay / Jeg trenger forsinkelse” line.
  */
-function buildSimpleThemeExample(foreign, native, langCode) {
-  const lang = String(langCode || "nb").split("-")[0].toLowerCase();
-  const f = String(foreign || "").trim();
-  const n = String(native || "")
-    .replace(/^to\s+/i, "")
-    .trim();
-  if (!f || !n) return null;
 
-  // Abstract / event nouns that sound absurd under “I need …”
-  const notNeedNoun =
-    /^(delay|strike|fever|cough|pain|noise|interest|loan|budget|salary|invoice|deadline|emergency|allergy|refund|transfer|route|zone|rush hour|departure|arrival|boarding|security)/i.test(
-      n
-    ) ||
-    /^(forsinkelse|streik|feber|hoste|smerte|støy|rente|lån|budsjett|lønn|faktura|frist|nødsituasjon|allergi|refusjon|overgang|rute|sone|rushtid|avgang|ankomst|ombordstigning)/i.test(
-      f
-    );
-
-  const isVerb =
-    /^to\s+/i.test(native) ||
-    /^(å|att|at)\s+/i.test(foreign) ||
-    cardLooksLikeInfinitive(foreign, lang);
-  const isQuality =
-    /^(delayed|cancelled|canceled|expensive|cheap|open|closed|full|quiet|noisy|delicious|furnished|available|mild|spicy|free|busy|shared)/i.test(
-      n
-    ) ||
-    /^(forsinket|kansellert|dyr|billig|åpen|stengt|mett|stille|støyende|mild|krydret|ledig|opptatt|felles)/i.test(
-      f
-    );
-
-  const need = {
-    nb: [`Jeg trenger ${f}.`, `I need ${n}.`],
-    no: [`Jeg trenger ${f}.`, `I need ${n}.`],
-    sv: [`Jag behöver ${f}.`, `I need ${n}.`],
-    da: [`Jeg har brug for ${f}.`, `I need ${n}.`],
-    de: [`Ich brauche ${f}.`, `I need ${n}.`],
-    fr: [`J'ai besoin de ${f}.`, `I need ${n}.`],
-    es: [`Necesito ${f}.`, `I need ${n}.`],
-    it: [`Mi serve ${f}.`, `I need ${n}.`],
-    nl: [`Ik heb ${f} nodig.`, `I need ${n}.`],
-    pt: [`Preciso de ${f}.`, `I need ${n}.`],
-    pl: [`Potrzebuję ${f}.`, `I need ${n}.`],
-  };
-  const quality = {
-    nb: [`Det er ${f}.`, `It is ${n}.`],
-    no: [`Det er ${f}.`, `It is ${n}.`],
-    sv: [`Det är ${f}.`, `It is ${n}.`],
-    da: [`Det er ${f}.`, `It is ${n}.`],
-    de: [`Es ist ${f}.`, `It is ${n}.`],
-    fr: [`C'est ${f}.`, `It is ${n}.`],
-    es: [`Está ${f}.`, `It is ${n}.`],
-    it: [`È ${f}.`, `It is ${n}.`],
-    nl: [`Het is ${f}.`, `It is ${n}.`],
-    pt: [`Está ${f}.`, `It is ${n}.`],
-    pl: [`To jest ${f}.`, `It is ${n}.`],
-  };
-  const verb = {
-    nb: [`Kan du ${f.replace(/^å\s+/i, "")}?`, `Can you ${n}?`],
-    no: [`Kan du ${f.replace(/^å\s+/i, "")}?`, `Can you ${n}?`],
-    sv: [`Kan du ${f.replace(/^att\s+/i, "")}?`, `Can you ${n}?`],
-    da: [`Kan du ${f.replace(/^at\s+/i, "")}?`, `Can you ${n}?`],
-    de: [`Kannst du ${f}?`, `Can you ${n}?`],
-    fr: [`Tu peux ${f}?`, `Can you ${n}?`],
-    es: [`¿Puedes ${f}?`, `Can you ${n}?`],
-    it: [`Puoi ${f}?`, `Can you ${n}?`],
-    nl: [`Kun je ${f}?`, `Can you ${n}?`],
-    pt: [`Você pode ${f}?`, `Can you ${n}?`],
-    pl: [`Czy możesz ${f}?`, `Can you ${n}?`],
-  };
-  // Concrete place/object: “Where is the …?” often more honest than “I need …”
-  const where = {
-    nb: [`Hvor er ${f}?`, `Where is ${n}?`],
-    no: [`Hvor er ${f}?`, `Where is ${n}?`],
-    sv: [`Var är ${f}?`, `Where is ${n}?`],
-    da: [`Hvor er ${f}?`, `Where is ${n}?`],
-    de: [`Wo ist ${f}?`, `Where is ${n}?`],
-    fr: [`Où est ${f} ?`, `Where is ${n}?`],
-    es: [`¿Dónde está ${f}?`, `Where is ${n}?`],
-    it: [`Dov'è ${f}?`, `Where is ${n}?`],
-    nl: [`Waar is ${f}?`, `Where is ${n}?`],
-    pt: [`Onde fica ${f}?`, `Where is ${n}?`],
-    pl: [`Gdzie jest ${f}?`, `Where is ${n}?`],
-  };
-
-  const looksLikePlace =
-    /^(the |a |an )?(stop|station|desk|office|room|gate|platform|track|airport|hospital|library|market|café|cafe|pharmacy|bank|terminal|elevator|balcony|mailbox)/i.test(
-      n
-    ) ||
-    /^(holdeplass|stasjon|pult|kontor|rom|gate|spor|flyplass|sykehus|bibliotek|marked|kafe|apotek|bank|terminal|heis|balkong|postkasse)/i.test(
-      f
-    );
-
-  let pair;
-  if (isVerb) pair = verb[lang] || verb.nb;
-  else if (isQuality) pair = quality[lang] || quality.nb;
-  else if (looksLikePlace) pair = where[lang] || where.nb;
-  else if (notNeedNoun) return null;
-  else pair = need[lang] || need.nb;
-
-  if (!pair) return null;
-  // Refuse multi-word deck phrases under a one-slot template (sounds invented)
-  if (/\s/.test(f) && f.length > 18 && !isVerb) return null;
-  return { foreign: pair[0], en: pair[1] };
-}
-
-function cardLooksLikeInfinitive(foreign, lang) {
-  const f = String(foreign || "").toLowerCase();
-  if (lang === "de") return /en$/.test(f) && f.length > 4;
-  if (lang === "fr") return /er$|ir$|re$/.test(f);
-  if (lang === "es" || lang === "pt") return /ar$|er$|ir$/.test(f);
-  if (lang === "it") return /are$|ere$|ire$/.test(f);
-  if (lang === "nl") return /en$/.test(f) && f.length > 3;
-  if (lang === "pl") return /ć$/.test(f);
-  return false;
-}
 
 /**
  * After a miss/reveal: answer pill + optional Stories sentence (once per card).
@@ -6555,48 +6284,7 @@ function hideFeedback() {
   hideFeedbackExample();
 }
 
-function renderBoxDots(box) {
-  document.querySelectorAll(".level-dot, .box-dot").forEach((dot, i) => {
-    dot.classList.remove("active", "passed");
-    if (i + 1 < box) dot.classList.add("passed");
-    if (i + 1 === box) dot.classList.add("active");
-  });
-}
 
-function renderWordPreview(containerId, words, clickable = false) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  const foreignLang = getActiveCategory().foreignLang || "nb";
-
-  if (!words.length) {
-    container.hidden = true;
-    container.innerHTML = "";
-    return;
-  }
-
-  container.hidden = false;
-  container.innerHTML = words
-    .map((word) => {
-      const attrs = clickable
-        ? `class="preview-word" data-foreign="${escapeAttr(word.foreign)}"`
-        : `class="preview-word"`;
-      return `<span ${attrs}><span class="preview-no" lang="${foreignLang}">${escapeHtml(word.foreign)}</span><span class="preview-en">${escapeHtml(word.native.split("/")[0].trim())}</span></span>`;
-    })
-    .join("");
-
-  if (clickable) {
-    container.querySelectorAll("[data-foreign]").forEach((el) => {
-      el.addEventListener("click", () => speakForeign(el.dataset.foreign));
-    });
-  }
-}
-
-function setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, enabled) {
-  emptyEl.classList.toggle("empty-state--actions", enabled);
-  iconEl?.classList.toggle("hidden", enabled);
-  titleEl?.classList.toggle("hidden", enabled);
-  messageEl?.classList.toggle("hidden", enabled || !messageEl.textContent.trim());
-}
 
 function setEmptyStatePowerAction(
   powerEl,
@@ -6625,11 +6313,7 @@ function setEmptyStatePowerAction(
 
   const startBtn = document.getElementById("start-practice-btn");
   if (startBtn) {
-    startBtn.classList.remove(
-      "power-on-btn--start",
-      "power-on-btn--continue",
-      "power-on-btn--complete"
-    );
+    startBtn.classList.remove("power-on-btn--start", "power-on-btn--complete");
     if (show) startBtn.classList.add(`power-on-btn--${mode}`);
     startBtn.disabled = !enabled;
     startBtn.setAttribute("aria-disabled", enabled ? "false" : "true");
@@ -6705,40 +6389,18 @@ function renderPowerOnExtras({
 
 function renderEmptyState() {
   const emptyEl = document.getElementById("practice-empty");
-  const iconEl = document.getElementById("empty-icon");
-  const titleEl = document.getElementById("empty-title");
-  const messageEl = document.getElementById("empty-message");
   const powerEl = document.getElementById("empty-power");
   const powerHintEl = document.getElementById("power-on-hint");
   const powerTeaserEl = document.getElementById("power-on-teaser");
-
-  emptyEl.classList.remove("empty-state--power-complete");
-  setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, false);
-  setEmptyStatePowerAction(powerEl, powerHintEl);
-
-  const emptyPreview = document.getElementById("empty-preview");
-  if (emptyPreview) emptyPreview.hidden = true;
-  if (messageEl) {
-    messageEl.textContent = "";
-    messageEl.classList.add("hidden");
-  }
-  if (titleEl) {
-    titleEl.textContent = "";
-    titleEl.classList.add("hidden");
-  }
-  if (iconEl) {
-    iconEl.textContent = "";
-    iconEl.classList.add("hidden");
-  }
+  if (!emptyEl) return;
 
   ensureDailyPracticeState();
   const outstanding = getOutstandingDueCount();
   const canStudy = outstanding > 0;
 
-  emptyEl.classList.add("empty-state--power-complete");
+  emptyEl.classList.add("empty-state--power-complete", "empty-state--actions");
   emptyEl.classList.toggle("session-complete", Boolean(sessionJustCompleted));
   emptyEl.classList.toggle("goal-met", !canStudy);
-  setEmptyStateActionsMode(emptyEl, iconEl, titleEl, messageEl, true);
 
   const hint = formatPowerHomeHint({ canStudy });
   setEmptyStatePowerAction(powerEl, powerHintEl, {
@@ -6916,13 +6578,6 @@ function renderPractice() {
   promptEl.lang = labels.promptLang;
   promptEl.className = "prompt norwegian";
 
-  // Theme progress lives in the goal strip - no second “N left” line under the prompt.
-  const promptHint = document.getElementById("prompt-hint");
-  if (promptHint) {
-    promptHint.textContent = "";
-    promptHint.classList.add("hidden");
-  }
-
   updateDirectionLabelVisibility(labels);
 
   hideFeedback();
@@ -6973,17 +6628,6 @@ function sortCards(cards) {
   });
 }
 
-function isWordBand(band) {
-  return (
-    band === "A" ||
-    band === "B" ||
-    band === "C" ||
-    band === "D" ||
-    band === "E" ||
-    band === "F" ||
-    band === "G"
-  );
-}
 
 function matchesLibraryFilter(card) {
   if (libraryFilter === "phrase" && card.band !== "phrase") return false;
@@ -8066,15 +7710,6 @@ function toLanguageToolCode(langCode) {
  * spell - spell/dictionary ok; grammar thin (Nordic, Italian…)
  * mt - mostly translation double-check; avoid false LOOKS GOOD
  */
-function getCheckStrength(category = getActiveCategory()) {
-  const raw = String(category?.checkStrength || "").toLowerCase();
-  if (raw === "full" || raw === "spell" || raw === "mt") return raw;
-  // Infer from known LanguageTool depth when field omitted
-  const code = String(category?.foreignLang || "").split("-")[0].toLowerCase();
-  if (["de", "fr", "es", "nl", "pt", "pl", "en", "ca"].includes(code)) return "full";
-  if (["nb", "no", "nn", "sv", "da", "it", "ro"].includes(code)) return "spell";
-  return "mt";
-}
 
 /** Cached normalized → display forms for the active learning language (starter + library). */
 let knownForeignFormCache = { categoryId: null, forms: null };
@@ -11932,10 +11567,6 @@ function getActiveReadStory() {
   return stories.find((story) => story.id === readStoryId) || stories[0];
 }
 
-function getSavedStoryPosition(storyId, kind = "current") {
-  const pos = getStoryPosition(storyId);
-  return kind === "furthest" ? pos.furthest : pos.current;
-}
 
 function getStoryProgressPercent(story, furthestIndex) {
   if (!story?.sentences?.length) return 0;
@@ -12109,9 +11740,6 @@ function generateLookupVariants(word, category = getActiveCategory()) {
 }
 
 /** @deprecated use generateLookupVariants */
-function generateNorwegianLookupVariants(word) {
-  return generateLookupVariants(word);
-}
 
 function addReadVocabEntry(map, foreign, native, source) {
   const key = normalizeAnswer(foreign);
@@ -14255,10 +13883,6 @@ function initConfirmModal() {
   });
 }
 
-function isAboutOpen() {
-  const modal = document.getElementById("about-modal");
-  return Boolean(modal && !modal.classList.contains("hidden"));
-}
 
 function openAboutModal() {
   if (isWelcomeOpen()) return;
