@@ -1005,158 +1005,135 @@
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
+  /**
+   * Italian — excellence bar (MED tray). MUST + SHOULD for English speakers.
+   * gli/gn; soft c/g vs ch/gh; double consonants; stress accents.
+   * Dropped COULD: multi-example dump rows (cap at 2).
+   * Exactly 2 examples. Glyph label only.
+   */
   window.LANGUAGE_BASICS[id] = {
-    "sections": [
+    previewGlyphs: ["gli", "gn", "à"],
+    sections: [
       {
-        "title": "Special sounds",
-        "items": [
+        title: "Special",
+        items: [
           {
-            "glyph": "gli",
-            "speak": "gli",
-            "glyphClass": "basics-glyph--pair",
-            "approxHtml": "like <strong>lli</strong> in <em>million</em>",
-            "examples": [
-              {
-                "speak": "famiglia",
-                "text": "famiglia",
-                "gloss": "family"
-              },
-              {
-                "speak": "figlio",
-                "text": "figlio",
-                "gloss": "son"
-              }
-            ]
+            glyph: "gli",
+            speak: "figlio",
+            glyphSize: "pair",
+            approxHtml: "Like <strong>lli</strong> in <em>million</em>",
+            examples: [
+              { speak: "figlio", text: "figlio", gloss: "son" },
+              { speak: "famiglia", text: "famiglia", gloss: "family" },
+            ],
           },
           {
-            "glyph": "gn",
-            "speak": "gn",
-            "glyphClass": "basics-glyph--pair",
-            "approxHtml": "<strong>ny</strong> in <em>canyon</em>",
-            "examples": [
-              {
-                "speak": "lasagna",
-                "text": "lasagna",
-                "gloss": "lasagna"
-              },
-              {
-                "speak": "ogni",
-                "text": "ogni",
-                "gloss": "every"
-              }
-            ]
+            glyph: "gn",
+            speak: "ogni",
+            glyphSize: "pair",
+            approxHtml: "<strong>ny</strong> in <em>canyon</em>",
+            examples: [
+              { speak: "ogni", text: "ogni", gloss: "every" },
+              { speak: "bagno", text: "bagno", gloss: "bathroom" },
+            ],
           },
           {
-            "glyph": "à è é ì ò ù",
-            "speak": "città",
-            "glyphClass": "basics-glyph--pair",
-            "approxHtml": "accents mark stress · <em>è</em> open, <em>é</em> closed",
-            "examples": [
-              {
-                "speak": "città",
-                "text": "città",
-                "gloss": "city"
-              },
-              {
-                "speak": "perché",
-                "text": "perché",
-                "gloss": "why / because"
-              },
-              {
-                "speak": "è",
-                "text": "è",
-                "gloss": "is"
-              }
-            ]
-          }
-        ]
+            glyph: "à è",
+            speak: "città",
+            glyphSize: "pair",
+            approxHtml: "Accent marks stress",
+            examples: [
+              { speak: "città", text: "città", gloss: "city" },
+              { speak: "caffè", text: "caffè", gloss: "coffee" },
+            ],
+          },
+        ],
       },
       {
-        "title": "Double consonants",
-        "items": [
+        title: "Surprises",
+        compact: true,
+        items: [
           {
-            "glyph": "tt / ss / ll",
-            "speak": "gatto",
-            "glyphClass": "basics-glyph--pair",
-            "approxHtml": "hold the consonant longer · changes meaning",
-            "examples": [
-              {
-                "speak": "gatto",
-                "text": "gatto",
-                "gloss": "cat"
-              },
-              {
-                "speak": "fato",
-                "text": "fato",
-                "gloss": "fate"
-              },
-              {
-                "speak": "casa",
-                "text": "casa",
-                "gloss": "house"
-              },
-              {
-                "speak": "cassa",
-                "text": "cassa",
-                "gloss": "cash register / crate"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "C and G",
-        "items": [
-          {
-            "glyph": "c / g + e/i",
-            "speak": "ciao",
-            "glyphClass": "basics-glyph--pair",
-            "approxHtml": "<strong>ch</strong> / <strong>j</strong> before e/i · hard before a/o/u",
-            "examples": [
-              {
-                "speak": "ciao",
-                "text": "ciao",
-                "gloss": "hi / bye"
-              },
-              {
-                "speak": "gelato",
-                "text": "gelato",
-                "gloss": "ice cream"
-              },
-              {
-                "speak": "cane",
-                "text": "cane",
-                "gloss": "dog"
-              },
-              {
-                "speak": "gatto",
-                "text": "gatto",
-                "gloss": "cat"
-              }
-            ]
+            glyph: "c",
+            speak: "ciao",
+            glyphSize: "sm",
+            approxHtml: "<strong>ch</strong> before e/i · hard <strong>k</strong> before a/o/u",
+            examples: [
+              { speak: "ciao", text: "ciao", gloss: "hi" },
+              { speak: "casa", text: "casa", gloss: "house" },
+            ],
           },
           {
-            "glyph": "ch / gh",
-            "speak": "chi",
-            "glyphClass": "basics-glyph--pair",
-            "approxHtml": "hard <strong>k</strong> / <strong>g</strong> before e/i",
-            "examples": [
-              {
-                "speak": "chi",
-                "text": "chi",
-                "gloss": "who"
-              },
-              {
-                "speak": "spaghetti",
-                "text": "spaghetti",
-                "gloss": "spaghetti"
-              }
-            ]
-          }
-        ]
-      }
-    ]
+            glyph: "g",
+            speak: "gelato",
+            glyphSize: "sm",
+            approxHtml: "<strong>j</strong> before e/i · hard before a/o/u",
+            examples: [
+              { speak: "gelato", text: "gelato", gloss: "ice cream" },
+              { speak: "gatto", text: "gatto", gloss: "cat" },
+            ],
+          },
+          {
+            glyph: "sc",
+            speak: "pesce",
+            glyphSize: "pair",
+            approxHtml: "<strong>sh</strong> before e/i · <strong>sk</strong> before a/o/u",
+            examples: [
+              { speak: "pesce", text: "pesce", gloss: "fish" },
+              { speak: "scuola", text: "scuola", gloss: "school" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Pairs",
+        compact: true,
+        items: [
+          {
+            glyph: "ch",
+            speak: "chi",
+            glyphSize: "pair",
+            approxHtml: "Hard <strong>k</strong> before e/i",
+            examples: [
+              { speak: "chi", text: "chi", gloss: "who" },
+              { speak: "che", text: "che", gloss: "what" },
+            ],
+          },
+          {
+            glyph: "gh",
+            speak: "laghi",
+            glyphSize: "pair",
+            approxHtml: "Hard <strong>g</strong> before e/i",
+            examples: [
+              { speak: "laghi", text: "laghi", gloss: "lakes" },
+              { speak: "spaghetti", text: "spaghetti", gloss: "spaghetti" },
+            ],
+          },
+          {
+            glyph: "tt",
+            speak: "gatto",
+            glyphSize: "pair",
+            approxHtml: "Hold longer · doubles change meaning",
+            examples: [
+              { speak: "gatto", text: "gatto", gloss: "cat" },
+              { speak: "notte", text: "notte", gloss: "night" },
+            ],
+          },
+          {
+            glyph: "zz",
+            speak: "pizza",
+            glyphSize: "pair",
+            approxHtml: "Sharp double <strong>ts</strong> / <strong>dz</strong>",
+            examples: [
+              { speak: "pizza", text: "pizza", gloss: "pizza" },
+              { speak: "mezzo", text: "mezzo", gloss: "half" },
+            ],
+          },
+        ],
+      },
+    ],
   };
+
   window.EXTRA_READ_STORIES = window.EXTRA_READ_STORIES || [];
   window.EXTRA_READ_STORIES.push(...[{"id":"it-mattina","title":"Buongiorno","subtitle":"Good morning","trail":"green-circle","categoryId":"it","sentences":[{"foreign":"Buongiorno!","en":"Good morning!"},{"foreign":"Ciao! Come stai?","en":"Hi! How are you?"},{"foreign":"Bene, grazie. E tu?","en":"Good, thanks. And you?"},{"foreign":"Anche bene. Oggi c'è bel tempo.","en":"Also good. Nice weather today."},{"foreign":"Sì. Sole e non troppo freddo.","en":"Yes. Sun and not too cold."},{"foreign":"Vai in centro?","en":"Are you going downtown?"},{"foreign":"Sì. Vado a comprare il pane.","en":"Yes. I'm going to buy bread."},{"foreign":"Ciao! A presto!","en":"Bye! See you soon!"},{"foreign":"Ciao! Ci vediamo.","en":"Bye! See you."}],"glosses":{"Buongiorno":"Good morning","Come stai":"How are you","tempo":"weather","Sole":"sun","freddo":"cold","centro":"center","comprare":"to buy","pane":"bread","Ci vediamo":"see you"}},{"id":"it-caffe","title":"Un caffè, per favore","subtitle":"A coffee, please","trail":"green-circle","categoryId":"it","sentences":[{"foreign":"Ciao! Cosa prende?","en":"Hi! What would you like?"},{"foreign":"Un caffè, per favore.","en":"A coffee, please."},{"foreign":"Con latte?","en":"With milk?"},{"foreign":"No, nero. E acqua, per favore.","en":"No, black. And water, please."},{"foreign":"Vuole qualcosa da mangiare?","en":"Would you like something to eat?"},{"foreign":"Solo caffè oggi.","en":"Just coffee today."},{"foreign":"Sono due euro.","en":"That's two euros."},{"foreign":"Ecco i soldi. Grazie!","en":"Here's the money. Thanks!"},{"foreign":"Grazie. Buona giornata!","en":"Thank you. Have a nice day!"}],"glosses":{"caffè":"coffee","latte":"milk","nero":"black","acqua":"water","mangiare":"to eat","Solo":"only","euro":"euros","soldi":"money"}},{"id":"it-treno","title":"Dov'è il treno?","subtitle":"Where is the train?","trail":"green-circle","categoryId":"it","sentences":[{"foreign":"Scusi. Dov'è il treno?","en":"Excuse me. Where is the train?"},{"foreign":"Lì. Binario due.","en":"Over there. Platform two."},{"foreign":"Grazie. Parte presto?","en":"Thanks. Does it leave soon?"},{"foreign":"Sì, tra dieci minuti.","en":"Yes, in ten minutes."},{"foreign":"Mi serve un biglietto adesso?","en":"Do I need a ticket now?"},{"foreign":"Sì. Può comprare qui.","en":"Yes. You can buy here."},{"foreign":"Un biglietto per il centro, per favore.","en":"One ticket to the center, please."},{"foreign":"Prego. Buon viaggio!","en":"Here you are. Have a good trip!"},{"foreign":"Grazie mille!","en":"Thank you very much!"}],"glosses":{"Scusi":"excuse me","treno":"train","Binario":"platform","presto":"soon","minuti":"minutes","biglietto":"ticket","comprare":"to buy","viaggio":"trip"}},{"id":"it-biblioteca","title":"In biblioteca","subtitle":"At the library","trail":"blue-square","categoryId":"it","sentences":[{"foreign":"Ciao. Avete libri in inglese?","en":"Hi. Do you have books in English?"},{"foreign":"Sì. Sono laggiù. Vuoi prenderne qualcuno in prestito?","en":"Yes. They're over there. Would you like to borrow some?"},{"foreign":"Sì, per favore. Mi serve il tesserino studente?","en":"Yes, please. Do I need a student ID?"},{"foreign":"Sì. Puoi farla oggi se hai un documento.","en":"Yes. You can get it today if you have ID."},{"foreign":"Bene. Per quanto tempo posso tenere i libri?","en":"Great. How long can I keep the books?"},{"foreign":"Tre settimane. Puoi rinnovare online.","en":"Three weeks. You can renew online."},{"foreign":"Qui la sera c'è silenzio?","en":"Is it quiet here in the evening?"},{"foreign":"Sì, dopo le sei. Allora si legge bene il programma.","en":"Yes, after six. Then it's good for reading the syllabus."},{"foreign":"Grazie per l'aiuto!","en":"Thanks for the help!"},{"foreign":"Prego. In bocca al lupo per il corso!","en":"You're welcome. Good luck with the course!"}],"glosses":{"libri":"books","prestito":"loan","tessera":"card","rinnovare":"to renew","silenzio":"quiet","tesserino studente":"student ID","programma":"syllabus","corso":"course"}},{"id":"it-mercato","title":"Al negozio","subtitle":"At the shop","trail":"blue-square","categoryId":"it","sentences":[{"foreign":"Ciao. Dov'è il pane?","en":"Hi. Where is the bread?"},{"foreign":"Dritto, a sinistra.","en":"Straight ahead, to the left."},{"foreign":"Grazie. Quanto costano le mele?","en":"Thanks. How much are the apples?"},{"foreign":"Due euro al chilo. Oggi sono in offerta.","en":"Two euros a kilo. They're on offer today."},{"foreign":"Prendo quattro mele e un pane.","en":"I'll take four apples and a loaf of bread."},{"foreign":"Vuoi una borsa della spesa?","en":"Would you like a shopping bag?"},{"foreign":"Sì, grazie. Posso pagare con la carta?","en":"Yes, please. Can I pay by card?"},{"foreign":"Certo. Sono cinque euro in cassa.","en":"Of course. That's five euros at the checkout."},{"foreign":"Ecco la carta. Buona giornata!","en":"Here's the card. Have a nice day!"},{"foreign":"Altrettanto. Torna pure!","en":"Same to you. Welcome back anytime!"}],"glosses":{"pane":"bread","mele":"apples","sacchetto":"bag","pagare":"to pay","carta":"card","offerta":"sale","borsa della spesa":"shopping bag","cassa":"checkout"}},{"id":"it-amici","title":"Nuovi amici","subtitle":"New friends","trail":"blue-square","categoryId":"it","sentences":[{"foreign":"Ciao, mi chiamo Sam.","en":"Hi, my name is Sam."},{"foreign":"Piacere di vederti! Sono Noor.","en":"Nice to see you! I'm Noor."},{"foreign":"Di dove sei?","en":"Where are you from?"},{"foreign":"Dal Canada, ma adesso abito qui.","en":"From Canada, but I live here now."},{"foreign":"Cosa studi?","en":"What do you study?"},{"foreign":"Biologia. E tu?","en":"Biology. And you?"},{"foreign":"Lavoro in un caffè. Hai programmi per il weekend?","en":"I work at a café. Do you have plans this weekend?"},{"foreign":"Non ancora. Sei libero sabato?","en":"Not yet. Are you free on Saturday?"},{"foreign":"Volentieri! Possiamo vederci qui alle due.","en":"I'd love to! We can meet here at two."},{"foreign":"Ottimo. Ci vediamo presto!","en":"Great. See you soon!"}],"glosses":{"chiamo":"am called","abito":"live","studi":"study","programmi":"plans","sabato":"Saturday","di vederti":"to see you","libero":"free","Ci vediamo presto":"see you soon"}},{"id":"it-lavoro","title":"Primo giorno di lavoro","subtitle":"First day at work","trail":"black-diamond","categoryId":"it","sentences":[{"foreign":"Benvenuto nella squadra, Sam.","en":"Welcome to the team, Sam."},{"foreign":"Grazie. Sono un po' nervoso.","en":"Thanks. I'm a bit nervous."},{"foreign":"È normale. Qui c'è la tua scrivania vicino alla finestra.","en":"That's normal. Here's your desk by the window."},{"foreign":"Ottimo. Chi è il mio capo?","en":"Great. Who is my boss?"},{"foreign":"Oggi sono io. La password te la dà un collega.","en":"That's me today. You'll get the password from a coworker."},{"foreign":"Quando è la pausa pranzo, ed è a tempo pieno?","en":"When is lunch break, and is it full-time?"},{"foreign":"Pranzo a mezzogiorno. L'agenda è in sala riunioni.","en":"Lunch at noon. The agenda is in the meeting room."},{"foreign":"Posso lavorare da casa qualche giorno più avanti?","en":"Can I work from home some days later?"},{"foreign":"Dopo tre mesi, se va tutto bene.","en":"After three months, if things go well."},{"foreign":"Capito. Grazie per l'aiuto!","en":"Understood. Thanks for the help!"},{"foreign":"Chiedi pure. In bocca al lupo per il progetto!","en":"Just ask. Good luck with the project!"}],"glosses":{"nervoso":"nervous","scrivania":"desk","capo":"boss","password":"password","tempo pieno":"full-time","periodo di prova":"trial period","agenda":"agenda","sala riunioni":"meeting room","progetto":"project"}},{"id":"it-medico","title":"Dal medico","subtitle":"At the doctor's","trail":"black-diamond","categoryId":"it","sentences":[{"foreign":"Buongiorno. Cosa non va?","en":"Good day. What's the matter?"},{"foreign":"Ho mal di gola da due giorni.","en":"I've had a sore throat for two days."},{"foreign":"Ha anche febbre o tosse?","en":"Do you have a fever or a cough as well?"},{"foreign":"Un po' di febbre stamattina, e un po' di tosse.","en":"A little fever this morning, and a bit of a cough."},{"foreign":"Dica aaa. Sembra un raffreddore leggero.","en":"Say ah. It looks like a mild cold."},{"foreign":"Mi serve la ricetta per le medicine?","en":"Do I need a prescription for medicine?"},{"foreign":"Non ancora. Riposo, acqua e paracetamolo.","en":"Not yet. Rest, water, and paracetamol."},{"foreign":"Posso avere un certificato se peggiora?","en":"Can I get a sick note if it gets worse?"},{"foreign":"Sì. Prenoti un altro appuntamento allora, o chiami.","en":"Yes. Book another appointment then, or call."},{"foreign":"Grazie mille per l'aiuto.","en":"Thank you so much for the help."},{"foreign":"Prego. Si riprenda presto!","en":"You're welcome. Get well soon!"}],"glosses":{"mal di gola":"sore throat","febbre":"fever","tosse":"cough","raffreddore":"cold","ricetta":"prescription","certificato":"sick note","appuntamento":"appointment"}},{"id":"it-stanza","title":"Cerco una stanza","subtitle":"Looking for a room","trail":"black-diamond","categoryId":"it","sentences":[{"foreign":"Ciao, chiamo per la stanza su internet.","en":"Hi, I'm calling about the room online."},{"foreign":"Sì, è ancora libera. Quando vuoi vederla?","en":"Yes, it's still free. When would you like to see it?"},{"foreign":"Questo pomeriggio, verso le tre, se va bene.","en":"This afternoon, around three, if that works."},{"foreign":"Va bene. È al terzo piano, senza ascensore.","en":"Fine. It's on the third floor, no elevator."},{"foreign":"È un appartamento condiviso, e quanto è l'affitto?","en":"Is it a shared flat, and what's the rent?"},{"foreign":"Sì. L'affitto include internet. La cauzione è un mese.","en":"Yes. Rent includes internet. Deposit is one month."},{"foreign":"Quando ricevo le chiavi se la prendo?","en":"When do I get keys if I take it?"},{"foreign":"Il proprietario ti aspetta lunedì con il contratto alla cassetta della posta.","en":"The landlord will meet you Monday with the lease at the mailbox."},{"foreign":"Mi sembra bene. Vengo alle tre.","en":"Sounds good. I'll come at three."},{"foreign":"Perfetto. Chiama se il vicino si lamenta del rumore!","en":"Great. Call if the neighbor complains about noise!"}],"glosses":{"stanza":"room","piano":"floor","ascensore":"elevator","affitto":"rent","cauzione":"deposit","chiavi":"keys","proprietario":"landlord","cassetta della posta":"mailbox","vicino":"neighbor","rumore":"noise"}},{"id":"it-sciopero","title":"Sciopero domani","subtitle":"Strike tomorrow","trail":"double-black-diamond","categoryId":"it","sentences":[{"foreign":"Hai visto le notizie stamattina?","en":"Did you see the news this morning?"},{"foreign":"No, cos'è successo?","en":"No, what happened?"},{"foreign":"Domani c'è sciopero della metro e di diversi bus.","en":"Tomorrow there's a strike on the subway and on several buses."},{"foreign":"Quindi l'ora di punta sarà un caos?","en":"So rush hour will be chaos?"},{"foreign":"Sì. Molti treni si fermano, e ci saranno bus sostitutivi.","en":"Yes. Many trains stop, and there will be replacement buses."},{"foreign":"Prendo la bici della città, anche se piove.","en":"I'll take a city bike, even if it rains."},{"foreign":"Furbo. O lavori da casa se il capo accetta?","en":"Smart. Or will you work from home if the boss allows it?"},{"foreign":"Forse. Prima controllo il budget del taxi.","en":"Maybe. I'll check the taxi budget first."},{"foreign":"Tienimi aggiornato se cancellano la tua partenza.","en":"Keep me posted if your departure is cancelled."},{"foreign":"Va bene. Ci sentiamo stasera.","en":"Alright. Talk tonight."}],"glosses":{"sciopero":"strike","metro":"subway","ora di punta":"rush hour","caos":"chaos","bus sostitutivi":"replacement buses"}},{"id":"it-dibattito","title":"Un breve dibattito","subtitle":"A short debate","trail":"double-black-diamond","categoryId":"it","sentences":[{"foreign":"Secondo me i trasporti pubblici sono davvero importanti.","en":"I think public transport is really important."},{"foreign":"Perché?","en":"Why?"},{"foreign":"Perché non tutti possono avere l'auto, e parcheggiare in centro costa caro.","en":"Because not everyone can have a car, and parking downtown is expensive."},{"foreign":"Però i bus sono spesso pieni e in ritardo nell'ora di punta.","en":"But the buses are often full and late in rush hour."},{"foreign":"Se la città investe di più nelle linee, col tempo migliora.","en":"If the city invests more in routes, it gets better over time."},{"foreign":"A lungo termine, forse. Adesso salgono anche i biglietti.","en":"In the long run, maybe. Right now tickets are rising too."},{"foreign":"Vero. Però credo che ne valga la pena per l'ambiente.","en":"True. Even so, I think it's worth it for the environment."},{"foreign":"Leggiamo di più prima di decidere.","en":"Let's read more before we decide."},{"foreign":"Va bene. Un caffè dopo pranzo, e continuiamo?","en":"Alright. Coffee after lunch, then we talk more?"},{"foreign":"Sì. Ci vediamo in stazione.","en":"Yes. We'll meet at the station."}],"glosses":{"trasporti pubblici":"public transport","parcheggiare":"to park","ambiente":"environment"}},{"id":"it-piani","title":"Piani per l'estate","subtitle":"Summer plans","trail":"double-black-diamond","categoryId":"it","sentences":[{"foreign":"Cosa fai in estate?","en":"What are you going to do this summer?"},{"foreign":"Voglio viaggiare qualche settimana, se si può. E tu?","en":"I want to travel a few weeks, if it works out. And you?"},{"foreign":"Forse al mare. Pago con Satispay stasera sull'app.","en":"Maybe to the sea. I'm paying with Satispay in the app tonight."},{"foreign":"Hai il passaporto pronto? I bagagli passano dal check-in.","en":"Is your passport ready? The luggage has to go through check-in."},{"foreign":"Sì. Solo bagaglio a mano. La carta d'imbarco dopo i controlli.","en":"Yes. Hand luggage only. Boarding pass after security."},{"foreign":"Io resto e faccio straordinari. I risparmi vanno alle vacanze l'anno prossimo.","en":"I'm staying and working overtime. The savings go to next year's holiday."},{"foreign":"Pratico. Il mio volo può ritardare, ma l'arrivo è tardi comunque.","en":"Practical. My flight might be delayed, but arrival is late either way."},{"foreign":"Fammi sapere quando atterri. Il terminal è facile da trovare.","en":"Let me know when you land. The terminal is easy to find."},{"foreign":"Certo. Buona partenza!","en":"Will do. Have a good departure!"},{"foreign":"Grazie. Restiamo in contatto.","en":"Thanks. We'll stay in touch."}],"glosses":{"viaggiare":"to travel","passaporto":"passport","bagaglio a mano":"hand luggage","straordinari":"overtime","vacanze":"holiday","arrivo":"arrival","Satispay":"Italian mobile payment"}}]);
 })();
