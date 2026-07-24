@@ -127,15 +127,15 @@ Founder approves **new product behavior**. Agents own **integrity** (bugs, platf
 |-------|---------|
 | `go` | **1** integrity/craft slice |
 | `go N` | Exactly **N** slices; one report after the batch |
-| `go unit: <name>` | Finish the named unit; as many slices as needed; stop when done. Default **cap 25** if unspecified. |
-| `go unit: <name> (cap N)` | Same with hard cap N; report remaining work if hit. |
+| `go unit: <name>` | Finish named unit; as many slices as needed; default **cap 25** |
+| `go unit: <name> (cap N)` | Named unit with hard cap |
+| `go spine` | All **Spine** units in order (miss-context honesty → NB bar parity da → sv → de → platform bar seal → review fairness residual). Category cap **80**. |
+| `go content` | All **Content** units in order (Basics, stories naturalness, core deck honesty, survival alignment). Cap **100**. |
+| `go craft` | All **Craft** units in order (quiet chrome, Review home, Cards Check, Read gloss, About/copy). Cap **40**. |
+| `go parked` | **Forbidden** without explicit founder yes |
 
-Ship-alone only. One report after multipass unit (not after every micro-slice).
+Optional override: `go spine (cap 50)`. Ship-alone only. One report after multipass unit/category. Stop a unit when done; do not burn leftover cap for thrash.
 
-
-
-
-Founder does **not** need to type **go** for each integrity slice when a session is open (or when a standing scheduled run is active). Default is **keep improving within ship-alone**.
 
 **Agent may continuously work on (thin slices, ship + short report):**
 
