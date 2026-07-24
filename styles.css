@@ -3794,21 +3794,6 @@ html.needs-welcome body {
   margin: 0 0 0.85rem;
 }
 
-/* Quiet subcategory line — not a body bubble; stands off from How / Privacy */
-.about-streak {
-  margin: 0.15rem 0 0.9rem;
-  padding: 0;
-  border: none;
-  background: none;
-  font-size: var(--text-2xs);
-  font-weight: 650;
-  letter-spacing: 0.05em;
-  line-height: var(--lh-tight);
-  text-transform: none;
-  color: var(--brand-deep);
-  opacity: 0.88;
-}
-
 .about-links {
   list-style: none;
   margin: 0;
