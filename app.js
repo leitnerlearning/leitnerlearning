@@ -1793,8 +1793,17 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["tür", "tuer"],
     ["noch einmal", "nochmal"],
     ["wlan-passwort", "wlan passwort", "wlanpasswort"],
+    ["das passwort", "passwort"],
     ["verspätet", "verspaetet"],
-    ["einverstanden", "ein verstanden"],
+    ["einverstanden", "ein verstanden", "ich bin einverstanden"],
+    ["langsamer", "bitte langsamer"],
+    ["wo ist der ausgang", "wo ist der ausgang bitte"],
+    ["ich bin allergisch", "ich bin allergisch gegen"],
+    ["strom inbegriffen", "strom ist inbegriffen"],
+    ["ich verstehe nicht", "ich versteh nicht", "verstehe nicht"],
+    ["wie geht es dir", "wie gehts", "wie geht's"],
+    ["zu spät", "zu spaet"],
+    ["zu früh", "zu frueh"],
   ],
   // Dutch — same-lemma ASR / informal spelling (not different words)
   nl: [
@@ -2038,6 +2047,27 @@ function norwegianSpeechCode(word) {
   return w.slice(0, 8);
 }
 
+/**
+ * Lightweight German ASR code: umlaut digraphs + ß, then metaphone-ish core.
+ * Keeps DE speech soft-accept honest without inventing unrelated lemmas.
+ */
+function germanSpeechCode(word) {
+  let w = normalizeAnswer(word)
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss")
+    .replace(/[^a-z]/g, "");
+  if (!w) return "";
+  w = w
+    .replace(/sch/g, "sh")
+    .replace(/tsch/g, "ch")
+    .replace(/ck/g, "k")
+    .replace(/[aeiouy]/g, (ch, i) => (i === 0 ? ch : ""))
+    .replace(/(.)\1+/g, "$1");
+  return w.slice(0, 8);
+}
+
 function speechCode(word, lang) {
   const base = String(lang || "")
     .toLowerCase()
@@ -2046,6 +2076,7 @@ function speechCode(word, lang) {
   if (base === "nb" || base === "no" || base === "da" || base === "sv") {
     return norwegianSpeechCode(word);
   }
+  if (base === "de") return germanSpeechCode(word);
   return englishSpeechCode(word);
 }
 
