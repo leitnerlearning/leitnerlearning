@@ -1055,8 +1055,11 @@ function stripAnswerParticles(text) {
     .replace(/^l[''′’]/, "");
   let t = normalizeAnswer(raw);
   if (!t) return "";
-  // Norwegian infinitive marker (and common keyboard stand-ins)
+  // Nordic infinitive markers (NB å / DA at / SV att) + keyboard stand-ins
   t = t.replace(/^(å|aa)\s+/, "");
+  // "at spise" / "att äta" ≈ bare verb — only single-token remainder (not English "at home")
+  const nordicAt = t.match(/^(at|att)\s+(\S+)$/);
+  if (nordicAt) t = nordicAt[2];
   // English infinitive "to eat" → "eat"
   t = t.replace(/^to\s+/, "");
   // Leading "a " as ASCII for å (a være → være). English "a dog" → "dog" is usually fine too.
@@ -1718,12 +1721,20 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["ikke", "ik"],
     ["køre", "kore", "koere"],
     ["gøre", "gore", "goere"],
+    ["forstå", "forstaa", "forsta"],
     ["en gang til", "engang til"],
     ["hvad synes du", "hvad syns du"],
     ["jeg er enig", "jeg enig"],
-    ["tal langsommere", "tal langsommere tak"],
+    ["tal langsommere", "tal langsommere tak", "snak langsommere"],
+    ["snak langsommere", "snak langsommere tak", "tal langsommere"],
     ["adgangskoden", "adgangs koden"],
     ["wifi-kode", "wifi kode", "wifikode"],
+    ["wifi-koden", "wifi koden", "wifikoden"],
+    ["er toget forsinket", "er toget forsinket i dag"],
+    ["hvor er udgangen", "hvor er udgang"],
+    ["jeg er allergisk", "jeg e allergisk"],
+    ["el inkluderet", "el er inkluderet"],
+    ["jeg forstår ikke", "jeg forstaar ikke", "jeg forsta ikke"],
   ],
   // Swedish — same-lemma ASR / digraph typing
   sv: [
@@ -2020,7 +2031,14 @@ function norwegianSpeechCode(word) {
 }
 
 function speechCode(word, lang) {
-  return lang === "nb" ? norwegianSpeechCode(word) : englishSpeechCode(word);
+  const base = String(lang || "")
+    .toLowerCase()
+    .split("-")[0];
+  // Nordic ASR: æøå folds + soft finals — DA/SV share the NB shape (not English metaphone).
+  if (base === "nb" || base === "no" || base === "da" || base === "sv") {
+    return norwegianSpeechCode(word);
+  }
+  return englishSpeechCode(word);
 }
 
 function speechTokensMatch(userToken, expectedToken, lang) {

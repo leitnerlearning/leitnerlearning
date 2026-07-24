@@ -415,7 +415,7 @@
             approxHtml: "Guttural · not English <span class=\"basics-letter\">r</span>",
             examples: [
               { speak: "rød", text: "rød", gloss: "red" },
-              { speak: "bra", text: "bra", gloss: "good" },
+              { speak: "god", text: "god", gloss: "good" },
             ],
           },
         ],
