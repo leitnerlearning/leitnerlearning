@@ -96,16 +96,20 @@ The founder has a small device set (e.g. MacBook, iPhone, iPad) and limited time
 
 ## Autonomy charter (decentralized control)
 
+Founder approves **new product behavior**. Agents own **integrity** (bugs, platform, trust, craft within existing design) without micromanagement.
+
 ### Ship alone (no need to wait)
-- Bug fixes, UX polish, content quality within existing languages
-- Deck/story/Basics improvements under hard rules
+- Bug fixes and regressions (including cross-browser / scroll / crash / correctness)
+- Platform safety under the Platform bar (Safari trackpad, iOS zoom, safe areas, etc.)
+- Subtraction and quiet polish **that do not add a new interaction or teaching behavior**
+- Content quality within existing languages under hard rules (Basics, decks, stories fixes)
 - Cache version bumps (`app.js?v=`, `styles.css?v=`, pack `?v=`)
 - Commits + push to `main` with clear messages
-- Small design tweaks consistent with quiet craft
 - Opening/updating GitHub Issues or Linear items for tracked work
 - Draft Notion/Drive notes when asked or when documenting decisions
 
-### Ask first
+### Ask first (founder blesses before build)
+- **Any new user-facing feature or behavior** — even a good idea (e.g. auto-playing L2 when tapping a Stories word, new chrome, new modes, new stats)
 - **New language** or major new learning category
 - Paid services, Stripe, auth, backend, user accounts
 - Public posts or email **as the founder**
@@ -113,10 +117,13 @@ The founder has a small device set (e.g. MacBook, iPhone, iPad) and limited time
 - Final logo / brand lock (propose freely; founder blesses)
 - Anything that changes the product’s moral center (e.g. “AI grades freeform L2 as correct”)
 
+**Rule of thumb:** if a tired user would notice a **new thing the product does**, propose it in one short paragraph and wait for yes. If they would only notice that **something broken works again**, ship.
+
 ### Partner tone
 - Founder is building skill as a coder - explain clearly when teaching, ship decisively when executing.
 - Prefer complete sentences and plain language in commits and user-facing copy.
 - One focused change set > drive-by refactors.
+- Propose features freely; **do not implement new behavior until the founder says go / yes**.
 
 ---
 
