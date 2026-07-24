@@ -490,8 +490,8 @@ const READ_STORIES = [
       { nb: "Kanskje. Jeg sjekker budsjettet for taxi først.", en: "Maybe. I'll check the taxi budget first." },
       { nb: "Er toget forsinket?", en: "Is the train delayed?" },
       { nb: "Når går neste buss?", en: "When does the next bus leave?" },
-      { nb: "Hold meg oppdatert hvis avgangen din blir kansellert.", en: "Keep me posted if your departure is cancelled." },
-      { nb: "Greit. Vi snakkes i kveld.", en: "Alright. Talk tonight." },
+      { nb: "Hold meg oppdatert hvis avgangen din blir kansellert.", en: "Let me know if your train is cancelled." },
+      { nb: "Greit. Vi snakkes i kveld.", en: "Alright. We'll talk tonight." },
     ],
     glosses: {
       forsinket: "delayed",
@@ -580,7 +580,7 @@ const READ_STORIES = [
       { nb: "Si ifra når du lander. Terminalen er grei å finne.", en: "Let me know when you land. The terminal is easy to find." },
       { nb: "Hvor lang tid tar det?", en: "How long does it take?" },
       { nb: "Hvor er utgangen?", en: "Where is the exit?" },
-      { nb: "Gjerne. Ha en fin avgang!", en: "Will do. Have a good departure!" },
+      { nb: "Gjerne. Ha en fin avgang!", en: "Will do. Have a good trip!" },
       { nb: "Takk. Vi holder kontakten.", en: "Thanks. We'll stay in touch." },
     ],
     glosses: {
