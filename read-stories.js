@@ -90,6 +90,11 @@ const READ_STORIES = [
       brød: "bread",
       "Ha det bra": "goodbye / take care",
       "Vi ses": "see you",
+      Hvordan: "how",
+      morgen: "morning",
+      Også: "also / too",
+      takk: "thanks / thank you",
+      dag: "day"
     },
   },
   {
@@ -121,6 +126,11 @@ const READ_STORIES = [
       kroner: "kroner",
       pengene: "the money",
       "fin dag": "nice day",
+      blir: "become / is (passive)",
+      takk: "thanks / thank you",
+      dag: "day",
+      fin: "fine / nice",
+      Hei: "hello / hi"
     },
   },
   {
@@ -154,6 +164,9 @@ const READ_STORIES = [
       "Vær så god": "here you are / you're welcome",
       tur: "trip",
       "Tusen takk": "thank you so much",
+      borte: "away / gone",
+      Hvor: "where",
+      Takk: "thanks / thank you"
     },
   },
 
@@ -268,6 +281,7 @@ const READ_STORIES = [
       møtes: "meet (each other)",
       klokka: "o'clock / the clock",
       "Vi ses snart": "see you soon",
+      Biologi: "biology"
     },
   },
 
@@ -307,6 +321,7 @@ const READ_STORIES = [
       prøvetiden: "the trial period",
       Forstått: "understood",
       prosjektet: "the project",
+      Velkommen: "welcome"
     },
   },
   {
@@ -458,6 +473,7 @@ const READ_STORIES = [
       miljøet: "the environment",
       bestemmer: "decide",
       lunsj: "lunch",
+      Akkurat: "exactly / just"
     },
   },
   {
