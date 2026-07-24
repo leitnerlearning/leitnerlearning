@@ -5108,6 +5108,8 @@ function showFeedback(message, type, options = {}) {
   }
   el.textContent = message;
   el.className = `feedback ${type}`;
+  // Answer pills and UI status are English; keep SR/hyphenation honest.
+  el.lang = options.lang || "en";
   const autoHideMs = Number(options.autoHideMs) || 0;
   if (autoHideMs > 0) {
     feedbackHideTimer = window.setTimeout(() => {
@@ -5574,9 +5576,9 @@ function cardLooksLikeInfinitive(foreign, lang) {
  * After a miss/reveal: show the answer pill, plus a real-sentence beat when we have one.
  * Skip when the “example” only restates the card (prompt + gloss already on screen).
  * Clear the wrong typed answer so the pill + example teach, not a red dirty field.
- * Auto-hears the L2 line (same teaching beat as Stories gloss). Tap re-hears and
- * extends the advance window via pauseAdvanceForListen.
- * @returns {string} L2 example text when shown (for advance timing), else "".
+ * Auto-hears L2 (story clause when available, else the lemma) — same beat as Stories gloss.
+ * Tap re-hears and extends the advance window via pauseAdvanceForListen.
+ * @returns {string} L2 text that was spoken / shown (for advance timing), else "".
  */
 function showIncorrectWithExample(card, answerText) {
   showFeedback(answerText, "incorrect");
@@ -5595,6 +5597,12 @@ function showIncorrectWithExample(card, answerText) {
     return l2;
   }
   hideFeedbackExample();
+  // No honest sentence: still seal the L2 form you missed (never a silent miss).
+  const lemma = String(card?.foreign || "").trim();
+  if (lemma && typeof speakForeign === "function") {
+    speakForeign(lemma);
+    return lemma;
+  }
   return "";
 }
 
@@ -8752,6 +8760,10 @@ function applyAddCardFormUI() {
     nativeInput.placeholder = "";
     nativeInput.lang = (category.answerLang || "en-US").split("-")[0];
   }
+  const reviewForeignEl = document.getElementById("review-foreign");
+  const reviewNativeEl = document.getElementById("review-native");
+  if (reviewForeignEl) reviewForeignEl.lang = category.foreignLang || "nb";
+  if (reviewNativeEl) reviewNativeEl.lang = "en";
 
   const editing = Boolean(editingCardId);
   if (submitBtn) submitBtn.textContent = editing ? "Save" : "Add";
@@ -11850,8 +11862,12 @@ function renderReadPanel() {
   const focusNb = document.getElementById("read-focus-nb");
   const focusEn = document.getElementById("read-focus-en");
   const contextBefore = document.getElementById("read-context-before");
+  const foreignLang = getActiveCategory()?.foreignLang || "nb";
 
   if (focusNb) {
+    // Keep lang honest for the active language (markup id stays read-focus-nb).
+    focusNb.lang = foreignLang;
+    focusNb.setAttribute("lang", foreignLang);
     focusNb.innerHTML = renderReadSentenceMarkup(
       sentenceForeignText(sentence),
       story,
@@ -11860,6 +11876,7 @@ function renderReadPanel() {
     );
   }
   if (focusEn) {
+    focusEn.lang = "en";
     focusEn.textContent = sentence.en;
   }
   if (contextBefore) {
