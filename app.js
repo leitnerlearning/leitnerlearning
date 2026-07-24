@@ -5154,7 +5154,8 @@ function sentenceContainsForm(sentenceText, form) {
 
 /**
  * Soft form variants so a deck lemma can still hit a conjugated story line
- * (gå → Går, billett → billetten) without inventing freeform morphology.
+ * (gå → går, kommen → komme, billett → billetten) without freeform morphology.
+ * Peels into stems first, then expands each stem (fixes en-infinitives).
  */
 function formMatchVariants(form) {
   const base = String(form || "").trim();
@@ -5164,53 +5165,238 @@ function formMatchVariants(form) {
   // Drop leading infinitive markers
   const stripped = lower.replace(/^(å|att|at|to)\s+/i, "").trim();
   if (stripped) out.add(stripped);
-  // Light suffix peel for Germanic / Romance / Slavic common endings
-  const suffixes = [
+
+  // Longest-first peels shared with Read lookup + common Romance/Germanic/Slavic
+  const peels = [
+    "elsene",
+    "ingen",
+    "inger",
+    "ende",
+    "arna",
+    "erna",
+    "orna",
     "ene",
+    "hette",
+    "zione",
+    "tion",
+    "heit",
+    "keit",
+    "dde",
+    "tte",
+    "ede",
+    "ade",
+    "ten",
+    "tem",
+    "test",
+    "est",
+    "st",
+    "te",
+    "de",
     "et",
     "en",
     "er",
     "ar",
-    "arna",
-    "erna",
-    "orna",
     "or",
-    "erna",
-    "n",
-    "s",
     "es",
     "os",
     "as",
-    "e",
-    "a",
-    "i",
-    "y",
     "ów",
     "ami",
     "ach",
     "em",
     "om",
-    "tion",
-    "zione",
-    "heit",
-    "keit",
+    "na",
+    "ne",
+    "ern",
+    "n",
+    "s",
+    "e",
+    "a",
+    "i",
+    "y",
+    "r",
   ];
-  for (const suf of suffixes) {
+
+  const stems = new Set([stripped]);
+  for (const suf of peels) {
     if (stripped.length > suf.length + 2 && stripped.endsWith(suf)) {
-      out.add(stripped.slice(0, -suf.length));
+      stems.add(stripped.slice(0, -suf.length));
     }
   }
-  // Common present/past + definite expansions (lemma → surface in stories).
-  // Short verbs (gå → går) need length ≥ 2; longer lemmas use the full set.
-  if (stripped.length >= 2) {
-    const light = ["r", "er", "ar", "t", "te", "de", "n", "s"];
-    const heavy = ["en", "et", "ene", "es", "na", "ne", "ern", "arna"];
-    for (const suf of light) out.add(`${stripped}${suf}`);
-    if (stripped.length >= 3) {
-      for (const suf of heavy) out.add(`${stripped}${suf}`);
+
+  // Present/past/definite expansions from every stem (kommen → komm → komme/kommt)
+  const light = ["r", "er", "ar", "e", "t", "te", "de", "n", "s", "st", "é", "á"];
+  const heavy = ["en", "et", "ene", "es", "na", "ne", "ern", "arna", "ten", "tem"];
+  for (const stem of stems) {
+    if (!stem) continue;
+    out.add(stem);
+    if (stem.length >= 2) {
+      for (const suf of light) out.add(`${stem}${suf}`);
+    }
+    if (stem.length >= 3) {
+      for (const suf of heavy) out.add(`${stem}${suf}`);
     }
   }
   return [...out].filter(Boolean);
+}
+
+/** High-frequency glue — skip when picking multi-word “content” tokens for story match. */
+const STORY_MATCH_GLUE = new Set(
+  [
+    "i",
+    "a",
+    "an",
+    "the",
+    "to",
+    "of",
+    "for",
+    "in",
+    "on",
+    "at",
+    "and",
+    "or",
+    "is",
+    "am",
+    "are",
+    "be",
+    "do",
+    "did",
+    "not",
+    "no",
+    "yes",
+    "jeg",
+    "du",
+    "han",
+    "hun",
+    "vi",
+    "de",
+    "det",
+    "en",
+    "et",
+    "ei",
+    "og",
+    "på",
+    "av",
+    "til",
+    "med",
+    "er",
+    "som",
+    "att",
+    "och",
+    "är",
+    "jag",
+    "ich",
+    "du",
+    "er",
+    "sie",
+    "es",
+    "wir",
+    "ihr",
+    "der",
+    "die",
+    "das",
+    "den",
+    "dem",
+    "des",
+    "ein",
+    "eine",
+    "und",
+    "ist",
+    "je",
+    "tu",
+    "il",
+    "elle",
+    "nous",
+    "vous",
+    "ils",
+    "elles",
+    "le",
+    "la",
+    "les",
+    "un",
+    "une",
+    "des",
+    "de",
+    "du",
+    "et",
+    "est",
+    "el",
+    "los",
+    "las",
+    "un",
+    "una",
+    "y",
+    "o",
+    "es",
+    "lo",
+    "gli",
+    "io",
+    "mi",
+    "ti",
+    "ci",
+    "vi",
+    "di",
+    "da",
+    "ik",
+    "je",
+    "hij",
+    "zij",
+    "het",
+    "een",
+    "de",
+    "het",
+    "en",
+    "van",
+    "eu",
+    "você",
+    "ele",
+    "ela",
+    "nós",
+    "eles",
+    "elas",
+    "o",
+    "a",
+    "os",
+    "as",
+    "um",
+    "uma",
+    "em",
+    "ja",
+    "ty",
+    "on",
+    "ona",
+    "my",
+    "wy",
+    "oni",
+    "one",
+    "w",
+    "z",
+    "i",
+    "oraz",
+  ].map((w) => normalizeAnswer(w))
+);
+
+/**
+ * Content tokens for multi-word deck cards (skip glue / tiny words).
+ * Used so “ich wohne in” can hit a line with “wohne” without matching every “ich”.
+ */
+function contentTokensForStoryMatch(form) {
+  const tokens = String(form || "")
+    .trim()
+    .split(/\s+/)
+    .map((t) => t.replace(/^["'«»]+|["'«»]+$/g, ""))
+    .filter(Boolean);
+  if (tokens.length <= 1) return tokens;
+  const long = tokens.filter(
+    (t) => t.length >= 4 && !STORY_MATCH_GLUE.has(normalizeAnswer(t))
+  );
+  if (long.length) return long;
+  const med = tokens.filter(
+    (t) => t.length >= 3 && !STORY_MATCH_GLUE.has(normalizeAnswer(t))
+  );
+  if (med.length) return med;
+  // Fall back to the longest token only
+  return [tokens.reduce((a, b) => (a.length >= b.length ? a : b))];
 }
 
 function sentenceMatchesAnyForm(sentenceText, forms) {
@@ -5235,6 +5421,30 @@ function sentenceMatchesAnyForm(sentenceText, forms) {
     }
   }
   return false;
+}
+
+/**
+ * Deck form ↔ story line: single lemma uses soft variants; multi-word phrases
+ * match on distinctive content (long cores must all hit) so glue alone cannot
+ * fake a hit, while “wie viel kostet” still finds a line with “kostet”.
+ */
+function sentenceMatchesCardForm(sentenceText, form) {
+  const raw = String(form || "").trim();
+  if (!sentenceText || !raw) return false;
+  const tokens = raw.split(/\s+/).filter(Boolean);
+  if (tokens.length <= 1) {
+    return sentenceMatchesAnyForm(sentenceText, formMatchVariants(raw));
+  }
+  // Prefer full-phrase hit when the story has the exact multi-word form
+  if (sentenceMatchesAnyForm(sentenceText, formMatchVariants(raw))) return true;
+  const content = contentTokensForStoryMatch(raw);
+  if (!content.length) return false;
+  // Cores (≥5 letters) are the teaching anchors; shorter content is optional.
+  const cores = content.filter((t) => t.length >= 5);
+  const required = cores.length ? cores : content;
+  return required.every((tok) =>
+    sentenceMatchesAnyForm(sentenceText, formMatchVariants(tok))
+  );
 }
 
 /**
@@ -5303,6 +5513,20 @@ function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
     return null;
   }
 
+  // Clause picker: for multi-word cards, score on content tokens (not glue).
+  const clauseForms = (() => {
+    const content = contentTokensForStoryMatch(form);
+    if (content.length <= 1 && form.split(/\s+/).filter(Boolean).length <= 1) {
+      return forms;
+    }
+    if (!content.length) return forms;
+    const set = new Set(forms);
+    for (const tok of content) {
+      for (const v of formMatchVariants(tok)) set.add(v);
+    }
+    return [...set];
+  })();
+
   const stories = typeof getStoriesForCategory === "function" ? getStoriesForCategory(categoryId) : [];
   if (!stories.length) {
     storyExampleCache.set(cacheKey, null);
@@ -5323,29 +5547,48 @@ function findExampleSentenceForCard(card, categoryId = activeCategoryId) {
     const sentences = story.sentences || [];
     // Also allow matching via story gloss keys (lemma → surface form in line)
     const glossKeys = Object.keys(story.glosses || {});
+    const glossEntries = Object.entries(story.glosses || {});
     for (const s of sentences) {
       const fullForeign = sentenceForeignText(s);
       const fullEn = String(s.en || "").trim();
       if (!fullForeign || !fullEn) continue;
 
-      const matched =
-        sentenceMatchesAnyForm(fullForeign, forms) ||
-        glossKeys.some(
+      const matchedDirect = sentenceMatchesCardForm(fullForeign, form);
+      const matchedGloss =
+        !matchedDirect &&
+        (glossKeys.some(
           (key) =>
             forms.some((f) => normalizeAnswer(f) === normalizeAnswer(key)) &&
-            (sentenceContainsForm(fullForeign, key) || sentenceMatchesAnyForm(fullForeign, formMatchVariants(key)))
-        );
-      if (!matched) continue;
+            (sentenceContainsForm(fullForeign, key) ||
+              sentenceMatchesAnyForm(fullForeign, formMatchVariants(key)))
+        ) ||
+          // Soft: deck lemma soft-matches a gloss key that appears in the line
+          glossEntries.some(([key]) => {
+            const keyNorm = normalizeAnswer(key);
+            if (!keyNorm) return false;
+            const keyHitsDeck = forms.some(
+              (f) =>
+                normalizeAnswer(f) === keyNorm ||
+                formMatchVariants(key).some((v) => normalizeAnswer(v) === normalizeAnswer(f))
+            );
+            if (!keyHitsDeck) return false;
+            return (
+              sentenceContainsForm(fullForeign, key) ||
+              sentenceMatchesAnyForm(fullForeign, formMatchVariants(key))
+            );
+          }));
+      if (!matchedDirect && !matchedGloss) continue;
 
-      const clause = pickClauseContainingForm(fullForeign, fullEn, forms);
+      const clause = pickClauseContainingForm(fullForeign, fullEn, clauseForms);
       if (!clause.foreign || !clause.en) continue;
       // Prefer short, easy clauses; slight penalty for tiny forms in long lines
+      const exactPhrase = sentenceContainsForm(clause.foreign, form);
       const score =
         trailScore(story.trail) * 1000 +
         clause.foreign.length +
         (form.length <= 2 && clause.foreign.length > 36 ? 80 : 0) +
-        // Prefer exact form over soft variant
-        (sentenceContainsForm(clause.foreign, form) ? 0 : 25);
+        // Prefer exact form / full phrase over soft multi-word content hit
+        (exactPhrase ? 0 : matchedDirect ? 15 : 30);
       if (score < bestScore) {
         bestScore = score;
         best = { foreign: clause.foreign, en: clause.en, storyId: story.id };
