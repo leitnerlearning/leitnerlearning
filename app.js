@@ -1860,6 +1860,18 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["que penses-tu", "que penses tu"],
     ["inclus", "incluse", "compris", "comprise"],
     ["en retard", "retard"],
+    ["comment ça va", "comment ca va", "ça va"],
+    ["je m'appelle", "je m appelle", "je mappelle"],
+    ["s'il vous plaît", "sil vous plait", "svp", "s'il vous plait"],
+    ["s'il te plaît", "sil te plait", "stp"],
+    ["trop tard", "trop tard aujourd'hui"],
+    ["trop tôt", "trop tot"],
+    ["trop cher", "trop chere", "trop chère"],
+    ["le mot de passe", "mot de passe", "le motdepasse"],
+    ["la sortie", "ou est la sortie", "où est la sortie"],
+    ["je suis allergique", "je suis allergique a", "je suis allergique à"],
+    ["parlez plus lentement", "parlez plus lentement sil vous plait"],
+    ["je ne comprends pas", "je comprends pas", "j'comprends pas"],
   ],
   // Spanish — same-lemma typing/ASR (never sí≈si or por qué≈porque)
   es: [
@@ -2099,6 +2111,30 @@ function dutchSpeechCode(word) {
   return w.slice(0, 8);
 }
 
+/**
+ * Lightweight French ASR code: accents folded, then metaphone-ish core.
+ */
+function frenchSpeechCode(word) {
+  let w = normalizeAnswer(word)
+    .replace(/[àâä]/g, "a")
+    .replace(/[éèêë]/g, "e")
+    .replace(/[îï]/g, "i")
+    .replace(/[ôö]/g, "o")
+    .replace(/[ùûü]/g, "u")
+    .replace(/ç/g, "c")
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/[^a-z]/g, "");
+  if (!w) return "";
+  w = w
+    .replace(/qu/g, "k")
+    .replace(/ch/g, "sh")
+    .replace(/ph/g, "f")
+    .replace(/[aeiouy]/g, (ch, i) => (i === 0 ? ch : ""))
+    .replace(/(.)\1+/g, "$1");
+  return w.slice(0, 8);
+}
+
 function speechCode(word, lang) {
   const base = String(lang || "")
     .toLowerCase()
@@ -2109,6 +2145,7 @@ function speechCode(word, lang) {
   }
   if (base === "de") return germanSpeechCode(word);
   if (base === "nl") return dutchSpeechCode(word);
+  if (base === "fr") return frenchSpeechCode(word);
   return englishSpeechCode(word);
 }
 
