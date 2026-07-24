@@ -997,7 +997,7 @@
     { foreign: "goedkoper", native: "cheaper", rank: 993, category: "adjective", band: "G", exampleForeign: "Hebben jullie iets goedkoper?", exampleNative: "Do you have something cheaper?" },
     { foreign: "het wachtwoord", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "Dat ben ik vandaag. Het wachtwoord krijg je van een medewerker.", exampleNative: "That's me today. You'll get the password from a coworker." },
     { foreign: "allergisch", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Ik ben allergisch voor penicilline.", exampleNative: "I'm allergic to penicillin." },
-    { foreign: 'vertraagd', native: 'delayed', rank: 996, category: 'adjective', band: 'G' },
+    { foreign: "vertraagd", native: "delayed", rank: 996, category: "adjective", band: "G", exampleForeign: "Heeft de trein vertraging?", exampleNative: "Is the train delayed?" },
     { foreign: "het eens", native: "in agreement / agree", rank: 997, category: "phrase", band: "phrase", exampleForeign: "Ik ben het eens.", exampleNative: "I agree." },
     { foreign: "wat denk je", native: "what do you think", rank: 998, category: "phrase", band: "phrase", exampleForeign: "Wat denk je?", exampleNative: "What do you think?" },
     { foreign: "de uitgang", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Waar is de uitgang?", exampleNative: "Where is the exit?" },

@@ -994,14 +994,14 @@
     { foreign: 'ki', native: 'AI', rank: 990, category: 'noun', band: 'G' },
     { foreign: "WLAN-Passwort", native: "Wi‑Fi password", rank: 991, category: "noun", band: "G", exampleForeign: "Wie ist das WLAN-Passwort?", exampleNative: "What's the Wi‑Fi password?" },
     { foreign: "langsamer", native: "more slowly", rank: 992, category: "adverb", band: "G", exampleForeign: "Ich verstehe nicht. Bitte langsamer.", exampleNative: "I don't understand. More slowly, please." },
-    { foreign: 'billiger', native: 'cheaper', rank: 993, category: 'adjective', band: 'G' },
+    { foreign: "billiger", native: "cheaper", rank: 993, category: "adjective", band: "G", exampleForeign: "Haben Sie etwas Günstigeres?", exampleNative: "Do you have something cheaper?" },
     { foreign: "das Passwort", native: "the password", rank: 994, category: "noun", band: "G", exampleForeign: "Das bin ich heute. Das Passwort bekommst du von einem Mitarbeiter.", exampleNative: "That's me today. You'll get the password from a coworker." },
     { foreign: "allergisch", native: "allergic", rank: 995, category: "adjective", band: "G", exampleForeign: "Ich bin allergisch gegen Penicillin.", exampleNative: "I'm allergic to penicillin." },
     { foreign: "verspätet", native: "delayed", rank: 996, category: "adjective", band: "G", exampleForeign: "Ist der Zug verspätet?", exampleNative: "Is the train delayed?" },
-    { foreign: 'einverstanden', native: 'in agreement / agree', rank: 997, category: 'adjective', band: 'G' },
+    { foreign: "einverstanden", native: "in agreement / agree", rank: 997, category: "adjective", band: "G", exampleForeign: "Ich stimme zu.", exampleNative: "I agree." },
     { foreign: "was denkst du", native: "what do you think", rank: 998, category: "phrase", band: "phrase", exampleForeign: "Was denkst du?", exampleNative: "What do you think?" },
     { foreign: "der Ausgang", native: "the exit", rank: 999, category: "noun", band: "G", exampleForeign: "Wo ist der Ausgang?", exampleNative: "Where is the exit?" },
-    { foreign: 'inbegriffen', native: 'included', rank: 1000, category: 'adjective', band: 'G' }
+    { foreign: "inbegriffen", native: "included", rank: 1000, category: "adjective", band: "G", exampleForeign: "Ist Strom in der Miete enthalten?", exampleNative: "Is electricity included in the rent?" }
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};

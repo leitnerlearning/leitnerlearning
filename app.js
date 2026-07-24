@@ -562,7 +562,7 @@ function shuffleInPlace(items, randomFn = Math.random) {
 }
 
 function computeDailyGoal(dueCount) {
-  // No artificial daily target — due cards are the work; Study goes as long as they want.
+  // Queue size = due cards (not a UI “daily goal” chip). Study goes as long as they want.
   if (dueCount <= 0) return 0;
   return dueCount;
 }
@@ -1086,12 +1086,19 @@ function answerCoreVariants(text) {
     forms.push(`to ${base}`);
   }
 
+  const foreignCode =
+    (typeof getActiveCategory === "function" && getActiveCategory()?.foreignLang) ||
+    "";
   for (const form of forms) {
     if (!form) continue;
     cores.add(form);
     cores.add(foldNorwegianDigraphs(form));
     cores.add(foldNorwegianLoose(form));
     cores.add(foldEnglishDialectSpelling(form));
+    if (foreignCode && typeof foldForeignOrthography === "function") {
+      const folded = foldForeignOrthography(form, foreignCode);
+      if (folded) cores.add(folded);
+    }
   }
   return cores;
 }
@@ -1601,7 +1608,6 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["there", "their", "they're"],
     ["your", "you're"],
     ["its", "it's"],
-    ["who", "who"],
     ["which", "witch"],
     ["where", "wear", "ware"],
     ["here", "hear"],
@@ -1669,7 +1675,6 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["mye", "mykje"],
     ["noe", "noko"],
     ["noen", "nokon"],
-    ["mellom", "mellom"],
     ["kjøre", "kjore", "kjoere"],
     ["gjøre", "gjore", "gjoere"],
     ["skjønne", "skjonne", "skjoenne"],
@@ -1748,9 +1753,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["hören", "hoeren"],
     ["früh", "frueh"],
     ["tür", "tuer"],
-    ["was denkst du", "was denkst du"],
     ["noch einmal", "nochmal"],
-    ["wlan-passwort", "wlan passwort"],
+    ["wlan-passwort", "wlan passwort", "wlanpasswort"],
   ],
   // Dutch — same-lemma ASR / informal spelling (not different words)
   nl: [
@@ -1769,9 +1773,8 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["zijn", "zyn"],
     ["huis", "huys"],
     ["uit", "uyt"],
-    ["wat denk je", "wat denk je"],
     ["nog een keer", "nog 1 keer"],
-    ["wifi-wachtwoord", "wifi wachtwoord"],
+    ["wifi-wachtwoord", "wifi wachtwoord", "wifiwachtwoord"],
   ],
   // French — same-lemma ASR / elision (accents already orthography-soft)
   fr: [
@@ -1833,7 +1836,6 @@ const SPEECH_HOMOPHONE_GROUPS = {
     ["già", "gia"],
     ["così", "cosi"],
     ["ancora una volta", "ancora 1 volta"],
-    ["cosa ne pensi", "cosa ne pensi"],
   ],
   // Portuguese (BR teaching) — same-lemma ASR / typing (not gender swaps)
   pt: [
@@ -2084,6 +2086,7 @@ function softDefiniteLemmaMatch(a, b) {
 /** Short polite tails learners often add after a correct phrase (not new content). */
 const POLITE_ANSWER_TAILS = new Set([
   "takk",
+  "tusen",
   "tak",
   "tack",
   "please",
@@ -5817,25 +5820,37 @@ function showFeedbackExample(example) {
 /**
  * Miss teaching beat: at most once per card lifetime.
  * Prefer a live Stories clause; fall back to curated exampleForeign on the card
- * (e.g. survival ranks). No bare lemma restatement, no dishonest templates.
+ * (e.g. survival ranks). Prefer curated when live hit is much longer (softer match).
+ * No bare lemma restatement, no dishonest templates.
  */
 function getMissStoryExample(card) {
   if (!card || card.storyExampleShown) return null;
 
   const fromStory = findExampleSentenceForCard(card);
+  const storedL2 = String(card.exampleForeign || "").trim();
+  const storedEn = String(card.exampleNative || "").trim();
+  const stored =
+    storedL2 && storedEn
+      ? { foreign: storedL2, en: storedEn }
+      : null;
+
   if (fromStory?.foreign && fromStory?.en) {
     if (!isRedundantFeedbackExample(fromStory, card, fromStory.en)) {
+      // Prefer short curated line when live match is a long soft hit
+      if (
+        stored &&
+        !isRedundantFeedbackExample(stored, card, storedEn) &&
+        fromStory.foreign.length > stored.foreign.length + 24 &&
+        sentenceContainsForm(stored.foreign, card.foreign)
+      ) {
+        return stored;
+      }
       return fromStory;
     }
   }
 
-  const storedL2 = String(card.exampleForeign || "").trim();
-  const storedEn = String(card.exampleNative || "").trim();
-  if (storedL2 && storedEn) {
-    const stored = { foreign: storedL2, en: storedEn };
-    if (!isRedundantFeedbackExample(stored, card, storedEn)) {
-      return stored;
-    }
+  if (stored && !isRedundantFeedbackExample(stored, card, storedEn)) {
+    return stored;
   }
 
   return null;
@@ -5908,13 +5923,25 @@ function isRedundantFeedbackExample(example, card, answerText) {
       .trim()
   );
   const pill = normalizeAnswer(answerText || "");
+  const exCore =
+    typeof stripAnswerParticles === "function"
+      ? stripAnswerParticles(example.foreign)
+      : exL2;
+  const cardCore =
+    typeof stripAnswerParticles === "function"
+      ? stripAnswerParticles(card.foreign || "")
+      : cardL2;
 
   // Same L2 as the prompt (with EN matching gloss or the answer pill)
   if (exL2 === cardL2 && (exEn === cardEn || exEn === pill || !exEn)) {
     return true;
   }
+  // Same lemma after article strip only (la sortie ≈ sortie card)
+  if (exCore && cardCore && exCore === cardCore && !/\s/.test(exCore)) {
+    if (exEn === cardEn || exEn === pill || !exEn) return true;
+  }
   // Example is only the English answer, restated
-  if (exL2 === pill || exEn === pill && exL2 === cardL2) {
+  if (exL2 === pill || (exEn === pill && exL2 === cardL2)) {
     return true;
   }
   return false;
