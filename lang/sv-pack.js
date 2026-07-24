@@ -1005,7 +1005,140 @@
 
   ];
   window.LANGUAGE_BASICS = window.LANGUAGE_BASICS || {};
-  window.LANGUAGE_BASICS[id] = {"sections": [{"title": "Special letters", "items": [{"glyph": "å", "speak": "å", "approxHtml": "<strong>o</strong> in <em>or</em>", "examples": [{"speak": "år", "text": "år", "gloss": "year"}, {"speak": "gå", "text": "gå", "gloss": "go"}]}, {"glyph": "ä", "speak": "ä", "approxHtml": "<strong>a</strong> in <em>cat</em>", "examples": [{"speak": "är", "text": "är", "gloss": "is"}, {"speak": "nära", "text": "nära", "gloss": "near"}]}, {"glyph": "ö", "speak": "ö", "approxHtml": "<strong>uh</strong>, lips rounded", "examples": [{"speak": "öl", "text": "öl", "gloss": "beer"}, {"speak": "öra", "text": "öra", "gloss": "ear"}]}]}, {"title": "Same shape, different sound", "items": [{"glyph": "j", "speak": "j", "glyphClass": "basics-glyph--sm", "approxHtml": "<strong>y</strong> in <em>yes</em>", "examples": [{"speak": "ja", "text": "ja", "gloss": "yes"}, {"speak": "jag", "text": "jag", "gloss": "I"}]}, {"glyph": "y", "speak": "y", "glyphClass": "basics-glyph--sm", "approxHtml": "<strong>ee</strong> in <em>see</em>, lips rounded", "examples": [{"speak": "ny", "text": "ny", "gloss": "new"}, {"speak": "fyra", "text": "fyra", "gloss": "four"}]}, {"glyph": "g", "speak": "göra", "glyphClass": "basics-glyph--sm", "approxHtml": "Soft before e/i/y/ä/ö (like <strong>y</strong>)", "examples": [{"speak": "göra", "text": "göra", "gloss": "to do"}, {"speak": "god", "text": "god", "gloss": "good"}]}]}, {"title": "Letter pairs", "items": [{"glyph": "sj", "speak": "sjö", "glyphClass": "basics-glyph--pair", "approxHtml": "Soft <strong>sh</strong>-like (Swedish <em>sj</em>)", "examples": [{"speak": "sjö", "text": "sjö", "gloss": "lake"}, {"speak": "sju", "text": "sju", "gloss": "seven"}]}, {"glyph": "tj", "speak": "tjej", "glyphClass": "basics-glyph--pair", "approxHtml": "Soft, like <strong>sh</strong> in <em>she</em>", "examples": [{"speak": "tjej", "text": "tjej", "gloss": "girl"}, {"speak": "tjänst", "text": "tjänst", "gloss": "service"}]}, {"glyph": "ck", "speak": "tack", "glyphClass": "basics-glyph--pair", "approxHtml": "Hard <strong>k</strong>", "examples": [{"speak": "tack", "text": "tack", "gloss": "thanks"}, {"speak": "mycket", "text": "mycket", "gloss": "much"}]}]}]};
-  window.EXTRA_READ_STORIES = window.EXTRA_READ_STORIES || [];
+  /**
+   * Swedish — excellence bar (MED tray). MUST + SHOULD for English speakers.
+   * å/ä/ö; j/y; soft g; sj/tj (the Swedish signature); hj; rs.
+   * Exactly 2 examples. Glyph label only.
+   */
+  window.LANGUAGE_BASICS[id] = {
+    previewGlyphs: ["å", "ä", "ö"],
+    sections: [
+      {
+        title: "Special",
+        items: [
+          {
+            glyph: "å",
+            speak: "år",
+            approxHtml: "<strong>o</strong> in <em>or</em>",
+            examples: [
+              { speak: "år", text: "år", gloss: "year" },
+              { speak: "gå", text: "gå", gloss: "go" },
+            ],
+          },
+          {
+            glyph: "ä",
+            speak: "är",
+            approxHtml: "<strong>a</strong> in <em>cat</em>",
+            examples: [
+              { speak: "är", text: "är", gloss: "is" },
+              { speak: "nära", text: "nära", gloss: "near" },
+            ],
+          },
+          {
+            glyph: "ö",
+            speak: "öl",
+            approxHtml: "<strong>u</strong> in <em>burn</em> · rounded",
+            examples: [
+              { speak: "öl", text: "öl", gloss: "beer" },
+              { speak: "öra", text: "öra", gloss: "ear" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Surprises",
+        compact: true,
+        items: [
+          {
+            glyph: "j",
+            speak: "ja",
+            glyphSize: "sm",
+            approxHtml: "<strong>y</strong> in <em>yes</em>",
+            examples: [
+              { speak: "ja", text: "ja", gloss: "yes" },
+              { speak: "jag", text: "jag", gloss: "I" },
+            ],
+          },
+          {
+            glyph: "y",
+            speak: "ny",
+            glyphSize: "sm",
+            approxHtml: "<strong>ee</strong> · rounded lips",
+            examples: [
+              { speak: "ny", text: "ny", gloss: "new" },
+              { speak: "fyra", text: "fyra", gloss: "four" },
+            ],
+          },
+          {
+            glyph: "g",
+            speak: "göra",
+            glyphSize: "sm",
+            approxHtml: "Soft before e i y ä ö · like <strong>y</strong>",
+            examples: [
+              { speak: "göra", text: "göra", gloss: "do" },
+              { speak: "god", text: "god", gloss: "good" },
+            ],
+          },
+          {
+            glyph: "r",
+            speak: "röd",
+            glyphSize: "sm",
+            approxHtml: "Tapped · not English <span class=\"basics-letter\">r</span>",
+            examples: [
+              { speak: "röd", text: "röd", gloss: "red" },
+              { speak: "bra", text: "bra", gloss: "good" },
+            ],
+          },
+        ],
+      },
+      {
+        title: "Pairs",
+        compact: true,
+        items: [
+          {
+            glyph: "sj",
+            speak: "sjö",
+            glyphSize: "pair",
+            approxHtml: "Soft <strong>sh</strong>-like",
+            examples: [
+              { speak: "sjö", text: "sjö", gloss: "lake" },
+              { speak: "sju", text: "sju", gloss: "seven" },
+            ],
+          },
+          {
+            glyph: "tj",
+            speak: "tjej",
+            glyphSize: "pair",
+            approxHtml: "Soft · <strong>sh</strong> in <em>she</em>",
+            examples: [
+              { speak: "tjej", text: "tjej", gloss: "girl" },
+              { speak: "tjänst", text: "tjänst", gloss: "service" },
+            ],
+          },
+          {
+            glyph: "hj",
+            speak: "hjälp",
+            glyphSize: "pair",
+            approxHtml: "Silent <strong>h</strong> · <strong>y</strong>",
+            examples: [
+              { speak: "hjälp", text: "hjälp", gloss: "help" },
+              { speak: "hjärta", text: "hjärta", gloss: "heart" },
+            ],
+          },
+          {
+            glyph: "rs",
+            speak: "fors",
+            glyphSize: "pair",
+            approxHtml: "Often like <strong>sh</strong>",
+            examples: [
+              { speak: "fors", text: "fors", gloss: "rapids" },
+              { speak: "mars", text: "mars", gloss: "March" },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+
   window.EXTRA_READ_STORIES.push(...[{"id":"sv-morgon","title":"God morgon","subtitle":"Good morning","trail":"green-circle","categoryId":"sv","sentences":[{"foreign":"God morgon!","en":"Good morning!"},{"foreign":"Hej! Hur mår du?","en":"Hi! How are you?"},{"foreign":"Bra, tack. Och du?","en":"Good, thanks. And you?"},{"foreign":"Också bra. Det är fint väder i dag.","en":"Also good. The weather is nice today."},{"foreign":"Ja. Sol och inte för kallt.","en":"Yes. Sun and not too cold."},{"foreign":"Ska du till stan?","en":"Are you going into town?"},{"foreign":"Ja. Jag ska köpa bröd.","en":"Yes. I'm going to buy bread."},{"foreign":"Ha det bra!","en":"Bye! / Take care!"},{"foreign":"Hej då! Vi ses.","en":"Bye! See you."}],"glosses":{"God morgon":"Good morning","Hur mår du":"How are you","Bra":"good","väder":"weather","Sol":"sun","kallt":"cold","stan":"town","köpa":"to buy","bröd":"bread","Vi ses":"see you"}},{"id":"sv-kaffe","title":"En kaffe, tack","subtitle":"A coffee, please","trail":"green-circle","categoryId":"sv","sentences":[{"foreign":"Hej! Vad vill du ha?","en":"Hi! What would you like?"},{"foreign":"En kaffe, tack.","en":"A coffee, please."},{"foreign":"Med mjölk?","en":"With milk?"},{"foreign":"Nej, svart. Och vatten, tack.","en":"No, black. And water, please."},{"foreign":"Vill du ha något att äta?","en":"Would you like something to eat?"},{"foreign":"Bara kaffe i dag.","en":"Just coffee today."},{"foreign":"Det blir fyrtio kronor.","en":"That's forty kronor."},{"foreign":"Här är pengarna. Tack!","en":"Here's the money. Thanks!"},{"foreign":"Tack själv. Ha en fin dag!","en":"Thank you. Have a nice day!"}],"glosses":{"kaffe":"coffee","mjölk":"milk","svart":"black","vatten":"water","äta":"to eat","Bara":"just","fyrtio":"forty","kronor":"kronor"}},{"id":"sv-tag","title":"Var är tåget?","subtitle":"Where is the train?","trail":"green-circle","categoryId":"sv","sentences":[{"foreign":"Ursäkta. Var är tåget?","en":"Excuse me. Where is the train?"},{"foreign":"Där borta. Spår två.","en":"Over there. Platform two."},{"foreign":"Tack. Går det snart?","en":"Thanks. Does it leave soon?"},{"foreign":"Ja, om tio minuter.","en":"Yes, in ten minutes."},{"foreign":"Behöver jag biljett nu?","en":"Do I need a ticket now?"},{"foreign":"Ja. Du kan köpa här.","en":"Yes. You can buy here."},{"foreign":"En biljett till centrum, tack.","en":"One ticket to the center, please."},{"foreign":"Varsågod. Ha en fin resa!","en":"Here you are. Have a nice trip!"},{"foreign":"Tusen tack!","en":"Thank you so much!"}],"glosses":{"Ursäkta":"excuse me","tåget":"the train","Spår":"platform","snart":"soon","biljett":"ticket","köpa":"to buy","centrum":"the center","Varsågod":"here you are"}},{"id":"sv-bibliotek","title":"På biblioteket","subtitle":"At the library","trail":"blue-square","categoryId":"sv","sentences":[{"foreign":"Hej. Har ni böcker på engelska?","en":"Hi. Do you have books in English?"},{"foreign":"Ja. De står där. Vill du låna några?","en":"Yes. They're over there. Would you like to borrow some?"},{"foreign":"Ja, gärna. Behöver jag studentkort?","en":"Yes, please. Do I need a student ID?"},{"foreign":"Ja. Du kan få det i dag om du har ID.","en":"Yes. You can get it today if you have ID."},{"foreign":"Bra. Hur länge får jag ha böckerna?","en":"Great. How long can I keep the books?"},{"foreign":"Tre veckor. Du kan förlänga på nätet.","en":"Three weeks. You can renew online."},{"foreign":"Är det tyst här på kvällen?","en":"Is it quiet here in the evening?"},{"foreign":"Ja, efter sex. Då är det skönt att läsa kurslitteraturen.","en":"Yes, after six. Then it's nice to read the course books."},{"foreign":"Tack för hjälpen!","en":"Thanks for the help!"},{"foreign":"Varsågod. Lycka till med kursen!","en":"You're welcome. Good luck with the course!"}],"glosses":{"böcker":"books","låna":"to borrow","kort":"card","förlänga":"to renew","tyst":"quiet","studentkort":"student ID","kurslitteraturen":"the course literature","kursen":"the course"}},{"id":"sv-marknad","title":"I butiken","subtitle":"At the shop","trail":"blue-square","categoryId":"sv","sentences":[{"foreign":"Hej. Var är brödet?","en":"Hi. Where is the bread?"},{"foreign":"Rakt fram, till vänster.","en":"Straight ahead, to the left."},{"foreign":"Tack. Vad kostar äpplena?","en":"Thanks. How much are the apples?"},{"foreign":"Tjugo kronor kilot. De är på erbjudande i dag.","en":"Twenty kronor a kilo. They're on offer today."},{"foreign":"Jag tar fyra äpplen och ett bröd.","en":"I'll take four apples and a loaf of bread."},{"foreign":"Vill du ha en shoppingpåse?","en":"Would you like a shopping bag?"},{"foreign":"Ja, tack. Kan jag betala med kort?","en":"Yes, please. Can I pay by card?"},{"foreign":"Självklart. Det blir sextiofem kronor i kassan.","en":"Of course. That's sixty-five kronor at the checkout."},{"foreign":"Här är kortet. Ha en fin dag!","en":"Here's the card. Have a nice day!"},{"foreign":"Detsamma. Välkommen åter!","en":"Same to you. Welcome back anytime!"}],"glosses":{"brödet":"the bread","äpplena":"the apples","påse":"bag","betala":"to pay","kort":"card","erbjudande":"offer/sale","shoppingpåse":"shopping bag","kassan":"the checkout"}},{"id":"sv-vanner","title":"Nya vänner","subtitle":"New friends","trail":"blue-square","categoryId":"sv","sentences":[{"foreign":"Hej, jag heter Sam.","en":"Hi, my name is Sam."},{"foreign":"Trevligt att se dig! Jag är Noor.","en":"Nice to see you! I'm Noor."},{"foreign":"Var kommer du ifrån?","en":"Where are you from?"},{"foreign":"Från Kanada, men jag bor här nu.","en":"From Canada, but I live here now."},{"foreign":"Vad studerar du?","en":"What do you study?"},{"foreign":"Biologi. Och du?","en":"Biology. And you?"},{"foreign":"Jag jobbar på ett café. Har du planer i helgen?","en":"I work at a café. Do you have plans this weekend?"},{"foreign":"Inte än. Är du ledig på lördag?","en":"Not yet. Are you free on Saturday?"},{"foreign":"Gärna! Vi kan ses här klockan två.","en":"I'd love to! We can meet here at two."},{"foreign":"Super. Vi ses snart!","en":"Great. See you soon!"}],"glosses":{"heter":"am called","bor":"live","studerar":"study","planer":"plans","lördag":"Saturday","att se dig":"to see you","ledig":"free","Vi ses snart":"see you soon"}},{"id":"sv-jobb","title":"Första arbetsdagen","subtitle":"First day at work","trail":"black-diamond","categoryId":"sv","sentences":[{"foreign":"Välkommen till teamet, Sam.","en":"Welcome to the team, Sam."},{"foreign":"Tack. Jag är lite nervös.","en":"Thanks. I'm a bit nervous."},{"foreign":"Det är vanligt. Här är ditt skrivbord vid fönstret.","en":"That's normal. Here's your desk by the window."},{"foreign":"Toppen. Vem är min chef?","en":"Great. Who is my boss?"},{"foreign":"Det är jag i dag. Lösenordet får du av en medarbetare.","en":"That's me today. You'll get the password from a coworker."},{"foreign":"När är lunch, och är det heltid?","en":"When is lunch, and is it full-time?"},{"foreign":"Lunch klockan tolv. Agendan ligger i mötesrummet.","en":"Lunch at twelve. The agenda is in the meeting room."},{"foreign":"Kan jag jobba hemifrån några dagar senare?","en":"Can I work from home some days later?"},{"foreign":"Efter tre månader, om det går bra.","en":"After three months, if things go well."},{"foreign":"Förstått. Tack för hjälpen!","en":"Understood. Thanks for the help!"},{"foreign":"Fråga bara. Lycka till med projektet!","en":"Just ask. Good luck with the project!"}],"glosses":{"nervös":"nervous","skrivbord":"desk","chef":"boss","lösenordet":"the password","heltid":"full-time","provanställningen":"the trial period","medarbetare":"coworker","Agendan":"the agenda","mötesrummet":"the meeting room","projektet":"the project"}},{"id":"sv-lakare","title":"Hos läkaren","subtitle":"At the doctor's","trail":"black-diamond","categoryId":"sv","sentences":[{"foreign":"God dag. Vad är det som är fel?","en":"Good day. What's the matter?"},{"foreign":"Jag har haft ont i halsen i två dagar.","en":"I've had a sore throat for two days."},{"foreign":"Har du också feber eller hosta?","en":"Do you have a fever or a cough as well?"},{"foreign":"Lite feber i morse, och lite hosta.","en":"A little fever this morning, and a bit of a cough."},{"foreign":"Säg aaa. Det ser ut som en mild förkylning.","en":"Say ah. It looks like a mild cold."},{"foreign":"Behöver jag recept på medicin?","en":"Do I need a prescription for medicine?"},{"foreign":"Inte än. Vila, vatten och paracetamol.","en":"Not yet. Rest, water, and paracetamol."},{"foreign":"Kan jag få sjukintyg om det blir värre?","en":"Can I get a sick note if it gets worse?"},{"foreign":"Ja. Boka ny läkartid då, eller ring.","en":"Yes. Book a new appointment then, or call."},{"foreign":"Tusen tack för hjälpen.","en":"Thank you so much for the help."},{"foreign":"Varsågod. Bli frisk snart!","en":"You're welcome. Get well soon!"}],"glosses":{"ont i halsen":"sore throat","feber":"fever","hosta":"cough","förkylning":"cold","recept":"prescription","sjukintyg":"sick note","läkartid":"doctor's appointment"}},{"id":"sv-bostad","title":"Letar efter ett rum","subtitle":"Looking for a room","trail":"black-diamond","categoryId":"sv","sentences":[{"foreign":"Hej, jag ringer om rummet på nätet.","en":"Hi, I'm calling about the room online."},{"foreign":"Ja, det är fortfarande ledigt. När vill du se det?","en":"Yes, it's still free. When would you like to see it?"},{"foreign":"I eftermiddag, runt tre, om det går.","en":"This afternoon, around three, if that works."},{"foreign":"Bra. Det är tredje våningen, ingen hiss.","en":"Fine. It's on the third floor, no elevator."},{"foreign":"Är det ett kollektiv, och vad är hyran?","en":"Is it a shared flat, and what's the rent?"},{"foreign":"Ja. Hyran inkluderar internet. Depositionen är en månad.","en":"Yes. Rent includes internet. Deposit is one month."},{"foreign":"När får jag nycklar om jag tar det?","en":"When do I get keys if I take it?"},{"foreign":"Hyresvärden möter dig på måndag med hyreskontraktet vid brevlådan.","en":"The landlord will meet you Monday with the lease at the mailbox."},{"foreign":"Låter bra. Jag kommer klockan tre.","en":"Sounds good. I'll come at three."},{"foreign":"Super. Ring om grannen klagar på oväsen!","en":"Great. Call if the neighbor complains about noise!"}],"glosses":{"rummet":"the room","våningen":"the floor","hiss":"elevator","hyran":"the rent","depositionen":"the deposit","nycklar":"keys","hyresvärden":"the landlord","hyreskontraktet":"the lease","brevlådan":"the mailbox","grannen":"the neighbor","oväsen":"noise"}},{"id":"sv-nyheter","title":"Strejk i morgon","subtitle":"Strike tomorrow","trail":"double-black-diamond","categoryId":"sv","sentences":[{"foreign":"Såg du nyheterna i morse?","en":"Did you see the news this morning?"},{"foreign":"Nej, vad har hänt?","en":"No, what happened?"},{"foreign":"I morgon är det strejk i tunnelbanan och på flera bussar.","en":"Tomorrow there's a strike on the subway and on several buses."},{"foreign":"Så rusningstiden blir kaos?","en":"So rush hour will be chaos?"},{"foreign":"Ja. Många tåg stannar, och det blir ersättningsbuss från ändhållplatsen.","en":"Yes. Many trains stop, and there will be a replacement bus from the terminus."},{"foreign":"Jag tar stadscykeln, även om det regnar.","en":"I'll take a city bike, even if it rains."},{"foreign":"Smart. Eller jobbar du hemifrån om chefen säger ja?","en":"Smart. Or will you work from home if the boss allows it?"},{"foreign":"Kanske. Jag kollar taxibudgeten först.","en":"Maybe. I'll check the taxi budget first."},{"foreign":"Håll mig uppdaterad om din avgång ställs in.","en":"Keep me posted if your departure is cancelled."},{"foreign":"Okej. Vi hörs i kväll.","en":"Alright. Talk tonight."}],"glosses":{"nyheterna":"the news","strejk":"strike","tunnelbanan":"the subway","rusningstiden":"rush hour","ersättningsbuss":"replacement bus"}},{"id":"sv-debatt","title":"En kort debatt","subtitle":"A short debate","trail":"double-black-diamond","categoryId":"sv","sentences":[{"foreign":"Jag tycker kollektivtrafiken är jätteviktig.","en":"I think public transport is really important."},{"foreign":"Varför då?","en":"Why?"},{"foreign":"För att inte alla kan ha bil, och parkering är dyr i centrum.","en":"Because not everyone can have a car, and parking downtown is expensive."},{"foreign":"Men bussarna är ofta fulla och försenade i rusningen.","en":"But the buses are often full and late in rush hour."},{"foreign":"Om staden investerar mer i linjer blir det bättre med tiden.","en":"If the city invests more in routes, it gets better over time."},{"foreign":"På lång sikt, kanske. Just nu stiger biljetterna också.","en":"In the long run, maybe. Right now tickets are rising too."},{"foreign":"Sant. Ändå tycker jag det är värt det för miljön.","en":"True. Even so, I think it's worth it for the environment."},{"foreign":"Låt oss läsa mer innan vi bestämmer oss.","en":"Let's read more before we decide."},{"foreign":"Okej. Kaffe efter lunch, så pratar vi vidare?","en":"Alright. Coffee after lunch, then we talk more?"},{"foreign":"Ja. Vi ses vid stationen.","en":"Yes. We'll meet at the station."}],"glosses":{"kollektivtrafiken":"public transport","parkering":"parking","dyr":"expensive","miljön":"the environment"}},{"id":"sv-planer","title":"Planer för sommaren","subtitle":"Summer plans","trail":"double-black-diamond","categoryId":"sv","sentences":[{"foreign":"Vad ska du göra i sommar?","en":"What are you going to do this summer?"},{"foreign":"Jag vill resa några veckor, om det går. Och du?","en":"I want to travel a few weeks, if it works out. And you?"},{"foreign":"Kanske till Gotland. Jag betalar med Swish i appen i kväll.","en":"Maybe to Gotland. I'm paying with Swish in the app tonight."},{"foreign":"Har du passet klart? Bagaget måste genom incheckningen.","en":"Is your passport ready? The luggage has to go through check-in."},{"foreign":"Ja. Bara handbaggage. Boardingkortet får jag efter säkerhetskontrollen.","en":"Yes. Hand luggage only. Boarding pass after security."},{"foreign":"Jag stannar och jobbar övertid. Sparandet går till semestern nästa år.","en":"I'm staying and working overtime. The savings go to next year's holiday."},{"foreign":"Praktiskt. Mitt flyg kan bli försenat, men ankomsten är sen ändå.","en":"Practical. My flight might be delayed, but arrival is late either way."},{"foreign":"Hör av dig när du landar. Terminalen är lätt att hitta.","en":"Let me know when you land. The terminal is easy to find."},{"foreign":"Gärna. Ha en fin avgång!","en":"Will do. Have a good departure!"},{"foreign":"Tack. Vi håller kontakten.","en":"Thanks. We'll stay in touch."}],"glosses":{"resa":"to travel","passet":"the passport","handbaggage":"hand luggage","övertid":"overtime","semestern":"the holiday","ankomsten":"the arrival","Swish":"Swedish mobile payment"}}]);
 })();
